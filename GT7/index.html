@@ -209,7 +209,22 @@
     </div>
 
     <script>
-        // ==================== ИКОНКИ МАШИН ====================
+        // ==================== МАШИНЫ ====================
+        // ПРОСТОЙ СПИСОК НАЗВАНИЙ МАШИН (без иконок для теста)
+        const cars = [
+            "Abarth 1500 Biposto Bertone B.A.T 1 '52",
+            "Abarth 500 '09",
+            "Abarth 595 SS '70",
+            "AFEELA 1 '26",
+            "AFEELA Prototype 2024",
+            "Alfa Romeo 155 2.5 V6 TI '93",
+            "Alfa Romeo 4C '14",
+            "BMW M3 '07",
+            "Nissan GT-R '17",
+            "Porsche 911 GT3 RS '22"
+        ];
+        
+        // Словарь иконок (если файлы есть, иначе иконки не отобразятся)
         const carIcons = {
             "Abarth 1500 Biposto Bertone B.A.T 1 '52": "car_icons/car1932.png",
             "Abarth 500 '09": "car_icons/car1973.png",
@@ -218,9 +233,8 @@
             "AFEELA Prototype 2024": "car_icons/car3546.png",
             "Alfa Romeo 155 2.5 V6 TI '93": "car_icons/car365.png"
         };
-        const cars = Object.keys(carIcons);
         
-        // ==================== ТРАССЫ (ДОБАВЛЕНЫ ТЕСТОВЫЕ) ====================
+        // ==================== ТРАССЫ ====================
         const tracks = [
             "Франция Alsace - Деревня",
             "Италия Autodrome Lago Maggiore - Восток",
@@ -229,10 +243,7 @@
             "Германия Nürburgring Nordschleife"
         ];
         
-        // ==================== ИКОНКИ ТРАСС (ПОКА ПУСТО) ====================
-        const tracksIcons = {
-            // Здесь можно добавить иконки трасс, когда будут готовы
-        };
+        const tracksIcons = {};
         
         // ==================== ПОГОДА ====================
         const weathers = [
@@ -309,6 +320,10 @@
         document.getElementById('randomTrackBtn').addEventListener('click', updateTrack);
         document.getElementById('randomWeatherBtn').addEventListener('click', updateWeather);
         document.getElementById('randomTimeBtn').addEventListener('click', updateTime);
+        
+        // Отладочный вывод в консоль (нажмите F12, чтобы увидеть)
+        console.log("Скрипт загружен. Машин в списке: " + cars.length);
+        console.log("Список машин:", cars);
         
         updateAll();
     </script>
