@@ -30,7 +30,6 @@
             position: relative;
         }
         
-        /* ЗАТЕМНЕНИЕ ФОНА ДЛЯ ЛУЧШЕЙ ЧИТАЕМОСТИ ТЕКСТА */
         body::before {
             content: '';
             position: fixed;
@@ -38,11 +37,10 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.55);  /* ← степень затемнения (0.55 = 55%) */
+            background: rgba(0, 0, 0, 0.55);
             z-index: -1;
         }
         
-        /* Основной контейнер — адаптирован под iPhone 11 (375pt) */
         .container {
             background: rgba(30, 41, 59, 0.85);
             backdrop-filter: blur(12px);
@@ -75,11 +73,29 @@
             padding-bottom: 0;
         }
         
+        /* НОВАЯ СЕТКА: 2 колонки (замок | заголовок + иконка) */
         .param-header {
+            display: grid;
+            grid-template-columns: 50px 1fr;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        /* Контейнер для замка — слева, ровно друг под другом */
+        .lock-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* Правая колонка: заголовок + иконка в одной строке */
+        .right-content {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 10px;
-            margin-bottom: 10px;
+            width: 100%;
         }
         
         .param-label {
@@ -97,7 +113,6 @@
         }
         
         .icon-container {
-            flex: 1;
             background: transparent;
             display: flex;
             align-items: center;
@@ -127,7 +142,6 @@
             backdrop-filter: blur(2px);
         }
         
-        /* Кнопка-замочек */
         button.lock-btn {
             background: transparent !important;
             border: none !important;
@@ -152,7 +166,6 @@
             transform: scale(0.92);
         }
         
-        /* Обычные кнопки */
         button:not(.lock-btn) {
             background: #ff4d4d;
             color: white;
@@ -184,11 +197,11 @@
             margin-top: 8px;
         }
         
-        /* Адаптация для небольших экранов (iPhone SE, iPhone 11 в портрете) */
         @media (max-width: 390px) {
             body { padding: 12px; }
             .container { padding: 16px 14px; border-radius: 36px; }
             .result-card { padding: 12px 14px; }
+            .param-header { grid-template-columns: 40px 1fr; gap: 6px; }
             .param-label { font-size: 12px; padding: 5px 12px; }
             .icon-container { min-height: 50px; }
             .car-icon, .track-icon { max-height: 100px; }
@@ -198,8 +211,8 @@
             .btn-main { font-size: 17px; padding: 13px; }
         }
         
-        /* Для очень маленьких экранов */
         @media (max-width: 340px) {
+            .param-header { grid-template-columns: 36px 1fr; gap: 4px; }
             .param-label { font-size: 11px; padding: 4px 10px; }
             .param-value { font-size: 13px; padding: 7px 10px; }
         }
@@ -211,12 +224,16 @@
             <!-- МАШИНА -->
             <div class="param-block">
                 <div class="param-header">
-                    <span class="param-label">🏎️ МАШИНА</span>
-                    <button class="lock-btn" id="lockCar">
-                        <img src="unlocked.png" alt="Разблокировано">
-                    </button>
-                    <div class="icon-container">
-                        <img class="car-icon" id="carIcon" src="" style="display: none;">
+                    <div class="lock-container">
+                        <button class="lock-btn" id="lockCar">
+                            <img src="unlocked.png" alt="Разблокировано">
+                        </button>
+                    </div>
+                    <div class="right-content">
+                        <span class="param-label">🏎️ МАШИНА</span>
+                        <div class="icon-container">
+                            <img class="car-icon" id="carIcon" src="" style="display: none;">
+                        </div>
                     </div>
                 </div>
                 <div class="param-value" id="carValue">—</div>
@@ -225,12 +242,16 @@
             <!-- ТРАССА -->
             <div class="param-block">
                 <div class="param-header">
-                    <span class="param-label">🛣️ ТРАССА</span>
-                    <button class="lock-btn" id="lockTrack">
-                        <img src="unlocked.png" alt="Разблокировано">
-                    </button>
-                    <div class="icon-container">
-                        <img class="track-icon" id="trackIcon" src="" style="display: none;">
+                    <div class="lock-container">
+                        <button class="lock-btn" id="lockTrack">
+                            <img src="unlocked.png" alt="Разблокировано">
+                        </button>
+                    </div>
+                    <div class="right-content">
+                        <span class="param-label">🛣️ ТРАССА</span>
+                        <div class="icon-container">
+                            <img class="track-icon" id="trackIcon" src="" style="display: none;">
+                        </div>
                     </div>
                 </div>
                 <div class="param-value" id="trackValue">—</div>
@@ -239,10 +260,14 @@
             <!-- ПОГОДА -->
             <div class="param-block">
                 <div class="param-header">
-                    <span class="param-label">🌦️ ПОГОДА</span>
-                    <button class="lock-btn" id="lockWeather">
-                        <img src="unlocked.png" alt="Разблокировано">
-                    </button>
+                    <div class="lock-container">
+                        <button class="lock-btn" id="lockWeather">
+                            <img src="unlocked.png" alt="Разблокировано">
+                        </button>
+                    </div>
+                    <div class="right-content">
+                        <span class="param-label">🌦️ ПОГОДА</span>
+                    </div>
                 </div>
                 <div class="param-value" id="weatherValue">—</div>
             </div>
@@ -250,10 +275,14 @@
             <!-- ВРЕМЯ -->
             <div class="param-block">
                 <div class="param-header">
-                    <span class="param-label">⏰ ВРЕМЯ</span>
-                    <button class="lock-btn" id="lockTime">
-                        <img src="unlocked.png" alt="Разблокировано">
-                    </button>
+                    <div class="lock-container">
+                        <button class="lock-btn" id="lockTime">
+                            <img src="unlocked.png" alt="Разблокировано">
+                        </button>
+                    </div>
+                    <div class="right-content">
+                        <span class="param-label">⏰ ВРЕМЯ</span>
+                    </div>
                 </div>
                 <div class="param-value" id="timeValue">—</div>
             </div>
@@ -263,15 +292,12 @@
     </div>
 
     <script>
-
         (function() {
             if (window.location.search.indexOf('v=') === -1) {
                 window.location.href = window.location.href + '?v=2';
             }
         })();
         
-        
-        // МАШИНЫ (10 тестовых для примера)
         const carIcons = {
             "Abarth 1500 Biposto Bertone B.A.T 1 '52": "car_icons/car1932.png",
             "Abarth 500 '09": "car_icons/car1973.png",
@@ -286,7 +312,6 @@
         };
         const cars = Object.keys(carIcons);
         
-        // ТРАССЫ (10 тестовых)
         const tracksIcons = {
             "Франция Alsace - Деревня": "track_icons/bbe708-D-n15MKA.png",
             "Италия Autodrome Lago Maggiore - Восток": "track_icons/39f155-Dg_fFdVS.png",
@@ -301,7 +326,6 @@
         };
         const tracks = Object.keys(tracksIcons);
         
-        // ПОГОДА (основные типы)
         const weathers = [
             "S01 (Ясно, безоблачно)",
             "S02 (Ясно, малооблачно)",
@@ -313,7 +337,6 @@
             "R03 (Сильный дождь, ливень)"
         ];
         
-        // ВРЕМЯ СУТОК
         const timesBase = [
             "Ранний рассвет",
             "Рассвет",
@@ -327,23 +350,19 @@
             "Полночь"
         ];
         
-        // ==================== СОСТОЯНИЕ БЛОКИРОВОК ====================
         let lockCar = false;
         let lockTrack = false;
         let lockWeather = false;
         let lockTime = false;
         
-        // ==================== ДИНАМИКА ВРЕМЕНИ ====================
         function getRandomTimeDynamic() {
             return Math.floor(Math.random() * 30) + 1;
         }
         
-        // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
         function getRandomItem(arr) {
             return arr[Math.floor(Math.random() * arr.length)];
         }
         
-        // ==================== ФУНКЦИИ ОБНОВЛЕНИЯ ====================
         function updateCar(force = false) {
             if (!lockCar || force) {
                 const car = getRandomItem(cars);
@@ -393,7 +412,6 @@
             updateTime();
         }
         
-        // ==================== ОБНОВЛЕНИЕ ВИДА КНОПОК-ЗАМОЧКОВ ====================
         function updateLockButtons() {
             const carBtn = document.getElementById('lockCar');
             const trackBtn = document.getElementById('lockTrack');
@@ -417,7 +435,6 @@
                 : '<img src="unlocked.png" alt="Разблокировано">';
         }
         
-        // ==================== ОБРАБОТЧИКИ КНОПОК ====================
         document.getElementById('lockCar').addEventListener('click', () => {
             lockCar = !lockCar;
             updateLockButtons();
@@ -440,7 +457,6 @@
         
         document.getElementById('randomBtn').addEventListener('click', updateAll);
         
-        // ==================== ИНИЦИАЛИЗАЦИЯ ====================
         updateLockButtons();
         updateAll();
     </script>
