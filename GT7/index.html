@@ -127,27 +127,27 @@
         }
         
         /* НОВЫЕ СТИЛИ ДЛЯ ВРЕМЕНИ */
-        .time-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .time-text {
-            text-align: left;
-            flex: 1;
-            white-space: normal;
-            word-break: break-word;
-        }
-        
-        .time-dynamic {
-              text-align: right;
+       .time-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.time-text {
+    flex: 1;                 /* ← главное изменение */
+    text-align: left;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.time-dynamic {
+    text-align: right;
     white-space: nowrap;
     min-width: 55px;
-    color: white;
+    color: #ffffff;
     font-weight: 600;
-        }
+}
         
         .param-value {
             font-size: 16px;
@@ -227,6 +227,7 @@
             .car-icon, .track-icon { max-height: 100px; }
             .param-value { font-size: 14px; padding: 8px 12px; }
             .time-text { font-size: 13px; }
+            flex: 1;
             .time-dynamic { font-size: 13px; min-width: 50px; }
             button.lock-btn img { width: 20px; height: 20px; }
             button:not(.lock-btn) { padding: 12px 16px; font-size: 16px; }
