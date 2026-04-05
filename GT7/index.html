@@ -73,7 +73,6 @@
             padding-bottom: 0;
         }
         
-        /* НОВАЯ СЕТКА: 2 колонки (замок | заголовок + иконка) */
         .param-header {
             display: grid;
             grid-template-columns: 50px 1fr;
@@ -82,14 +81,12 @@
             margin-bottom: 10px;
         }
         
-        /* Контейнер для замка — слева, ровно друг под другом */
         .lock-container {
             display: flex;
             justify-content: center;
             align-items: center;
         }
         
-        /* Правая колонка: заголовок + иконка в одной строке */
         .right-content {
             display: flex;
             align-items: center;
@@ -121,7 +118,7 @@
             padding: 4px 0;
         }
         
-        .car-icon, .track-icon {
+        .car-icon, .track-icon, .weather-icon, .time-icon {
             max-width: 100%;
             max-height: 120px;
             width: auto;
@@ -204,7 +201,7 @@
             .param-header { grid-template-columns: 40px 1fr; gap: 6px; }
             .param-label { font-size: 12px; padding: 5px 12px; }
             .icon-container { min-height: 50px; }
-            .car-icon, .track-icon { max-height: 100px; }
+            .car-icon, .track-icon, .weather-icon, .time-icon { max-height: 100px; }
             .param-value { font-size: 14px; padding: 8px 12px; }
             button.lock-btn img { width: 20px; height: 20px; }
             button:not(.lock-btn) { padding: 12px 16px; font-size: 16px; }
@@ -267,6 +264,9 @@
                     </div>
                     <div class="right-content">
                         <span class="param-label">🌦️ ПОГОДА</span>
+                        <div class="icon-container">
+                            <img class="weather-icon" id="weatherIcon" src="" style="display: none;">
+                        </div>
                     </div>
                 </div>
                 <div class="param-value" id="weatherValue">—</div>
@@ -282,6 +282,9 @@
                     </div>
                     <div class="right-content">
                         <span class="param-label">⏰ ВРЕМЯ</span>
+                        <div class="icon-container">
+                            <img class="time-icon" id="timeIcon" src="" style="display: none;">
+                        </div>
                     </div>
                 </div>
                 <div class="param-value" id="timeValue">—</div>
@@ -298,8 +301,9 @@
             }
         })();
         
+        // ==================== МАШИНЫ ====================
         const carIcons = {
-           "Abarth 1500 Biposto Bertone B.A.T 1 '52": "car_icons/car1932.png",
+            "Abarth 1500 Biposto Bertone B.A.T 1 '52": "car_icons/car1932.png",
             "Abarth 500 '09": "car_icons/car1973.png",
             "Abarth 595 SS '70": "car_icons/car3438.png",
             "AFEELA 1 '26": "car_icons/car3579.png",
@@ -861,8 +865,9 @@
         };
         const cars = Object.keys(carIcons);
         
+        // ==================== ТРАССЫ ====================
         const tracksIcons = {
-            "Франция Alsace - Деревня": "track_icons/bbe708-D-n15MKA.png",
+             "Франция Alsace - Деревня": "track_icons/bbe708-D-n15MKA.png",
             "Франция Alsace - Деревня (обратн.)": "track_icons/bbe708-D-n15MKA.png",
             "Франция Alsace - тестовая трасса": "track_icons/bbe708-D-n15MKA.png",
             "Франция Alsace - тестовая трасса (обратн.)": "track_icons/bbe708-D-n15MKA.png",
@@ -968,7 +973,8 @@
         };
         const tracks = Object.keys(tracksIcons);
         
-        const weathers = [
+        // ==================== ПОГОДА (с иконками) ====================
+        const weatherIcons = {
             "S01 (Ясно, безоблачно)",
             "S02 (Ясно, малооблачно)",
             "S03 (Ясно, переменная облачность)",
@@ -1001,10 +1007,12 @@
 "R06 (Тропический ливень)",
 "R07 (Шквалистый дождь)",
 "R08 (Экстремальный ливень, нулевая видимость)"
-        ];
+        };
+        const weathers = Object.keys(weatherIcons);
         
-        const timesBase = [
-           "Ранний рассвет",
+        // ==================== ВРЕМЯ СУТОК (с иконками) ====================
+        const timeIcons = {
+            "Ранний рассвет",
 "Рассвет",
 "Восход",
 "Раннее утро",
@@ -1019,13 +1027,16 @@
 "Сумерки",
 "Ночь",
 "Полночь"
-        ];
+        };
+        const timesBase = Object.keys(timeIcons);
         
+        // ==================== СОСТОЯНИЕ БЛОКИРОВОК ====================
         let lockCar = false;
         let lockTrack = false;
         let lockWeather = false;
         let lockTime = false;
         
+        // ==================== ДИНАМИКА ВРЕМЕНИ ====================
         function getRandomTimeDynamic() {
             return Math.floor(Math.random() * 30) + 1;
         }
@@ -1034,6 +1045,7 @@
             return arr[Math.floor(Math.random() * arr.length)];
         }
         
+        // ==================== ФУНКЦИИ ОБНОВЛЕНИЯ ====================
         function updateCar(force = false) {
             if (!lockCar || force) {
                 const car = getRandomItem(cars);
@@ -1066,13 +1078,32 @@
         
         function updateWeather(force = false) {
             if (!lockWeather || force) {
-                document.getElementById('weatherValue').textContent = getRandomItem(weathers);
+                const weather = getRandomItem(weathers);
+                document.getElementById('weatherValue').textContent = weather;
+                const icon = document.getElementById('weatherIcon');
+                if (weatherIcons[weather]) {
+                    icon.src = weatherIcons[weather];
+                    icon.style.display = "block";
+                    icon.onerror = () => icon.style.display = "none";
+                } else {
+                    icon.style.display = "none";
+                }
             }
         }
         
         function updateTime(force = false) {
             if (!lockTime || force) {
-                document.getElementById('timeValue').textContent = `${getRandomItem(timesBase)} (x${getRandomTimeDynamic()})`;
+                const time = getRandomItem(timesBase);
+                const dynamic = getRandomTimeDynamic();
+                document.getElementById('timeValue').textContent = `${time} (x${dynamic})`;
+                const icon = document.getElementById('timeIcon');
+                if (timeIcons[time]) {
+                    icon.src = timeIcons[time];
+                    icon.style.display = "block";
+                    icon.onerror = () => icon.style.display = "none";
+                } else {
+                    icon.style.display = "none";
+                }
             }
         }
         
@@ -1083,6 +1114,7 @@
             updateTime();
         }
         
+        // ==================== ОБНОВЛЕНИЕ ВИДА КНОПОК-ЗАМОЧКОВ ====================
         function updateLockButtons() {
             const carBtn = document.getElementById('lockCar');
             const trackBtn = document.getElementById('lockTrack');
@@ -1106,6 +1138,7 @@
                 : '<img src="unlocked.png" alt="Разблокировано">';
         }
         
+        // ==================== ОБРАБОТЧИКИ КНОПОК ====================
         document.getElementById('lockCar').addEventListener('click', () => {
             lockCar = !lockCar;
             updateLockButtons();
@@ -1128,6 +1161,7 @@
         
         document.getElementById('randomBtn').addEventListener('click', updateAll);
         
+        // ==================== ИНИЦИАЛИЗАЦИЯ ====================
         updateLockButtons();
         updateAll();
     </script>
