@@ -263,7 +263,13 @@
     </div>
 
     <script>
-        // ==================== ТЕСТОВЫЕ ДАННЫЕ (сокращённые) ====================
+
+        (function() {
+            if (window.location.search.indexOf('v=') === -1) {
+                window.location.href = window.location.href + '?v=2';
+            }
+        })();
+        
         
         // МАШИНЫ (10 тестовых для примера)
         const carIcons = {
