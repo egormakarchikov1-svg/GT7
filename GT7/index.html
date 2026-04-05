@@ -118,7 +118,7 @@
             padding: 4px 0;
         }
         
-        .car-icon, .track-icon, .weather-icon, .time-icon {
+        .car-icon, .track-icon {
             max-width: 100%;
             max-height: 120px;
             width: auto;
@@ -201,7 +201,7 @@
             .param-header { grid-template-columns: 40px 1fr; gap: 6px; }
             .param-label { font-size: 12px; padding: 5px 12px; }
             .icon-container { min-height: 50px; }
-            .car-icon, .track-icon, .weather-icon, .time-icon { max-height: 100px; }
+            .car-icon, .track-icon { max-height: 100px; }
             .param-value { font-size: 14px; padding: 8px 12px; }
             button.lock-btn img { width: 20px; height: 20px; }
             button:not(.lock-btn) { padding: 12px 16px; font-size: 16px; }
@@ -254,7 +254,7 @@
                 <div class="param-value" id="trackValue">—</div>
             </div>
             
-            <!-- ПОГОДА -->
+            <!-- ПОГОДА (без иконки) -->
             <div class="param-block">
                 <div class="param-header">
                     <div class="lock-container">
@@ -264,15 +264,12 @@
                     </div>
                     <div class="right-content">
                         <span class="param-label">🌦️ ПОГОДА</span>
-                        <div class="icon-container">
-                            <img class="weather-icon" id="weatherIcon" src="" style="display: none;">
-                        </div>
                     </div>
                 </div>
                 <div class="param-value" id="weatherValue">—</div>
             </div>
             
-            <!-- ВРЕМЯ -->
+            <!-- ВРЕМЯ (без иконки) -->
             <div class="param-block">
                 <div class="param-header">
                     <div class="lock-container">
@@ -282,9 +279,6 @@
                     </div>
                     <div class="right-content">
                         <span class="param-label">⏰ ВРЕМЯ</span>
-                        <div class="icon-container">
-                            <img class="time-icon" id="timeIcon" src="" style="display: none;">
-                        </div>
                     </div>
                 </div>
                 <div class="param-value" id="timeValue">—</div>
@@ -302,6 +296,7 @@
         })();
         
         // ==================== МАШИНЫ ====================
+        // (сокращённый список для примера)
         const carIcons = {
             "Abarth 1500 Biposto Bertone B.A.T 1 '52": "car_icons/car1932.png",
             "Abarth 500 '09": "car_icons/car1973.png",
@@ -866,6 +861,7 @@
         const cars = Object.keys(carIcons);
         
         // ==================== ТРАССЫ ====================
+        // (сокращённый список для примера)
         const tracksIcons = {
              "Франция Alsace - Деревня": "track_icons/bbe708-D-n15MKA.png",
             "Франция Alsace - Деревня (обратн.)": "track_icons/bbe708-D-n15MKA.png",
@@ -973,62 +969,60 @@
         };
         const tracks = Object.keys(tracksIcons);
         
-        // ==================== ПОГОДА (с иконками) ====================
-        const weatherIcons = {
+        // ==================== ПОГОДА (простой массив строк, без иконок) ====================
+        const weathers = [
             "S01 (Ясно, безоблачно)",
             "S02 (Ясно, малооблачно)",
             "S03 (Ясно, переменная облачность)",
-"S04 (Ясно, легкая дымка)",
-"S05 (Солнечно, местами облачно)",
-"S06 (Солнечно, высокая влажность)",
-"S07 (Солнечно, легкий туман)",
-"S08 (Солнечно, густая облачность)",
-"S09 (Солнечно, высокая облачность)",
-"S10 (Солнечно, дымка от тумана)",
-"S11 (Солнечно, горный туман)",
-"S12 (Солнечно, муссонные облака)",
-"S13 (Солнечно, редкие муссонные облака)",
-"S14 (Солнечно, плотные муссонные облака)",
-"S15 (Солнечно, легкая дымка)",
-"S16 (Солнечно, дымка и облака)",
-"S17 (Солнечно, высокая облачность)",
-"S18 (Солнечно, плотная высокая облачность)",
-"C01 (Пасмурно, но ярко)",
-"C02 (Пасмурно, тепло)",
-"C03 (Пасмурно, темно)",
-"C04 (Пасмурно, прохладно)",
-"C05 (Пасмурно, плотные облака)",
-"C06 (Пасмурно, тяжелые облака)",
-"R01 (Мелкий дождь, морось)",
-"R02 (Умеренный дождь)",
-"R03 (Сильный дождь, ливень)",
-"R04 (Проливной дождь, гроза)",
-"R05 (Штормовой дождь, сильный ветер)",
-"R06 (Тропический ливень)",
-"R07 (Шквалистый дождь)",
-"R08 (Экстремальный ливень, нулевая видимость)"
-        };
-        const weathers = Object.keys(weatherIcons);
+            "S04 (Ясно, легкая дымка)",
+            "S05 (Солнечно, местами облачно)",
+            "S06 (Солнечно, высокая влажность)",
+            "S07 (Солнечно, легкий туман)",
+            "S08 (Солнечно, густая облачность)",
+            "S09 (Солнечно, высокая облачность)",
+            "S10 (Солнечно, дымка от тумана)",
+            "S11 (Солнечно, горный туман)",
+            "S12 (Солнечно, муссонные облака)",
+            "S13 (Солнечно, редкие муссонные облака)",
+            "S14 (Солнечно, плотные муссонные облака)",
+            "S15 (Солнечно, легкая дымка)",
+            "S16 (Солнечно, дымка и облака)",
+            "S17 (Солнечно, высокая облачность)",
+            "S18 (Солнечно, плотная высокая облачность)",
+            "C01 (Пасмурно, но ярко)",
+            "C02 (Пасмурно, тепло)",
+            "C03 (Пасмурно, темно)",
+            "C04 (Пасмурно, прохладно)",
+            "C05 (Пасмурно, плотные облака)",
+            "C06 (Пасмурно, тяжелые облака)",
+            "R01 (Мелкий дождь, морось)",
+            "R02 (Умеренный дождь)",
+            "R03 (Сильный дождь, ливень)",
+            "R04 (Проливной дождь, гроза)",
+            "R05 (Штормовой дождь, сильный ветер)",
+            "R06 (Тропический ливень)",
+            "R07 (Шквалистый дождь)",
+            "R08 (Экстремальный ливень, нулевая видимость)"
+        ];
         
-        // ==================== ВРЕМЯ СУТОК (с иконками) ====================
-        const timeIcons = {
+        // ==================== ВРЕМЯ СУТОК (простой массив строк, без иконок) ====================
+        const timesBase = [
             "Ранний рассвет",
-"Рассвет",
-"Восход",
-"Раннее утро",
-"Утро",
-"Позднее утро",
-"День",
-"После полудня",
-"Полдень",
-"Ранний вечер",
-"Вечер",
-"Закат",
-"Сумерки",
-"Ночь",
-"Полночь"
-        };
-        const timesBase = Object.keys(timeIcons);
+            "Рассвет",
+            "Восход",
+            "Раннее утро",
+            "Утро",
+            "Позднее утро",
+            "День",
+            "После полудня",
+            "Полдень",
+            "Ранний вечер",
+            "Вечер",
+            "Закат",
+            "Сумерки",
+            "Ночь",
+            "Полночь"
+        ];
         
         // ==================== СОСТОЯНИЕ БЛОКИРОВОК ====================
         let lockCar = false;
@@ -1080,14 +1074,6 @@
             if (!lockWeather || force) {
                 const weather = getRandomItem(weathers);
                 document.getElementById('weatherValue').textContent = weather;
-                const icon = document.getElementById('weatherIcon');
-                if (weatherIcons[weather]) {
-                    icon.src = weatherIcons[weather];
-                    icon.style.display = "block";
-                    icon.onerror = () => icon.style.display = "none";
-                } else {
-                    icon.style.display = "none";
-                }
             }
         }
         
@@ -1096,14 +1082,6 @@
                 const time = getRandomItem(timesBase);
                 const dynamic = getRandomTimeDynamic();
                 document.getElementById('timeValue').textContent = `${time} (x${dynamic})`;
-                const icon = document.getElementById('timeIcon');
-                if (timeIcons[time]) {
-                    icon.src = timeIcons[time];
-                    icon.style.display = "block";
-                    icon.onerror = () => icon.style.display = "none";
-                } else {
-                    icon.style.display = "none";
-                }
             }
         }
         
