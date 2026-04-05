@@ -109,6 +109,17 @@
             backdrop-filter: blur(2px);
         }
         
+        /* Стиль для динамики времени справа от заголовка */
+        .time-dynamic-badge {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #ffaa33;
+            margin-left: 8px;
+        }
+        
         .icon-container {
             background: transparent;
             display: flex;
@@ -125,29 +136,6 @@
             height: auto;
             object-fit: contain;
         }
-        
-        /* НОВЫЕ СТИЛИ ДЛЯ ВРЕМЕНИ */
-       .time-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-}
-
-.time-text {
-    flex: 1;                 /* ← главное изменение */
-    text-align: left;
-    white-space: normal;
-    word-break: break-word;
-}
-
-.time-dynamic {
-    text-align: right;
-    white-space: nowrap;
-    min-width: 55px;
-    color: #ffffff;
-    font-weight: 600;
-}
         
         .param-value {
             font-size: 16px;
@@ -226,9 +214,7 @@
             .icon-container { min-height: 50px; }
             .car-icon, .track-icon { max-height: 100px; }
             .param-value { font-size: 14px; padding: 8px 12px; }
-            .time-text { font-size: 13px; }
-            flex: 1;
-            .time-dynamic { font-size: 13px; min-width: 50px; }
+            .time-dynamic-badge { font-size: 10px; padding: 2px 6px; }
             button.lock-btn img { width: 20px; height: 20px; }
             button:not(.lock-btn) { padding: 12px 16px; font-size: 16px; }
             .btn-main { font-size: 17px; padding: 13px; }
@@ -238,8 +224,6 @@
             .param-header { grid-template-columns: 36px 1fr; gap: 4px; }
             .param-label { font-size: 11px; padding: 4px 10px; }
             .param-value { font-size: 13px; padding: 7px 10px; }
-            .time-text { font-size: 12px; }
-            .time-dynamic { font-size: 12px; min-width: 45px; }
         }
     </style>
 </head>
@@ -297,7 +281,7 @@
                 <div class="param-value" id="weatherValue">—</div>
             </div>
             
-            <!-- ВРЕМЯ (новая структура) -->
+            <!-- ВРЕМЯ (динамика вынесена в заголовок) -->
             <div class="param-block">
                 <div class="param-header">
                     <div class="lock-container">
@@ -306,13 +290,13 @@
                         </button>
                     </div>
                     <div class="right-content">
-                        <span class="param-label">⏰ ВРЕМЯ</span>
+                        <span class="param-label">
+                            ⏰ ВРЕМЯ
+                            <span class="time-dynamic-badge" id="timeDynamicBadge">—</span>
+                        </span>
                     </div>
                 </div>
-                <div class="param-value time-row">
-                    <span class="time-text" id="timeText">—</span>
-                    <span class="time-dynamic" id="timeDynamic">—</span>
-                </div>
+                <div class="param-value" id="timeValue">—</div>
             </div>
         </div>
         
@@ -361,6 +345,8 @@
         let lockTime = false;
         
         // ==================== ДИНАМИКА ВРЕМЕНИ ====================
+        let currentTimeDynamic = 1;
+        
         function getRandomTimeDynamic() {
             return Math.floor(Math.random() * 30) + 1;
         }
@@ -414,11 +400,11 @@
         function updateTime(force = false) {
             if (!lockTime || force) {
                 const time = getRandomItem(timesBase);
-                const dynamic = getRandomTimeDynamic();
-                const timeTextEl = document.getElementById('timeText');
-                const timeDynamicEl = document.getElementById('timeDynamic');
-                if (timeTextEl) timeTextEl.textContent = time;
-                if (timeDynamicEl) timeDynamicEl.textContent = `(x${dynamic})`;
+                currentTimeDynamic = getRandomTimeDynamic();
+                const timeElement = document.getElementById('timeValue');
+                const badgeElement = document.getElementById('timeDynamicBadge');
+                if (timeElement) timeElement.textContent = time;
+                if (badgeElement) badgeElement.textContent = `x${currentTimeDynamic}`;
             }
         }
         
