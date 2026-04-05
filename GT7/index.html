@@ -126,18 +126,20 @@
             object-fit: contain;
         }
         
-        .param-value {
-            font-size: 16px;
-            font-weight: 600;
-            color: #f1f5f9;
-            line-height: 1.35;
-            word-break: break-word;
-            background: rgba(15, 23, 42, 0.6);
-            padding: 10px 14px;
-            border-radius: 20px;
-            margin-top: 6px;
-            backdrop-filter: blur(2px);
-        }
+   .param-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #f1f5f9;
+    line-height: 1.3;
+    white-space: nowrap;         /* ← запрещаем перенос на новую строку */
+    overflow-x: auto;            /* ← если всё же не влезет — появится прокрутка */
+    overflow-y: hidden;
+    background: rgba(15, 23, 42, 0.6);
+    padding: 10px 12px;
+    border-radius: 20px;
+    margin-top: 6px;
+    backdrop-filter: blur(2px);
+}
         
         button.lock-btn {
             background: transparent !important;
