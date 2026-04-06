@@ -43,10 +43,10 @@
             user-select: text;
         }
         
-        /* Контейнер с фоном на весь экран — фон ВМЕЩАЕТСЯ в экран */
+        /* Контейнер с фоном на весь экран — фон ЗАМОЩАЕТ экран */
         .container {
             background-image: url('images/gt7images.jpg');
-            background-size: contain;      /* ← изменено с cover на contain */
+            background-size: cover;      /* ← cover — замощение на весь экран */
             background-position: center;
             background-repeat: no-repeat;
             width: 100%;
@@ -60,7 +60,7 @@
             box-shadow: none;
         }
         
-        /* Затемнение фона для читаемости текста */
+        /* Затемнение фона для читаемости текста (blur остался тем же) */
         .container::before {
             content: '';
             position: absolute;
