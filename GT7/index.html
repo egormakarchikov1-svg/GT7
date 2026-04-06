@@ -31,7 +31,7 @@
             backdrop-filter: blur(12px);
             border-radius: 44px;
             padding: 20px 18px;
-            max-width: 450px;
+            max-width: 500px;
             width: 100%;
             box-shadow: 0 20px 35px rgba(0,0,0,0.4);
             border: 1px solid rgba(255,255,255,0.1);
@@ -47,10 +47,9 @@
         }
         
         .param-block {
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             border-bottom: 1px solid rgba(51, 65, 85, 0.5);
-            padding-bottom: 16px;
-            position: relative;
+            padding-bottom: 14px;
         }
         
         .param-block:last-child {
@@ -59,32 +58,27 @@
             padding-bottom: 0;
         }
         
-        /* Строка: замок слева, название по центру, иконка справа */
+        /* Строка: замок + название + иконка (растягивается) */
         .param-header {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
+            gap: 8px;
+            margin-bottom: 10px;
         }
         
-        /* Замок слева */
-        .lock-container {
-            width: 40px;
-            display: flex;
-            justify-content: flex-start;
-        }
-        
+        /* Замок */
         .lock-btn {
             background: transparent;
             border: none;
             font-size: 22px;
             cursor: pointer;
-            padding: 4px 8px;
+            padding: 4px 6px;
             border-radius: 30px;
             transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            min-width: 36px;
         }
         
         .lock-btn:active {
@@ -99,7 +93,7 @@
             color: #fbbf24;
         }
         
-        /* Название параметра по центру */
+        /* Название параметра */
         .param-label {
             font-weight: 700;
             color: #ff4d4d;
@@ -112,47 +106,33 @@
             align-items: center;
             gap: 6px;
             backdrop-filter: blur(2px);
+            white-space: nowrap;
         }
         
-        /* Контейнер для иконки справа */
+        /* Контейнер для иконки справа — занимает всё оставшееся место */
         .icon-container {
-            width: 50px;
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: flex-end;
         }
         
-        .header-icon {
-            width: 32px;
-            height: 32px;
-            object-fit: contain;
-        }
-        
-        /* Большие иконки (машина/трасса) — под заголовком */
-        .big-icon-container {
-            background: transparent;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 80px;
-            margin: 8px 0;
-        }
-        
+        /* Иконки машин и трасс — максимально большие, занимают всё место */
         .car-icon, .track-icon {
-            max-width: 100%;
-            max-height: 90px;
             width: auto;
-            height: auto;
-            object-fit: contain;
-        }
-        
-        /* Для погоды и времени — иконки под заголовком */
-        .weather-icon, .time-icon {
-            width: 60px;
             height: 60px;
+            max-width: 100%;
             object-fit: contain;
         }
         
+        /* Иконки погоды и времени */
+        .weather-icon, .time-icon {
+            width: auto;
+            height: 50px;
+            object-fit: contain;
+        }
+        
+        /* Значение параметра (текст) */
         .param-value {
             font-size: 15px;
             font-weight: 600;
@@ -167,12 +147,26 @@
             text-align: center;
         }
         
-        .x-value {
+        /* Строка времени с динамикой */
+        .time-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .time-name {
+            font-size: 15px;
+            font-weight: 600;
+        }
+        
+        .time-dynamic {
             font-size: 13px;
             background: #ff4d4d80;
-            padding: 6px 12px;
-            margin-top: 8px;
-            text-align: center;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: inline-block;
         }
         
         button:not(.lock-btn) {
@@ -222,14 +216,19 @@
             body { padding: 12px; }
             .container { padding: 16px 14px; border-radius: 36px; }
             .result-card { padding: 12px 14px; }
-            .param-label { font-size: 12px; padding: 5px 12px; }
-            .header-icon { width: 28px; height: 28px; }
-            .lock-btn { font-size: 18px; }
-            .lock-container { width: 35px; }
-            .icon-container { width: 40px; }
-            .car-icon, .track-icon { max-height: 70px; }
-            .weather-icon, .time-icon { width: 50px; height: 50px; }
+            .param-label { font-size: 12px; padding: 5px 12px; white-space: normal; }
+            .lock-btn { font-size: 18px; min-width: 32px; }
+            .car-icon, .track-icon { height: 50px; }
+            .weather-icon, .time-icon { height: 42px; }
             .param-value { font-size: 13px; padding: 8px 12px; }
+            .time-name { font-size: 13px; }
+            .time-dynamic { font-size: 11px; padding: 3px 8px; }
+        }
+        
+        @media (max-width: 380px) {
+            .param-label { font-size: 11px; padding: 4px 10px; }
+            .car-icon, .track-icon { height: 42px; }
+            .weather-icon, .time-icon { height: 36px; }
         }
     </style>
 </head>
@@ -240,17 +239,11 @@
         <!-- МАШИНА -->
         <div class="param-block">
             <div class="param-header">
-                <div class="lock-container">
-                    <button class="lock-btn unlocked" id="lockCar">🔓</button>
-                </div>
+                <button class="lock-btn unlocked" id="lockCar">🔓</button>
                 <span class="param-label">🏎️ МАШИНА</span>
                 <div class="icon-container">
-                    <!-- Иконка машины справа от заголовка (маленькая) -->
-                    <img class="header-icon" id="carHeaderIcon" src="" style="display: none;">
+                    <img class="car-icon" id="carIcon" src="" style="display: none;">
                 </div>
-            </div>
-            <div class="big-icon-container">
-                <img class="car-icon" id="carIcon" src="" style="display: none;">
             </div>
             <div class="param-value" id="carValue">—</div>
         </div>
@@ -258,16 +251,11 @@
         <!-- ТРАССА -->
         <div class="param-block">
             <div class="param-header">
-                <div class="lock-container">
-                    <button class="lock-btn unlocked" id="lockTrack">🔓</button>
-                </div>
+                <button class="lock-btn unlocked" id="lockTrack">🔓</button>
                 <span class="param-label">🛣️ ТРАССА</span>
                 <div class="icon-container">
-                    <img class="header-icon" id="trackHeaderIcon" src="" style="display: none;">
+                    <img class="track-icon" id="trackIcon" src="" style="display: none;">
                 </div>
-            </div>
-            <div class="big-icon-container">
-                <img class="track-icon" id="trackIcon" src="" style="display: none;">
             </div>
             <div class="param-value" id="trackValue">—</div>
         </div>
@@ -275,16 +263,11 @@
         <!-- ПОГОДА -->
         <div class="param-block">
             <div class="param-header">
-                <div class="lock-container">
-                    <button class="lock-btn unlocked" id="lockWeather">🔓</button>
-                </div>
+                <button class="lock-btn unlocked" id="lockWeather">🔓</button>
                 <span class="param-label">🌦️ ПОГОДА</span>
                 <div class="icon-container">
-                    <img class="header-icon" id="weatherHeaderIcon" src="" style="display: none;">
+                    <img class="weather-icon" id="weatherIcon" src="" style="display: none;">
                 </div>
-            </div>
-            <div class="big-icon-container">
-                <img class="weather-icon" id="weatherIcon" src="" style="display: none;">
             </div>
             <div class="param-value" id="weatherValue">—</div>
         </div>
@@ -292,19 +275,16 @@
         <!-- ВРЕМЯ -->
         <div class="param-block">
             <div class="param-header">
-                <div class="lock-container">
-                    <button class="lock-btn unlocked" id="lockTime">🔓</button>
-                </div>
+                <button class="lock-btn unlocked" id="lockTime">🔓</button>
                 <span class="param-label">⏰ ВРЕМЯ</span>
                 <div class="icon-container">
-                    <img class="header-icon" id="timeHeaderIcon" src="" style="display: none;">
+                    <img class="time-icon" id="timeIcon" src="" style="display: none;">
                 </div>
             </div>
-            <div class="big-icon-container">
-                <img class="time-icon" id="timeIcon" src="" style="display: none;">
+            <div class="param-value time-row" id="timeValueContainer">
+                <span class="time-name" id="timeValue">—</span>
+                <span class="time-dynamic" id="xValue">X--</span>
             </div>
-            <div class="param-value" id="timeValue">—</div>
-            <div class="param-value x-value" id="xValue">X--</div>
         </div>
     </div>
     
@@ -370,25 +350,13 @@
         if (lockCar) return;
         const carName = getRandomItem(cars);
         document.getElementById('carValue').textContent = carName;
-        
-        // Большая иконка
-        const bigIcon = document.getElementById('carIcon');
+        const icon = document.getElementById('carIcon');
         if (carIcons[carName]) {
-            bigIcon.src = carIcons[carName];
-            bigIcon.style.display = "block";
-            bigIcon.onerror = () => { bigIcon.style.display = "none"; };
+            icon.src = carIcons[carName];
+            icon.style.display = "block";
+            icon.onerror = () => { icon.style.display = "none"; };
         } else {
-            bigIcon.style.display = "none";
-        }
-        
-        // Маленькая иконка в заголовке (та же самая)
-        const headerIcon = document.getElementById('carHeaderIcon');
-        if (carIcons[carName]) {
-            headerIcon.src = carIcons[carName];
-            headerIcon.style.display = "block";
-            headerIcon.onerror = () => { headerIcon.style.display = "none"; };
-        } else {
-            headerIcon.style.display = "none";
+            icon.style.display = "none";
         }
     }
     
@@ -396,23 +364,13 @@
         if (lockTrack) return;
         const trackName = getRandomItem(tracks);
         document.getElementById('trackValue').textContent = trackName;
-        
-        const bigIcon = document.getElementById('trackIcon');
+        const icon = document.getElementById('trackIcon');
         if (tracksIcons[trackName]) {
-            bigIcon.src = tracksIcons[trackName];
-            bigIcon.style.display = "block";
-            bigIcon.onerror = () => { bigIcon.style.display = "none"; };
+            icon.src = tracksIcons[trackName];
+            icon.style.display = "block";
+            icon.onerror = () => { icon.style.display = "none"; };
         } else {
-            bigIcon.style.display = "none";
-        }
-        
-        const headerIcon = document.getElementById('trackHeaderIcon');
-        if (tracksIcons[trackName]) {
-            headerIcon.src = tracksIcons[trackName];
-            headerIcon.style.display = "block";
-            headerIcon.onerror = () => { headerIcon.style.display = "none"; };
-        } else {
-            headerIcon.style.display = "none";
+            icon.style.display = "none";
         }
     }
     
@@ -422,8 +380,6 @@
         document.getElementById('weatherValue').textContent = weather.name;
         document.getElementById('weatherIcon').src = weather.icon;
         document.getElementById('weatherIcon').style.display = "block";
-        document.getElementById('weatherHeaderIcon').src = weather.icon;
-        document.getElementById('weatherHeaderIcon').style.display = "block";
     }
     
     function updateTime() {
@@ -433,9 +389,7 @@
         document.getElementById('timeValue').textContent = time.name;
         document.getElementById('timeIcon').src = time.icon;
         document.getElementById('timeIcon').style.display = "block";
-        document.getElementById('timeHeaderIcon').src = time.icon;
-        document.getElementById('timeHeaderIcon').style.display = "block";
-        document.getElementById('xValue').textContent = `X${dynamic.toString().padStart(2, '0')}`;
+        document.getElementById('xValue').textContent = `(X${dynamic.toString().padStart(2, '0')})`;
     }
     
     function updateAll() {
