@@ -16,10 +16,7 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-image: url('images/gt7images.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
+            background: #0a0a1a;
             color: #eee;
             text-align: center;
             padding: 16px;
@@ -30,30 +27,40 @@
             position: relative;
         }
         
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.55);
-            z-index: -1;
-        }
-        
-        /* Единый контейнер — основная рамка */
+        /* Контейнер с фоновым изображением */
         .container {
-            background: rgba(30, 41, 59, 0.85);
-            backdrop-filter: blur(12px);
+            background-image: url('images/gt7images.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             border-radius: 44px;
-            padding: 20px 18px;
+            padding: 12px 18px 20px 18px;
             max-width: 400px;
             width: 100%;
             box-shadow: 0 20px 35px rgba(0,0,0,0.4);
             border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
         }
         
-        /* Карточка результатов — без фона и рамок, сливается с контейнером */
+        /* Затемнение фона контейнера для читаемости текста */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.65);
+            border-radius: 44px;
+            z-index: 0;
+        }
+        
+        /* Все содержимое контейнера — поверх затемнения */
+        .container > * {
+            position: relative;
+            z-index: 1;
+        }
+        
         .result-card {
             background: transparent;
             padding: 0;
@@ -76,7 +83,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         
         .lock-container {
@@ -97,14 +104,14 @@
             font-weight: 700;
             color: #ff4d4d;
             background: rgba(15, 23, 42, 0.8);
-            padding: 6px 14px;
+            padding: 5px 12px;
             border-radius: 30px;
             font-size: 13px;
             letter-spacing: 1px;
             white-space: nowrap;
             display: inline-flex;
             align-items: center;
-            backdrop-filter: blur(2px);
+            backdrop-filter: blur(4px);
         }
         
         .icon-container {
@@ -112,13 +119,13 @@
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            min-height: 60px;
+            min-height: 55px;
             padding: 4px 0;
         }
         
         .car-icon, .track-icon {
             max-width: 100%;
-            max-height: 120px;
+            max-height: 100px;
             width: auto;
             height: auto;
             object-fit: contain;
@@ -127,18 +134,18 @@
         .param-value {
             display: block;
             width: 100%;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             color: #f1f5f9;
             line-height: 1.4;
             word-break: break-word;
             white-space: normal;
             overflow-wrap: break-word;
-            background: rgba(15, 23, 42, 0.6);
-            padding: 10px 14px;
+            background: rgba(15, 23, 42, 0.7);
+            padding: 8px 12px;
             border-radius: 20px;
             margin-top: 6px;
-            backdrop-filter: blur(2px);
+            backdrop-filter: blur(4px);
             text-align: left;
         }
         
@@ -157,8 +164,8 @@
         }
         
         button.lock-btn img {
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             display: block;
         }
         
@@ -170,8 +177,8 @@
             background: #ff4d4d;
             color: white;
             border: none;
-            padding: 14px 20px;
-            font-size: 17px;
+            padding: 12px 18px;
+            font-size: 16px;
             font-weight: 600;
             border-radius: 60px;
             cursor: pointer;
@@ -192,26 +199,27 @@
         .btn-main {
             width: 100%;
             background: #ff4d4d;
-            font-size: 18px;
-            padding: 15px;
-            margin-top: 8px;
+            font-size: 17px;
+            padding: 14px;
+            margin-top: 16px;
         }
         
         @media (max-width: 390px) {
             body { padding: 12px; }
-            .container { padding: 16px 14px; border-radius: 36px; }
-            .param-label { font-size: 12px; padding: 5px 12px; }
-            .icon-container { min-height: 50px; }
-            .car-icon, .track-icon { max-height: 100px; }
-            .param-value { font-size: 14px; padding: 8px 12px; }
-            button.lock-btn img { width: 20px; height: 20px; }
-            button:not(.lock-btn) { padding: 12px 16px; font-size: 16px; }
-            .btn-main { font-size: 17px; padding: 13px; }
+            .container { padding: 10px 14px 16px 14px; border-radius: 36px; }
+            .container::before { border-radius: 36px; }
+            .param-label { font-size: 12px; padding: 4px 10px; }
+            .icon-container { min-height: 48px; }
+            .car-icon, .track-icon { max-height: 80px; }
+            .param-value { font-size: 13px; padding: 7px 10px; }
+            button.lock-btn img { width: 18px; height: 18px; }
+            button:not(.lock-btn) { padding: 10px 14px; font-size: 15px; }
+            .btn-main { font-size: 16px; padding: 12px; margin-top: 14px; }
         }
         
         @media (max-width: 340px) {
-            .param-label { font-size: 11px; padding: 4px 10px; }
-            .param-value { font-size: 13px; padding: 7px 10px; }
+            .param-label { font-size: 11px; padding: 4px 8px; }
+            .param-value { font-size: 12px; padding: 6px 8px; }
         }
     </style>
 </head>
