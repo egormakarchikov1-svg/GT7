@@ -2,11 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>GT7 Random Race</title>
-
-    <link rel="apple-touch-icon" href="gt7.png">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>GT7 Random Race - Блокировка параметров 🔒</title>
     <style>
         * {
             margin: 0;
@@ -15,433 +12,1974 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-image: url('images/gt7images.jpg');
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-image: url('https://static.wikia.nocookie.net/gran-turismo/images/6/69/GT7_Poster.jpg/revision/latest?cb=20210910231708');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
             color: #eee;
             text-align: center;
-            padding: 16px;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            position: relative;
-        }
-        
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.55);
-            z-index: -1;
+            padding: 10px;
         }
         
         .container {
-            background: rgba(30, 41, 59, 0.85);
-            backdrop-filter: blur(12px);
-            border-radius: 44px;
-            padding: 20px 18px;
-            max-width: 400px;
+            background: rgba(30, 41, 59, 0.75);
+            backdrop-filter: blur(5px);
+            border-radius: 32px;
+            padding: 16px 14px;
             width: 100%;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.4);
+            max-width: 550px;
+            box-shadow: 0 10px 25px rgba(30, 41, 59, 0.7);
             border: 1px solid rgba(255,255,255,0.1);
         }
         
         .result-card {
             background: rgba(5, 7, 15, 0);
-            border-radius: 28px;
-            padding: 16px 18px;
-            margin: 12px 0;
-            text-align: left;
-            border: 1px solid rgba(51, 65, 85, 0.6);
+            border-radius: 20px;
+            padding: 8px;
+            margin: 0 0 12px 0;
+            text-align: center;
+            border: 1px solid #334155;
+        }
+        
+        /* Сетка для параметров - 4 колонки на больших экранах */
+        .params-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
         }
         
         .param-block {
-            margin-bottom: 20px;
-            border-bottom: 1px solid rgba(51, 65, 85, 0.5);
-            padding-bottom: 14px;
-        }
-        
-        .param-block:last-child {
-            border-bottom: none;
             margin-bottom: 0;
-            padding-bottom: 0;
+            text-align: center;
         }
+
         
-        .param-header {
-            display: grid;
-            grid-template-columns: 50px 1fr;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-        
-        .lock-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .right-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            width: 100%;
-        }
-        
+        /* Заголовок с иконкой и текстом сверху */
         .param-label {
             font-weight: 700;
             color: #ff4d4d;
-            background: rgba(15, 23, 42, 0.8);
-            padding: 6px 14px;
+            background: #0f172a;
+            padding: 8px 16px;
             border-radius: 30px;
-            font-size: 13px;
+            font-size: 14px;
             letter-spacing: 1px;
-            white-space: nowrap;
             display: inline-flex;
             align-items: center;
-            backdrop-filter: blur(2px);
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 15px;
         }
         
+        /* Стили для иконок заголовков */
+        .header-icon {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+        
+        /* Контейнер для больших иконок (машина/трасса) */
         .icon-container {
+            background: transparent;
+            border-radius: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100px;
+            padding: 0;
+            margin-bottom: 10px;
+        }
+        
+        /* Контейнер для иконок погоды и времени (одинаковый размер) */
+        .weather-icon-container, .time-icon-container {
             background: transparent;
             display: flex;
             align-items: center;
-            justify-content: flex-end;
-            min-height: 60px;
-            padding: 4px 0;
+            justify-content: center;
+            min-height: 100px;
+            margin-bottom: 10px;
         }
         
         .car-icon, .track-icon {
             max-width: 100%;
-            max-height: 120px;
+            max-height: 100px;
             width: auto;
             height: auto;
             object-fit: contain;
+            border-radius: 0;
+        }
+        
+        /* Иконки для погоды и времени */
+        .weather-display-icon, .time-display-icon {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 0;
         }
         
         .param-value {
-            display: block;
-            width: 100%;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             color: #f1f5f9;
             line-height: 1.4;
             word-break: break-word;
-            white-space: normal;
-            overflow-wrap: break-word;
-            background: rgba(15, 23, 42, 0.6);
-            padding: 10px 14px;
+            background: #0f172a80;
+            padding: 10px 12px;
             border-radius: 20px;
-            margin-top: 6px;
-            backdrop-filter: blur(2px);
-            text-align: left;
+            margin-top: 8px;
         }
         
-        button.lock-btn {
-            background: transparent !important;
-            border: none !important;
-            cursor: pointer !important;
-            padding: 4px 6px !important;
-            margin: 0 !important;
-            width: auto !important;
-            min-width: 36px !important;
-            box-shadow: none !important;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        button.lock-btn img {
-            width: 24px;
-            height: 24px;
-            display: block;
-        }
-        
-        button.lock-btn:active {
-            transform: scale(0.92);
-        }
-        
-        button:not(.lock-btn) {
+        button {
             background: #ff4d4d;
             color: white;
             border: none;
             padding: 14px 20px;
-            font-size: 17px;
-            font-weight: 600;
+            font-size: 16px;
+            font-weight: 60;
             border-radius: 60px;
             cursor: pointer;
-            margin: 6px 4px;
+            margin: 8px 6px;
             transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            box-shadow: 0 4px 12px rgba(255,77,77,0.25);
+            box-shadow: 0 5px 15px rgba(255,77,77,0.2);
         }
         
-        button:not(.lock-btn):active {
-            transform: scale(0.97);
+        button:active {
+            transform: scale(0.96);
             background: #e03a3a;
         }
         
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0 10px;
+        }
+        
+        .btn-group button {
+            flex: 1;
+            min-width: 120px;
+            background: #334155;
+            box-shadow: none;
+        }
+        
+        .btn-group button:active {
+            background: #475569;
+        }
+        
         .btn-main {
-            width: 100%;
-            background: #ff4d4d;
-            font-size: 18px;
-            padding: 15px;
-            margin-top: 8px;
+    width: auto;           /* Изменено с 100% на auto */
+    min-width: 900px;      /* Минимальная ширина */
+    background: #ff4d4d;
+    font-size: 30px;       /* Уменьшен с 18px */
+    padding: 10px 20px;    /* Уменьшен с 16px */
+    display: inline-flex;  /* Добавлено для центрирования */
+    margin: 8px auto;      /* Центрирование кнопки */
+}
+        
+        .btn-icon {
+            vertical-align: middle;
+            margin-right: 6px;
+            filter: brightness(0) invert(1);
         }
         
-        @media (max-width: 390px) {
-            body { padding: 12px; }
-            .container { padding: 16px 14px; border-radius: 36px; }
-            .result-card { padding: 12px 14px; }
-            .param-header { grid-template-columns: 40px 1fr; gap: 6px; }
-            .param-label { font-size: 12px; padding: 5px 12px; }
-            .icon-container { min-height: 50px; }
-            .car-icon, .track-icon { max-height: 100px; }
-            .param-value { font-size: 14px; padding: 8px 12px; }
-            button.lock-btn img { width: 20px; height: 20px; }
-            button:not(.lock-btn) { padding: 12px 16px; font-size: 16px; }
-            .btn-main { font-size: 17px; padding: 13px; }
+        .btn-group .btn-icon {
+            filter: none;
         }
         
-        @media (max-width: 340px) {
-            .param-header { grid-template-columns: 36px 1fr; gap: 4px; }
-            .param-label { font-size: 11px; padding: 4px 10px; }
-            .param-value { font-size: 13px; padding: 7px 10px; }
+        .footer {
+            font-size: 11px;
+            color: #475569;
+            margin-top: 20px;
+        }
+        
+        /* Адаптация для планшета 1920x1200 (альбомная) */
+        @media (min-width: 1200px) and (orientation: landscape) {
+            body {
+                padding: 60px;
+            }
+            
+            .container {
+                max-width: 1200px;
+                padding: 50px 45px;
+            }
+            
+            .params-grid {
+                gap: 30px;
+            }
+            
+            .param-value {
+                font-size: 16px;
+                padding: 12px 16px;
+            }
+            
+            .car-icon, .track-icon {
+                max-height: 120px;
+            }
+            
+            .weather-display-icon, .time-display-icon {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .btn-group button {
+                min-width: 140px;
+                font-size: 18px;
+            }
+            
+            .btn-main {
+                font-size: 20px;
+                padding: 18px;
+            }
+            
+            .header-icon {
+                width: 28px;
+                height: 28px;
+            }
+        }
+        
+        /* Для планшетов в альбомной ориентации */
+        @media (max-width: 1024px) and (orientation: landscape) {
+            .container {
+                max-width: 95%;
+                padding: 30px 25px;
+            }
+            
+            .params-grid {
+                gap: 15px;
+            }
+            
+            .param-value {
+                font-size: 12px;
+            }
+            
+            .header-icon {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .weather-display-icon, .time-display-icon {
+                width: 60px;
+                height: 60px;
+            }
+        }
+        
+        /* Для вертикальной ориентации - 2 колонки */
+        @media (orientation: portrait) and (max-width: 1024px) {
+            .params-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+        }
+        
+        /* Для мобильных устройств - 1 колонка */
+        @media (max-width: 768px) {
+            body {
+                padding: 20px;
+            }
+            
+            .container {
+                padding: 20px 16px;
+            }
+            
+            .params-grid {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+            
+            .header-icon {
+                width: 22px;
+                height: 22px;
+            }
+            
+            .car-icon, .track-icon {
+                max-height: 100px;
+            }
+            
+            .weather-display-icon, .time-display-icon {
+                width: 70px;
+                height: 70px;
+            }
+            
+            .param-value {
+                font-size: 14px;
+                padding: 10px 12px;
+            }
+            
+            .icon-container {
+                min-height: 80px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="result-card">
-            <!-- МАШИНА -->
-            <div class="param-block">
-                <div class="param-header">
-                    <div class="lock-container">
-                        <button class="lock-btn" id="lockCar">
-                            <img src="unlocked.png" alt="Разблокировано">
-                        </button>
-                    </div>
-                    <div class="right-content">
-                        <span class="param-label">🏎️ МАШИНА</span>
-                        <div class="icon-container">
-                            <img class="car-icon" id="carIcon" src="" style="display: none;">
-                        </div>
-                    </div>
+
+<div class="container">
+    <div class="result-card">
+        <div class="params-grid">
+            <!-- Блок МАШИНА -->
+            <div class="param-block" id="carBlock" data-param="car">
+                <button class="lock-btn" data-param="car">🔓</button>
+                <div class="param-label">
+                    <img src="https://icon666.com/r/_thumb/5n4/5n4sw8dq05bd_64.png" class="header-icon" alt="car">
+                    <span>МАШИНА</span>
+                </div>
+                <div class="icon-container">
+                    <img class="car-icon" id="carIcon" src="" alt="Иконка" style="display: none;">
                 </div>
                 <div class="param-value" id="carValue">—</div>
             </div>
             
-            <!-- ТРАССА -->
-            <div class="param-block">
-                <div class="param-header">
-                    <div class="lock-container">
-                        <button class="lock-btn" id="lockTrack">
-                            <img src="unlocked.png" alt="Разблокировано">
-                        </button>
-                    </div>
-                    <div class="right-content">
-                        <span class="param-label">🛣️ ТРАССА</span>
-                        <div class="icon-container">
-                            <img class="track-icon" id="trackIcon" src="" style="display: none;">
-                        </div>
-                    </div>
+            <!-- Блок ТРАССА -->
+            <div class="param-block" id="trackBlock" data-param="track">
+                <button class="lock-btn" data-param="track">🔓</button>
+                <div class="param-label">
+                    <img src="https://icon666.com/r/_thumb/n7u/n7ukbjy24azf_64.png" class="header-icon" alt="track">
+                    <span>ТРАССА</span>
+                </div>
+                <div class="icon-container">
+                    <img class="track-icon" id="trackIcon" src="" alt="Иконка" style="display: none;">
                 </div>
                 <div class="param-value" id="trackValue">—</div>
             </div>
             
-            <!-- ПОГОДА -->
-            <div class="param-block">
-                <div class="param-header">
-                    <div class="lock-container">
-                        <button class="lock-btn" id="lockWeather">
-                            <img src="unlocked.png" alt="Разблокировано">
-                        </button>
-                    </div>
-                    <div class="right-content">
-                        <span class="param-label">🌦️ ПОГОДА</span>
-                    </div>
+            <!-- Блок ПОГОДА -->
+            <div class="param-block" id="weatherBlock" data-param="weather">
+                <button class="lock-btn" data-param="weather">🔓</button>
+                <div class="param-label">
+                    <img src="https://images.icon-icons.com/1603/PNG/96/weather-forcast-storm-rain-thunder-day_108615.png" class="header-icon" alt="weather">
+                    <span>ПОГОДА</span>
+                </div>
+                <div class="weather-icon-container">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3222/3222803.png" class="weather-display-icon" id="weatherIcon" alt="Погода">
                 </div>
                 <div class="param-value" id="weatherValue">—</div>
             </div>
             
-            <!-- ВРЕМЯ (добавлен раздел) -->
-            <div class="param-block">
-                <div class="param-header">
-                    <div class="lock-container">
-                        <button class="lock-btn" id="lockTime">
-                            <img src="unlocked.png" alt="Разблокировано">
-                        </button>
-                    </div>
-                    <div class="right-content">
-                        <span class="param-label">⏰ ВРЕМЯ</span>
-                    </div>
+            <!-- Блок ВРЕМЯ -->
+            <div class="param-block" id="timeBlock" data-param="time">
+                <button class="lock-btn" data-param="time">🔓</button>
+                <div class="param-label">
+                    <img src="https://images.icon-icons.com/3780/PNG/96/clock_timer_calendar_alarm_date_schedule_hour_watch_stopwatch_time_icon_231897.png" class="header-icon" alt="time">
+                    <span>ВРЕМЯ</span>
+                </div>
+                <div class="time-icon-container">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2624/2624160.png" class="time-display-icon" id="timeIcon" alt="Время">
                 </div>
                 <div class="param-value" id="timeValue">—</div>
             </div>
         </div>
-        
-        <button id="randomBtn" class="btn-main">🎲 СЛУЧАЙНАЯ ГОНКА</button>
     </div>
+    
+    <!-- Основная кнопка -->
+    <div style="text-align: center;">
+    <button id="randomBtn" class="btn-main">
+        <img src="https://img.icons8.com/?size=80&id=raY4YhlfR3SI&format=png" class="btn-icon" alt="dice" style="filter: none !important; width: 1.4em; height: 1.4em;"> 
+        СЛУЧАЙНАЯ ГОНКА
+    </button>
+</div>
+    
+       
+    <div class="footer">
+        🔒 Нажмите на замочек в углу карточки — параметр заблокируется<br>
+        При нажатии «Случайная гонка» изменятся только НЕзаблокированные параметры
+    </div>
+</div>
 
-    <script>
-        // ==================== ВРЕМЯ СУТОК ====================
-        const timesBase = [
-            "Ранний рассвет",
-            "Рассвет", 
-            "Восход", 
-            "Раннее утро", 
-            "Утро",
-            "Позднее утро", 
-            "День", 
-            "После полудня", 
-            "Полдень", 
-            "Ранний вечер",
-            "Вечер", 
-            "Закат", 
-            "Сумерки", 
-            "Ночь", 
-            "Полночь"
+    <script>       
+        // --------------------------------------------------------------
+        // 1. ВСЕ МАШИНЫ (столбец A из вашей таблицы)
+        // --------------------------------------------------------------
+        const cars = [
+            "Abarth 1500 Biposto Bertone B.A.T 1 '52",
+            "Abarth 500 '09",
+            "Abarth 595 SS '70",
+            "AFEELA 1 '26",
+            "AFEELA Prototype 2024",
+            "Alfa Romeo 155 2.5 V6 TI '93",
+            "Alfa Romeo 4C '14",
+            "Alfa Romeo 4C Gr.3",
+            "Alfa Romeo 4C Gr.3 Road Car",
+            "Alfa Romeo 4C Gr.4",
+            "Alfa Romeo 8C 2900B Touring Berlinetta '38",
+            "Alfa Romeo 8C Competizione '08",
+            "Alfa Romeo GIULIA TZ2 carrozzata da ZAGATO '65",
+            "Alfa Romeo Giulia GTAm '20",
+            "Alfa Romeo Giulia Sprint GT Veloce '67",
+            "Alfa Romeo MiTo '09",
+            "Alpine A110 '17",
+            "Alpine A110 '72",
+            "Alpine A220 Race Car '68",
+            "Alpine VGT",
+            "Alpine VGT '17",
+            "Alpine VGT Race",
+            "AMG 300 SEL 6.8 AMG '71",
+            "AMG A 45 AMG '13",
+            "Mercedes-AMG C 63 S '15",
+            "Mercedes-AMG GT Black Series '20",
+            "Mercedes-AMG GT R '17",
+            "Mercedes-AMG GT S '15",
+            "Mercedes-AMG GT Safety Car",
+            "Mercedes-AMG GT3 '16",
+            "Mercedes-AMG GT3 '20",
+            "Mercedes-Benz AMG VGT",
+            "Mercedes-Benz AMG VGT Racing Series",
+            "Mercedes-Benz AMG '10",
+            "Mercedes-Benz AMG GT3 '11",
+            "Mercedes-Benz AMG SLS GR4",
+            "Amuse NISMO 380RS Super Leggera",
+            "Amuse S2000 GT1 Turbo",
+            "Aston Martin DB11 '16",
+            "Aston Martin DB3S '53",
+            "Aston Martin DB5 '64",
+            "Aston Martin DBR9 GT1 '10",
+            "Aston Martin DP-100 VGT",
+            "Aston Martin One-77 '11",
+            "Aston Martin V12 Vantage GT3 '12",
+            "Aston Martin V8 Vantage Gr.4",
+            "Aston Martin V8 Vantage S '15",
+            "Aston Martin Valkyrie '21",
+            "Aston Martin Vantage '18",
+            "Audi VGT",
+            "Audi e-tron VGT",
+            "Audi R18 '16",
+            "Audi R18 TDI '11",
+            "Audi R8 4.2 '07",
+            "Audi R8 Coupé V10 plus '16",
+            "Audi R8 LMS '15",
+            "Audi R8 LMS Evo '19",
+            "Audi RS 5 Turbo DTM '19",
+            "Audi Sport quattro S1 Pikes Peak '87",
+            "Audi TT Coupé 3.2 quattro '03",
+            "Audi TT Cup '16",
+            "Audi TTS Coupé '09",
+            "Audi TTS Coupé '14",
+            "Autobianchi A112 Abarth '85",
+            "BAC Mono '16",
+            "BMW 3.0 CSL '71",
+            "BMW 3.0 CSL '73",
+            "BMW VGT",
+            "BMW M2 Competition '18",
+            "BMW M3 '03",
+            "BMW M3 '07",
+            "BMW M3 '89",
+            "BMW M3 '97",
+            "BMW M3 GT '11",
+            "BMW M3 Sport Evolution '89",
+            "BMW M4 '14",
+            "BMW M4 Gr.4",
+            "BMW M4 Safety Car",
+            "BMW M6 GT3 Endurance Model '16",
+            "BMW M6 GT3 Sprint Model '16",
+            "BMW McLaren F1 GTR Race Car '97",
+            "BMW Z4 3.0i '03",
+            "BMW Z4 GT3 '11",
+            "BMW Z8 '01",
+            "BMW i3 '15",
+            "Bugatti VGT",
+            "Bugatti VGT (Gr.1)",
+            "Bugatti Chiron '16",
+            "Bugatti Veyron 16.4 '13",
+            "Bugatti Veyron Gr.4",
+            "BVLGARI Aluminium VGT",
+            "Сhapparal 2J '70",
+            "Сhapparal Chaparral 2X VGT",
+            "Chevrolet Camaro 1969 Race-Mod",
+            "Chevrolet Camaro SS '16",
+            "Chevrolet Camaro Z28 '69",
+            "Chevrolet Camaro ZL1 1LE Package '18",
+            "Chevrolet Chevelle SS 454 '70",
+            "Chevrolet Corvette (C1) '58",
+            "Chevrolet Corvette (C2) '63",
+            "Chevrolet Corvette C7 '14",
+            "Chevrolet Corvette C7 Gr.3",
+            "Chevrolet Corvette C7 Gr.3 Road Car",
+            "Chevrolet Corvette C7 Gr.4",
+            "Chevrolet Corvette C7 ZR1 '19",
+            "Chevrolet Corvette C8 '20",
+            "Chevrolet Corvette CX Concept '25",
+            "Chevrolet Corvette CX.R VGT Concept",
+            "Chevrolet Corvette Convertible (C3) '69",
+            "Chevrolet Corvette Stingray (C3) '69",
+            "Chevrolet Corvette Stingray Racer Concept '59",
+            "Chevrolet Corvette Z06 (C5) '01",
+            "Chevrolet Corvette ZR-1 (C4) '89",
+            "Chevrolet Corvette ZR1 (C6) '09",
+            "Chris Holstrom Concepts 1967 Chevy Nova",
+            "Citroen BX 19 TRS '87",
+            "Citroen DS 21 Pallas '70",
+            "Citroen GT by Citroën Gr.4",
+            "Citroen GT by Citroën Race Car (Gr.3)",
+            "Citroen GT by Citroën Road Car",
+            "Daihatsu COPEN RJ VGT",
+            "Daihatsu Copen '02",
+            "De Tomaso Mangusta '69",
+            "De Tomaso Pantera '71",
+            "DMC DeLorean S2 '04",
+            "Dodge Challenger R/T '70",
+            "Dodge Challenger SRT Demon '18",
+            "Dodge Charger R/T 426 Hemi '68",
+            "Dodge Charger SRT Hellcat '15",
+            "Dodge Charger SRT Hellcat Safety Car",
+            "Dodge SRT Tomahawk GTS-R VGT",
+            "Dodge SRT Tomahawk S VGT",
+            "Dodge SRT Tomahawk VGT (Gr.1)",
+            "Dodge SRT Tomahawk X VGT",
+            "Dodge Super Bee '70",
+            "Dodge Viper GTS '02",
+            "Dodge Viper GTS '13",
+            "Dodge Viper Gr.4",
+            "Dodge Viper SRT GT3-R '15",
+            "Dodge Viper SRT10 Coupe '06",
+            "DS automobiles DS 3 Racing '11",
+            "ECKERT Mach Forty",
+            "Ferrari 250 GT Berlinetta passo corto '61",
+            "Ferrari 250 GTO '62",
+            "Ferrari 296 GT3 '23",
+            "Ferrari 296 GTB '22",
+            "Ferrari 308 GTB '75",
+            "Ferrari 330 P4 '67",
+            "Ferrari 365 GTB4 '71",
+            "Ferrari 430 Scuderia '07",
+            "Ferrari 458 Italia '09",
+            "Ferrari 458 Italia GT3 '13",
+            "Ferrari 458 Italia Gr.4",
+            "Ferrari 500 Mondial Pinin Farina Coupe '54",
+            "Ferrari 512 BB '76",
+            "Ferrari 812 Superfast '17",
+            "Ferrari Dino 246 GT '71",
+            "Ferrari Enzo Ferrari '02",
+            "Ferrari F12berlinetta '12",
+            "Ferrari F40 '92",
+            "Ferrari F430 '06",
+            "Ferrari F50 '95",
+            "Ferrari F8 Tributo '19",
+            "Ferrari FXX K '14",
+            "Ferrari Ferrari VGT",
+            "Ferrari GTO '84",
+            "Ferrari LaFerrari '13",
+            "Ferrari Testarossa '91",
+            "FIAT 500 1.2 8V Lounge SS '08",
+            "FIAT 500 F '68",
+            "FIAT Panda 30 CL '85",
+            "Ford Escort RS Cosworth '92",
+            "Ford F-150 SVT Raptor '11",
+            "Ford Focus Gr.B Rally Car",
+            "Ford Focus RS '18",
+            "Ford Focus ST '15",
+            "Ford Ford GT '06",
+            "Ford Ford GT '17",
+            "Ford Ford GT LM Race Car Spec II",
+            "Ford Ford GT LM Spec II Test Car",
+            "Ford Ford GT Race Car '18",
+            "Ford Ford Roadster",
+            "Ford GT40 Mark I '66",
+            "Ford Mark IV Race Car '67",
+            "Ford Mustang Boss 429 '69",
+            "Ford Mustang GT '15",
+            "Ford Mustang Gr.3",
+            "Ford Mustang Gr.3 Road Car",
+            "Ford Mustang Gr.4",
+            "Ford Mustang Gr.B Rally Car",
+            "Ford Mustang Mach 1 '71",
+            "Ford Shelby GT350R '16",
+            "Ford Sierra RS 500 Cosworth '87",
+            "Genesis G70 3.3T AWD P.Package '22",
+            "Genesis G70 GR4",
+            "Genesis Genesis X GR3",
+            "Genesis Genesis X Gran Berlinetta VGT Concept",
+            "Genesis Genesis X Gran Racer VGT Concept",
+            "Gran Turismo F1500T-A",
+            "Gran Turismo F3500-A",
+            "Gran Turismo F3500-B",
+            "Gran Turismo Racing Kart 125 Shifter",
+            "Gran Turismo Red Bull X2014 Junior",
+            "Gran Turismo Red Bull X2014 Standard",
+            "Gran Turismo Red Bull X2019 Competition",
+            "GReddy Fugu Z",
+            "Garage RCR Civic",
+            "Greening Auto Company GAC Maverick",
+            "Honda 2&4 powered by RC213V",
+            "Honda Beat '91",
+            "Honda CR-V e:HEV EX・Black Edition '21",
+            "Honda Civic Si Extra (EF) '87",
+            "Honda Civic SiR･II (EG) '93",
+            "Honda Civic Type R (EK) '97",
+            "Honda Civic Type R (EK) '98",
+            "Honda Civic Type R (EK) Touring Car",
+            "Honda Civic Type R (FK2) '15",
+            "Honda Civic Type R (FL5) '22",
+            "Honda Civic Type R Limited Edition (FK8) '20",
+            "Honda Fit Hybrid '14",
+            "Honda Honda Sports VGT",
+            "Honda Integra Type R (DC2) '95",
+            "Honda Integra Type R (DC2) '98",
+            "Honda N-ONE RS '22",
+            "Honda NSX '17",
+            "Honda NSX CONCEPT-GT '16",
+            "Honda NSX GT500 '00",
+            "Honda NSX GT500 '08",
+            "Honda NSX Gr.3",
+            "Honda NSX Gr.4",
+            "Honda NSX Gr.B Rally Car",
+            "Honda NSX Type R '02",
+            "Honda NSX Type R '92",
+            "Honda RA272 '65",
+            "Honda S2000 '99",
+            "Honda S660 '15",
+            "Honda S800 '66",
+            "Hyundai ELANTRA N '23",
+            "Hyundai ELANTRA N TC '24",
+            "Hyundai Genesis Coupe 3.8 '13",
+            "Hyundai Genesis Gr.3",
+            "Hyundai Genesis Gr.4",
+            "Hyundai Genesis Gr.B Rally Car",
+            "Hyundai HYUNDAI N 2025 VGT",
+            "Hyundai HYUNDAI N 2025 VGT (Gr.1)",
+            "Hyundai IONIQ 5 N '24",
+            "INFINITI CONCEPT VGT",
+            "Italdesign Italdesign VGT Off-road Mode",
+            "Italdesign Italdesign VGT Street Mode",
+            "Jaguar D-type '54",
+            "Jaguar E-type Coupé '61",
+            "Jaguar F-type Gr.3",
+            "Jaguar F-type Gr.4",
+            "Jaguar F-type R '14",
+            "Jaguar Jaguar VGT Coupé",
+            "Jaguar Jaguar VGT Roadster",
+            "Jaguar Jaguar VGT SV",
+            "Jaguar XJ13 '66",
+            "Jaguar XJ220 '92",
+            "Jaguar XJR-9 '88",
+            "Jeep Willys MB '45",
+            "KTM X-BOW R '12",
+            "Lamborghini Aventador LP 700-4 '11",
+            "Lamborghini Aventador LP 750-4 SV '15",
+            "Lamborghini Countach 25th Anniversary '88",
+            "Lamborghini Countach LP400 '74",
+            "Lamborghini Diablo GT '00",
+            "Lamborghini Gallardo LP 560-4 '08",
+            "Lamborghini Huracán GT3 '15",
+            "Lamborghini Huracán Gr.4",
+            "Lamborghini Huracán LP 610-4 '15",
+            "Lamborghini Lambo V12 VGT",
+            "Lamborghini Miura P400 Bertone Prototype '67",
+            "Lamborghini Murciélago LP 640 '09",
+            "Lamborghini Urus '18",
+            "Lamborghini Veneno '14",
+            "Lancia Delta HF Integrale Evoluzione '91",
+            "Lancia Delta HF Integrale Rally Car '92",
+            "Lancia Stratos '73",
+            "Lexus LC500 '17",
+            "Lexus LF-LC GT VGT",
+            "Lexus LFA '10",
+            "Lexus RC F '14",
+            "Lexus RC F GT3 '17",
+            "Lexus RC F GT3 prototype '16",
+            "Lexus RC F GT500 '16",
+            "Lexus RC F Gr.4",
+            "Lexus SC430 GT500 '08",
+            "Maserati A6GCS/53 Spyder '54",
+            "Maserati GranTurismo S '08",
+            "Maserati MC20 '20",
+            "Maserati Merak SS '80",
+            "Mazda 787B '91",
+            "Mazda Atenza Gr.3",
+            "Mazda Atenza Gr.3 Road Car",
+            "Mazda Atenza Gr.4",
+            "Mazda Atenza Sedan XD L Package '15",
+            "Mazda CX-30 X Smart Edition '21",
+            "Mazda Demio XD Touring '15",
+            "Mazda Eunos Roadster (NA) '89",
+            "Mazda LM55 VGT",
+            "Mazda LM55 VGT (Gr.1)",
+            "Mazda MAZDA SPIRIT RACING ROADSTER 12R '25",
+            "MAZDA3 '19",
+            "MAZDA3 Gr.4",
+            "Mazda RX-7 GT-X (FC) '90",
+            "Mazda RX-7 Spirit R Type A (FD) '02",
+            "Mazda RX-8 Spirit R '12",
+            "Mazda RX-VISION '15",
+            "Mazda RX-VISION GT3 CONCEPT",
+            "Mazda RX500 '70",
+            "Mazda Roadster NR-A (ND) '22",
+            "Mazda Roadster S (ND) '15",
+            "Mazda Roadster Touring Car",
+            "Mazda ɛ̃fini RX-7 Type R (FD) '91",
+            "McLaren 650S '14",
+            "McLaren 650S GT3 '15",
+            "McLaren 650S Gr.4",
+            "McLaren MP4-12C '10",
+            "McLaren MP4/4 '88",
+            "McLaren McLaren F1 '94",
+            "McLaren McLaren F1 GTR - BMW '95",
+            "McLaren McLaren P1 GTR '16",
+            "McLaren McLaren VGT",
+            "McLaren McLaren VGT (Gr.1)",
+            "Mercedes-Benz 190 E 2.5-16 Evolution II '91",
+            "Mercedes-Benz 300 SL (W194) '52",
+            "Mercedes-Benz 300 SL Coupé '54",
+            "Mercedes-Benz CLK-LM '98",
+            "Mercedes-Benz S Barker Tourer '29",
+            "Mercedes-Benz SLR McLaren '09",
+            "Mercedes-Benz Sauber Mercedes C9 '89",
+            "Mercedes-Benz Unimog Type 411 '62",
+            "Mercedes-Benz W 196 R '55",
+            "Mine's BNR34 GT-R N1 base",
+            "MINI Clubman VGT",
+            "MINI Cooper S '05",
+            "MINI-Cooper 'S' '65",
+            "Mitsubishi Concept XR-PHEV EVOLUTION VGT",
+            "Mitsubishi FTO GP Version R '97",
+            "Mitsubishi GTO Twin Turbo '91",
+            "Mitsubishi Lancer Evolution Final '15",
+            "Mitsubishi Lancer Evolution Final Gr.3",
+            "Mitsubishi Lancer Evolution Final Gr.4",
+            "Mitsubishi Lancer Evolution Final Gr.B Rally Car",
+            "Mitsubishi Lancer Evolution Final Gr.B Road Car",
+            "Mitsubishi Lancer Evolution III GSR '95",
+            "Mitsubishi Lancer Evolution IV GSR '96",
+            "Mitsubishi Lancer Evolution IX MR GSR '06",
+            "Mitsubishi Lancer Evolution V GSR '98",
+            "Mitsubishi Lancer Evolution VI GSR T.M. SCP '99",
+            "Mitsubishi Lancer Evolution VIII MR GSR '04",
+            "Nismo 400R '95",
+            "Nismo R34 GT-R Z-tune '05",
+            "Nissan 180SX Type X '96",
+            "Nissan Fairlady 240ZG (HS30) '71",
+            "Nissan Fairlady Z (Z34) '08",
+            "Nissan Fairlady Z 300ZX TT 2seater '89",
+            "Nissan Fairlady Z 432 '69",
+            "Nissan Fairlady Z Version S (Z33) '07",
+            "Nissan GT-R '17",
+            "Nissan GT-R GT500 '08",
+            "Nissan GT-R GT500 '99",
+            "Nissan GT-R Gr.4",
+            "Nissan GT-R Gr.B Rally Car",
+            "Nissan GT-R LM NISMO '15",
+            "Nissan GT-R NISMO '17",
+            "Nissan GT-R NISMO GT3 '13",
+            "Nissan GT-R NISMO GT3 '18",
+            "Nissan GT-R NISMO GT500 '16",
+            "Nissan GT-R Premium edition T-spec '24",
+            "Nissan GT-R Safety Car",
+            "Nissan NISSAN CONCEPT 2020 VGT",
+            "Nissan Qashqai Tekna e-Power '22",
+            "Nissan R32 GT-R NISMO '90",
+            "Nissan R32 GT-R V･spec II '94",
+            "Nissan R33 GT-R V･spec '97",
+            "Nissan R34 GT-R V･spec II Nür '02",
+            "Nissan R92CP '92",
+            "Nissan Sileighty '98",
+            "Nissan Silvia K's Aero (S14) '96",
+            "Nissan Silvia K's Dia Selection (S13) '90",
+            "Nissan Silvia K's Type S (S14) '94",
+            "Nissan Silvia Q's (S13) '88",
+            "Nissan Silvia spec-R Aero (S15) '02",
+            "Nissan Silvia spec-R Aero (S15) Touring Car",
+            "Nissan Skyline 2000GT-R (KPGC110) '73",
+            "Nissan Skyline GTS-R (R31) '87",
+            "Nissan Skyline Hard Top 2000GT-R (KPGC10) '70",
+            "Nissan Skyline Super Silhouette '84",
+            "Nissan Z Performance '23",
+            "Opel Corsa GSE VGT",
+            "Pagani Huayra '13",
+            "Pagani Zonda R '09",
+            "Peugeot 2008 Allure '21",
+            "Peugeot 205 GTI '88",
+            "Peugeot 205 Turbo 16 Evolution 2 '86",
+            "Peugeot 208 GTi by Peugeot Sport '14",
+            "Peugeot 908 HDi FAP '10",
+            "Peugeot L500R HYbrid VGT 2017",
+            "Peugeot L750R HYbrid VGT 2017",
+            "Peugeot PEUGEOT VGT",
+            "Peugeot PEUGEOT VGT (Gr.3)",
+            "Peugeot RCZ GT Line '15",
+            "Peugeot RCZ Gr.3",
+            "Peugeot RCZ Gr.3 Road Car",
+            "Peugeot RCZ Gr.4",
+            "Plymouth Superbird '70",
+            "Plymouth XNR Ghia Roadster '60",
+            "Polestar 5 Performance '26",
+            "Pontiac Firebird Trans Am '78",
+            "Pontiac GTO 'The Judge' '69",
+            "Porsche 356 A/1500 GS Carrera '56",
+            "Porsche 356 A/1500 GS GT Carrera Speedster '56",
+            "Porsche 911 Carrera RS (901) '73",
+            "Porsche 911 Carrera RS (964) '92",
+            "Porsche 911 Carrera RS (993) '95",
+            "Porsche 911 Carrera RS CS (993) '95",
+            "Porsche 911 GT1 Strassenversion '97",
+            "Porsche 911 GT3 (996) '01",
+            "Porsche 911 GT3 (997) '09",
+            "Porsche 911 GT3 R (992) '22",
+            "Porsche 911 GT3 RS (991) '16",
+            "Porsche 911 GT3 RS (992) '22",
+            "Porsche 911 RSR (991) '17",
+            "Porsche 911 Turbo (930) '81",
+            "Porsche 911 Turbo S (992) '20",
+            "Porsche 917 LIVING LEGEND",
+            "Porsche 917K '70",
+            "Porsche 918 Spyder '13",
+            "Porsche 919 Hybrid '16",
+            "Porsche 959 '87",
+            "Porsche 962 C '88",
+            "Porsche Carrera GT '04",
+            "Porsche Carrera GTS (904) '64",
+            "Porsche Cayman GT4 '16",
+            "Porsche Cayman GT4 Clubsport '16",
+            "Porsche Mission X '23",
+            "Porsche VGT",
+            "Porsche VGT Spyder",
+            "Porsche Spyder type 550/1500RS '55",
+            "Porsche Taycan Turbo S '19",
+            "Radical SR3 SL '13",
+            "Roadster Shop Rampage",
+            "RE Amemiya FD3S RX-7",
+            "Renault Avantime 3.0 V6 24V '02",
+            "Renault Captur S Edition '21",
+            "Renault Clio R.S. 220 Trophy '15",
+            "Renault Clio R.S. 220 Trophy '16",
+            "Renault Clio V6 24V '00",
+            "Renault Espace F1 '95",
+            "Renault Kangoo 1.4 '01",
+            "Renault Mégane Gr.4",
+            "Renault Mégane R.S. Trophy '11",
+            "Renault Mégane R.S. Trophy Safety Car",
+            "Renault Mégane Trophy '11",
+            "Renault R.S.01 '16",
+            "Renault R.S.01 GT3 '16",
+            "Renault R4 GTL '85",
+            "Renault R5 Turbo '80",
+            "RUF CTR3 '07",
+            "RUF RGT 4.2 '16",
+            "Shelby Cobra 427 '66",
+            "Shelby Cobra Daytona Coupe '64",
+            "Shelby G.T.350 '65",
+            "Subaru BRZ Drift Car '17",
+            "Subaru BRZ GT300 '21",
+            "Subaru BRZ S '15",
+            "Subaru BRZ S '21",
+            "Subaru BRZ STI Sport '18",
+            "Subaru Impreza 22B-STi '98",
+            "Subaru Impreza Coupe WRX Type R STi Ver.VI '99",
+            "Subaru Impreza Rally Car '98",
+            "Subaru Impreza Sedan WRX STi '04",
+            "Subaru VIZIV GT VGT",
+            "Subaru WRX Gr.3",
+            "Subaru WRX Gr.4",
+            "Subaru WRX Gr.B Rally Car",
+            "Subaru WRX Gr.B Road Car",
+            "Subaru WRX STI Isle of Man '16",
+            "Subaru WRX STI Type S '14",
+            "Super Formula SF19 Super Formula / Honda '19",
+            "Super Formula SF19 Super Formula / Toyota '19",
+            "Super Formula SF23 Super Formula / Honda '23",
+            "Super Formula SF23 Super Formula / Toyota '23",
+            "Suzuki Cappuccino '91",
+            "Suzuki Carry KC '12",
+            "Suzuki Jimny Sierra JC '18",
+            "Suzuki Jimny XC '18",
+            "Suzuki SUZUKI VGT",
+            "Suzuki SUZUKI VGT (Gr.3)",
+            "Suzuki Swift Sport '07",
+            "Suzuki Swift Sport '17",
+            "Suzuki Swift Sport Gr.4",
+            "Suzuki V6 Escudo Pikes Peak Special '98",
+            "Tesla Model 3 Performance '23",
+            "Tesla Model S Signature Performance '12",
+            "Toyota 2000GT '67",
+            "Toyota 86 GRMN '16",
+            "Toyota 86 GT '15",
+            "Toyota 86 GT\"Limited\" '16",
+            "Toyota 86 Gr.4",
+            "Toyota 86 Gr.B Rally Car",
+            "Toyota Alphard Executive Lounge '18",
+            "Toyota Aqua S '11",
+            "Toyota C-HR S '18",
+            "Toyota Celica GT-FOUR (ST205) '94",
+            "Toyota Celica GT-FOUR Rally Car (ST205) '95",
+            "Toyota Corolla Levin 1600GT APEX (AE86) '83",
+            "Toyota Crown Athlete G '13",
+            "Toyota Crown Athlete G Safety Car",
+            "Toyota FT-1",
+            "Toyota FT-1 VGT",
+            "Toyota FT-1 VGT (Gr.3)",
+            "Toyota GR Corolla MORIZO Edition '22",
+            "Toyota GR Supra RZ '19",
+            "Toyota GR Supra RZ '20",
+            "Toyota GR Supra Race Car '19",
+            "Toyota GR Supra Racing Concept '18",
+            "Toyota GR Yaris RZ \"High performance\" '20",
+            "Toyota GR010 HYBRID '21",
+            "Toyota GR86 RZ '21",
+            "Toyota GT-One (TS020) '99",
+            "Toyota Hiace Van DX '16",
+            "Toyota Himedic '21",
+            "Toyota Land Cruiser FJ40V '74",
+            "Toyota MR2 GT-S '97",
+            "Toyota Prius G '09",
+            "Toyota RAV4 Adventure '20",
+            "Toyota S-FR '15",
+            "Toyota S-FR Racing Concept '16",
+            "Toyota Sports 800 '65",
+            "Toyota Sprinter Trueno 1600GT APEX (AE86) '83",
+            "Toyota Sprinter Trueno 1600GT APEX (S.Shigeno Version)",
+            "Toyota Supra 3.0GT Turbo A '88",
+            "Toyota Supra GT500 '97",
+            "Toyota Supra RZ '97",
+            "Toyota TS030 Hybrid '12",
+            "Toyota TS050 - Hybrid '16",
+            "Toyota Tundra TRD Pro '19",
+            "TVR Tuscan Speed 6 '00",
+            "Volkswagen Beetle Gr.3",
+            "Volkswagen GTI Roadster VGT",
+            "Volkswagen GTI Supersport VGT",
+            "Volkswagen Golf I GTI '83",
+            "Volkswagen Golf VII GTI '14",
+            "Volkswagen ID.R '19",
+            "Volkswagen Polo GTI '14",
+            "Volkswagen Sambabus Typ 2 '62",
+            "Volkswagen Scirocco Gr.4",
+            "Volkswagen Scirocco R '10",
+            "Volkswagen Volkswagen 1200 '66",
+            "Volkswagen Volkswagen GTI VGT (Gr.3)",
+            "Volvo 240 SE Estate '93",
+            "Volvo V40 T5 R-Design '13",
+            "Wicked Fabrication GT 51",
+            "Xiaomi SU7 Ultra '25",
+            "Zagato IsoRivolta Zagato VGT",
+            "Škoda VGT"
         ];
         
-        // ==================== МАШИНЫ ====================
+        // Словарь иконок машин
         const carIcons = {
-            "Abarth 1500 Biposto Bertone B.A.T 1 '52": "car_icons/car1932.png",
-            "Abarth 500 '09": "car_icons/car1973.png",
-            "BMW M3 '07": "car_icons/car1399.png",
-            "Nissan GT-R '17": "car_icons/car2167.png",
-            "Porsche 911 GT3 RS '22": "car_icons/car3539.png"
+            "Abarth 1500 Biposto Bertone B.A.T 1 '52": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1932.png",
+            "Abarth 500 '09": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3438.png",
+            "Abarth 595 SS '70": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3579.png",
+            "AFEELA 1 '26": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3546.png",
+            "AFEELA Prototype 2024": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car365.png",
+            "Alfa Romeo 155 2.5 V6 TI '93": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2136.png",
+            "Alfa Romeo 4C '14": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3185.png",
+            "Alfa Romeo 4C Gr.3": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3299.png",
+            "Alfa Romeo 4C Gr.3 Road Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2166.png",
+            "Alfa Romeo 4C Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3415.png",
+            "Alfa Romeo 8C 2900B Touring Berlinetta '38": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1578.png",
+            "Alfa Romeo 8C Competizione '08": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1645.png",
+            "Alfa Romeo GIULIA TZ2 carrozzata da ZAGATO '65": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3411.png",
+            "Alfa Romeo Giulia GTAm '20": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3530.png",
+            "Alfa Romeo Giulia Sprint GT Veloce '67": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1933.png",
+            "Alfa Romeo MiTo '09": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3337.png",
+            "Alpine A110 '17": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3337.png",
+            "Alpine A110 '72": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1796.png",
+            "Alpine A220 Race Car '68": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3457.png",
+            "Alpine VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2112.png",
+            "Alpine VGT '17": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3187.png",
+            "Alpine VGT Race": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2116.png",
+            "AMG 300 SEL 6.8 AMG '71": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3388.png",
+            "AMG A 45 AMG '13": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2170.png",
+            "Mercedes-AMG C 63 S '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3458.png",
+            "Mercedes-AMG GT Black Series '20": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3485.png",
+            "Mercedes-AMG GT R '17": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3416.png",
+            "Mercedes-AMG GT S '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2149.png",
+            "Mercedes-AMG GT Safety Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3210.png",
+            "Mercedes-AMG GT3 '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3224.png",
+            "Mercedes-AMG GT3 '20": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3531.png",
+            "Mercedes-Benz AMG VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2055.png",
+            "Mercedes-Benz AMG VGT Racing Series": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2076.png",
+            "Mercedes-Benz AMG '10": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1507.png",
+            "Mercedes-Benz AMG GT3 '11": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1797.png",
+            "Mercedes-Benz AMG SLS GR4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3192.png",
+            "Amuse NISMO 380RS Super Leggera": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1549.png",
+            "Amuse S2000 GT1 Turbo": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1433.png",
+            "Aston Martin DB11 '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3343.png",
+	    "Aston Martin DB3S '53": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3363.png",
+            "Aston Martin DB5 '64": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3445.png",
+            "Aston Martin DBR9 GT1 '10": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3394.png",
+            "Aston Martin DP-100 VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2103.png",
+            "Aston Martin One-77 '11": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1898.png",
+            "Aston Martin V12 Vantage GT3 '12": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2131.png",
+            "Aston Martin V8 Vantage Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2157.png",
+            "Aston Martin V8 Vantage S '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2175.png",
+            "Aston Martin Valkyrie '21": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3532.png",
+            "Aston Martin Vantage '18": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3447.png",
+            "Audi VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3314.png",
+            "Audi e-tron VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3351.png",
+            "Audi R18 '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3334.png",
+            "Audi R18 TDI '11": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1965.png",
+            "Audi R8 4.2 '07": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1365.png",
+            "Audi R8 Coupé V10 plus '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3412.png",
+            "Audi R8 LMS '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2143.png",
+            "Audi R8 LMS Evo '19": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3405.png",
+            "Audi RS 5 Turbo DTM '19": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3523.png",
+            "Audi Sport quattro S1 Pikes Peak '87": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1927.png",
+            "Audi TT Coupé 3.2 quattro '03": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car959.png",
+            "Audi TT Cup '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3298.png",
+            "Audi TTS Coupé '09": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1541.png",
+            "Audi TTS Coupé '14": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2169.png",
+            "Autobianchi A112 Abarth '85": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3442.png",
+            "BAC Mono '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3454.png",
+            "BMW 3.0 CSL '71": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3422.png",
+            "BMW 3.0 CSL '73": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3422.png",
+            "BMW VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2087.png",
+            "BMW M2 Competition '18": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3483.png",
+            "BMW M3 '03": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3389.png",
+            "BMW M3 '07": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1399.png",
+            "BMW M3 '89": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3453.png",
+            "BMW M3 '97": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3551.png",
+            "BMW M3 GT '11": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1904.png",
+            "BMW M3 Sport Evolution '89": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3344.png",
+            "BMW M4 '14": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2074.png",
+            "BMW M4 Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3245.png",
+            "BMW M4 Safety Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3209.png",
+            "BMW M6 GT3 Endurance Model '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3218.png",
+            "BMW M6 GT3 Sprint Model '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3221.png",
+            "BMW McLaren F1 GTR Race Car '97": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car216.png",
+            "BMW Z4 3.0i '03": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car655.png",
+            "BMW Z4 GT3 '11": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1902.png",
+            "BMW Z8 '01": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1893.png",
+            "BMW i3 '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3266.png",
+            "Bugatti VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2134.png",
+            "Bugatti VGT (Gr.1)": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2179.png",
+            "Bugatti Chiron '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3473.png",
+            "Bugatti Veyron 16.4 '13": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2049.png",
+            "Bugatti Veyron Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3246.png",
+            "BVLGARI Aluminium VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3541.png",
+            "Chapparal 2J '70": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1069.png",
+            "Chapparal Chaparral 2X VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2107.png",
+            "Chevrolet Camaro 1969 Race-Mod": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3592.png",
+            "Chevrolet Camaro SS '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3217.png",
+            "Chevrolet Camaro Z28 '69": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car31.png",
+            "Chevrolet Camaro ZL1 1LE Package '18": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3387.png",
+            "Chevrolet Chevelle SS 454 '70": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car36.png",
+            "Chevrolet Corvette (C1) '58": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3464.png",
+            "Chevrolet Corvette (C2) '63": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car818.png",
+            "Chevrolet Corvette C7 '14": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1916.png",
+            "Chevrolet Corvette C7 Gr.3": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2183.png",
+            "Chevrolet Corvette C7 Gr.3 Road Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3296.png",
+            "Chevrolet Corvette C7 Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3247.png",
+            "Chevrolet Corvette C7 ZR1 '19": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3449.png",
+            "Chevrolet Corvette C8 '20": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3518.png",
+            "Chevrolet Corvette CX Concept '25": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3581.png",
+            "Chevrolet Corvette CX.R VGT Concept": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3582.png",
+            "Chevrolet Corvette Convertible (C3) '69": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1542.png",
+            "Chevrolet Corvette Stingray (C3) '69": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car41.png",
+            "Chevrolet Corvette Stingray Racer Concept '59": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2059.png",
+            "Chevrolet Corvette Z06 (C5) '01": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3570.png",
+            "Chevrolet Corvette ZR-1 (C4) '89": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car942.png",
+            "Chevrolet Corvette ZR1 (C6) '09": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1480.png",
+            "Chris Holstrom Concepts 1967 Chevy Nova": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3338.png",
+            "Citroen BX 19 TRS '87": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3573.png",
+            "Citroen DS 21 Pallas '70": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3514.png",
+            "Citroen GT by Citroën Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3248.png",
+            "Citroen GT by Citroën Race Car (Gr.3)": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2190.png",
+            "Citroen GT by Citroën Road Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1581.png",
+            "Daihatsu COPEN RJ VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3316.png",
+            "Daihatsu Copen '02": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car145.png",
+            "De Tomaso Mangusta '69": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3437.png",
+            "De Tomaso Pantera '71": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3341.png",
+            "DMC DeLorean S2 '04": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1027.png",
+            "Dodge Challenger R/T '70": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1543.png",
+            "Dodge Challenger SRT Demon '18": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3486.png",
+            "Dodge Charger R/T 426 Hemi '68": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3538.png",
+            "Dodge Charger SRT Hellcat '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2152.png",
+            "Dodge Charger SRT Hellcat Safety Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3406.png",
+            "Dodge SRT Tomahawk GTS-R VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2110.png",
+            "Dodge SRT Tomahawk S VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2111.png",
+            "Dodge SRT Tomahawk VGT (Gr.1)": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3188.png",
+            "Dodge SRT Tomahawk X VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2108.png",
+            "Dodge Super Bee '70": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3377.png",
+            "Dodge Viper GTS '02": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1373.png",
+            "Dodge Viper GTS '13": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1956.png",
+            "Dodge Viper Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3249.png",
+            "Dodge Viper SRT GT3-R '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3223.png",
+            "Dodge Viper SRT10 Coupe '06": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1402.png",
+            "DS automobiles DS 3 Racing '11": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2172.png",
+            "ECKERT Mach Forty": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3346.png",
+            "Ferrari 250 GT Berlinetta passo corto '61": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1931.png",
+            "Ferrari 250 GTO '62": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2010.png",
+            "Ferrari 296 GT3 '23": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3588.png",
+            "Ferrari 296 GTB '22": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3587.png",
+            "Ferrari 308 GTB '75": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3443.png",
+            "Ferrari 330 P4 '67": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1551.png",
+            "Ferrari 365 GTB4 '71": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2018.png",
+            "Ferrari 430 Scuderia '07": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1544.png",
+            "Ferrari 458 Italia '09": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1504.png",
+            "Ferrari 458 Italia GT3 '13": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2158.png",
+            "Ferrari 458 Italia Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3263.png",
+            "Ferrari 500 Mondial Pinin Farina Coupe '54": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2011.png",
+            "Ferrari 512 BB '76": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1410.png",
+            "Ferrari 812 Superfast '17": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3470.png",
+            "Ferrari Dino 246 GT '71": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1895.png",
+            "Ferrari Enzo Ferrari '02": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1474.png",
+            "Ferrari F12berlinetta '12": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3267.png",
+            "Ferrari F40 '92": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1409.png",
+            "Ferrari F430 '06": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1378.png",
+            "Ferrari F50 '95": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3362.png",
+            "Ferrari F8 Tributo '19": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3469.png",
+            "Ferrari FXX K '14": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3433.png",
+            "Ferrari Ferrari VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3510.png",
+            "Ferrari GTO '84": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2017.png",
+            "Ferrari LaFerrari '13": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2162.png",
+            "Ferrari Testarossa '91": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3434.png",
+            "FIAT 500 1.2 8V Lounge SS '08": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1527.png",
+            "FIAT 500 F '68": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1523.png",
+            "FIAT Panda 30 CL '85": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3575.png",
+            "Ford Escort RS Cosworth '92": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3555.png",
+            "Ford F-150 SVT Raptor '11": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3336.png",
+            "Ford Focus Gr.B Rally Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3264.png",
+            "Ford Focus RS '18": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3420.png",
+            "Ford Focus ST '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2145.png",
+            "Ford Ford GT '06": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1426.png",
+            "Ford Ford GT '17": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3402.png",
+            "Ford Ford GT LM Race Car Spec II": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1040.png",
+            "Ford Ford GT LM Spec II Test Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1425.png",
+            "Ford Ford GT Race Car '18": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3436.png",
+            "Ford Ford Roadster": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3444.png",
+            "Ford GT40 Mark I '66": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1935.png",
+            "Ford Mark IV Race Car '67": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1565.png",
+            "Ford Mustang Boss 429 '69": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3487.png",
+            "Ford Mustang GT '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2138.png",
+            "Ford Mustang Gr.3": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2159.png",
+            "Ford Mustang Gr.3 Road Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3300.png",
+            "Ford Mustang Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2164.png",
+            "Ford Mustang Gr.B Rally Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3229.png",
+            "Ford Mustang Mach 1 '71": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1729.png",
+            "Ford Shelby GT350R '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3391.png",
+            "Ford Sierra RS 500 Cosworth '87": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3466.png",
+            "Genesis G70 3.3T AWD P.Package '22": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3500.png",
+            "Genesis G70 GR4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3501.png",
+            "Genesis Genesis X GR3": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3501.png",
+            "Genesis Genesis X Gran Berlinetta VGT Concept": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3543.png",
+            "Genesis Genesis X Gran Racer VGT Concept": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3544.png",
+            "Gran Turismo F1500T-A": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3342.png",
+            "Gran Turismo F3500-A": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3562.png",
+            "Gran Turismo F3500-B": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3589.png",
+            "Gran Turismo Racing Kart 125 Shifter": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2060.png",
+            "Gran Turismo Red Bull X2014 Junior": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2078.png",
+            "Gran Turismo Red Bull X2014 Standard": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2077.png",
+            "Gran Turismo Red Bull X2019 Competition": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3374.png",
+            "GReddy Fugu Z": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3364.png",
+            "Garage RCR Civic": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3526.png",
+            "Greening Auto Company GAC Maverick": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3522.png",
+            "Honda 2&4 powered by RC213V": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2156.png",
+            "Honda Beat '91": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car137.png",
+            "Honda CR-V e:HEV EX・Black Edition '21": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3572.png",
+            "Honda Civic Si Extra (EF) '87": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3563.png",
+            "Honda Civic SiR･II (EG) '93": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car37.png",
+            "Honda Civic Type R (EK) '97": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car821.png",
+            "Honda Civic Type R (EK) '98": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car204.png",
+            "Honda Civic Type R (EK) Touring Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1689.png",
+            "Honda Civic Type R (FK2) '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3214.png",
+            "Honda Civic Type R (FL5) '22": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3536.png",
+            "Honda Civic Type R Limited Edition (FK8) '20": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3467.png",
+            "Honda Fit Hybrid '14": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3370.png",
+            "Honda Honda Sports VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2121.png",
+            "Honda Integra Type R (DC2) '95": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car688.png",
+            "Honda Integra Type R (DC2) '98": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car203.png",
+            "Honda N-ONE RS '22": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3576.png",
+            "Honda NSX '17": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3219.png",
+            "Honda NSX CONCEPT-GT '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3348.png",
+            "Honda NSX GT500 '00": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car140.png",
+            "Honda NSX GT500 '08": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1510.png",
+            "Honda NSX Gr.3": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3235.png",
+            "Honda NSX Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3251.png",
+            "Honda NSX Gr.B Rally Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3239.png",
+            "Honda NSX Type R '02": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car396.png",
+            "Honda NSX Type R '92": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car293.png",
+            "Honda RA272 '65": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3525.png",
+            "Honda S2000 '99": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car514.png",
+            "Honda S660 '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3357.png",
+            "Honda S800 '66": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car135.png",
+            "Hyundai ELANTRA N '23": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3585.png",
+            "Hyundai ELANTRA N TC '24": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3585.png",
+            "Hyundai Genesis Coupe 3.8 '13": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2051.png",
+            "Hyundai Genesis Gr.3": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2160.png",
+            "Hyundai Genesis Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2163.png",
+            "Hyundai Genesis Gr.B Rally Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3234.png",
+            "Hyundai HYUNDAI N 2025 VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2135.png",
+            "Hyundai HYUNDAI N 2025 VGT (Gr.1)": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2180.png",
+            "Hyundai IONIQ 5 N '24": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3561.png",
+            "INFINITI CONCEPT VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2117.png",
+            "Italdesign Italdesign VGT Off-road Mode": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2120.png",
+            "Italdesign Italdesign VGT Street Mode": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2119.png",
+            "Jaguar D-type '54": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3376.png",
+            "Jaguar E-type Coupé '61": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3361.png",
+            "Jaguar F-type Gr.3": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2184.png",
+            "Jaguar F-type Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3252.png",
+            "Jaguar F-type R '14": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2146.png",
+            "Jaguar Jaguar VGT Coupé": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3396.png",
+            "Jaguar Jaguar VGT Roadster": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3479.png",
+            "Jaguar Jaguar VGT SV": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3417.png",
+            "Jaguar XJ13 '66": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1553.png",
+            "Jaguar XJ220 '92": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car543.png",
+            "Jaguar XJR-9 '88": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1067.png",
+            "Jeep Willys MB '45": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3430.png",
+            "KTM X-BOW R '12": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1907.png",
+            "Lamborghini Aventador LP 700-4 '11": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1770.png",
+            "Lamborghini Aventador LP 750-4 SV '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3392.png",
+            "Lamborghini Countach 25th Anniversary '88": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1481.png",
+            "Lamborghini Countach LP400 '74": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1484.png",
+            "Lamborghini Diablo GT '00": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1990.png",
+            "Lamborghini Gallardo LP 560-4 '08": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1506.png",
+            "Lamborghini Huracán GT3 '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2177.png",
+            "Lamborghini Huracán Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3253.png",
+            "Lamborghini Huracán LP 610-4 '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2171.png",
+            "Lamborghini Lambo V12 VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3414.png",
+            "Lamborghini Miura P400 Bertone Prototype '67": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1582.png",
+            "Lamborghini Murciélago LP 640 '09": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1545.png",
+            "Lamborghini Urus '18": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3548.png",
+            "Lamborghini Veneno '14": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2147.png",
+            "Lancia Delta HF Integrale Evoluzione '91": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car829.png",
+            "Lancia Delta HF Integrale Rally Car '92": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car761.png",
+            "Lancia Stratos '73": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car533.png",
+            "Lexus LC500 '17": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3227.png",
+            "Lexus LF-LC GT VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2123.png",
+            "Lexus LFA '10": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1562.png",
+            "Lexus RC F '14": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2139.png",
+            "Lexus RC F GT3 '17": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3340.png",
+            "Lexus RC F GT3 prototype '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3228.png",
+            "Lexus RC F GT500 '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3349.png",
+            "Lexus RC F Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3254.png",
+            "Lexus SC430 GT500 '08": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1516.png",
+            "Maserati A6GCS/53 Spyder '54": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3489.png",
+            "Maserati GranTurismo S '08": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1539.png",
+            "Maserati MC20 '20": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3533.png",
+            "Maserati Merak SS '80": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3421.png",
+            "Mazda 787B '91": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car296.png",
+            "Mazda Atenza Gr.3": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3237.png",
+            "Mazda Atenza Gr.3 Road Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3306.png",
+            "Mazda Atenza Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3256.png",
+            "Mazda Atenza Sedan XD L Package '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2173.png",
+            "Mazda CX-30 X Smart Edition '21": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3566.png",
+            "Mazda Demio XD Touring '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3383.png",
+            "Mazda Eunos Roadster (NA) '89": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car201.png",
+            "Mazda LM55 VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2118.png",
+            "Mazda LM55 VGT (Gr.1)": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2181.png",
+            "Mazda MAZDA SPIRIT RACING ROADSTER 12R '25": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3578.png",
+            "MAZDA3 '19": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3521.png",
+            "MAZDA3 Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3537.png",
+            "Mazda RX-7 GT-X (FC) '90": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car374.png",
+            "Mazda RX-7 Spirit R Type A (FD) '02": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car205.png",
+            "Mazda RX-8 Spirit R '12": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3427.png",
+            "Mazda RX-VISION '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3495.png",
+            "Mazda RX-VISION GT3 CONCEPT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3419.png",
+            "Mazda RX500 '70": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1975.png",
+            "Mazda Roadster NR-A (ND) '22": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3512.png",
+            "Mazda Roadster S (ND) '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2148.png",
+            "Mazda Roadster Touring Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1746.png",
+            "Mazda ɛ̃fini RX-7 Type R (FD) '91": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car967.png",
+            "McLaren 650S '14": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2174.png",
+            "McLaren 650S GT3 '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2182.png",
+            "McLaren 650S Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3257.png",
+            "McLaren MP4-12C '10": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1722.png",
+            "McLaren MP4/4 '88": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3475.png",
+            "McLaren McLaren F1 '94": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1540.png",
+            "McLaren McLaren F1 GTR - BMW '95": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1984.png",
+            "McLaren McLaren P1 GTR '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3360.png",
+            "McLaren McLaren VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3315.png",
+            "McLaren McLaren VGT (Gr.1)": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3335.png",
+            "Mercedes-Benz 190 E 2.5-16 Evolution II '91": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car575.png",
+            "Mercedes-Benz 300 SL (W194) '52": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3441.png",
+            "Mercedes-Benz 300 SL Coupé '54": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car387.png",
+            "Mercedes-Benz CLK-LM '98": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3397.png",
+            "Mercedes-Benz S Barker Tourer '29": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3428.png",
+            "Mercedes-Benz SLR McLaren '09": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1528.png",
+            "Mercedes-Benz Sauber Mercedes C9 '89": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car998.png",
+            "Mercedes-Benz Unimog Type 411 '62": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3556.png",
+            "Mercedes-Benz W 196 R '55": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3557.png",
+            "Mine's BNR34 GT-R N1 base": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1427.png",
+            "MINI Clubman VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2109.png",
+            "MINI Cooper S '05": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1370.png",
+            "MINI-Cooper 'S' '65": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3356.png",
+            "Mitsubishi Concept XR-PHEV EVOLUTION VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2095.png",
+            "Mitsubishi FTO GP Version R '97": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car51.png",
+            "Mitsubishi GTO Twin Turbo '91": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3384.png",
+            "Mitsubishi Lancer Evolution Final '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2150.png",
+            "Mitsubishi Lancer Evolution Final Gr.3": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2185.png",
+            "Mitsubishi Lancer Evolution Final Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3258.png",
+            "Mitsubishi Lancer Evolution Final Gr.B Rally Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3230.png",
+            "Mitsubishi Lancer Evolution Final Gr.B Road Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3301.png",
+            "Mitsubishi Lancer Evolution III GSR '95": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car931.png",
+            "Mitsubishi Lancer Evolution IV GSR '96": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car301.png",
+            "Mitsubishi Lancer Evolution IX MR GSR '06": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3424.png",
+            "Mitsubishi Lancer Evolution V GSR '98": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car211.png",
+            "Mitsubishi Lancer Evolution VI GSR T.M. SCP '99": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1508.png",
+            "Mitsubishi Lancer Evolution VIII MR GSR '04": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car799.png",
+            "Nismo 400R '95": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3520.png",
+            "Nismo R34 GT-R Z-tune '05": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3569.png",
+            "Nissan 180SX Type X '96": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car24.png",
+            "Nissan Fairlady 240ZG (HS30) '71": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car48.png",
+            "Nissan Fairlady Z (Z34) '08": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1458.png",
+            "Nissan Fairlady Z 300ZX TT 2seater '89": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car709.png",
+            "Nissan Fairlady Z 432 '69": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3429.png",
+            "Nissan Fairlady Z Version S (Z33) '07": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1384.png",
+            "Nissan GT-R '17": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2167.png",
+            "Nissan GT-R GT500 '08": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1466.png",
+            "Nissan GT-R GT500 '99": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car485.png",
+            "Nissan GT-R Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2161.png",
+            "Nissan GT-R Gr.B Rally Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3241.png",
+            "Nissan GT-R LM NISMO '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2127.png",
+            "Nissan GT-R NISMO '17": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3345.png",
+            "Nissan GT-R NISMO GT3 '13": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1905.png",
+            "Nissan GT-R NISMO GT3 '18": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3450.png",
+            "Nissan GT-R NISMO GT500 '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3350.png",
+            "Nissan GT-R Premium edition T-spec '24": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3553.png",
+            "Nissan GT-R Safety Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3225.png",
+            "Nissan NISSAN CONCEPT 2020 VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2142.png",
+            "Nissan Qashqai Tekna e-Power '22": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3568.png",
+            "Nissan R32 GT-R NISMO '90": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3524.png",
+            "Nissan R32 GT-R V･spec II '94": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car773.png",
+            "Nissan R33 GT-R V･spec '97": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car489.png",
+            "Nissan R34 GT-R V･spec II Nür '02": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car210.png",
+            "Nissan R92CP '92": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car954.png",
+            "Nissan Sileighty '98": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car104.png",
+            "Nissan Silvia K's Aero (S14) '96": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car78.png",
+            "Nissan Silvia K's Dia Selection (S13) '90": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1461.png",
+            "Nissan Silvia K's Type S (S14) '94": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3513.png",
+            "Nissan Silvia Q's (S13) '88": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car919.png",
+            "Nissan Silvia spec-R Aero (S15) '02": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1448.png",
+            "Nissan Silvia spec-R Aero (S15) Touring Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3477.png",
+            "Nissan Skyline 2000GT-R (KPGC110) '73": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car836.png",
+            "Nissan Skyline GTS-R (R31) '87": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car102.png",
+            "Nissan Skyline Hard Top 2000GT-R (KPGC10) '70": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car837.png",
+            "Nissan Skyline Super Silhouette '84": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3493.png",
+            "Nissan Z Performance '23": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3504.png",
+            "Opel Corsa GSE VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3577.png",
+            "Pagani Huayra '13": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2050.png",
+            "Pagani Zonda R '09": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1536.png",
+            "Peugeot 2008 Allure '21": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3574.png",
+            "Peugeot 205 GTI '88": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3564.png",
+            "Peugeot 205 Turbo 16 Evolution 2 '86": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car105.png",
+            "Peugeot 208 GTi by Peugeot Sport '14": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3215.png",
+            "Peugeot 908 HDi FAP '10": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1646.png",
+            "Peugeot L500R HYbrid VGT 2017": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3332.png",
+            "Peugeot L750R HYbrid VGT 2017": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3333.png",
+            "Peugeot PEUGEOT VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2113.png",
+            "Peugeot PEUGEOT VGT (Gr.3)": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3183.png",
+            "Peugeot RCZ GT Line '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2176.png",
+            "Peugeot RCZ Gr.3": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3238.png",
+            "Peugeot RCZ Gr.3 Road Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3303.png",
+            "Peugeot RCZ Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3259.png",
+            "Plymouth Superbird '70": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car665.png",
+            "Plymouth XNR Ghia Roadster '60": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1900.png",
+            "Polestar 5 Performance '26": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3586.png",
+            "Pontiac Firebird Trans Am '78": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1985.png",
+            "Pontiac GTO 'The Judge' '69": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3462.png",
+            "Porsche 356 A/1500 GS Carrera '56": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3375.png",
+            "Porsche 356 A/1500 GS GT Carrera Speedster '56": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3365.png",
+            "Porsche 911 Carrera RS (901) '73": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3509.png",
+            "Porsche 911 Carrera RS (964) '92": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3431.png",
+            "Porsche 911 Carrera RS (993) '95": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3439.png",
+            "Porsche 911 Carrera RS CS (993) '95": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3404.png",
+            "Porsche 911 GT1 Strassenversion '97": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3400.png",
+            "Porsche 911 GT3 (996) '01": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3358.png",
+            "Porsche 911 GT3 (997) '09": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3359.png",
+            "Porsche 911 GT3 R (992) '22": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3600.png",
+            "Porsche 911 GT3 RS (991) '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3268.png",
+            "Porsche 911 GT3 RS (992) '22": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3539.png",
+            "Porsche 911 RSR (991) '17": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3311.png",
+            "Porsche 911 Turbo (930) '81": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3385.png",
+            "Porsche 911 Turbo S (992) '20": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3558.png",
+            "Porsche 917 LIVING LEGEND": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3452.png",
+            "Porsche 917K '70": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3410.png",
+            "Porsche 918 Spyder '13": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3459.png",
+            "Porsche 919 Hybrid '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3313.png",
+            "Porsche 959 '87": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3519.png",
+            "Porsche 962 C '88": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3373.png",
+            "Porsche Carrera GT '04": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3393.png",
+            "Porsche Carrera GTS (904) '64": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3490.png",
+            "Porsche Cayman GT4 '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3488.png",
+            "Porsche Cayman GT4 Clubsport '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3310.png",
+            "Porsche Mission X '23": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3560.png",
+            "Porsche VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3478.png",
+            "Porsche VGT Spyder": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3507.png",
+            "Porsche Spyder type 550/1500RS '55": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3446.png",
+            "Porsche Taycan Turbo S '19": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3390.png",
+            "Radical SR3 SL '13": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3369.png",
+            "Roadster Shop Rampage": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3426.png",
+            "RE Amemiya FD3S RX-7": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1431.png",
+            "Renault Avantime 3.0 V6 24V '02": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car729.png",
+            "Renault Captur S Edition '21": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3601.png",
+            "Renault Clio R.S. 220 Trophy '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3220.png",
+            "Renault Clio R.S. 220 Trophy '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3353.png",
+            "Renault Clio V6 24V '00": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car334.png",
+            "Renault Espace F1 '95": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3591.png",
+            "Renault Kangoo 1.4 '01": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3567.png",
+            "Renault Mégane Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3260.png",
+            "Renault Mégane R.S. Trophy '11": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1987.png",
+            "Renault Mégane R.S. Trophy Safety Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3407.png",
+            "Renault Mégane Trophy '11": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1563.png",
+            "Renault R.S.01 '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3216.png",
+            "Renault R.S.01 GT3 '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2188.png",
+            "Renault R4 GTL '85": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3547.png",
+            "Renault R5 Turbo '80": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car173.png",
+            "RUF CTR3 '07": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1986.png",
+            "RUF RGT 4.2 '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3398.png",
+            "Shelby Cobra 427 '66": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3468.png",
+            "Shelby Cobra Daytona Coupe '64": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1926.png",
+            "Shelby G.T.350 '65": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1925.png",
+            "Subaru BRZ Drift Car '17": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3339.png",
+            "Subaru BRZ GT300 '21": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3474.png",
+            "Subaru BRZ S '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3354.png",
+            "Subaru BRZ S '21": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3506.png",
+            "Subaru BRZ STI Sport '18": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3413.png",
+            "Subaru Impreza 22B-STi '98": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car451.png",
+            "Subaru Impreza Coupe WRX Type R STi Ver.VI '99": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car379.png",
+            "Subaru Impreza Rally Car '98": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3550.png",
+            "Subaru Impreza Sedan WRX STi '04": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3432.png",
+            "Subaru VIZIV GT VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2099.png",
+            "Subaru WRX Gr.3": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2186.png",
+            "Subaru WRX Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3261.png",
+            "Subaru WRX Gr.B Rally Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3232.png",
+            "Subaru WRX Gr.B Road Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3304.png",
+            "Subaru WRX STI Isle of Man '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3297.png",
+            "Subaru WRX STI Type S '14": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2153.png",
+            "Super Formula SF19 Super Formula / Honda '19": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3372.png",
+            "Super Formula SF19 Super Formula / Toyota '19": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3371.png",
+            "Super Formula SF23 Super Formula / Honda '23": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3528.png",
+            "Super Formula SF23 Super Formula / Toyota '23": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3529.png",
+            "Suzuki Cappuccino '91": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car779.png",
+            "Suzuki Carry KC '12": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3571.png",
+            "Suzuki Jimny Sierra JC '18": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3559.png",
+            "Suzuki Jimny XC '18": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3545.png",
+            "Suzuki SUZUKI VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3476.png",
+            "Suzuki SUZUKI VGT (Gr.3)": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3508.png",
+            "Suzuki Swift Sport '07": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1385.png",
+            "Suzuki Swift Sport '17": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3456.png",
+            "Suzuki Swift Sport Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3480.png",
+            "Suzuki V6 Escudo Pikes Peak Special '98": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car808.png",
+            "Tesla Model 3 Performance '23": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3540.png",
+            "Tesla Model S Signature Performance '12": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1896.png",
+            "Toyota 2000GT '67": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car604.png",
+            "Toyota 86 GRMN '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3222.png",
+            "Toyota 86 GT '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2154.png",
+            "Toyota 86 Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3262.png",
+            "Toyota 86 Gr.B Rally Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3265.png",
+            "Toyota Alphard Executive Lounge '18": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3494.png",
+            "Toyota Aqua S '11": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2026.png",
+            "Toyota C-HR S '18": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3565.png",
+            "Toyota Celica GT-FOUR (ST205) '94": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3471.png",
+            "Toyota Celica GT-FOUR Rally Car (ST205) '95": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car781.png",
+            "Toyota Corolla Levin 1600GT APEX (AE86) '83": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car63.png",
+            "Toyota Crown Athlete G '13": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3401.png",
+            "Toyota Crown Athlete G Safety Car": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3408.png",
+            "Toyota FT-1": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2080.png",
+            "Toyota FT-1 VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2106.png",
+            "Toyota FT-1 VGT (Gr.3)": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2187.png",
+            "Toyota GR Corolla MORIZO Edition '22": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3535.png",
+            "Toyota GR Supra RZ '19": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3367.png",
+            "Toyota GR Supra RZ '20": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3418.png",
+            "Toyota GR Supra Race Car '19": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3399.png",
+            "Toyota GR Supra Racing Concept '18": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3352.png",
+            "Toyota GR010 HYBRID '21": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3499.png",
+            "Toyota GR86 RZ '21": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3481.png",
+            "Toyota GT-One (TS020) '99": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car116.png",
+            "Toyota Hiace Van DX '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3554.png",
+            "Toyota Himedic '21": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3534.png",
+            "Toyota Land Cruiser FJ40V '74": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3584.png",
+            "Toyota MR2 GT-S '97": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car207.png",
+            "Toyota Prius G '09": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1537.png",
+            "Toyota RAV4 Adventure '20": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3583.png",
+            "Toyota S-FR '15": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2144.png",
+            "Toyota S-FR Racing Concept '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2178.png",
+            "Toyota Sports 800 '65": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1044.png",
+            "Toyota Sprinter Trueno 1600GT APEX (AE86) '83": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car810.png",
+            "Toyota Sprinter Trueno 1600GT APEX (S.Shigeno Version)": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car345.png",
+            "Toyota Supra 3.0GT Turbo A '88": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car843.png",
+            "Toyota Supra GT500 '97": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1470.png",
+            "Toyota Supra RZ '97": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car82.png",
+            "Toyota TS030 Hybrid '12": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2101.png",
+            "Toyota TS050 - Hybrid '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3312.png",
+            "Toyota Tundra TRD Pro '19": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3368.png",
+            "TVR Tuscan Speed 6 '00": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car187.png",
+            "Volkswagen Beetle Gr.3": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3305.png",
+            "Volkswagen GTI Roadster VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2098.png",
+            "Volkswagen GTI Supersport VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2124.png",
+            "Volkswagen Golf I GTI '83": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3403.png",
+            "Volkswagen Golf VII GTI '14": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2141.pngg",
+            "Volkswagen ID.R '19": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3511.png",
+            "Volkswagen Polo GTI '14": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2155.png",
+            "Volkswagen Sambabus Typ 2 '62": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1671.png",
+            "Volkswagen Scirocco Gr.4": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3231.png",
+            "Volkswagen Scirocco R '10": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1773.png",
+            "Volkswagen Volkswagen 1200 '66": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1778.png",
+            "Volkswagen Volkswagen GTI VGT (Gr.3)": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2192.png",
+            "Volvo 240 SE Estate '93": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3549.png",
+            "Volvo V40 T5 R-Design '13": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3482.png",
+            "Wicked Fabrication GT 51": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3423.png",
+            "Xiaomi SU7 Ultra '25": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3599.png",
+            "Zagato IsoRivolta Zagato VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2122.png",
+            "Škoda VGT": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3542.png",
+            "Toyota GR Yaris RZ \"High performance\" '20": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3451.png",
+            "Toyota 86 GT\"Limited\" '16": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3295.png"
         };
-        const cars = Object.keys(carIcons);
         
-        // ==================== ТРАССЫ ====================
-        const tracksIcons = {
-            "Франция Alsace - Деревня": "track_icons/bbe708-D-n15MKA.png",
-            "Италия Autodrome Lago Maggiore - Восток": "track_icons/39f155-Dg_fFdVS.png",
-            "США Blue Moon Bay Speedway": "track_icons/971481-BdMNGGxX.png",
-            "Япония Tokyo Expressway - Восток": "track_icons/e9dd33-B7sGBTmw.png",
-            "Германия Nürburgring Nordschleife": "track_icons/246f6d-B2a8UX0a.png"
-        };
-        const tracks = Object.keys(tracksIcons);
-        
-        // ==================== ПОГОДА ====================
-        const weathers = [
-            "S01 (Ясно, безоблачно)", "S02 (Ясно, малооблачно)", "S03 (Ясно, переменная облачность)",
-            "C01 (Пасмурно, но ярко)", "C02 (Пасмурно, тепло)",
-            "R01 (Мелкий дождь, морось)", "R02 (Умеренный дождь)", "R03 (Сильный дождь, ливень)"
+        // --------------------------------------------------------------
+        // 2. ТРАССЫ С ИКОНКАМИ
+        // --------------------------------------------------------------
+        const tracks = [
+            "Франция Alsace - Деревня",
+            "Франция Alsace - Деревня (обратн.)",
+            "Франция Alsace - тестовая трасса",
+            "Франция Alsace - тестовая трасса (обратн.)",
+            "Италия Autodrome Lago Maggiore - Восток",
+            "Италия Autodrome Lago Maggiore - Восток (обратн.)",
+            "Италия Autodrome Lago Maggiore - Запад",
+            "Италия Autodrome Lago Maggiore - Запад (обратн.)",
+            "Италия Autodrome Lago Maggiore - Центр",
+            "Италия Autodrome Lago Maggiore - Центр (обратн.)",
+            "Италия Autodrome Lago Maggiore - восточная часть",
+            "Италия Autodrome Lago Maggiore - восточная часть (обратн.)",
+            "Италия Autodrome Lago Maggiore - западная часть",
+            "Италия Autodrome Lago Maggiore - западная часть (обратн.)",
+            "Италия Autodrome Lago Maggiore - полная трасса",
+            "Италия Autodrome Lago Maggiore - полная трасса (обратн.)",
+            "Италия Autodromo Nazionale Monza",
+            "Италия Autodromo Nazionale Monza (без шиканы)",
+            "Бразилия Autódromo de Interlagos",
+            "Япония Autopolis International Racing Course",
+            "Япония Autopolis International Racing Course - укороченная трасса",
+            "США Blue Moon Bay Speedway",
+            "США Blue Moon Bay Speedway (обратн.)",
+            "США Blue Moon Bay Speedway - внутренняя A",
+            "США Blue Moon Bay Speedway - внутренняя A (обратн.)",
+            "США Blue Moon Bay Speedway - внутренняя B",
+            "США Blue Moon Bay Speedway - внутренняя B (обратн.)",
+            "Великобритания Brands Hatch - Grand Prix Circuit",
+            "Великобритания Brands Hatch - Indy Circuit",
+            "Япония BB Raceway",
+            "Япония BB Raceway (обратн.)",
+            "Канада Circuit Gilles-Villeneuve",
+            "Испания Circuit de Barcelona-Catalunya, вариант GP",
+            "Испания Circuit de Barcelona-Catalunya, вариант GP без шиканы",
+            "Испания Circuit de Barcelona-Catalunya, вариант национальных гонок",
+            "Испания Circuit de Barcelona-Catalunya, вариант ралли-кросса",
+            "Франция Circuit de Sainte-Croix - A",
+            "Франция Circuit de Sainte-Croix - A (обратн.)",
+            "Франция Circuit de Sainte-Croix - B",
+            "Франция Circuit de Sainte-Croix - B (обратн.)",
+            "Франция Circuit de Sainte-Croix - C",
+            "Франция Circuit de Sainte-Croix - C (обратн.)",
+            "Франция Circuit de Spa-Francorchamps",
+            "Бельгия Spa (24 часа)",
+            "США Colorado Springs - Озеро",
+            "США Colorado Springs - Озеро (обратн.)",
+            "США Daytona - дорожная",
+            "США Daytona - скругленный треугольник",
+            "Швейцария Deep Forest Raceway",
+            "Швейцария Deep Forest Raceway (обратн.)",
+            "Хорватия Dragon Trail - Берег (обратн.)",
+            "Хорватия Dragon Trail - Побережье",
+            "Хорватия Dragon Trail - Сады",
+            "Хорватия Dragon Trail - Сады (обратн.)",
+            "Швейцария Eiger Nordwand",
+            "Швейцария Eiger Nordwand (обратн.)",
+            "США Fishermans Ranch",
+            "США Fishermans Ranch (обратн.)",
+            "Япония Fuji International Speedway",
+            "Япония Fuji International Speedway - короткая трасса",
+            "Великобритания Goodwood Motor Circuit",
+            "США Grand Valley - шоссе №1",
+            "США Grand Valley - шоссе №1 (обратн.)",
+            "США Grand Valley - юг",
+            "США Grand Valley - юг (обратн.)",
+            "Франция Heures du Mans (24 часа)",
+            "Франция Heures du Mans (24 часа) (без шиканы)",
+            "Япония High Speed Ring",
+            "Япония High Speed Ring (обратн.)",
+            "Япония Kyoto Driving Park - Miyabi",
+            "Япония Kyoto Driving Park - Yamagiwa",
+            "Япония Kyoto Driving Park - Yamagiwa (обратн.)",
+            "Япония Kyoto Driving Park - Yamagiwa + Miyabi",
+            "Япония Kyoto Driving Park - Yamagiwa + Miyabi (обратн.)",
+            "Канада Lake Louise - длинная",
+            "Канада Lake Louise - длинная (обратн.)",
+            "Канада Lake Louise - короткая",
+            "Канада Lake Louise - короткая (обратн.)",
+            "Канада Lake Louise - скругленный треугольник",
+            "Канада Lake Louise - скругленный треугольник (обратн.)",
+            "США Michelin Raceway Road Atlanta",
+            "Австралия Mount Panorama Motor Racing Circuit",
+            "США Northern Isle Speedway",
+            "Германия Nürburgring (24 часа)",
+            "Германия Nürburgring (гонка на выносливость II)",
+            "Германия Nürburgring (гонка на выносливость)",
+            "Германия Nürburgring (спринт)",
+            "Германия Nürburgring GP",
+            "Германия Nürburgring Nordschleife",
+            "Германия Nürburgring Nordschleife (турист.)",
+            "Австрия Red Bull Ring - короткая трасса",
+            "Италия Sardegna - Road Track - A",
+            "Италия Sardegna - Road Track - A (обратн.)",
+            "Италия Sardegna - Road Track - B",
+            "Италия Sardegna - Road Track - B (обратн.)",
+            "Италия Sardegna - Road Track - C",
+            "Италия Sardegna - Road Track - C (обратн.)",
+            "Италия Sardegna - Windmills",
+            "Италия Sardegna - Windmills (обратн.)",
+            "США Special Stage Route X",
+            "Япония Suzuka Circuit",
+            "Япония Suzuka Circuit - восточная трасса",
+            "Япония Tokyo Expressway - Восток (по часовой)",
+            "Япония Tokyo Expressway - Восток (против часовой)",
+            "Япония Tokyo Expressway - Центр (по часовой)",
+            "Япония Tokyo Expressway - Центр (против часовой)",
+            "Япония Tokyo Expressway - Юг (по часовой)",
+            "Япония Tokyo Expressway - Юг (против часовой)",
+            "США Trial Mountain - обратн.",
+            "США Trial Mountain Circuit",
+            "Япония Tsukuba Circuit",
+            "США Watkins Glen (длинная трасса)",
+            "США Watkins Glen (короткая трасса)",
+            "США WeatherTech Raceway Laguna Seca",
+            "США Willow Springs International Raceway: Big Willow",
+            "США Willow Springs International Raceway: Horse Thief Mile",
+            "США Willow Springs International Raceway: Horse Thief Mile (обратн.)",
+            "США Willow Springs International Raceway: Streets of Willow Springs",
+            "США Willow Springs International Raceway: Streets of Willow Springs (обратн.)",
+            "ОАЭ Yas Marina Circuit"
         ];
         
-        // ==================== СОСТОЯНИЕ БЛОКИРОВОК ====================
-        let lockCar = false;
-        let lockTrack = false;
-        let lockWeather = false;
-        let lockTime = false;
+// --------------------------------------------------------------
+// 3. ПОГОДА С ИКОНКАМИ (актуальные, проверенные ссылки)
+// --------------------------------------------------------------
+const weathers = [
+    // Солнечно / Ясно
+    { name: "S01 (Ясно, безоблачно)", icon: "https://img.icons8.com/?size=64&id=0pAges62zAXE&format=png" },
+    { name: "S02 (Ясно, малооблачно)", icon: "https://img.icons8.com/?size=64&id=0pAges62zAXE&format=png" },
+    { name: "S03 (Ясно, переменная облачность)", icon: "https://img.icons8.com/?size=64&id=HeerCPLqyxuQ&format=png" },
+    { name: "S04 (Ясно, легкая дымка)", icon: "https://img.icons8.com/?size=64&id=HeerCPLqyxuQ&format=png" },
+    { name: "S05 (Солнечно, местами облачно)", icon: "https://cdn-icons-png.flaticon.com/512/869/869869.png" },
+    { name: "S06 (Солнечно, высокая влажность)", icon: "https://img.icons8.com/?size=64&id=0pAges62zAXE&format=png" },
+    { name: "S07 (Солнечно, легкий туман)", icon: "https://img.icons8.com/?size=64&id=0pAges62zAXE&format=png" },
+    { name: "S08 (Солнечно, густая облачность)", icon: "https://img.icons8.com/?size=64&id=0pAges62zAXE&format=png" },
+    { name: "S09 (Солнечно, высокая облачность)", icon: "https://img.icons8.com/?size=64&id=0pAges62zAXE&format=png" },
+    { name: "S10 (Солнечно, дымка от тумана)", icon: "https://img.icons8.com/?size=64&id=0pAges62zAXE&format=png" },
+    { name: "S11 (Солнечно, горный туман)", icon: "https://img.icons8.com/?size=64&id=0pAges62zAXE&format=png" },
+    { name: "S12 (Солнечно, муссонные облака)", icon: "https://img.icons8.com/?size=64&id=0pAges62zAXE&format=png" },
+    { name: "S13 (Солнечно, редкие муссонные облака)", icon: "https://img.icons8.com/?size=64&id=0pAges62zAXE&format=png" },
+    { name: "S14 (Солнечно, плотные муссонные облака)", icon: "https://img.icons8.com/?size=64&id=0pAges62zAXE&format=png" },
+    { name: "S15 (Солнечно, легкая дымка)", icon: "https://img.icons8.com/?size=64&id=0pAges62zAXE&format=png" },
+    { name: "S16 (Солнечно, дымка и облака)", icon: "https://img.icons8.com/?size=64&id=0pAges62zAXE&format=png" },
+    { name: "S17 (Солнечно, высокая облачность)", icon: "https://img.icons8.com/?size=64&id=0pAges62zAXE&format=png" },
+    { name: "S18 (Солнечно, плотная высокая облачность)", icon: "https://img.icons8.com/?size=64&id=0pAges62zAXE&format=png" },
+    
+    // Пасмурно
+    { name: "C01 (Пасмурно, но ярко)", icon: "https://img.icons8.com/?size=64&id=HeerCPLqyxuQ&format=png" },
+    { name: "C02 (Пасмурно, тепло)", icon: "https://img.icons8.com/?size=64&id=GkzB2qzp1Ogf&format=png" },
+    { name: "C03 (Пасмурно, темно)", icon: "https://img.icons8.com/?size=64&id=GkzB2qzp1Ogf&format=png" },
+    { name: "C04 (Пасмурно, прохладно)", icon: "https://img.icons8.com/?size=64&id=mD5PxYIC4jJB&format=png" },
+    { name: "C05 (Пасмурно, плотные облака)", icon: "https://img.icons8.com/?size=64&id=mD5PxYIC4jJB&format=png" },
+    { name: "C06 (Пасмурно, тяжелые облака)", icon: "https://img.icons8.com/?size=64&id=mD5PxYIC4jJB&format=png" },
+    
+    // Дождь
+    { name: "R01 (Мелкий дождь, морось)", icon: "https://img.icons8.com/?size=64&id=KDjKPrgADUUd&format=png" },
+    { name: "R02 (Умеренный дождь)", icon: "https://img.icons8.com/?size=64&id=KDjKPrgADUUd&format=png" },
+    { name: "R03 (Сильный дождь, ливень)", icon: "https://img.icons8.com/?size=64&id=F74ZFbDNArxN&format=png" },
+    { name: "R04 (Проливной дождь, гроза)", icon: "https://img.icons8.com/?size=64&id=RWaaTjQ4JGUu&format=png" },
+    { name: "R05 (Штормовой дождь, сильный ветер)", icon: "https://img.icons8.com/?size=64&id=UXpTwtV1EwFy&format=png" },
+    { name: "R06 (Тропический ливень)", icon: "https://img.icons8.com/?size=64&id=UXpTwtV1EwFy&format=png" },
+    { name: "R07 (Шквалистый дождь)", icon: "https://img.icons8.com/?size=64&id=UXpTwtV1EwFy&format=png" },
+    { name: "R08 (Экстремальный ливень, нулевая видимость)", icon: "https://img.icons8.com/?size=64&id=aHMi5fdnG7wX&format=png" }
+];
+
+// --------------------------------------------------------------
+// 4. ВРЕМЯ СУТОК С ИКОНКАМИ
+// --------------------------------------------------------------
+const times = [
+    { name: "Ранний рассвет", icon: "https://img.icons8.com/?size=64&id=eyfQLJcRAECO&format=png" },      // Рассвет
+    { name: "Рассвет", icon: "https://img.icons8.com/?size=64&id=eyfQLJcRAECO&format=png" },            // Рассвет
+    { name: "Восход", icon: "https://img.icons8.com/?size=64&id=eyfQLJcRAECO&format=png" },             // Восход
+    { name: "Раннее утро", icon: "https://img.icons8.com/?size=64&id=WthylEaM51Fy&format=png" },        // Часы с солнцем
+    { name: "Позднее утро", icon: "https://img.icons8.com/?size=64&id=WthylEaM51Fy&format=png" },       // Часы с солнцем
+    { name: "День / После полудня", icon: "https://img.icons8.com/?size=64&id=d8hn2NDFO0Xa&format=png" }, // Яркое солнце
+    { name: "Вечер", icon: "https://img.icons8.com/?size=64&id=Y99GcERWY0xR&format=png" },              // Закат
+    { name: "Закат", icon: "https://img.icons8.com/?size=64&id=0EKLxGXpW9ga&format=png" },              // Закат
+    { name: "Сумерки", icon: "https://images.icon-icons.com/1448/PNG/96/42518cityscapeatdusk_99026.png" },            // Луна
+    { name: "Ночь", icon: "https://img.icons8.com/?size=48&id=MwB9VqhaZWPz&format=png" },               // Луна
+    { name: "Полночь", icon: "https://images.icon-icons.com/1448/PNG/96/42513nightwithstars_99010.png" }             // Луна
+];        
+const tracksIcons = {
+    "Франция Alsace - Деревня": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/bbe708-D-n15MKA.png",
+    "Франция Alsace - Деревня (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/bbe708-D-n15MKA.png",
+    "Франция Alsace - тестовая трасса": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/bbe708-D-n15MKA.png",
+    "Франция Alsace - тестовая трасса (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/bbe708-D-n15MKA.png",
+    "Италия Autodrome Lago Maggiore - Восток": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/39f155-Dg_fFdVS.png",
+    "Италия Autodrome Lago Maggiore - Восток (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/39f155-Dg_fFdVS.png",
+    "Италия Autodrome Lago Maggiore - Запад": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/39f155-Dg_fFdVS.png",
+    "Италия Autodrome Lago Maggiore - Запад (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/39f155-Dg_fFdVS.png",
+    "Италия Autodrome Lago Maggiore - Центр": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/39f155-Dg_fFdVS.png",
+    "Италия Autodrome Lago Maggiore - Центр (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/39f155-Dg_fFdVS.png",
+    "Италия Autodrome Lago Maggiore - восточная часть": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/39f155-Dg_fFdVS.png",
+    "Италия Autodrome Lago Maggiore - восточная часть (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/39f155-Dg_fFdVS.png",
+    "Италия Autodrome Lago Maggiore - западная часть": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/39f155-Dg_fFdVS.png",
+    "Италия Autodrome Lago Maggiore - западная часть (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/39f155-Dg_fFdVS.png",
+    "Италия Autodrome Lago Maggiore - полная трасса": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/39f155-Dg_fFdVS.png",
+    "Италия Autodrome Lago Maggiore - полная трасса (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/39f155-Dg_fFdVS.png",
+    "Италия Autodromo Nazionale Monza": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/f8bd64-VsJVPuq0.png",
+    "Италия Autodromo Nazionale Monza (без шиканы)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/f8bd64-VsJVPuq0.png",
+    "Бразилия Autódromo de Interlagos": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/8d9953-CpR-SgHS.png",
+    "Япония Autopolis International Racing Course": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/8d9953-CpR-SgHS.png",
+    "Япония Autopolis International Racing Course - укороченная трасса": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/8d9953-CpR-SgHS.png",
+    "США Blue Moon Bay Speedway": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/971481-BdMNGGxX.png",
+    "США Blue Moon Bay Speedway (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/971481-BdMNGGxX.png",
+    "США Blue Moon Bay Speedway - внутренняя A": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/971481-BdMNGGxX.png",
+    "США Blue Moon Bay Speedway - внутренняя A (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/971481-BdMNGGxX.png",
+    "США Blue Moon Bay Speedway - внутренняя B": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/971481-BdMNGGxX.png",
+    "США Blue Moon Bay Speedway - внутренняя B (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/971481-BdMNGGxX.png",
+    "Великобритания Brands Hatch - Grand Prix Circuit": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/f3d2aa-Bznbpc1M.png",
+    "Великобритания Brands Hatch - Indy Circuit": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/f3d2aa-Bznbpc1M.png",
+    "Япония BB Raceway": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/184eaa-J2LzjAgq.png",
+    "Япония BB Raceway (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/184eaa-J2LzjAgq.png",
+    "Канада Circuit Gilles-Villeneuve": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/4b2a08-Ba_IZ90g.png",
+    "Испания Circuit de Barcelona-Catalunya, вариант GP": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/083de2-BAGcmPUI.png",
+    "Испания Circuit de Barcelona-Catalunya, вариант GP без шиканы": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/083de2-BAGcmPUI.png",
+    "Испания Circuit de Barcelona-Catalunya, вариант национальных гонок": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/083de2-BAGcmPUI.png",
+    "Испания Circuit de Barcelona-Catalunya, вариант ралли-кросса": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/083de2-BAGcmPUI.png",
+    "Франция Circuit de Sainte-Croix - A": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/a768c9-D5wwglAF.png",
+    "Франция Circuit de Sainte-Croix - A (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/a768c9-D5wwglAF.png",
+    "Франция Circuit de Sainte-Croix - B": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/a768c9-D5wwglAF.png",
+    "Франция Circuit de Sainte-Croix - B (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/a768c9-D5wwglAF.png",
+    "Франция Circuit de Sainte-Croix - C": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/a768c9-D5wwglAF.png",
+    "Франция Circuit de Sainte-Croix - C (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/a768c9-D5wwglAF.png",
+    "Франция Circuit de Spa-Francorchamps": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/000971-B75flT8v.png",
+    "Бельгия Spa (24 часа)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/000971-B75flT8v.png",
+    "США Colorado Springs - Озеро": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/cea600-88VGMk4c.png",
+    "США Colorado Springs - Озеро (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/cea600-88VGMk4c.png",
+    "США Daytona - дорожная": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/d1f17e-BDsRccUh.png",
+    "США Daytona - скругленный треугольник": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/d1f17e-BDsRccUh.png",
+    "Швейцария Deep Forest Raceway": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/c81494-mSWpEt3H.png",
+    "Швейцария Deep Forest Raceway (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/c81494-mSWpEt3H.png",
+    "Хорватия Dragon Trail - Берег (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/08df62-C045_y3b.png",
+    "Хорватия Dragon Trail - Побережье": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/08df62-C045_y3b.png",
+    "Хорватия Dragon Trail - Сады": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/08df62-C045_y3b.png",
+    "Хорватия Dragon Trail - Сады (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/08df62-C045_y3b.png",
+    "Швейцария Eiger Nordwand": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/678583-Clq7km73.png",
+    "Швейцария Eiger Nordwand (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/678583-Clq7km73.png",
+    "США Fishermans Ranch": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/f2875b-WIuCWeyA.png",
+    "США Fishermans Ranch (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/f2875b-WIuCWeyA.png",
+    "Япония Fuji International Speedway": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/664e17-DkicWsJ5.png",
+    "Япония Fuji International Speedway - короткая трасса": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/664e17-DkicWsJ5.png",
+    "Великобритания Goodwood Motor Circuit": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/ee72eb--ow1Ep8G.png",
+    "США Grand Valley - шоссе №1": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/df54ec-BTV8E4Ol.png",
+    "США Grand Valley - шоссе №1 (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/df54ec-BTV8E4Ol.png",
+    "США Grand Valley - юг": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/df54ec-BTV8E4Ol.png",
+    "США Grand Valley - юг (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/df54ec-BTV8E4Ol.png",
+    "Франция Heures du Mans (24 часа)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/1d5980-BtTwZ0Sf.png",
+    "Франция Heures du Mans (24 часа) (без шиканы)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/1d5980-BtTwZ0Sf.png",
+    "Япония High Speed Ring": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/9a42fb-ctw1_rUB.png",
+    "Япония High Speed Ring (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/9a42fb-ctw1_rUB.png",
+    "Япония Kyoto Driving Park - Miyabi": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/16ccbf-HZopm0Jc.png",
+    "Япония Kyoto Driving Park - Yamagiwa": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/16ccbf-HZopm0Jc.png",
+    "Япония Kyoto Driving Park - Yamagiwa (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/16ccbf-HZopm0Jc.png",
+    "Япония Kyoto Driving Park - Yamagiwa + Miyabi": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/16ccbf-HZopm0Jc.png",
+    "Япония Kyoto Driving Park - Yamagiwa + Miyabi (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/16ccbf-HZopm0Jc.png",
+    "Канада Lake Louise - длинная": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/2b352d-D3Qc4hj4.png",
+    "Канада Lake Louise - длинная (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/2b352d-D3Qc4hj4.png",
+    "Канада Lake Louise - короткая": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/2b352d-D3Qc4hj4.png",
+    "Канада Lake Louise - короткая (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/2b352d-D3Qc4hj4.png",
+    "Канада Lake Louise - скругленный треугольник": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/2b352d-D3Qc4hj4.png",
+    "Канада Lake Louise - скругленный треугольник (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/2b352d-D3Qc4hj4.png",
+    "США Michelin Raceway Road Atlanta": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/051834-BK1vS4TT.png",
+    "Австралия Mount Panorama Motor Racing Circuit": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/512b99-DMLHKmp_.png",
+    "США Northern Isle Speedway": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/246f6d-B2a8UX0a.png",
+    "Германия Nürburgring (24 часа)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/246f6d-B2a8UX0a.png",
+    "Германия Nürburgring (гонка на выносливость II)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/246f6d-B2a8UX0a.png",
+    "Германия Nürburgring (гонка на выносливость)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/246f6d-B2a8UX0a.png",
+    "Германия Nürburgring (спринт)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/246f6d-B2a8UX0a.png",
+    "Германия Nürburgring GP": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/246f6d-B2a8UX0a.png",
+    "Германия Nürburgring Nordschleife": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/246f6d-B2a8UX0a.png",
+    "Германия Nürburgring Nordschleife (турист.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/246f6d-B2a8UX0a.png",
+    "Австрия Red Bull Ring - короткая трасса": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/f99788-CkF30Q0q.png",
+    "Италия Sardegna - Road Track - A": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/748156-BVeffrVD.png",
+    "Италия Sardegna - Road Track - A (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/748156-BVeffrVD.png",
+    "Италия Sardegna - Road Track - B": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/748156-BVeffrVD.png",
+    "Италия Sardegna - Road Track - B (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/748156-BVeffrVD.png",
+    "Италия Sardegna - Road Track - C": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/748156-BVeffrVD.png",
+    "Италия Sardegna - Road Track - C (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/748156-BVeffrVD.png",
+    "Италия Sardegna - Windmills": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/748156-BVeffrVD.png",
+    "Италия Sardegna - Windmills (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/748156-BVeffrVD.png",
+    "США Special Stage Route X": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/de15df-CaSkkU0R.png",
+    "Япония Suzuka Circuit": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/fd167d-J52xhRm4.png",
+    "Япония Suzuka Circuit - восточная трасса": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/fd167d-J52xhRm4.png",
+    "Япония Tokyo Expressway - Восток (по часовой)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/e9dd33-B7sGBTmw.png",
+    "Япония Tokyo Expressway - Восток (против часовой)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/e9dd33-B7sGBTmw.png",
+    "Япония Tokyo Expressway - Центр (по часовой)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/e9dd33-B7sGBTmw.png",
+    "Япония Tokyo Expressway - Центр (против часовой)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/e9dd33-B7sGBTmw.png",
+    "Япония Tokyo Expressway - Юг (по часовой)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/e9dd33-B7sGBTmw.png",
+    "Япония Tokyo Expressway - Юг (против часовой)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/e9dd33-B7sGBTmw.png",
+    "США Trial Mountain - обратн.": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/e60841-DkNFRL37.png",
+    "США Trial Mountain Circuit": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/e60841-DkNFRL37.png",
+    "Япония Tsukuba Circuit": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/c5de8a-DX9dzSPz.png",
+    "США Watkins Glen (длинная трасса)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/e6ef89-CkruxU9Z.png",
+    "США Watkins Glen (короткая трасса)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/e6ef89-CkruxU9Z.png",
+    "США WeatherTech Raceway Laguna Seca": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/c75e61-DBxJ7RQM.png",
+    "США Willow Springs International Raceway: Big Willow": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/fb6d1f-DDZuZmtt.png",
+    "США Willow Springs International Raceway: Horse Thief Mile": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/fb6d1f-DDZuZmtt.png",
+    "США Willow Springs International Raceway: Horse Thief Mile (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/fb6d1f-DDZuZmtt.png",
+    "США Willow Springs International Raceway: Streets of Willow Springs": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/fb6d1f-DDZuZmtt.png",
+    "США Willow Springs International Raceway: Streets of Willow Springs (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/fb6d1f-DDZuZmtt.png",
+    "ОАЭ Yas Marina Circuit": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/27adb9-DCBqBoAB.png"
+};
+
+               // ------------------- СОСТОЯНИЯ БЛОКИРОВКИ -------------------
+    const locks = {
+        car: false,
+        track: false,
+        weather: false,
+        time: false
+    };
+    
+    // ------------------- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ -------------------
+    function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    
+    function getCarIcon(carName) { return carIcons[carName] || "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car_default.png"; }
+    
+    // ------------------- ОБНОВЛЕНИЕ ПАРАМЕТРОВ -------------------
+    function updateCar() {
+        if (locks.car) return;
+        const carName = getRandomItem(cars);
+        document.getElementById('carValue').textContent = carName;
+        const iconUrl = getCarIcon(carName);
+        const carIcon = document.getElementById('carIcon');
+        carIcon.src = iconUrl;
+        carIcon.style.display = "block";
+        carIcon.onerror = () => { carIcon.style.display = "none"; };
+    }
+    
+    function updateTrack() {
+        if (locks.track) return;
+        const trackName = getRandomItem(tracks);
+        document.getElementById('trackValue').textContent = trackName;
+        const iconUrl = tracksIcons[trackName] || "";
+        const trackIcon = document.getElementById('trackIcon');
+        if (iconUrl) {
+            trackIcon.src = iconUrl;
+            trackIcon.style.display = "block";
+        } else { trackIcon.style.display = "none"; }
+    }
+    
+    function updateWeather() {
+        if (locks.weather) return;
+        const weather = getRandomItem(weathers);
+        document.getElementById('weatherValue').textContent = weather.name;
+        document.getElementById('weatherIcon').src = weather.icon;
+    }
+    
+    function updateTime() {
+        if (locks.time) return;
+        const time = getRandomItem(times);
+        document.getElementById('timeValue').textContent = time.name;
+        document.getElementById('timeIcon').src = time.icon;
+    }
+    
+    // Обновление только НЕзаблокированных параметров
+    function updateUnlockedOnly() {
+        updateCar();
+        updateTrack();
+        updateWeather();
+        updateTime();
+    }
+    
+    // Лотерейный эффект только для машины (если не заблокирована)
+    function spinCarIfUnlocked() {
+        if (locks.car) return;
+        const carBlock = document.getElementById('carBlock');
+        const carValueDiv = document.getElementById('carValue');
+        const carIconImg = document.getElementById('carIcon');
         
-        // ==================== ДИНАМИКА ВРЕМЕНИ ====================
-        function getRandomTimeDynamic() {
-            return Math.floor(Math.random() * 30) + 1;
-        }
+        carBlock.classList.add('spinning');
+        carValueDiv.classList.add('spin-text');
+        if (carIconImg.style.display !== 'none') carIconImg.classList.add('spin-icon');
         
-        function getRandomItem(arr) {
-            if (!arr || arr.length === 0) return "—";
-            return arr[Math.floor(Math.random() * arr.length)];
-        }
-        
-        // ==================== ФУНКЦИИ ОБНОВЛЕНИЯ ====================
-        function updateCar(force = false) {
-            if (!lockCar || force) {
-                const car = getRandomItem(cars);
-                const carElement = document.getElementById('carValue');
-                if (carElement) carElement.textContent = car;
-                const icon = document.getElementById('carIcon');
-                if (icon && carIcons[car]) {
-                    icon.src = carIcons[car];
-                    icon.style.display = "block";
-                    icon.onerror = () => { if(icon) icon.style.display = "none"; };
-                } else if (icon) {
-                    icon.style.display = "none";
-                }
+        let spins = 10;
+        const interval = setInterval(() => {
+            const tempCar = getRandomItem(cars);
+            carValueDiv.textContent = tempCar;
+            carIconImg.src = getCarIcon(tempCar);
+            carIconImg.style.display = "block";
+            spins--;
+            if (spins <= 0) {
+                clearInterval(interval);
+                const finalCar = getRandomItem(cars);
+                carValueDiv.textContent = finalCar;
+                carIconImg.src = getCarIcon(finalCar);
+                carBlock.classList.remove('spinning');
+                carValueDiv.classList.remove('spin-text');
+                carIconImg.classList.remove('spin-icon');
             }
+        }, 60);
+    }
+    
+    // ------------------- БЛОКИРОВКА -------------------
+    function toggleLock(param) {
+        locks[param] = !locks[param];
+        const block = document.getElementById(`${param}Block`);
+        const lockBtn = block.querySelector('.lock-btn');
+        
+        if (locks[param]) {
+            lockBtn.innerHTML = '🔒';
+            block.classList.add('locked');
+        } else {
+            lockBtn.innerHTML = '🔓';
+            block.classList.remove('locked');
         }
+    }
+    
+    // ------------------- ИНИЦИАЛИЗАЦИЯ -------------------
+    function init() {
+        // Привязываем кнопки блокировки
+        document.querySelectorAll('.lock-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const param = btn.getAttribute('data-param');
+                toggleLock(param);
+            });
+        });
         
-        function updateTrack(force = false) {
-            if (!lockTrack || force) {
-                const track = getRandomItem(tracks);
-                const trackElement = document.getElementById('trackValue');
-                if (trackElement) trackElement.textContent = track;
-                const icon = document.getElementById('trackIcon');
-                if (icon && tracksIcons[track]) {
-                    icon.src = tracksIcons[track];
-                    icon.style.display = "block";
-                    icon.onerror = () => { if(icon) icon.style.display = "none"; };
-                } else if (icon) {
-                    icon.style.display = "none";
-                }
-            }
-        }
+        // Основная кнопка - меняет только НЕзаблокированные
+        document.getElementById('randomBtn').addEventListener('click', () => {
+            updateUnlockedOnly();
+            // Если машина не заблокирована - добавляем эффект барабана
+            if (!locks.car) spinCarIfUnlocked();
+        });
         
-        function updateWeather(force = false) {
-            if (!lockWeather || force) {
-                const weather = getRandomItem(weathers);
-                const weatherElement = document.getElementById('weatherValue');
-                if (weatherElement) weatherElement.textContent = weather;
-            }
-        }
+        // Отдельные кнопки (игнорируют блокировку, но с эффектом)
+        document.getElementById('randomCarBtn').addEventListener('click', () => {
+            if (!locks.car) spinCarIfUnlocked();
+            else alert('🔒 Машина заблокирована! Снимите замочек, чтобы изменить.');
+        });
+        document.getElementById('randomTrackBtn').addEventListener('click', () => {
+            if (!locks.track) updateTrack();
+            else alert('🔒 Трасса заблокирована!');
+        });
+        document.getElementById('randomWeatherBtn').addEventListener('click', () => {
+            if (!locks.weather) updateWeather();
+            else alert('🔒 Погода заблокирована!');
+        });
+        document.getElementById('randomTimeBtn').addEventListener('click', () => {
+            if (!locks.time) updateTime();
+            else alert('🔒 Время заблокировано!');
+        });
         
-        function updateTime(force = false) {
-            if (!lockTime || force) {
-                const time = getRandomItem(timesBase);
-                const dynamic = getRandomTimeDynamic();
-                const timeElement = document.getElementById('timeValue');
-                if (timeElement) timeElement.textContent = `${time} (x${dynamic})`;
-            }
-        }
-        
-        function updateAll() {
-            updateCar();
-            updateTrack();
-            updateWeather();
-            updateTime();
-        }
-        
-        // ==================== ОБНОВЛЕНИЕ ВИДА КНОПОК-ЗАМОЧКОВ ====================
-        function updateLockButtons() {
-            const carBtn = document.getElementById('lockCar');
-            const trackBtn = document.getElementById('lockTrack');
-            const weatherBtn = document.getElementById('lockWeather');
-            const timeBtn = document.getElementById('lockTime');
-            
-            if (carBtn) carBtn.innerHTML = lockCar ? '<img src="locked.png" alt="Заблокировано">' : '<img src="unlocked.png" alt="Разблокировано">';
-            if (trackBtn) trackBtn.innerHTML = lockTrack ? '<img src="locked.png" alt="Заблокировано">' : '<img src="unlocked.png" alt="Разблокировано">';
-            if (weatherBtn) weatherBtn.innerHTML = lockWeather ? '<img src="locked.png" alt="Заблокировано">' : '<img src="unlocked.png" alt="Разблокировано">';
-            if (timeBtn) timeBtn.innerHTML = lockTime ? '<img src="locked.png" alt="Заблокировано">' : '<img src="unlocked.png" alt="Разблокировано">';
-        }
-        
-        // ==================== ОБРАБОТЧИКИ КНОПОК ====================
-        const lockCarBtn = document.getElementById('lockCar');
-        const lockTrackBtn = document.getElementById('lockTrack');
-        const lockWeatherBtn = document.getElementById('lockWeather');
-        const lockTimeBtn = document.getElementById('lockTime');
-        const randomBtn = document.getElementById('randomBtn');
-        
-        if (lockCarBtn) lockCarBtn.addEventListener('click', () => { lockCar = !lockCar; updateLockButtons(); });
-        if (lockTrackBtn) lockTrackBtn.addEventListener('click', () => { lockTrack = !lockTrack; updateLockButtons(); });
-        if (lockWeatherBtn) lockWeatherBtn.addEventListener('click', () => { lockWeather = !lockWeather; updateLockButtons(); });
-        if (lockTimeBtn) lockTimeBtn.addEventListener('click', () => { lockTime = !lockTime; updateLockButtons(); });
-        if (randomBtn) randomBtn.addEventListener('click', updateAll);
-        
-        // ==================== ИНИЦИАЛИЗАЦИЯ ====================
-        updateLockButtons();
-        updateAll();
-    </script>
+        // Первоначальная загрузка
+        updateCar();
+        updateTrack();
+        updateWeather();
+        updateTime();
+    }
+    
+    init();
+</script>
 </body>
 </html>
