@@ -109,7 +109,7 @@
             backdrop-filter: blur(2px);
         }
         
-        /* Бейдж динамики времени справа от заголовка */
+        /* Бейдж динамики времени */
         .time-dynamic-badge {
             background: rgba(0, 0, 0, 0.5);
             padding: 2px 8px;
@@ -137,41 +137,22 @@
             object-fit: contain;
         }
         
-        /* Стандартный блок значений (для машины, трассы, погоды) */
+        /* ===== ЕДИНЫЙ БЛОК ДЛЯ ВСЕХ ЗНАЧЕНИЙ (МАШИНА, ТРАССА, ПОГОДА, ВРЕМЯ) ===== */
         .param-value {
-            font-size: 16px;
-            font-weight: 600;
-            color: #f1f5f9;
-            line-height: 1.35;
-            word-break: break-word;
-            background: rgba(15, 23, 42, 0.6);
-            padding: 10px 14px;
-            border-radius: 20px;
-            margin-top: 6px;
-            backdrop-filter: blur(2px);
-        }
-        
-        /* ===== ПЕРЕДЕЛАННЫЙ БЛОК ВРЕМЕНИ ===== */
-        .time-value-wrapper {
-            display: block;
-            width: 100%;
-            padding: 10px 14px;
-            background: rgba(15, 23, 42, 0.6);
-            border-radius: 20px;
-            margin-top: 6px;
-            backdrop-filter: blur(2px);
-        }
-        
-        .time-of-day {
             display: block;
             width: 100%;
             font-size: 16px;
             font-weight: 600;
             color: #f1f5f9;
             line-height: 1.4;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
+            word-break: break-word;
             white-space: normal;
+            overflow-wrap: break-word;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 10px 14px;
+            border-radius: 20px;
+            margin-top: 6px;
+            backdrop-filter: blur(2px);
             text-align: left;
         }
         
@@ -230,6 +211,7 @@
             margin-top: 8px;
         }
         
+        /* Мобильная адаптация */
         @media (max-width: 390px) {
             body { padding: 12px; }
             .container { padding: 16px 14px; border-radius: 36px; }
@@ -239,8 +221,6 @@
             .icon-container { min-height: 50px; }
             .car-icon, .track-icon { max-height: 100px; }
             .param-value { font-size: 14px; padding: 8px 12px; }
-            .time-value-wrapper { padding: 8px 12px; }
-            .time-of-day { font-size: 14px; }
             .time-dynamic-badge { font-size: 10px; padding: 2px 6px; }
             button.lock-btn img { width: 20px; height: 20px; }
             button:not(.lock-btn) { padding: 12px 16px; font-size: 16px; }
@@ -251,8 +231,6 @@
             .param-header { grid-template-columns: 36px 1fr; gap: 4px; }
             .param-label { font-size: 11px; padding: 4px 10px; }
             .param-value { font-size: 13px; padding: 7px 10px; }
-            .time-value-wrapper { padding: 7px 10px; }
-            .time-of-day { font-size: 13px; }
         }
     </style>
 </head>
@@ -310,7 +288,7 @@
                 <div class="param-value" id="weatherValue">—</div>
             </div>
             
-            <!-- ВРЕМЯ (переделанный блок) -->
+            <!-- ВРЕМЯ -->
             <div class="param-block">
                 <div class="param-header">
                     <div class="lock-container">
@@ -325,9 +303,7 @@
                         </span>
                     </div>
                 </div>
-                <div class="time-value-wrapper">
-                    <span class="time-of-day" id="timeValue">—</span>
-                </div>
+                <div class="param-value" id="timeValue">—</div>
             </div>
         </div>
         
@@ -342,7 +318,7 @@
             "Вечер", "Закат", "Сумерки", "Ночь", "Полночь"
         ];
         
-        // ==================== МАШИНЫ (сокращённый список) ====================
+        // ==================== МАШИНЫ ====================
         const carIcons = {
             "Abarth 1500 Biposto Bertone B.A.T 1 '52": "car_icons/car1932.png",
             "Abarth 500 '09": "car_icons/car1973.png",
@@ -366,7 +342,9 @@
         const weathers = [
             "S01 (Ясно, безоблачно)", "S02 (Ясно, малооблачно)", "S03 (Ясно, переменная облачность)",
             "C01 (Пасмурно, но ярко)", "C02 (Пасмурно, тепло)",
-            "R01 (Мелкий дождь, морось)", "R02 (Умеренный дождь)", "R03 (Сильный дождь, ливень)"
+            "R01 (Мелкий дождь, морось)", "R02 (Умеренный дождь)", "R03 (Сильный дождь, ливень)",
+            "R04 (Проливной дождь, гроза)", "R05 (Штормовой дождь, сильный ветер)",
+            "R06 (Тропический ливень)", "R07 (Шквалистый дождь)", "R08 (Экстремальный ливень, нулевая видимость)"
         ];
         
         // ==================== СОСТОЯНИЕ БЛОКИРОВОК ====================
