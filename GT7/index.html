@@ -109,17 +109,6 @@
             backdrop-filter: blur(2px);
         }
         
-        /* Бейдж динамики времени */
-        .time-dynamic-badge {
-            background: rgba(0, 0, 0, 0.5);
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            color: #ffffff;
-            margin-left: 8px;
-        }
-        
         .icon-container {
             background: transparent;
             display: flex;
@@ -137,7 +126,6 @@
             object-fit: contain;
         }
         
-        /* ===== ЕДИНЫЙ БЛОК ДЛЯ ВСЕХ ЗНАЧЕНИЙ (МАШИНА, ТРАССА, ПОГОДА, ВРЕМЯ) ===== */
         .param-value {
             display: block;
             width: 100%;
@@ -211,7 +199,6 @@
             margin-top: 8px;
         }
         
-        /* Мобильная адаптация */
         @media (max-width: 390px) {
             body { padding: 12px; }
             .container { padding: 16px 14px; border-radius: 36px; }
@@ -221,7 +208,6 @@
             .icon-container { min-height: 50px; }
             .car-icon, .track-icon { max-height: 100px; }
             .param-value { font-size: 14px; padding: 8px 12px; }
-            .time-dynamic-badge { font-size: 10px; padding: 2px 6px; }
             button.lock-btn img { width: 20px; height: 20px; }
             button:not(.lock-btn) { padding: 12px 16px; font-size: 16px; }
             .btn-main { font-size: 17px; padding: 13px; }
@@ -288,7 +274,7 @@
                 <div class="param-value" id="weatherValue">—</div>
             </div>
             
-            <!-- ВРЕМЯ -->
+            <!-- ВРЕМЯ (добавлен раздел) -->
             <div class="param-block">
                 <div class="param-header">
                     <div class="lock-container">
@@ -297,10 +283,7 @@
                         </button>
                     </div>
                     <div class="right-content">
-                        <span class="param-label">
-                            ⏰ ВРЕМЯ
-                            <span class="time-dynamic-badge" id="timeDynamicBadge">x1</span>
-                        </span>
+                        <span class="param-label">⏰ ВРЕМЯ</span>
                     </div>
                 </div>
                 <div class="param-value" id="timeValue">—</div>
@@ -313,9 +296,21 @@
     <script>
         // ==================== ВРЕМЯ СУТОК ====================
         const timesBase = [
-            "Ранний рассвет", "Рассвет", "Восход", "Раннее утро", "Утро",
-            "Позднее утро", "День", "После полудня", "Полдень", "Ранний вечер",
-            "Вечер", "Закат", "Сумерки", "Ночь", "Полночь"
+            "Ранний рассвет",
+            "Рассвет", 
+            "Восход", 
+            "Раннее утро", 
+            "Утро",
+            "Позднее утро", 
+            "День", 
+            "После полудня", 
+            "Полдень", 
+            "Ранний вечер",
+            "Вечер", 
+            "Закат", 
+            "Сумерки", 
+            "Ночь", 
+            "Полночь"
         ];
         
         // ==================== МАШИНЫ ====================
@@ -342,9 +337,7 @@
         const weathers = [
             "S01 (Ясно, безоблачно)", "S02 (Ясно, малооблачно)", "S03 (Ясно, переменная облачность)",
             "C01 (Пасмурно, но ярко)", "C02 (Пасмурно, тепло)",
-            "R01 (Мелкий дождь, морось)", "R02 (Умеренный дождь)", "R03 (Сильный дождь, ливень)",
-            "R04 (Проливной дождь, гроза)", "R05 (Штормовой дождь, сильный ветер)",
-            "R06 (Тропический ливень)", "R07 (Шквалистый дождь)", "R08 (Экстремальный ливень, нулевая видимость)"
+            "R01 (Мелкий дождь, морось)", "R02 (Умеренный дождь)", "R03 (Сильный дождь, ливень)"
         ];
         
         // ==================== СОСТОЯНИЕ БЛОКИРОВОК ====================
@@ -354,8 +347,6 @@
         let lockTime = false;
         
         // ==================== ДИНАМИКА ВРЕМЕНИ ====================
-        let currentTimeDynamic = 1;
-        
         function getRandomTimeDynamic() {
             return Math.floor(Math.random() * 30) + 1;
         }
@@ -409,11 +400,9 @@
         function updateTime(force = false) {
             if (!lockTime || force) {
                 const time = getRandomItem(timesBase);
-                currentTimeDynamic = getRandomTimeDynamic();
+                const dynamic = getRandomTimeDynamic();
                 const timeElement = document.getElementById('timeValue');
-                const badgeElement = document.getElementById('timeDynamicBadge');
-                if (timeElement) timeElement.textContent = time;
-                if (badgeElement) badgeElement.textContent = `x${currentTimeDynamic}`;
+                if (timeElement) timeElement.textContent = `${time} (x${dynamic})`;
             }
         }
         
