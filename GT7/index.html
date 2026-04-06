@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>GT7 Random Race</title>
 
     <link rel="apple-touch-icon" href="gt7.png">
@@ -14,6 +14,7 @@
             box-sizing: border-box;
         }
         
+        /* Запрещаем выделение текста и увеличение при долгом нажатии */
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background: #0a0a1a;
@@ -25,6 +26,21 @@
             align-items: center;
             padding: 0;
             margin: 0;
+            touch-action: pan-y pinch-zoom;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Запрещаем выделение текста на всех элементах */
+        * {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        /* Разрешаем выделение только в полях ввода (если они появятся) */
+        input, textarea {
+            -webkit-user-select: text;
+            user-select: text;
         }
         
         /* Контейнер с фоном на весь экран */
@@ -215,7 +231,7 @@
             .param-block { padding: 10px 12px; margin-bottom: 20px; }
             .param-label { font-size: 14px; padding: 5px 12px; }
             .icon-container { min-height: 50px; }
-            .car-icon { max-height: 100px; }
+            .car-icon { max-height: 120px; }
             .track-icon { max-height: 65px; }
             .param-value { font-size: 15px; padding: 9px 12px; }
             button.lock-btn img { width: 36px; height: 36px; }
