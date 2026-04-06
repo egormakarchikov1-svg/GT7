@@ -38,12 +38,12 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 0;
+            padding: 16px;
             position: relative;
             box-shadow: none;
         }
         
-        /* Умеренное затемнение с лёгким размытием */
+        /* Умеренное затемнение */
         .container::before {
             content: '';
             position: absolute;
@@ -56,43 +56,38 @@
             z-index: 0;
         }
         
-        /* Все содержимое — поверх затемнения */
         .container > * {
             position: relative;
             z-index: 1;
         }
         
-        /* Карточка с результатами — занимает ВЕСЬ экран */
+        /* Карточка с результатами — на всю ширину */
         .result-card {
             background: rgba(30, 41, 59, 0.65);
             backdrop-filter: blur(5px);
-            border-radius: 0;
-            padding: 20px 18px 24px 18px;
+            border-radius: 44px;
+            padding: 24px 20px 28px 20px;
             width: 100%;
-            height: 100vh;
-            max-width: none;
+            max-width: 100%;
             margin: 0;
-            border: none;
-            box-shadow: none;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 20px 35px rgba(0,0,0,0.3);
         }
         
         .param-block {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
         
         .param-block:last-child {
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
         
-        /* Строка: замок + название + иконка (иконка растягивается) */
+        /* Строка: замок + название + иконка */
         .param-header {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
+            gap: 12px;
+            margin-bottom: 10px;
         }
         
         .lock-container {
@@ -102,13 +97,38 @@
             flex-shrink: 0;
         }
         
+        /* Увеличенные замки */
+        button.lock-btn {
+            background: transparent !important;
+            border: none !important;
+            cursor: pointer !important;
+            padding: 6px 8px !important;
+            margin: 0 !important;
+            width: auto !important;
+            min-width: 44px !important;
+            box-shadow: none !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        button.lock-btn img {
+            width: 28px;
+            height: 28px;
+            display: block;
+        }
+        
+        button.lock-btn:active {
+            transform: scale(0.92);
+        }
+        
         .param-label {
             font-weight: 700;
             color: #ff4d4d;
             background: rgba(15, 23, 42, 0.75);
-            padding: 5px 12px;
+            padding: 6px 14px;
             border-radius: 30px;
-            font-size: 13px;
+            font-size: 15px;
             letter-spacing: 1px;
             white-space: nowrap;
             display: inline-flex;
@@ -123,32 +143,31 @@
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            min-height: 55px;
+            min-height: 60px;
             padding: 4px 0;
         }
         
-        /* Иконка машины — отдельный размер */
         .car-icon {
             max-width: 100%;
-            max-height: 30px;
+            max-height: 100px;
             width: auto;
             height: auto;
             object-fit: contain;
         }
         
-        /* Иконка трассы — отдельный размер */
         .track-icon {
             max-width: 100%;
-            max-height: 70px;
+            max-height: 80px;
             width: auto;
             height: auto;
             object-fit: contain;
         }
         
+        /* Увеличенный шрифт для значений */
         .param-value {
             display: block;
             width: 100%;
-            font-size: 15px;
+            font-size: 17px;
             font-weight: 600;
             color: #f1f5f9;
             line-height: 1.4;
@@ -156,43 +175,19 @@
             white-space: normal;
             overflow-wrap: break-word;
             background: rgba(15, 23, 42, 0.6);
-            padding: 8px 12px;
+            padding: 10px 14px;
             border-radius: 20px;
             margin-top: 6px;
             backdrop-filter: blur(4px);
             text-align: left;
         }
         
-        button.lock-btn {
-            background: transparent !important;
-            border: none !important;
-            cursor: pointer !important;
-            padding: 4px 6px !important;
-            margin: 0 !important;
-            width: auto !important;
-            min-width: 36px !important;
-            box-shadow: none !important;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        button.lock-btn img {
-            width: 22px;
-            height: 22px;
-            display: block;
-        }
-        
-        button.lock-btn:active {
-            transform: scale(0.92);
-        }
-        
         button:not(.lock-btn) {
             background: #ff4d4d;
             color: white;
             border: none;
-            padding: 12px 18px;
-            font-size: 16px;
+            padding: 14px 20px;
+            font-size: 18px;
             font-weight: 600;
             border-radius: 60px;
             cursor: pointer;
@@ -212,32 +207,34 @@
         .btn-main {
             width: 100%;
             background: #ff4d4d;
-            font-size: 17px;
-            padding: 14px;
-            margin-top: 8px;
+            font-size: 19px;
+            padding: 16px;
+            margin-top: 10px;
         }
         
         /* Адаптация для телефонов */
         @media (max-width: 480px) {
-            .container { padding: 0; }
-            .result-card { padding: 16px 14px 20px 14px; }
-            .param-label { font-size: 12px; padding: 4px 10px; }
-            .icon-container { min-height: 48px; }
-            .car-icon { max-height: 120px; }
-            .track-icon { max-height: 60px; }
-            .param-value { font-size: 13px; padding: 7px 10px; }
-            button.lock-btn img { width: 18px; height: 18px; }
-            button:not(.lock-btn) { padding: 10px 16px; font-size: 15px; }
-            .btn-main { font-size: 16px; padding: 12px; margin-top: 6px; }
+            .container { padding: 12px; }
+            .result-card { padding: 20px 16px 24px 16px; }
+            .param-label { font-size: 14px; padding: 5px 12px; }
+            .icon-container { min-height: 55px; }
+            .car-icon { max-height: 110px; }
+            .track-icon { max-height: 70px; }
+            .param-value { font-size: 16px; padding: 9px 12px; }
+            button.lock-btn img { width: 26px; height: 26px; }
+            button:not(.lock-btn) { padding: 12px 18px; font-size: 17px; }
+            .btn-main { font-size: 18px; padding: 14px; margin-top: 8px; }
+            .param-block { margin-bottom: 22px; }
         }
         
         @media (max-width: 360px) {
-            .result-card { padding: 14px 12px 18px 12px; }
-            .param-label { font-size: 11px; padding: 4px 8px; }
-            .car-icon { max-height: 65px; }
-            .track-icon { max-height: 50px; }
-            .param-value { font-size: 12px; padding: 6px 8px; }
-            .btn-main { font-size: 15px; padding: 10px; }
+            .result-card { padding: 16px 12px 20px 12px; }
+            .param-label { font-size: 13px; padding: 4px 10px; }
+            .car-icon { max-height: 95px; }
+            .track-icon { max-height: 60px; }
+            .param-value { font-size: 15px; padding: 8px 10px; }
+            button.lock-btn img { width: 24px; height: 24px; }
+            .btn-main { font-size: 17px; padding: 12px; }
         }
     </style>
 </head>
@@ -302,7 +299,6 @@
                 <div class="param-value" id="timeValue">—</div>
             </div>
             
-            <!-- КНОПКА ВНУТРИ КАРТОЧКИ -->
             <button id="randomBtn" class="btn-main">🎲 СЛУЧАЙНАЯ ГОНКА</button>
         </div>
     </div>
