@@ -107,22 +107,22 @@
         }
         
         .icon-container {
-            flex: 1;
             display: flex;
             align-items: center;
-            justify-content: flex-end;
+            justify-content: flex-start;
+            margin-left: 8px;
         }
         
         .car-icon, .track-icon {
             width: auto;
-            height: 60px;
+            height: 50px;
             max-width: 100%;
             object-fit: contain;
         }
         
         .weather-icon, .time-icon {
             width: auto;
-            height: 50px;
+            height: 40px;
             object-fit: contain;
         }
         
@@ -189,15 +189,15 @@
             .result-card { padding: 12px 14px; }
             .param-label { font-size: 12px; padding: 5px 12px; white-space: normal; }
             .lock-btn { font-size: 18px; min-width: 32px; }
-            .car-icon, .track-icon { height: 50px; }
-            .weather-icon, .time-icon { height: 42px; }
+            .car-icon, .track-icon { height: 40px; }
+            .weather-icon, .time-icon { height: 32px; }
             .param-value { font-size: 13px; padding: 8px 12px; }
         }
         
         @media (max-width: 380px) {
             .param-label { font-size: 11px; padding: 4px 10px; }
-            .car-icon, .track-icon { height: 42px; }
-            .weather-icon, .time-icon { height: 36px; }
+            .car-icon, .track-icon { height: 35px; }
+            .weather-icon, .time-icon { height: 28px; }
         }
     </style>
 </head>
@@ -241,7 +241,7 @@
             <div class="param-value" id="weatherValue">—</div>
         </div>
         
-        <!-- ВРЕМЯ (объединено в один элемент) -->
+        <!-- ВРЕМЯ -->
         <div class="param-block">
             <div class="param-header">
                 <button class="lock-btn unlocked" id="lockTime">🔓</button>
@@ -263,21 +263,25 @@
 </div>
 
 <script>
-    // ==================== ИКОНКИ МАШИН ====================
+    // ==================== БАЗОВЫЙ URL ДЛЯ ИКОНОК НА GITHUB ====================
+    // ЗАМЕНИТЕ username И repository НА ВАШИ
+    const GITHUB_RAW_URL = 'https://raw.githubusercontent.com/egormakarchikov1-svg/GT7/main';
+    
+    // ==================== ИКОНКИ МАШИН (через GitHub) ====================
     const carIcons = {
-        "Abarth 1500 Biposto Bertone B.A.T 1 '52": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1932.png",
-        "Abarth 500 '09": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3438.png",
-        "Abarth 595 SS '70": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3579.png",
-        "AFEELA 1 '26": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3546.png"
+        "Abarth 1500 Biposto Bertone B.A.T 1 '52": "car_icons/car1932.png",
+        "Abarth 500 '09": `${GITHUB_RAW_URL}/car_icons/car3438.png`,
+        "Abarth 595 SS '70": `${GITHUB_RAW_URL}/car_icons/car3579.png`,
+        "AFEELA 1 '26": `${GITHUB_RAW_URL}/car_icons/car3546.png`
     };
     const cars = Object.keys(carIcons);
     
-    // ==================== ИКОНКИ ТРАСС ====================
+    // ==================== ИКОНКИ ТРАСС (через GitHub) ====================
     const tracksIcons = {
-        "Франция Alsace - Деревня": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/bbe708-D-n15MKA.png",
-        "Франция Alsace - Деревня (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/bbe708-D-n15MKA.png",
-        "Франция Alsace - тестовая трасса": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/bbe708-D-n15MKA.png",
-        "Франция Alsace - тестовая трасса (обратн.)": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/bbe708-D-n15MKA.png"
+        "Франция Alsace - Деревня": "track_icons/bbe708-D-n15MKA.png",
+        "Франция Alsace - Деревня (обратн.)": `${GITHUB_RAW_URL}/track_icons/bbe708-D-n15MKA.png`,
+        "Франция Alsace - тестовая трасса": `${GITHUB_RAW_URL}/track_icons/bbe708-D-n15MKA.png`,
+        "Франция Alsace - тестовая трасса (обратн.)": `${GITHUB_RAW_URL}/track_icons/bbe708-D-n15MKA.png`
     };
     const tracks = Object.keys(tracksIcons);
     
@@ -358,7 +362,6 @@
         if (lockTime) return;
         const time = getRandomItem(times);
         const dynamic = getRandomTimeDynamic();
-        // Объединяем время и динамику в одну строку
         document.getElementById('timeValue').textContent = `${time.name} (X${dynamic.toString().padStart(2, '0')})`;
         document.getElementById('timeIcon').src = time.icon;
         document.getElementById('timeIcon').style.display = "block";
