@@ -43,10 +43,10 @@
             user-select: text;
         }
         
-        /* Контейнер с фоном на весь экран */
+        /* Контейнер с фоном на весь экран — фон ВМЕЩАЕТСЯ в экран */
         .container {
             background-image: url('images/gt7images.jpg');
-            background-size: cover;
+            background-size: contain;      /* ← изменено с cover на contain */
             background-position: center;
             background-repeat: no-repeat;
             width: 100%;
