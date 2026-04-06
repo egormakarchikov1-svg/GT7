@@ -2,8 +2,11 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <title>GT7 Random Race - Блокировка параметров 🔒</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>GT7 Random Race</title>
+
+    <link rel="apple-touch-icon" href="gt7.png">
+    
     <style>
         * {
             margin: 0;
@@ -12,50 +15,61 @@
         }
         
         body {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-image: url('https://static.wikia.nocookie.net/gran-turismo/images/6/69/GT7_Poster.jpg/revision/latest?cb=20210910231708');
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-image: url('images/gt7images.jpg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
             color: #eee;
             text-align: center;
+            padding: 16px;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 16px;
+            position: relative;
         }
         
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: -1;
+        }
+        
+        /* Единый контейнер — основная рамка */
         .container {
             background: rgba(30, 41, 59, 0.85);
             backdrop-filter: blur(12px);
             border-radius: 44px;
             padding: 20px 18px;
-            max-width: 500px;
+            max-width: 400px;
             width: 100%;
             box-shadow: 0 20px 35px rgba(0,0,0,0.4);
             border: 1px solid rgba(255,255,255,0.1);
         }
         
+        /* Карточка результатов — без фона и рамок, сливается с контейнером */
         .result-card {
-            background: rgba(5, 7, 15, 0);
-            border-radius: 28px;
-            padding: 16px 18px;
-            margin: 12px 0;
+            background: transparent;
+            padding: 0;
+            margin: 0;
             text-align: left;
-            border: 1px solid rgba(51, 65, 85, 0.6);
+            border: none;
         }
         
         .param-block {
             margin-bottom: 20px;
-            border-bottom: 1px solid rgba(51, 65, 85, 0.5);
-            padding-bottom: 14px;
+            padding-bottom: 0;
+            border-bottom: none;
         }
         
         .param-block:last-child {
-            border-bottom: none;
             margin-bottom: 0;
-            padding-bottom: 0;
         }
         
         .param-header {
@@ -65,30 +79,18 @@
             margin-bottom: 10px;
         }
         
-        .lock-btn {
-            background: transparent;
-            border: none;
-            font-size: 22px;
-            cursor: pointer;
-            padding: 4px 6px;
-            border-radius: 30px;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
+        .lock-container {
+            display: flex;
             justify-content: center;
-            min-width: 36px;
+            align-items: center;
         }
         
-        .lock-btn:active {
-            transform: scale(0.92);
-        }
-        
-        .lock-btn.locked {
-            color: #ff4d4d;
-        }
-        
-        .lock-btn.unlocked {
-            color: #fbbf24;
+        .right-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            width: 100%;
         }
         
         .param-label {
@@ -97,47 +99,71 @@
             background: rgba(15, 23, 42, 0.8);
             padding: 6px 14px;
             border-radius: 30px;
-            font-size: 14px;
+            font-size: 13px;
             letter-spacing: 1px;
+            white-space: nowrap;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
             backdrop-filter: blur(2px);
-            white-space: nowrap;
         }
         
         .icon-container {
+            background: transparent;
             display: flex;
             align-items: center;
-            justify-content: flex-start;
-            margin-left: 8px;
+            justify-content: flex-end;
+            min-height: 60px;
+            padding: 4px 0;
         }
         
         .car-icon, .track-icon {
-            width: auto;
-            height: 50px;
             max-width: 100%;
-            object-fit: contain;
-        }
-        
-        .weather-icon, .time-icon {
+            max-height: 120px;
             width: auto;
-            height: 40px;
+            height: auto;
             object-fit: contain;
         }
         
         .param-value {
-            font-size: 15px;
+            display: block;
+            width: 100%;
+            font-size: 16px;
             font-weight: 600;
             color: #f1f5f9;
             line-height: 1.4;
             word-break: break-word;
+            white-space: normal;
+            overflow-wrap: break-word;
             background: rgba(15, 23, 42, 0.6);
             padding: 10px 14px;
             border-radius: 20px;
-            margin-top: 8px;
+            margin-top: 6px;
             backdrop-filter: blur(2px);
-            text-align: center;
+            text-align: left;
+        }
+        
+        button.lock-btn {
+            background: transparent !important;
+            border: none !important;
+            cursor: pointer !important;
+            padding: 4px 6px !important;
+            margin: 0 !important;
+            width: auto !important;
+            min-width: 36px !important;
+            box-shadow: none !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        button.lock-btn img {
+            width: 24px;
+            height: 24px;
+            display: block;
+        }
+        
+        button.lock-btn:active {
+            transform: scale(0.92);
         }
         
         button:not(.lock-btn) {
@@ -145,21 +171,21 @@
             color: white;
             border: none;
             padding: 14px 20px;
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 600;
             border-radius: 60px;
             cursor: pointer;
-            margin: 8px 6px;
+            margin: 6px 4px;
             transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            box-shadow: 0 5px 15px rgba(255,77,77,0.2);
+            box-shadow: 0 4px 12px rgba(255,77,77,0.25);
         }
         
         button:not(.lock-btn):active {
-            transform: scale(0.96);
+            transform: scale(0.97);
             background: #e03a3a;
         }
         
@@ -167,263 +193,250 @@
             width: 100%;
             background: #ff4d4d;
             font-size: 18px;
-            padding: 16px;
+            padding: 15px;
+            margin-top: 8px;
         }
         
-        .btn-icon {
-            width: 20px;
-            height: 20px;
-            filter: brightness(0) invert(1);
-        }
-        
-        .footer {
-            font-size: 11px;
-            color: #94a3b8;
-            margin-top: 16px;
-            text-align: center;
-        }
-        
-        @media (max-width: 480px) {
+        @media (max-width: 390px) {
             body { padding: 12px; }
             .container { padding: 16px 14px; border-radius: 36px; }
-            .result-card { padding: 12px 14px; }
-            .param-label { font-size: 12px; padding: 5px 12px; white-space: normal; }
-            .lock-btn { font-size: 18px; min-width: 32px; }
-            .car-icon, .track-icon { height: 40px; }
-            .weather-icon, .time-icon { height: 32px; }
-            .param-value { font-size: 13px; padding: 8px 12px; }
+            .param-label { font-size: 12px; padding: 5px 12px; }
+            .icon-container { min-height: 50px; }
+            .car-icon, .track-icon { max-height: 100px; }
+            .param-value { font-size: 14px; padding: 8px 12px; }
+            button.lock-btn img { width: 20px; height: 20px; }
+            button:not(.lock-btn) { padding: 12px 16px; font-size: 16px; }
+            .btn-main { font-size: 17px; padding: 13px; }
         }
         
-        @media (max-width: 380px) {
+        @media (max-width: 340px) {
             .param-label { font-size: 11px; padding: 4px 10px; }
-            .car-icon, .track-icon { height: 35px; }
-            .weather-icon, .time-icon { height: 28px; }
+            .param-value { font-size: 13px; padding: 7px 10px; }
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="result-card">
-        
-        <!-- МАШИНА -->
-        <div class="param-block">
-            <div class="param-header">
-                <button class="lock-btn unlocked" id="lockCar">🔓</button>
-                <span class="param-label">🏎️ МАШИНА</span>
-                <div class="icon-container">
-                    <img class="car-icon" id="carIcon" src="" style="display: none;">
+    <div class="container">
+        <div class="result-card">
+            <!-- МАШИНА -->
+            <div class="param-block">
+                <div class="param-header">
+                    <div class="lock-container">
+                        <button class="lock-btn" id="lockCar">
+                            <img src="unlocked.png" alt="Разблокировано">
+                        </button>
+                    </div>
+                    <div class="right-content">
+                        <span class="param-label">🏎️ МАШИНА</span>
+                        <div class="icon-container">
+                            <img class="car-icon" id="carIcon" src="" style="display: none;">
+                        </div>
+                    </div>
                 </div>
+                <div class="param-value" id="carValue">—</div>
             </div>
-            <div class="param-value" id="carValue">—</div>
+            
+            <!-- ТРАССА -->
+            <div class="param-block">
+                <div class="param-header">
+                    <div class="lock-container">
+                        <button class="lock-btn" id="lockTrack">
+                            <img src="unlocked.png" alt="Разблокировано">
+                        </button>
+                    </div>
+                    <div class="right-content">
+                        <span class="param-label">🛣️ ТРАССА</span>
+                        <div class="icon-container">
+                            <img class="track-icon" id="trackIcon" src="" style="display: none;">
+                        </div>
+                    </div>
+                </div>
+                <div class="param-value" id="trackValue">—</div>
+            </div>
+            
+            <!-- ПОГОДА -->
+            <div class="param-block">
+                <div class="param-header">
+                    <div class="lock-container">
+                        <button class="lock-btn" id="lockWeather">
+                            <img src="unlocked.png" alt="Разблокировано">
+                        </button>
+                    </div>
+                    <div class="right-content">
+                        <span class="param-label">🌦️ ПОГОДА</span>
+                    </div>
+                </div>
+                <div class="param-value" id="weatherValue">—</div>
+            </div>
+            
+            <!-- ВРЕМЯ -->
+            <div class="param-block">
+                <div class="param-header">
+                    <div class="lock-container">
+                        <button class="lock-btn" id="lockTime">
+                            <img src="unlocked.png" alt="Разблокировано">
+                        </button>
+                    </div>
+                    <div class="right-content">
+                        <span class="param-label">⏰ ВРЕМЯ</span>
+                    </div>
+                </div>
+                <div class="param-value" id="timeValue">—</div>
+            </div>
         </div>
         
-        <!-- ТРАССА -->
-        <div class="param-block">
-            <div class="param-header">
-                <button class="lock-btn unlocked" id="lockTrack">🔓</button>
-                <span class="param-label">🛣️ ТРАССА</span>
-                <div class="icon-container">
-                    <img class="track-icon" id="trackIcon" src="" style="display: none;">
-                </div>
-            </div>
-            <div class="param-value" id="trackValue">—</div>
-        </div>
-        
-        <!-- ПОГОДА -->
-        <div class="param-block">
-            <div class="param-header">
-                <button class="lock-btn unlocked" id="lockWeather">🔓</button>
-                <span class="param-label">🌦️ ПОГОДА</span>
-                <div class="icon-container">
-                    <img class="weather-icon" id="weatherIcon" src="" style="display: none;">
-                </div>
-            </div>
-            <div class="param-value" id="weatherValue">—</div>
-        </div>
-        
-        <!-- ВРЕМЯ -->
-        <div class="param-block">
-            <div class="param-header">
-                <button class="lock-btn unlocked" id="lockTime">🔓</button>
-                <span class="param-label">⏰ ВРЕМЯ</span>
-                <div class="icon-container">
-                    <img class="time-icon" id="timeIcon" src="" style="display: none;">
-                </div>
-            </div>
-            <div class="param-value" id="timeValue">—</div>
-        </div>
+        <button id="randomBtn" class="btn-main">🎲 СЛУЧАЙНАЯ ГОНКА</button>
     </div>
-    
-    <button id="randomBtn" class="btn-main">
-        <img src="https://img.icons8.com/?size=80&id=raY4YhlfR3SI&format=png" class="btn-icon" alt="dice">
-        🎲 СЛУЧАЙНАЯ ГОНКА
-    </button>
-    
-    <div class="footer">🔓 — разблокировано (будет меняться) | 🔒 — заблокировано (не изменится)</div>
-</div>
 
-<script>
-    // ==================== БАЗОВЫЙ URL ДЛЯ ИКОНОК НА GITHUB ====================
-    // ЗАМЕНИТЕ username И repository НА ВАШИ
-    const GITHUB_RAW_URL = 'https://raw.githubusercontent.com/egormakarchikov1-svg/GT7/main';
-    
-    // ==================== ИКОНКИ МАШИН (через GitHub) ====================
-    const carIcons = {
-        "Abarth 1500 Biposto Bertone B.A.T 1 '52": "car_icons/car1932.png",
-        "Abarth 500 '09": `${GITHUB_RAW_URL}/car_icons/car3438.png`,
-        "Abarth 595 SS '70": `${GITHUB_RAW_URL}/car_icons/car3579.png`,
-        "AFEELA 1 '26": `${GITHUB_RAW_URL}/car_icons/car3546.png`
-    };
-    const cars = Object.keys(carIcons);
-    
-    // ==================== ИКОНКИ ТРАСС (через GitHub) ====================
-    const tracksIcons = {
-        "Франция Alsace - Деревня": "track_icons/bbe708-D-n15MKA.png",
-        "Франция Alsace - Деревня (обратн.)": `${GITHUB_RAW_URL}/track_icons/bbe708-D-n15MKA.png`,
-        "Франция Alsace - тестовая трасса": `${GITHUB_RAW_URL}/track_icons/bbe708-D-n15MKA.png`,
-        "Франция Alsace - тестовая трасса (обратн.)": `${GITHUB_RAW_URL}/track_icons/bbe708-D-n15MKA.png`
-    };
-    const tracks = Object.keys(tracksIcons);
-    
-    // ==================== ПОГОДА ====================
-    const weathers = [
-        { name: "S01 (Ясно, безоблачно)", icon: "https://img.icons8.com/?size=48&id=8EUmYhfLPTCF&format=png" },
-        { name: "S02 (Ясно, малооблачно)", icon: "https://img.icons8.com/?size=48&id=8EUmYhfLPTCF&format=png" },
-        { name: "R01 (Мелкий дождь, морось)", icon: "https://img.icons8.com/?size=48&id=PIXtKMDAXCzo&format=png" }
-    ];
-    
-    // ==================== ВРЕМЯ СУТОК ====================
-    const times = [
-        { name: "Ранний рассвет", icon: "https://img.icons8.com/?size=64&id=eyfQLJcRAECO&format=png" },
-        { name: "Рассвет", icon: "https://img.icons8.com/?size=64&id=eyfQLJcRAECO&format=png" },
-        { name: "Восход", icon: "https://img.icons8.com/?size=64&id=eyfQLJcRAECO&format=png" },
-        { name: "Утро", icon: "https://img.icons8.com/?size=64&id=WthylEaM51Fy&format=png" },
-        { name: "День", icon: "https://img.icons8.com/?size=64&id=d8hn2NDFO0Xa&format=png" },
-        { name: "Вечер", icon: "https://img.icons8.com/?size=64&id=Y99GcERWY0xR&format=png" },
-        { name: "Закат", icon: "https://img.icons8.com/?size=64&id=0EKLxGXpW9ga&format=png" },
-        { name: "Сумерки", icon: "https://images.icon-icons.com/1448/PNG/96/42518cityscapeatdusk_99026.png" },
-        { name: "Ночь", icon: "https://img.icons8.com/?size=48&id=MwB9VqhaZWPz&format=png" },
-        { name: "Полночь", icon: "https://images.icon-icons.com/1448/PNG/96/42513nightwithstars_99010.png" }
-    ];
-    
-    // ==================== СОСТОЯНИЯ БЛОКИРОВКИ ====================
-    let lockCar = false;
-    let lockTrack = false;
-    let lockWeather = false;
-    let lockTime = false;
-    
-    // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
-    function getRandomItem(arr) {
-        return arr[Math.floor(Math.random() * arr.length)];
-    }
-    
-    function getRandomTimeDynamic() {
-        return Math.floor(Math.random() * 30) + 1;
-    }
-    
-    // ==================== ФУНКЦИИ ОБНОВЛЕНИЯ ====================
-    function updateCar() {
-        if (lockCar) return;
-        const carName = getRandomItem(cars);
-        document.getElementById('carValue').textContent = carName;
-        const icon = document.getElementById('carIcon');
-        if (carIcons[carName]) {
-            icon.src = carIcons[carName];
-            icon.style.display = "block";
-            icon.onerror = () => { icon.style.display = "none"; };
-        } else {
-            icon.style.display = "none";
+    <script>
+        // ==================== ВРЕМЯ СУТОК ====================
+        const timesBase = [
+            "Ранний рассвет",
+            "Рассвет", 
+            "Восход", 
+            "Раннее утро", 
+            "Утро",
+            "Позднее утро", 
+            "День", 
+            "После полудня", 
+            "Полдень", 
+            "Ранний вечер",
+            "Вечер", 
+            "Закат", 
+            "Сумерки", 
+            "Ночь", 
+            "Полночь"
+        ];
+        
+        // ==================== МАШИНЫ ====================
+        const carIcons = {
+            "Abarth 1500 Biposto Bertone B.A.T 1 '52": "car_icons/car1932.png",
+            "Abarth 500 '09": "car_icons/car1973.png",
+            "BMW M3 '07": "car_icons/car1399.png",
+            "Nissan GT-R '17": "car_icons/car2167.png",
+            "Porsche 911 GT3 RS '22": "car_icons/car3539.png"
+        };
+        const cars = Object.keys(carIcons);
+        
+        // ==================== ТРАССЫ ====================
+        const tracksIcons = {
+            "Франция Alsace - Деревня": "track_icons/bbe708-D-n15MKA.png",
+            "Италия Autodrome Lago Maggiore - Восток": "track_icons/39f155-Dg_fFdVS.png",
+            "США Blue Moon Bay Speedway": "track_icons/971481-BdMNGGxX.png",
+            "Япония Tokyo Expressway - Восток": "track_icons/e9dd33-B7sGBTmw.png",
+            "Германия Nürburgring Nordschleife": "track_icons/246f6d-B2a8UX0a.png"
+        };
+        const tracks = Object.keys(tracksIcons);
+        
+        // ==================== ПОГОДА ====================
+        const weathers = [
+            "S01 (Ясно, безоблачно)", "S02 (Ясно, малооблачно)", "S03 (Ясно, переменная облачность)",
+            "C01 (Пасмурно, но ярко)", "C02 (Пасмурно, тепло)",
+            "R01 (Мелкий дождь, морось)", "R02 (Умеренный дождь)", "R03 (Сильный дождь, ливень)"
+        ];
+        
+        // ==================== СОСТОЯНИЕ БЛОКИРОВОК ====================
+        let lockCar = false;
+        let lockTrack = false;
+        let lockWeather = false;
+        let lockTime = false;
+        
+        // ==================== ДИНАМИКА ВРЕМЕНИ ====================
+        function getRandomTimeDynamic() {
+            return Math.floor(Math.random() * 30) + 1;
         }
-    }
-    
-    function updateTrack() {
-        if (lockTrack) return;
-        const trackName = getRandomItem(tracks);
-        document.getElementById('trackValue').textContent = trackName;
-        const icon = document.getElementById('trackIcon');
-        if (tracksIcons[trackName]) {
-            icon.src = tracksIcons[trackName];
-            icon.style.display = "block";
-            icon.onerror = () => { icon.style.display = "none"; };
-        } else {
-            icon.style.display = "none";
+        
+        function getRandomItem(arr) {
+            if (!arr || arr.length === 0) return "—";
+            return arr[Math.floor(Math.random() * arr.length)];
         }
-    }
-    
-    function updateWeather() {
-        if (lockWeather) return;
-        const weather = getRandomItem(weathers);
-        document.getElementById('weatherValue').textContent = weather.name;
-        document.getElementById('weatherIcon').src = weather.icon;
-        document.getElementById('weatherIcon').style.display = "block";
-    }
-    
-    function updateTime() {
-        if (lockTime) return;
-        const time = getRandomItem(times);
-        const dynamic = getRandomTimeDynamic();
-        document.getElementById('timeValue').textContent = `${time.name} (X${dynamic.toString().padStart(2, '0')})`;
-        document.getElementById('timeIcon').src = time.icon;
-        document.getElementById('timeIcon').style.display = "block";
-    }
-    
-    function updateAll() {
-        updateCar();
-        updateTrack();
-        updateWeather();
-        updateTime();
-    }
-    
-    // ==================== ОБНОВЛЕНИЕ ВИДА ЗАМОЧКОВ ====================
-    function updateLockButtons() {
-        const carBtn = document.getElementById('lockCar');
-        const trackBtn = document.getElementById('lockTrack');
-        const weatherBtn = document.getElementById('lockWeather');
-        const timeBtn = document.getElementById('lockTime');
         
-        carBtn.textContent = lockCar ? '🔒' : '🔓';
-        carBtn.classList.toggle('locked', lockCar);
-        carBtn.classList.toggle('unlocked', !lockCar);
+        // ==================== ФУНКЦИИ ОБНОВЛЕНИЯ ====================
+        function updateCar(force = false) {
+            if (!lockCar || force) {
+                const car = getRandomItem(cars);
+                const carElement = document.getElementById('carValue');
+                if (carElement) carElement.textContent = car;
+                const icon = document.getElementById('carIcon');
+                if (icon && carIcons[car]) {
+                    icon.src = carIcons[car];
+                    icon.style.display = "block";
+                    icon.onerror = () => { if(icon) icon.style.display = "none"; };
+                } else if (icon) {
+                    icon.style.display = "none";
+                }
+            }
+        }
         
-        trackBtn.textContent = lockTrack ? '🔒' : '🔓';
-        trackBtn.classList.toggle('locked', lockTrack);
-        trackBtn.classList.toggle('unlocked', !lockTrack);
+        function updateTrack(force = false) {
+            if (!lockTrack || force) {
+                const track = getRandomItem(tracks);
+                const trackElement = document.getElementById('trackValue');
+                if (trackElement) trackElement.textContent = track;
+                const icon = document.getElementById('trackIcon');
+                if (icon && tracksIcons[track]) {
+                    icon.src = tracksIcons[track];
+                    icon.style.display = "block";
+                    icon.onerror = () => { if(icon) icon.style.display = "none"; };
+                } else if (icon) {
+                    icon.style.display = "none";
+                }
+            }
+        }
         
-        weatherBtn.textContent = lockWeather ? '🔒' : '🔓';
-        weatherBtn.classList.toggle('locked', lockWeather);
-        weatherBtn.classList.toggle('unlocked', !lockWeather);
+        function updateWeather(force = false) {
+            if (!lockWeather || force) {
+                const weather = getRandomItem(weathers);
+                const weatherElement = document.getElementById('weatherValue');
+                if (weatherElement) weatherElement.textContent = weather;
+            }
+        }
         
-        timeBtn.textContent = lockTime ? '🔒' : '🔓';
-        timeBtn.classList.toggle('locked', lockTime);
-        timeBtn.classList.toggle('unlocked', !lockTime);
-    }
-    
-    // ==================== ОБРАБОТЧИКИ КНОПОК ====================
-    document.getElementById('lockCar').addEventListener('click', () => {
-        lockCar = !lockCar;
+        function updateTime(force = false) {
+            if (!lockTime || force) {
+                const time = getRandomItem(timesBase);
+                const dynamic = getRandomTimeDynamic();
+                const timeElement = document.getElementById('timeValue');
+                if (timeElement) timeElement.textContent = `${time} (x${dynamic})`;
+            }
+        }
+        
+        function updateAll() {
+            updateCar();
+            updateTrack();
+            updateWeather();
+            updateTime();
+        }
+        
+        // ==================== ОБНОВЛЕНИЕ ВИДА КНОПОК-ЗАМОЧКОВ ====================
+        function updateLockButtons() {
+            const carBtn = document.getElementById('lockCar');
+            const trackBtn = document.getElementById('lockTrack');
+            const weatherBtn = document.getElementById('lockWeather');
+            const timeBtn = document.getElementById('lockTime');
+            
+            if (carBtn) carBtn.innerHTML = lockCar ? '<img src="locked.png" alt="Заблокировано">' : '<img src="unlocked.png" alt="Разблокировано">';
+            if (trackBtn) trackBtn.innerHTML = lockTrack ? '<img src="locked.png" alt="Заблокировано">' : '<img src="unlocked.png" alt="Разблокировано">';
+            if (weatherBtn) weatherBtn.innerHTML = lockWeather ? '<img src="locked.png" alt="Заблокировано">' : '<img src="unlocked.png" alt="Разблокировано">';
+            if (timeBtn) timeBtn.innerHTML = lockTime ? '<img src="locked.png" alt="Заблокировано">' : '<img src="unlocked.png" alt="Разблокировано">';
+        }
+        
+        // ==================== ОБРАБОТЧИКИ КНОПОК ====================
+        const lockCarBtn = document.getElementById('lockCar');
+        const lockTrackBtn = document.getElementById('lockTrack');
+        const lockWeatherBtn = document.getElementById('lockWeather');
+        const lockTimeBtn = document.getElementById('lockTime');
+        const randomBtn = document.getElementById('randomBtn');
+        
+        if (lockCarBtn) lockCarBtn.addEventListener('click', () => { lockCar = !lockCar; updateLockButtons(); });
+        if (lockTrackBtn) lockTrackBtn.addEventListener('click', () => { lockTrack = !lockTrack; updateLockButtons(); });
+        if (lockWeatherBtn) lockWeatherBtn.addEventListener('click', () => { lockWeather = !lockWeather; updateLockButtons(); });
+        if (lockTimeBtn) lockTimeBtn.addEventListener('click', () => { lockTime = !lockTime; updateLockButtons(); });
+        if (randomBtn) randomBtn.addEventListener('click', updateAll);
+        
+        // ==================== ИНИЦИАЛИЗАЦИЯ ====================
         updateLockButtons();
-    });
-    
-    document.getElementById('lockTrack').addEventListener('click', () => {
-        lockTrack = !lockTrack;
-        updateLockButtons();
-    });
-    
-    document.getElementById('lockWeather').addEventListener('click', () => {
-        lockWeather = !lockWeather;
-        updateLockButtons();
-    });
-    
-    document.getElementById('lockTime').addEventListener('click', () => {
-        lockTime = !lockTime;
-        updateLockButtons();
-    });
-    
-    document.getElementById('randomBtn').addEventListener('click', updateAll);
-    
-    // ==================== ИНИЦИАЛИЗАЦИЯ ====================
-    updateLockButtons();
-    updateAll();
-</script>
+        updateAll();
+    </script>
 </body>
 </html>
