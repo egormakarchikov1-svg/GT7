@@ -27,7 +27,7 @@
             margin: 0;
         }
         
-        /* Контейнер занимает ВЕСЬ экран */
+        /* Контейнер с фоном на весь экран */
         .container {
             background-image: url('images/gt7images.jpg');
             background-size: cover;
@@ -36,14 +36,15 @@
             width: 100%;
             height: 100vh;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 16px;
+            padding: 20px;
             position: relative;
             box-shadow: none;
         }
         
-        /* Умеренное затемнение */
+        /* Затемнение фона для читаемости текста */
         .container::before {
             content: '';
             position: absolute;
@@ -51,8 +52,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.45);
-            backdrop-filter: blur(0px);
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(2px);
             z-index: 0;
         }
         
@@ -61,21 +62,20 @@
             z-index: 1;
         }
         
-        /* Карточка с результатами — на всю ширину */
-        .result-card {
-            background: rgba(30, 41, 59, 0.65);
-            backdrop-filter: blur(5px);
-            border-radius: 44px;
-            padding: 24px 20px 28px 20px;
+        /* Контент — без отдельной карточки */
+        .content {
             width: 100%;
-            max-width: 100%;
-            margin: 0;
-            border: 1px solid rgba(255,255,255,0.12);
-            box-shadow: 0 20px 35px rgba(0,0,0,0.3);
+            max-width: 450px;
+            margin: 0 auto;
         }
         
         .param-block {
             margin-bottom: 24px;
+            padding: 8px 12px;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(8px);
+            border-radius: 28px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
         
         .param-block:last-child {
@@ -86,8 +86,8 @@
         .param-header {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 10px;
+            gap: 10px;
+            margin-bottom: 8px;
         }
         
         .lock-container {
@@ -97,7 +97,6 @@
             flex-shrink: 0;
         }
         
-        /* Увеличенные замки */
         button.lock-btn {
             background: transparent !important;
             border: none !important;
@@ -125,7 +124,7 @@
         .param-label {
             font-weight: 700;
             color: #ff4d4d;
-            background: rgba(15, 23, 42, 0.75);
+            background: rgba(15, 23, 42, 0.8);
             padding: 6px 14px;
             border-radius: 30px;
             font-size: 15px;
@@ -143,13 +142,13 @@
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            min-height: 60px;
+            min-height: 55px;
             padding: 4px 0;
         }
         
         .car-icon {
             max-width: 100%;
-            max-height: 100px;
+            max-height: 90px;
             width: auto;
             height: auto;
             object-fit: contain;
@@ -157,28 +156,26 @@
         
         .track-icon {
             max-width: 100%;
-            max-height: 80px;
+            max-height: 70px;
             width: auto;
             height: auto;
             object-fit: contain;
         }
         
-        /* Увеличенный шрифт для значений */
         .param-value {
             display: block;
             width: 100%;
-            font-size: 17px;
+            font-size: 16px;
             font-weight: 600;
             color: #f1f5f9;
             line-height: 1.4;
             word-break: break-word;
             white-space: normal;
             overflow-wrap: break-word;
-            background: rgba(15, 23, 42, 0.6);
+            background: rgba(15, 23, 42, 0.7);
             padding: 10px 14px;
             border-radius: 20px;
             margin-top: 6px;
-            backdrop-filter: blur(4px);
             text-align: left;
         }
         
@@ -197,6 +194,7 @@
             justify-content: center;
             gap: 8px;
             box-shadow: 0 4px 12px rgba(255,77,77,0.25);
+            width: 100%;
         }
         
         button:not(.lock-btn):active {
@@ -205,42 +203,41 @@
         }
         
         .btn-main {
-            width: 100%;
             background: #ff4d4d;
-            font-size: 19px;
-            padding: 16px;
-            margin-top: 10px;
+            font-size: 18px;
+            padding: 14px;
+            margin-top: 8px;
         }
         
         /* Адаптация для телефонов */
         @media (max-width: 480px) {
-            .container { padding: 12px; }
-            .result-card { padding: 20px 16px 24px 16px; }
+            .container { padding: 16px; }
+            .param-block { padding: 10px 12px; margin-bottom: 20px; }
             .param-label { font-size: 14px; padding: 5px 12px; }
-            .icon-container { min-height: 55px; }
-            .car-icon { max-height: 110px; }
-            .track-icon { max-height: 70px; }
-            .param-value { font-size: 16px; padding: 9px 12px; }
+            .icon-container { min-height: 50px; }
+            .car-icon { max-height: 85px; }
+            .track-icon { max-height: 65px; }
+            .param-value { font-size: 15px; padding: 9px 12px; }
             button.lock-btn img { width: 26px; height: 26px; }
             button:not(.lock-btn) { padding: 12px 18px; font-size: 17px; }
-            .btn-main { font-size: 18px; padding: 14px; margin-top: 8px; }
-            .param-block { margin-bottom: 22px; }
+            .btn-main { font-size: 17px; padding: 13px; }
+            .param-block { margin-bottom: 18px; }
         }
         
         @media (max-width: 360px) {
-            .result-card { padding: 16px 12px 20px 12px; }
+            .container { padding: 12px; }
             .param-label { font-size: 13px; padding: 4px 10px; }
-            .car-icon { max-height: 95px; }
-            .track-icon { max-height: 60px; }
-            .param-value { font-size: 15px; padding: 8px 10px; }
+            .car-icon { max-height: 75px; }
+            .track-icon { max-height: 55px; }
+            .param-value { font-size: 14px; padding: 8px 10px; }
             button.lock-btn img { width: 24px; height: 24px; }
-            .btn-main { font-size: 17px; padding: 12px; }
+            .btn-main { font-size: 16px; padding: 12px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="result-card">
+        <div class="content">
             <!-- МАШИНА -->
             <div class="param-block">
                 <div class="param-header">
