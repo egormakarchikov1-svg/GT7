@@ -26,9 +26,9 @@
             padding: 16px;
         }
         
-        /* Контейнер на весь экран */
+        /* Контейнер с фоновым изображением */
         .container {
-            background-image: url('images/gt7images.jpg');
+            background-image: url('https://static.wikia.nocookie.net/gran-turismo/images/6/69/GT7_Poster.jpg/revision/latest?cb=20210910231708');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -40,7 +40,7 @@
             box-shadow: 0 20px 35px rgba(0,0,0,0.3);
         }
         
-        /* Умеренное затемнение с лёгким размытием */
+        /* Затемнение фона */
         .container::before {
             content: '';
             position: absolute;
@@ -54,16 +54,13 @@
             z-index: 0;
         }
         
-        /* Все содержимое — поверх затемнения */
         .container > * {
             position: relative;
             z-index: 1;
         }
         
-        /* Карточка с результатами и кнопкой внутри */
         .result-card {
             background: rgba(30, 41, 59, 0.65);
-            backdrop-filter: blur(5px);
             border-radius: 44px;
             padding: 20px 18px 24px 18px;
             width: 100%;
@@ -78,6 +75,7 @@
             margin-bottom: 16px;
         }
         
+        /* Строка: замок + название + иконка (иконка растягивается) */
         .param-header {
             display: flex;
             align-items: center;
@@ -89,14 +87,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-        }
-        
-        .right-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            width: 100%;
+            flex-shrink: 0;
         }
         
         .param-label {
@@ -110,18 +101,19 @@
             white-space: nowrap;
             display: inline-flex;
             align-items: center;
-            backdrop-filter: blur(4px);
+            flex-shrink: 0;
         }
         
+        /* Контейнер иконки — занимает всё оставшееся место */
         .icon-container {
-            background: transparent;
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: flex-end;
             min-height: 55px;
-            padding: 4px 0;
         }
         
+        /* Иконки машин и трасс — максимально большие */
         .car-icon, .track-icon {
             max-width: 100%;
             max-height: 90px;
@@ -144,7 +136,6 @@
             padding: 8px 12px;
             border-radius: 20px;
             margin-top: 6px;
-            backdrop-filter: blur(4px);
             text-align: left;
         }
         
@@ -233,11 +224,9 @@
                             <img src="unlocked.png" alt="Разблокировано">
                         </button>
                     </div>
-                    <div class="right-content">
-                        <span class="param-label">🏎️ МАШИНА</span>
-                        <div class="icon-container">
-                            <img class="car-icon" id="carIcon" src="" style="display: none;">
-                        </div>
+                    <span class="param-label">🏎️ МАШИНА</span>
+                    <div class="icon-container">
+                        <img class="car-icon" id="carIcon" src="" style="display: none;">
                     </div>
                 </div>
                 <div class="param-value" id="carValue">—</div>
@@ -251,11 +240,9 @@
                             <img src="unlocked.png" alt="Разблокировано">
                         </button>
                     </div>
-                    <div class="right-content">
-                        <span class="param-label">🛣️ ТРАССА</span>
-                        <div class="icon-container">
-                            <img class="track-icon" id="trackIcon" src="" style="display: none;">
-                        </div>
+                    <span class="param-label">🛣️ ТРАССА</span>
+                    <div class="icon-container">
+                        <img class="track-icon" id="trackIcon" src="" style="display: none;">
                     </div>
                 </div>
                 <div class="param-value" id="trackValue">—</div>
@@ -269,9 +256,7 @@
                             <img src="unlocked.png" alt="Разблокировано">
                         </button>
                     </div>
-                    <div class="right-content">
-                        <span class="param-label">🌦️ ПОГОДА</span>
-                    </div>
+                    <span class="param-label">🌦️ ПОГОДА</span>
                 </div>
                 <div class="param-value" id="weatherValue">—</div>
             </div>
@@ -284,14 +269,11 @@
                             <img src="unlocked.png" alt="Разблокировано">
                         </button>
                     </div>
-                    <div class="right-content">
-                        <span class="param-label">⏰ ВРЕМЯ</span>
-                    </div>
+                    <span class="param-label">⏰ ВРЕМЯ</span>
                 </div>
                 <div class="param-value" id="timeValue">—</div>
             </div>
             
-            <!-- КНОПКА ВНУТРИ КАРТОЧКИ -->
             <button id="randomBtn" class="btn-main">🎲 СЛУЧАЙНАЯ ГОНКА</button>
         </div>
     </div>
@@ -318,21 +300,21 @@
         
         // ==================== МАШИНЫ ====================
         const carIcons = {
-            "Abarth 1500 Biposto Bertone B.A.T 1 '52": "car_icons/car1932.png",
-            "Abarth 500 '09": "car_icons/car1973.png",
-            "BMW M3 '07": "car_icons/car1399.png",
-            "Nissan GT-R '17": "car_icons/car2167.png",
-            "Porsche 911 GT3 RS '22": "car_icons/car3539.png"
+            "Abarth 1500 Biposto Bertone B.A.T 1 '52": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1932.png",
+            "Abarth 500 '09": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3438.png",
+            "BMW M3 '07": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1399.png",
+            "Nissan GT-R '17": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2167.png",
+            "Porsche 911 GT3 RS '22": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3539.png"
         };
         const cars = Object.keys(carIcons);
         
         // ==================== ТРАССЫ ====================
         const tracksIcons = {
-            "Франция Alsace - Деревня": "track_icons/bbe708-D-n15MKA.png",
-            "Италия Autodrome Lago Maggiore - Восток": "track_icons/39f155-Dg_fFdVS.png",
-            "США Blue Moon Bay Speedway": "track_icons/971481-BdMNGGxX.png",
-            "Япония Tokyo Expressway - Восток": "track_icons/e9dd33-B7sGBTmw.png",
-            "Германия Nürburgring Nordschleife": "track_icons/246f6d-B2a8UX0a.png"
+            "Франция Alsace - Деревня": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/bbe708-D-n15MKA.png",
+            "Италия Autodrome Lago Maggiore - Восток": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/39f155-Dg_fFdVS.png",
+            "США Blue Moon Bay Speedway": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/971481-BdMNGGxX.png",
+            "Япония Tokyo Expressway - Восток": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/e9dd33-B7sGBTmw.png",
+            "Германия Nürburgring Nordschleife": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/246f6d-B2a8UX0a.png"
         };
         const tracks = Object.keys(tracksIcons);
         
