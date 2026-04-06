@@ -26,9 +26,9 @@
             padding: 16px;
         }
         
-        /* Контейнер с фоновым изображением */
+        /* Контейнер на весь экран */
         .container {
-            background-image: url('https://static.wikia.nocookie.net/gran-turismo/images/6/69/GT7_Poster.jpg/revision/latest?cb=20210910231708');
+            background-image: url('images/gt7images.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -40,7 +40,7 @@
             box-shadow: 0 20px 35px rgba(0,0,0,0.3);
         }
         
-        /* Затемнение фона */
+        /* Умеренное затемнение с лёгким размытием */
         .container::before {
             content: '';
             position: absolute;
@@ -54,13 +54,16 @@
             z-index: 0;
         }
         
+        /* Все содержимое — поверх затемнения */
         .container > * {
             position: relative;
             z-index: 1;
         }
         
+        /* Карточка с результатами и кнопкой внутри */
         .result-card {
             background: rgba(30, 41, 59, 0.65);
+            backdrop-filter: blur(5px);
             border-radius: 44px;
             padding: 20px 18px 24px 18px;
             width: 100%;
@@ -107,16 +110,27 @@
         /* Контейнер иконки — занимает всё оставшееся место */
         .icon-container {
             flex: 1;
+            background: transparent;
             display: flex;
             align-items: center;
             justify-content: flex-end;
             min-height: 55px;
+            padding: 4px 0;
         }
         
-        /* Иконки машин и трасс — максимально большие */
-        .car-icon, .track-icon {
+        /* Иконка машины — отдельный размер */
+        .car-icon {
             max-width: 100%;
             max-height: 90px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+        }
+        
+        /* Иконка трассы — отдельный размер */
+        .track-icon {
+            max-width: 100%;
+            max-height: 70px;
             width: auto;
             height: auto;
             object-fit: contain;
@@ -136,6 +150,7 @@
             padding: 8px 12px;
             border-radius: 20px;
             margin-top: 6px;
+            backdrop-filter: blur(4px);
             text-align: left;
         }
         
@@ -198,7 +213,8 @@
             .result-card { padding: 16px 14px 20px 14px; }
             .param-label { font-size: 12px; padding: 4px 10px; }
             .icon-container { min-height: 48px; }
-            .car-icon, .track-icon { max-height: 75px; }
+            .car-icon { max-height: 75px; }
+            .track-icon { max-height: 60px; }
             .param-value { font-size: 13px; padding: 7px 10px; }
             button.lock-btn img { width: 18px; height: 18px; }
             button:not(.lock-btn) { padding: 10px 16px; font-size: 15px; }
@@ -208,6 +224,8 @@
         @media (max-width: 360px) {
             .result-card { padding: 14px 12px 18px 12px; }
             .param-label { font-size: 11px; padding: 4px 8px; }
+            .car-icon { max-height: 65px; }
+            .track-icon { max-height: 50px; }
             .param-value { font-size: 12px; padding: 6px 8px; }
             .btn-main { font-size: 15px; padding: 10px; }
         }
@@ -274,6 +292,7 @@
                 <div class="param-value" id="timeValue">—</div>
             </div>
             
+            <!-- КНОПКА ВНУТРИ КАРТОЧКИ -->
             <button id="randomBtn" class="btn-main">🎲 СЛУЧАЙНАЯ ГОНКА</button>
         </div>
     </div>
@@ -300,21 +319,21 @@
         
         // ==================== МАШИНЫ ====================
         const carIcons = {
-            "Abarth 1500 Biposto Bertone B.A.T 1 '52": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1932.png",
-            "Abarth 500 '09": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3438.png",
-            "BMW M3 '07": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car1399.png",
-            "Nissan GT-R '17": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car2167.png",
-            "Porsche 911 GT3 RS '22": "https://www.gran-turismo.com/common/dist/gt7/carlist/car_thumbnails/car3539.png"
+            "Abarth 1500 Biposto Bertone B.A.T 1 '52": "car_icons/car1932.png",
+            "Abarth 500 '09": "car_icons/car1973.png",
+            "BMW M3 '07": "car_icons/car1399.png",
+            "Nissan GT-R '17": "car_icons/car2167.png",
+            "Porsche 911 GT3 RS '22": "car_icons/car3539.png"
         };
         const cars = Object.keys(carIcons);
         
         // ==================== ТРАССЫ ====================
         const tracksIcons = {
-            "Франция Alsace - Деревня": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/bbe708-D-n15MKA.png",
-            "Италия Autodrome Lago Maggiore - Восток": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/39f155-Dg_fFdVS.png",
-            "США Blue Moon Bay Speedway": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/971481-BdMNGGxX.png",
-            "Япония Tokyo Expressway - Восток": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/e9dd33-B7sGBTmw.png",
-            "Германия Nürburgring Nordschleife": "https://www.gran-turismo.com/common/dist/gt7/tracklist/assets/246f6d-B2a8UX0a.png"
+            "Франция Alsace - Деревня": "track_icons/bbe708-D-n15MKA.png",
+            "Италия Autodrome Lago Maggiore - Восток": "track_icons/39f155-Dg_fFdVS.png",
+            "США Blue Moon Bay Speedway": "track_icons/971481-BdMNGGxX.png",
+            "Япония Tokyo Expressway - Восток": "track_icons/e9dd33-B7sGBTmw.png",
+            "Германия Nürburgring Nordschleife": "track_icons/246f6d-B2a8UX0a.png"
         };
         const tracks = Object.keys(tracksIcons);
         
