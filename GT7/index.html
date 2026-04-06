@@ -58,7 +58,6 @@
             padding-bottom: 0;
         }
         
-        /* Строка: замок + название + иконка (растягивается) */
         .param-header {
             display: flex;
             align-items: center;
@@ -66,7 +65,6 @@
             margin-bottom: 10px;
         }
         
-        /* Замок */
         .lock-btn {
             background: transparent;
             border: none;
@@ -93,7 +91,6 @@
             color: #fbbf24;
         }
         
-        /* Название параметра */
         .param-label {
             font-weight: 700;
             color: #ff4d4d;
@@ -109,7 +106,6 @@
             white-space: nowrap;
         }
         
-        /* Контейнер для иконки справа — занимает всё оставшееся место */
         .icon-container {
             flex: 1;
             display: flex;
@@ -117,7 +113,6 @@
             justify-content: flex-end;
         }
         
-        /* Иконки машин и трасс — максимально большие, занимают всё место */
         .car-icon, .track-icon {
             width: auto;
             height: 60px;
@@ -125,14 +120,12 @@
             object-fit: contain;
         }
         
-        /* Иконки погоды и времени */
         .weather-icon, .time-icon {
             width: auto;
             height: 50px;
             object-fit: contain;
         }
         
-        /* Значение параметра (текст) */
         .param-value {
             font-size: 15px;
             font-weight: 600;
@@ -145,28 +138,6 @@
             margin-top: 8px;
             backdrop-filter: blur(2px);
             text-align: center;
-        }
-        
-        /* Строка времени с динамикой */
-        .time-row {
-            display: flex;
-            align-items: baseline;
-            justify-content: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        
-        .time-name {
-            font-size: 15px;
-            font-weight: 600;
-        }
-        
-        .time-dynamic {
-            font-size: 13px;
-            background: #ff4d4d80;
-            padding: 4px 10px;
-            border-radius: 20px;
-            display: inline-block;
         }
         
         button:not(.lock-btn) {
@@ -221,8 +192,6 @@
             .car-icon, .track-icon { height: 50px; }
             .weather-icon, .time-icon { height: 42px; }
             .param-value { font-size: 13px; padding: 8px 12px; }
-            .time-name { font-size: 13px; }
-            .time-dynamic { font-size: 11px; padding: 3px 8px; }
         }
         
         @media (max-width: 380px) {
@@ -272,7 +241,7 @@
             <div class="param-value" id="weatherValue">—</div>
         </div>
         
-        <!-- ВРЕМЯ -->
+        <!-- ВРЕМЯ (объединено в один элемент) -->
         <div class="param-block">
             <div class="param-header">
                 <button class="lock-btn unlocked" id="lockTime">🔓</button>
@@ -281,10 +250,7 @@
                     <img class="time-icon" id="timeIcon" src="" style="display: none;">
                 </div>
             </div>
-            <div class="param-value time-row" id="timeValueContainer">
-                <span class="time-name" id="timeValue">—</span>
-                <span class="time-dynamic" id="xValue">X--</span>
-            </div>
+            <div class="param-value" id="timeValue">—</div>
         </div>
     </div>
     
@@ -326,8 +292,14 @@
     const times = [
         { name: "Ранний рассвет", icon: "https://img.icons8.com/?size=64&id=eyfQLJcRAECO&format=png" },
         { name: "Рассвет", icon: "https://img.icons8.com/?size=64&id=eyfQLJcRAECO&format=png" },
+        { name: "Восход", icon: "https://img.icons8.com/?size=64&id=eyfQLJcRAECO&format=png" },
+        { name: "Утро", icon: "https://img.icons8.com/?size=64&id=WthylEaM51Fy&format=png" },
         { name: "День", icon: "https://img.icons8.com/?size=64&id=d8hn2NDFO0Xa&format=png" },
-        { name: "Ночь", icon: "https://img.icons8.com/?size=48&id=MwB9VqhaZWPz&format=png" }
+        { name: "Вечер", icon: "https://img.icons8.com/?size=64&id=Y99GcERWY0xR&format=png" },
+        { name: "Закат", icon: "https://img.icons8.com/?size=64&id=0EKLxGXpW9ga&format=png" },
+        { name: "Сумерки", icon: "https://images.icon-icons.com/1448/PNG/96/42518cityscapeatdusk_99026.png" },
+        { name: "Ночь", icon: "https://img.icons8.com/?size=48&id=MwB9VqhaZWPz&format=png" },
+        { name: "Полночь", icon: "https://images.icon-icons.com/1448/PNG/96/42513nightwithstars_99010.png" }
     ];
     
     // ==================== СОСТОЯНИЯ БЛОКИРОВКИ ====================
@@ -386,10 +358,10 @@
         if (lockTime) return;
         const time = getRandomItem(times);
         const dynamic = getRandomTimeDynamic();
-        document.getElementById('timeValue').textContent = time.name;
+        // Объединяем время и динамику в одну строку
+        document.getElementById('timeValue').textContent = `${time.name} (X${dynamic.toString().padStart(2, '0')})`;
         document.getElementById('timeIcon').src = time.icon;
         document.getElementById('timeIcon').style.display = "block";
-        document.getElementById('xValue').textContent = `(X${dynamic.toString().padStart(2, '0')})`;
     }
     
     function updateAll() {
