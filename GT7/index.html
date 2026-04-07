@@ -137,12 +137,6 @@
             text-align: center;
         }
 
-        .x-value {
-            background: #ff4d4d80;
-            font-size: 0.8rem;
-            margin-top: 6px;
-        }
-
         /* БЛОК ПОХОЖИХ АВТО */
         .similar-cars-container {
             background: rgba(0,0,0,0.5);
@@ -315,15 +309,14 @@
             <div class="weather-icon-container"><img id="weatherIcon" class="weather-display-icon"></div>
             <div class="param-value" id="weatherValue">—</div>
         </div>
-        <!-- ВРЕМЯ -->
+        <!-- ВРЕМЯ (динамическое время в одной строке) -->
         <div class="param-block" id="timeBlock" data-param="time">
             <div class="param-header">
                 <div class="param-label">⏰ ВРЕМЯ</div>
                 <button class="lock-btn" data-param="time" data-state="unlocked">🔓</button>
             </div>
             <div class="time-icon-container"><img id="timeIcon" class="time-display-icon"></div>
-            <div class="param-value" id="timeValue">—</div>
-            <div class="param-value x-value" id="xValue">X--</div>
+            <div class="param-value" id="timeValue">— <span id="xValue" style="color: #ff9999;">(X--)</span></div>
         </div>
     </div>
 
@@ -339,33 +332,9 @@
 </div>
 
 <script>
-    // ---------------------------- ВАШ ПОЛНЫЙ СПИСОК МАШИН (carsDatabase) ----------------------------
-    const carsDatabase = [
-        { name: "Abarth 500 '09", rating: 415.44, category: "", powerToWeight: 0.13, hp: 135, torque: 180.2, weight: 1035, icon: "car_icons/car3438.png" },
-        { name: "Abarth 595 SS '70", rating: 175.22, category: "", powerToWeight: 0.06, hp: 30, torque: 44, weight: 470, icon: "car_icons/car3579.png" },
-        { name: "Abarth 1500 Biposto Bertone B.A.T 1 '52", rating: 262.24, category: "", powerToWeight: 0.08, hp: 75, torque: 99.8, weight: 870, icon: "car_icons/car1932.png" },
-        { name: "AFEELA Prototype 2024", rating: 536.95, category: "", powerToWeight: 0.21, hp: 489, torque: "-", weight: 2350, icon: "car_icons/car365.png" },
-        { name: "AFEELA 1 '26", rating: 530.28, category: "", powerToWeight: 0.20, hp: 489, torque: "-", weight: 2420, icon: "car_icons/car3546.png" }
-        // ... добавьте все остальные машины
-    ];
-
-    // ---------------------------- ВАШИ ТРАССЫ ----------------------------
-    const tracks = [
-        "Франция Alsace - Деревня", "Италия Autodrome Lago Maggiore - полная трасса", "Италия Autodromo Nazionale Monza",
-        "Бразилия Autódromo de Interlagos", "Япония Autopolis International Racing Course", "США Blue Moon Bay Speedway - внутренняя A",
-        "Великобритания Brands Hatch - Grand Prix Circuit", "Канада Circuit Gilles-Villeneuve", "Испания Circuit de Barcelona-Catalunya, вариант GP",
-        "Франция Circuit de Sainte-Croix - A", "Бельгия Spa (24 часа)", "США Daytona - дорожная", "Швейцария Deep Forest Raceway",
-        "Хорватия Dragon Trail - Побережье", "Хорватия Dragon Trail - Сады", "Швейцария Eiger Nordwand", "Япония Fuji International Speedway",
-        "США Grand Valley - шоссе №1", "Франция Heures du Mans (24 часа)", "Франция Heures du Mans (24 часа) (без шиканы)",
-        "Япония High Speed Ring", "Япония Kyoto Driving Park - Yamagiwa", "США Michelin Raceway Road Atlanta",
-        "Австралия Mount Panorama Motor Racing Circuit", "Германия Nürburgring (24 часа)", "Германия Nürburgring Nordschleife",
-        "Австрия Red Bull Ring - полная трасса", "Италия Sardegna - Road Track - A", "Япония Suzuka Circuit",
-        "Япония Tokyo Expressway - Восток (по часовой)", "Япония Tokyo Expressway - Центр (по часовой)", "Япония Tokyo Expressway - Юг (по часовой)",
-        "США Trial Mountain Circuit", "Япония Tsukuba Circuit", "США Watkins Glen (длинная трасса)", "США WeatherTech Raceway Laguna Seca",
-        "США Willow Springs International Raceway: Big Willow", "ОАЭ Yas Marina Circuit"
-    ];
-
-    // ---------------------------- ПОГОДА (полный набор) ----------------------------
+    // ============================================================
+    // ПОГОДА (полный набор)
+    // ============================================================
     const weathers = [
         { name: "S01 (Ясно, безоблачно)", code: "S01-C06", icon: "https://img.icons8.com/?size=48&id=8EUmYhfLPTCF&format=png" },
         { name: "S02 (Ясно, малооблачно)", code: "S02-C06", icon: "https://img.icons8.com/?size=48&id=8EUmYhfLPTCF&format=png" },
@@ -377,6 +346,9 @@
         { name: "R03 (Сильный дождь, ливень)", code: "R03-R08", icon: "https://img.icons8.com/?size=48&id=R1kPtXvDMnWj&format=png" }
     ];
 
+    // ============================================================
+    // ВРЕМЯ СУТОК (полный набор)
+    // ============================================================
     const times = [
         { name: "Заря", icon: "https://img.icons8.com/?size=64&id=eyfQLJcRAECO&format=png" },
         { name: "Рассвет", icon: "https://img.icons8.com/?size=64&id=eyfQLJcRAECO&format=png" },
@@ -390,16 +362,69 @@
         { name: "Полночь", icon: "https://images.icon-icons.com/1448/PNG/96/42513nightwithstars_99010.png" }
     ];
 
-    // ---------------------------- УСЛОВИЯ ТРАСС (полный объект) ----------------------------
+    // ============================================================
+    // УСЛОВИЯ ТРАСС (все трассы с погодой и временем)
+    // ============================================================
     const trackConditions = {
         "Франция Alsace - Деревня": { weather: ["S01-C06"], times: ["Рассвет","Восход","Раннее утро","День","Вечер","Закат","Сумерки","Ночь"] },
         "Италия Autodrome Lago Maggiore - полная трасса": { weather: ["S01-C06"], times: ["Восход","Раннее утро","День","Вечер","Закат","Сумерки"] },
         "Италия Autodromo Nazionale Monza": { weather: ["S01-C06"], times: ["Ранее утро","День","Вечер","Закат"] },
         "Бразилия Autódromo de Interlagos": { weather: ["S01-C06"], times: ["Рассвет","Восход","День","Вечер","Закат","Сумерки"] },
+        "Япония Autopolis International Racing Course": { weather: ["S01-R08"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
+        "США Blue Moon Bay Speedway - внутренняя A": { weather: ["S01-C06"], times: ["Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
+        "Великобритания Brands Hatch - Grand Prix Circuit": { weather: ["S01-C06"], times: ["Ранее утро","Позднее утро","День","Вечер","Закат"] },
+        "Канада Circuit Gilles-Villeneuve": { weather: ["S01-C06"], times: ["Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки"] },
+        "Испания Circuit de Barcelona-Catalunya, вариант GP": { weather: ["S01-C06"], times: ["Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
+        "Франция Circuit de Sainte-Croix - A": { weather: ["S01-C06"], times: ["Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
         "Бельгия Spa (24 часа)": { weather: ["S01-R08"], times: ["Заря","Рассвет","День","Вечер","Закат","Ночь","Полночь"] },
+        "США Daytona - дорожная": { weather: ["S01-C06"], times: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
+        "Швейцария Deep Forest Raceway": { weather: ["S01-C06"], times: ["Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
+        "Хорватия Dragon Trail - Побережье": { weather: ["S01-C06"], times: ["Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
+        "Хорватия Dragon Trail - Сады": { weather: ["S01-R08"], times: ["Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
+        "Швейцария Eiger Nordwand": { weather: ["S01-C06"], times: ["Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
+        "Япония Fuji International Speedway": { weather: ["S01-R08"], times: ["День","Вечер","Закат"] },
+        "США Grand Valley - шоссе №1": { weather: ["S01-C06"], times: ["Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
+        "Франция Heures du Mans (24 часа)": { weather: ["S01-C06","S01-R08"], times: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
+        "Франция Heures du Mans (24 часа) (без шиканы)": { weather: ["S01-R08"], times: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
+        "Япония High Speed Ring": { weather: ["S01-R08"], times: ["Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки"] },
+        "Япония Kyoto Driving Park - Yamagiwa": { weather: ["S01-C06"], times: ["Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
+        "США Michelin Raceway Road Atlanta": { weather: ["S01-C06"], times: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
+        "Австралия Mount Panorama Motor Racing Circuit": { weather: ["S01-C06"], times: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
         "Германия Nürburgring Nordschleife": { weather: ["S01-R08"], times: ["Восход","Утро","День","Вечер","Закат","Сумерки"] },
-        "Япония Suzuka Circuit": { weather: ["S01-R08"], times: ["Восход","Утро","День","Вечер","Закат","Ночь"] }
+        "Германия Nürburgring (24 часа)": { weather: ["S01-R08"], times: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
+        "Австрия Red Bull Ring - полная трасса": { weather: ["S01-R08"], times: ["Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
+        "Италия Sardegna - Road Track - A": { weather: ["S01-C06"], times: ["Ранее утро","Позднее утро","День","Вечер","Закат"] },
+        "Япония Suzuka Circuit": { weather: ["S01-R08"], times: ["Восход","Утро","День","Вечер","Закат","Ночь"] },
+        "Япония Tokyo Expressway - Восток (по часовой)": { weather: ["S01-R08"], times: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
+        "Япония Tokyo Expressway - Центр (по часовой)": { weather: ["S01-R08"], times: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
+        "Япония Tokyo Expressway - Юг (по часовой)": { weather: ["S01-C06"], times: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
+        "США Trial Mountain Circuit": { weather: ["S01-C06"], times: ["Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
+        "Япония Tsukuba Circuit": { weather: ["S01-R08"], times: ["Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
+        "США Watkins Glen (длинная трасса)": { weather: ["S01-C06"], times: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
+        "США WeatherTech Raceway Laguna Seca": { weather: ["S01-C06"], times: ["Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки"] },
+        "США Willow Springs International Raceway: Big Willow": { weather: ["S01-C06"], times: ["Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
+        "ОАЭ Yas Marina Circuit": { weather: ["S01-C06"], times: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] }
     };
+
+    // ============================================================
+    // МАШИНЫ (ВСТАВЬТЕ ВАШ ПОЛНЫЙ СПИСОК)
+    // ============================================================
+    const carsDatabase = [
+        // ВСТАВЬТЕ ВАШИ МАШИНЫ СЮДА
+        // Пример: { name: "Abarth 500 '09", rating: 415.44, category: "", powerToWeight: 0.13, hp: 135, torque: 180.2, weight: 1035, icon: "car_icons/car3438.png" },
+    ];
+
+    // ============================================================
+    // ТРАССЫ (ВСТАВЬТЕ ВАШ ПОЛНЫЙ СПИСОК)
+    // ============================================================
+    const tracks = [
+        // ВСТАВЬТЕ ВАШИ ТРАССЫ СЮДА
+        // Пример: "Франция Alsace - Деревня",
+    ];
+
+    // ============================================================
+    // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (НЕ ТРОГАТЬ)
+    // ============================================================
     
     // при отсутствии трассы в словаре — дефолт
     function getTrackWeatherTime(trackName) {
@@ -415,7 +440,10 @@
     let currentTrack = null;
     const locks = { car: false, track: false, weather: false, time: false };
 
-    function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function getRandomItem(arr) { 
+        if (!arr || arr.length === 0) return null;
+        return arr[Math.floor(Math.random() * arr.length)]; 
+    }
 
     // иконка трассы
     function getTrackIcon(trackName) {
@@ -429,8 +457,8 @@
     }
 
     function getRandomWeatherByCategory(weatherCategory) {
-        let isRain = weatherCategory.includes("R08");
-        let filtered = weathers.filter(w => isRain ? w.code.includes("R08") : w.code.includes("C06"));
+        let isRain = weatherCategory && weatherCategory.includes("R08");
+        let filtered = weathers.filter(w => isRain ? (w.code && w.code.includes("R08")) : (w.code && w.code.includes("C06")));
         if (!filtered.length) filtered = weathers;
         return getRandomItem(filtered);
     }
@@ -445,6 +473,7 @@
     }
 
     function findSimilarCars(ref, count = 5, randomize = true) {
+        if (!carsDatabase.length) return [];
         let list = carsDatabase.filter(c => c.name !== ref.name).map(c => ({ ...c, similarity: calculateSimilarity(ref, c) }));
         list.sort((a,b) => b.similarity - a.similarity);
         let top = list.slice(0, 15);
@@ -463,6 +492,12 @@
         let similar = findSimilarCars(ref, 5, false);
         let ptwFormatted = (ref.powerToWeight * 1000).toFixed(1);
         document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${ref.name}</strong><br>⚡ ${ref.hp} л.с. | ⚖️ ${ref.weight} кг | 🚀 ${ptwFormatted} л.с./т`;
+        
+        if (similar.length === 0) {
+            document.getElementById('similarList').innerHTML = '<li>Нет данных для сравнения</li>';
+            return;
+        }
+        
         document.getElementById('similarList').innerHTML = similar.map((c, idx) => {
             let ptw = (c.powerToWeight * 1000).toFixed(1);
             return `
@@ -489,6 +524,7 @@
     function updateCarAndSync() {
         if (locks.car) return;
         let car = getRandomItem(carsDatabase);
+        if (!car) return;
         document.getElementById('carValue').innerText = car.name;
         document.getElementById('carIcon').src = car.icon;
         document.getElementById('carIcon').style.display = 'block';
@@ -498,6 +534,10 @@
     function refreshSimilarCars() {
         if (currentRefCar) {
             let randomSim = findSimilarCars(currentRefCar, 5, true);
+            if (randomSim.length === 0) {
+                document.getElementById('similarList').innerHTML = '<li>Нет данных для сравнения</li>';
+                return;
+            }
             document.getElementById('similarList').innerHTML = randomSim.map((c, idx) => {
                 let ptw = (c.powerToWeight * 1000).toFixed(1);
                 return `
@@ -510,7 +550,7 @@
             }).join('');
         } else {
             let rand = getRandomItem(carsDatabase);
-            displaySimilarCars(rand);
+            if (rand) displaySimilarCars(rand);
         }
     }
 
@@ -520,8 +560,10 @@
         let cond = getTrackWeatherTime(trackName);
         let weatherCat = getRandomItem(cond.weather);
         let wObj = getRandomWeatherByCategory(weatherCat);
-        document.getElementById('weatherValue').innerText = wObj.name;
-        document.getElementById('weatherIcon').src = wObj.icon;
+        if (wObj) {
+            document.getElementById('weatherValue').innerText = wObj.name;
+            document.getElementById('weatherIcon').src = wObj.icon;
+        }
     }
     
     function updateTimeByTrack(trackName) {
@@ -529,15 +571,19 @@
         let cond = getTrackWeatherTime(trackName);
         let timeName = getRandomItem(cond.times);
         let tObj = times.find(t => t.name === timeName) || times[5];
-        document.getElementById('timeValue').innerText = tObj.name;
-        document.getElementById('timeIcon').src = tObj.icon;
+        if (tObj) {
+            document.getElementById('timeValue').innerHTML = `${tObj.name} <span id="xValue" style="color: #ff9999;">(X--)</span>`;
+            document.getElementById('timeIcon').src = tObj.icon;
+        }
         let x = Math.floor(Math.random() * 30) + 1;
-        document.getElementById('xValue').innerText = `X${x.toString().padStart(2,'0')}`;
+        let xSpan = document.getElementById('xValue');
+        if (xSpan) xSpan.innerText = `(X${x.toString().padStart(2, '0')})`;
     }
 
     function updateTrack() {
         if (locks.track) return;
         let track = getRandomItem(tracks);
+        if (!track) return;
         currentTrack = track;
         document.getElementById('trackValue').innerText = track;
         let iconUrl = getTrackIcon(track);
@@ -551,24 +597,29 @@
     function updateWeather() {
         if (locks.weather) return;
         let track = currentTrack || document.getElementById('trackValue').innerText;
-        if (track && track !== "—") updateWeatherByTrack(track);
+        if (track && track !== "—" && track !== "Нет данных") updateWeatherByTrack(track);
         else {
             let w = getRandomItem(weathers);
-            document.getElementById('weatherValue').innerText = w.name;
-            document.getElementById('weatherIcon').src = w.icon;
+            if (w) {
+                document.getElementById('weatherValue').innerText = w.name;
+                document.getElementById('weatherIcon').src = w.icon;
+            }
         }
     }
     
     function updateTime() {
         if (locks.time) return;
         let track = currentTrack || document.getElementById('trackValue').innerText;
-        if (track && track !== "—") updateTimeByTrack(track);
+        if (track && track !== "—" && track !== "Нет данных") updateTimeByTrack(track);
         else {
             let t = getRandomItem(times);
-            document.getElementById('timeValue').innerText = t.name;
-            document.getElementById('timeIcon').src = t.icon;
+            if (t) {
+                document.getElementById('timeValue').innerHTML = `${t.name} <span id="xValue" style="color: #ff9999;">(X--)</span>`;
+                document.getElementById('timeIcon').src = t.icon;
+            }
             let x = Math.floor(Math.random() * 30) + 1;
-            document.getElementById('xValue').innerText = `X${x.toString().padStart(2,'0')}`;
+            let xSpan = document.getElementById('xValue');
+            if (xSpan) xSpan.innerText = `(X${x.toString().padStart(2, '0')})`;
         }
     }
     
@@ -603,22 +654,30 @@
         document.getElementById('randomBtn').addEventListener('click', updateUnlockedOnly);
         document.getElementById('refreshSimilarBtn').addEventListener('click', refreshSimilarCars);
         
-        let initCar = getRandomItem(carsDatabase);
-        document.getElementById('carValue').innerText = initCar.name;
-        document.getElementById('carIcon').src = initCar.icon;
-        document.getElementById('carIcon').style.display = 'block';
-        displaySimilarCars(initCar);
-        
-        let initTrack = tracks[0];
-        currentTrack = initTrack;
-        document.getElementById('trackValue').innerText = initTrack;
-        let ic = getTrackIcon(initTrack);
-        if(ic) { 
-            document.getElementById('trackIcon').src = ic; 
-            document.getElementById('trackIcon').style.display = 'block'; 
+        if (carsDatabase.length > 0) {
+            let initCar = getRandomItem(carsDatabase);
+            if (initCar) {
+                document.getElementById('carValue').innerText = initCar.name;
+                document.getElementById('carIcon').src = initCar.icon;
+                document.getElementById('carIcon').style.display = 'block';
+                displaySimilarCars(initCar);
+            }
         }
-        updateWeatherByTrack(initTrack);
-        updateTimeByTrack(initTrack);
+        
+        if (tracks.length > 0) {
+            let initTrack = tracks[0];
+            currentTrack = initTrack;
+            document.getElementById('trackValue').innerText = initTrack;
+            let ic = getTrackIcon(initTrack);
+            if(ic) { 
+                document.getElementById('trackIcon').src = ic; 
+                document.getElementById('trackIcon').style.display = 'block'; 
+            }
+            updateWeatherByTrack(initTrack);
+            updateTimeByTrack(initTrack);
+        } else {
+            document.getElementById('trackValue').innerText = "Нет данных";
+        }
     }
     
     init();
