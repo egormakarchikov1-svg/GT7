@@ -134,6 +134,7 @@
             width: 100%;
             margin-top: 6px;
             word-break: break-word;
+            text-align: center;
         }
 
         .x-value {
@@ -167,6 +168,7 @@
             font-size: 0.8rem;
             border-left: 4px solid #ff4d4d;
             margin-bottom: 12px;
+            text-align: left;
         }
         .similar-list {
             list-style: none;
@@ -176,7 +178,7 @@
         }
         .similar-list li {
             background: #0f172a;
-            padding: 8px 12px;
+            padding: 10px 12px;
             border-radius: 18px;
             display: flex;
             justify-content: space-between;
@@ -185,31 +187,35 @@
             cursor: pointer;
             transition: 0.1s;
             font-size: 0.75rem;
+            gap: 8px;
         }
         .similar-list li:active { transform: scale(0.98); background: #1e293b; }
-        .car-name { font-weight: bold; font-size: 0.85rem; flex: 2; }
-        .car-stats { display: flex; gap: 12px; color: #ff4d4d; font-weight: 500; }
-        .similarity-badge { background: #22c55e; border-radius: 40px; padding: 2px 8px; font-weight: bold; }
+        .car-name { 
+            font-weight: bold; 
+            font-size: 0.85rem; 
+            flex: 2; 
+            min-width: 120px;
+            text-align: left;
+        }
+        .car-stats { 
+            display: flex; 
+            gap: 12px; 
+            color: #ff4d4d; 
+            font-weight: 500;
+            font-size: 0.7rem;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+        .similarity-badge { 
+            background: #22c55e; 
+            border-radius: 40px; 
+            padding: 2px 8px; 
+            font-weight: bold;
+            font-size: 0.7rem;
+            white-space: nowrap;
+        }
 
         /* КНОПКИ */
-        .btn-group {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 8px;
-            margin: 16px 0 8px;
-        }
-        .btn-group button {
-            background: #334155;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 0.7rem;
-            color: white;
-            cursor: pointer;
-            transition: 0.1s;
-        }
         .btn-main {
             background: #ff4d4d;
             border: none;
@@ -246,6 +252,8 @@
             .weather-display-icon, .time-display-icon { width: 50px; height: 50px; }
             .param-label { font-size: 0.75rem; padding: 4px 10px; }
             .param-value { font-size: 0.75rem; }
+            .car-name { font-size: 0.75rem; min-width: 100px; }
+            .car-stats { gap: 8px; font-size: 0.65rem; }
         }
 
         @media (orientation: landscape) and (max-width: 900px) {
@@ -257,7 +265,9 @@
             .param-label { font-size: 0.7rem; padding: 4px 8px; }
             .param-value { font-size: 0.7rem; padding: 5px 6px; }
             .icon-container, .weather-icon-container, .time-icon-container { min-height: 60px; }
-            .similar-list li { font-size: 0.65rem; }
+            .similar-list li { font-size: 0.65rem; padding: 6px 10px; }
+            .car-name { font-size: 0.7rem; min-width: 90px; }
+            .car-stats { font-size: 0.6rem; gap: 6px; }
             .btn-main { font-size: 0.8rem; padding: 8px 12px; }
         }
 
@@ -270,6 +280,8 @@
             .param-label { font-size: 1.1rem; padding: 8px 20px; }
             .param-value { font-size: 1rem; }
             .btn-main { font-size: 1.2rem; padding: 14px; }
+            .car-name { font-size: 1rem; }
+            .car-stats { font-size: 0.85rem; }
         }
     </style>
 </head>
@@ -324,12 +336,6 @@
     </div>
 
     <button id="randomBtn" class="btn-main">🎲 СЛУЧАЙНАЯ ГОНКА</button>
-    <div class="btn-group">
-        <button id="randomCarBtn">🚗 Рандом Машина</button>
-        <button id="randomTrackBtn">🛣️ Рандом Трасса</button>
-        <button id="randomWeatherBtn">🌦️ Рандом Погода</button>
-        <button id="randomTimeBtn">⏰ Рандом Время</button>
-    </div>
 </div>
 
 <script>
@@ -340,7 +346,7 @@
         { name: "Abarth 1500 Biposto Bertone B.A.T 1 '52", rating: 262.24, category: "", powerToWeight: 0.08, hp: 75, torque: 99.8, weight: 870, icon: "car_icons/car1932.png" },
         { name: "AFEELA Prototype 2024", rating: 536.95, category: "", powerToWeight: 0.21, hp: 489, torque: "-", weight: 2350, icon: "car_icons/car365.png" },
         { name: "AFEELA 1 '26", rating: 530.28, category: "", powerToWeight: 0.20, hp: 489, torque: "-", weight: 2420, icon: "car_icons/car3546.png" }
-        // ... добавьте все остальные машины (у вас их 500+), они будут работать идентично
+        // ... добавьте все остальные машины
     ];
 
     // ---------------------------- ВАШИ ТРАССЫ ----------------------------
@@ -394,6 +400,7 @@
         "Германия Nürburgring Nordschleife": { weather: ["S01-R08"], times: ["Восход","Утро","День","Вечер","Закат","Сумерки"] },
         "Япония Suzuka Circuit": { weather: ["S01-R08"], times: ["Восход","Утро","День","Вечер","Закат","Ночь"] }
     };
+    
     // при отсутствии трассы в словаре — дефолт
     function getTrackWeatherTime(trackName) {
         for (let key in trackConditions) {
@@ -410,7 +417,7 @@
 
     function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-    // иконка трассы (ваша логика)
+    // иконка трассы
     function getTrackIcon(trackName) {
         if (trackName.includes("Alsace")) return "track_icons/bbe708-D-n15MKA.png";
         if (trackName.includes("Lago Maggiore")) return "track_icons/39f155-Dg_fFdVS.png";
@@ -428,7 +435,7 @@
         return getRandomItem(filtered);
     }
 
-    // similarity engine
+    // Подсчёт схожести автомобилей
     function calculateSimilarity(c1, c2) {
         let hpDiff = Math.abs(c1.hp - c2.hp) / Math.max(c1.hp, c2.hp, 100);
         let wDiff = Math.abs(c1.weight - c2.weight) / Math.max(c1.weight, c2.weight, 500);
@@ -454,14 +461,18 @@
         if (!ref) return;
         currentRefCar = ref;
         let similar = findSimilarCars(ref, 5, false);
-        document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${ref.name}</strong><br>⚡ ${ref.hp} л.с. | ⚖️ ${ref.weight} кг | 🚀 ${(ref.powerToWeight*1000).toFixed(1)} л.с./т`;
-        document.getElementById('similarList').innerHTML = similar.map((c, idx) => `
-            <li onclick="selectCar('${c.name.replace(/'/g, "\\'")}')">
-                <span class="car-name">${idx+1}. ${c.name}</span>
-                <div class="car-stats">${c.hp} л.с. / ${c.weight} кг</div>
-                <span class="similarity-badge">${c.similarity.toFixed(1)}%</span>
-            </li>
-        `).join('');
+        let ptwFormatted = (ref.powerToWeight * 1000).toFixed(1);
+        document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${ref.name}</strong><br>⚡ ${ref.hp} л.с. | ⚖️ ${ref.weight} кг | 🚀 ${ptwFormatted} л.с./т`;
+        document.getElementById('similarList').innerHTML = similar.map((c, idx) => {
+            let ptw = (c.powerToWeight * 1000).toFixed(1);
+            return `
+                <li onclick="selectCar('${c.name.replace(/'/g, "\\'")}')">
+                    <span class="car-name">${idx+1}. ${c.name}</span>
+                    <div class="car-stats">${c.hp} л.с. / ${c.weight} кг / ${ptw} л.с./т</div>
+                    <span class="similarity-badge">${c.similarity.toFixed(1)}%</span>
+                </li>
+            `;
+        }).join('');
     }
 
     window.selectCar = function(carName) {
@@ -487,13 +498,16 @@
     function refreshSimilarCars() {
         if (currentRefCar) {
             let randomSim = findSimilarCars(currentRefCar, 5, true);
-            document.getElementById('similarList').innerHTML = randomSim.map((c, idx) => `
-                <li onclick="selectCar('${c.name.replace(/'/g, "\\'")}')">
-                    <span class="car-name">${idx+1}. ${c.name}</span>
-                    <div class="car-stats">${c.hp} л.с. / ${c.weight} кг</div>
-                    <span class="similarity-badge">${c.similarity.toFixed(1)}%</span>
-                </li>
-            `).join('');
+            document.getElementById('similarList').innerHTML = randomSim.map((c, idx) => {
+                let ptw = (c.powerToWeight * 1000).toFixed(1);
+                return `
+                    <li onclick="selectCar('${c.name.replace(/'/g, "\\'")}')">
+                        <span class="car-name">${idx+1}. ${c.name}</span>
+                        <div class="car-stats">${c.hp} л.с. / ${c.weight} кг / ${ptw} л.с./т</div>
+                        <span class="similarity-badge">${c.similarity.toFixed(1)}%</span>
+                    </li>
+                `;
+            }).join('');
         } else {
             let rand = getRandomItem(carsDatabase);
             displaySimilarCars(rand);
@@ -509,6 +523,7 @@
         document.getElementById('weatherValue').innerText = wObj.name;
         document.getElementById('weatherIcon').src = wObj.icon;
     }
+    
     function updateTimeByTrack(trackName) {
         if (locks.time) return;
         let cond = getTrackWeatherTime(trackName);
@@ -532,6 +547,7 @@
         if (!locks.weather) updateWeatherByTrack(track);
         if (!locks.time) updateTimeByTrack(track);
     }
+    
     function updateWeather() {
         if (locks.weather) return;
         let track = currentTrack || document.getElementById('trackValue').innerText;
@@ -542,6 +558,7 @@
             document.getElementById('weatherIcon').src = w.icon;
         }
     }
+    
     function updateTime() {
         if (locks.time) return;
         let track = currentTrack || document.getElementById('trackValue').innerText;
@@ -554,6 +571,7 @@
             document.getElementById('xValue').innerText = `X${x.toString().padStart(2,'0')}`;
         }
     }
+    
     function updateUnlockedOnly() {
         if (!locks.car) updateCarAndSync();
         if (!locks.track) updateTrack();
@@ -564,32 +582,45 @@
     function toggleLock(param) {
         locks[param] = !locks[param];
         let btn = document.querySelector(`.lock-btn[data-param="${param}"]`);
-        if (locks[param]) { btn.innerHTML = '🔒'; btn.setAttribute('data-state','locked'); if(param==='track') currentTrack = document.getElementById('trackValue').innerText; }
-        else { btn.innerHTML = '🔓'; btn.setAttribute('data-state','unlocked'); }
+        if (locks[param]) { 
+            btn.innerHTML = '🔒'; 
+            btn.setAttribute('data-state','locked'); 
+            if(param==='track') currentTrack = document.getElementById('trackValue').innerText; 
+        }
+        else { 
+            btn.innerHTML = '🔓'; 
+            btn.setAttribute('data-state','unlocked'); 
+        }
     }
 
-    // ИНИТ
+    // ИНИЦИАЛИЗАЦИЯ
     function init() {
-        document.querySelectorAll('.lock-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); toggleLock(btn.getAttribute('data-param')); }));
+        document.querySelectorAll('.lock-btn').forEach(btn => btn.addEventListener('click', (e) => { 
+            e.stopPropagation(); 
+            toggleLock(btn.getAttribute('data-param')); 
+        }));
+        
         document.getElementById('randomBtn').addEventListener('click', updateUnlockedOnly);
         document.getElementById('refreshSimilarBtn').addEventListener('click', refreshSimilarCars);
-        document.getElementById('randomCarBtn').addEventListener('click', () => { if(!locks.car) updateCarAndSync(); else alert('🔒 Машина заблокирована'); });
-        document.getElementById('randomTrackBtn').addEventListener('click', () => { if(!locks.track) updateTrack(); else alert('🔒 Трасса заблокирована'); });
-        document.getElementById('randomWeatherBtn').addEventListener('click', () => { if(!locks.weather) updateWeather(); else alert('🔒 Погода заблокирована'); });
-        document.getElementById('randomTimeBtn').addEventListener('click', () => { if(!locks.time) updateTime(); else alert('🔒 Время заблокировано'); });
+        
         let initCar = getRandomItem(carsDatabase);
         document.getElementById('carValue').innerText = initCar.name;
         document.getElementById('carIcon').src = initCar.icon;
         document.getElementById('carIcon').style.display = 'block';
         displaySimilarCars(initCar);
+        
         let initTrack = tracks[0];
         currentTrack = initTrack;
         document.getElementById('trackValue').innerText = initTrack;
         let ic = getTrackIcon(initTrack);
-        if(ic) { document.getElementById('trackIcon').src = ic; document.getElementById('trackIcon').style.display = 'block'; }
+        if(ic) { 
+            document.getElementById('trackIcon').src = ic; 
+            document.getElementById('trackIcon').style.display = 'block'; 
+        }
         updateWeatherByTrack(initTrack);
         updateTimeByTrack(initTrack);
     }
+    
     init();
 </script>
 </body>
