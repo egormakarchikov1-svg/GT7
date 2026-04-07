@@ -329,59 +329,183 @@ const locks = { car: false, track: false, weather: false, time: false };
 function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 function getTrackIcon(trackName) {
-    // ... (ваша функция)
+   if (trackName.includes("Alsace")) return "track_icons/bbe708-D-n15MKA.png";
+    if (trackName.includes("Lago Maggiore")) return "track_icons/39f155-Dg_fFdVS.png";
+    if (trackName.includes("Monza")) return "track_icons/f8bd64-VsJVPuq0.png";
+    if (trackName.includes("Interlagos")) return "track_icons/8d9953-CpR-SgHS.png";
+    if (trackName.includes("Autopolis")) return "track_icons/8d9953-CpR-SgHS.png";
+    if (trackName.includes("Blue Moon")) return "track_icons/971481-BdMNGGxX.png";
+    if (trackName.includes("Brands Hatch")) return "track_icons/f3d2aa-Bznbpc1M.png";
+    if (trackName.includes("Circuit Gilles")) return "track_icons/4b2a08-Ba_IZ90g.png";
+    if (trackName.includes("Barcelona")) return "track_icons/083de2-BAGcmPUI.png";
+    if (trackName.includes("Sainte-Croix")) return "track_icons/a768c9-D5wwglAF.png";
+    if (trackName.includes("Spa")) return "track_icons/000971-B75flT8v.png";
+    if (trackName.includes("Daytona")) return "track_icons/d1f17e-BDsRccUh.png";
+    if (trackName.includes("Deep Forest")) return "track_icons/c81494-mSWpEt3H.png";
+    if (trackName.includes("Dragon Trail")) return "track_icons/08df62-C045_y3b.png";
     return "track_icons/placeholder.png";
 }
 
 function getRandomWeatherByCategory(weatherCategory) {
-    // ... (ваша функция)
-    return getRandomItem(weathers);
+    let isRainCategory = weatherCategory.includes("R08");
+    let availableWeathers = weathers.filter(w => {
+        if (isRainCategory) {
+            return w.code.includes("-R08") || w.code.includes("R08");
+        } else {
+            return w.code.includes("-C06") || w.code.includes("C06");
+        }
+    });
+    if (availableWeathers.length === 0) availableWeathers = weathers;
+    return getRandomItem(availableWeathers);
 }
 
 function calculateSimilarity(car1, car2) {
-    // ... (ваша функция)
-    return 50;
+    const maxHp = Math.max(car1.hp, car2.hp);
+    const minHp = Math.min(car1.hp, car2.hp);
+    const hpDiff = (maxHp - minHp) / Math.max(maxHp, 100);
+    const maxWeight = Math.max(car1.weight, car2.weight);
+    const minWeight = Math.min(car1.weight, car2.weight);
+    const weightDiff = (maxWeight - minWeight) / Math.max(maxWeight, 500);
+    const maxPtw = Math.max(car1.powerToWeight, car2.powerToWeight);
+    const minPtw = Math.min(car1.powerToWeight, car2.powerToWeight);
+    const ptwDiff = (maxPtw - minPtw) / Math.max(maxPtw, 0.1);
+    const similarity = (1 - (hpDiff * 0.3 + weightDiff * 0.3 + ptwDiff * 0.4)) * 100;
+    return Math.max(0, Math.min(100, similarity));
 }
 
 function findSimilarCars(referenceCar, count = 5, randomize = true) {
-    // ... (ваша функция)
-    return [];
+    let carsWithSimilarity = carsDatabase.filter(car => car.name !== referenceCar.name).map(car => ({ ...car, similarity: calculateSimilarity(referenceCar, car) })).sort((a, b) => b.similarity - a.similarity);
+    const topSimilar = carsWithSimilarity.slice(0, 15);
+    if (randomize && topSimilar.length > count) {
+        for (let i = topSimilar.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [topSimilar[i], topSimilar[j]] = [topSimilar[j], topSimilar[i]];
+        }
+        return topSimilar.slice(0, count);
+    }
+    return topSimilar.slice(0, count);
 }
 
 function displaySimilarCars(referenceCar) {
-    // ... (ваша функция)
+    if (!referenceCar) return;
+    currentRefCar = referenceCar;
+    const similarCars = findSimilarCars(referenceCar, 5, false);
+    document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${referenceCar.name}</strong><br>📊 ${referenceCar.hp} л.с. | ⚖️ ${referenceCar.weight} кг | ⚡ ${(referenceCar.powerToWeight * 1000).toFixed(1)} л.с./т`;
+    document.getElementById('similarList').innerHTML = similarCars.map((car, index) => `<li onclick="selectCar('${car.name.replace(/'/g, "\\'")}')"><span class="car-name">${index + 1}. ${car.name}</span><div class="car-stats"><span>🔧 ${car.hp} л.с.</span><span>⚖️ ${car.weight} кг</span><span>⚡ ${(car.powerToWeight * 1000).toFixed(1)} л.с./т</span></div><span class="similarity-badge">${car.similarity.toFixed(1)}%</span></li>`).join('');
 }
 
 function selectCar(carName) {
-    // ... (ваша функция)
+    const car = carsDatabase.find(c => c.name === carName);
+    if (car) {
+        displaySimilarCars(car);
+        document.getElementById('carValue').textContent = car.name;
+        document.getElementById('carIcon').src = car.icon;
+        document.getElementById('carIcon').style.display = "block";
 }
 
 function updateCarAndSync() {
-    // ... (ваша функция)
+    if (locks.car) return;
+    const car = getRandomItem(carsDatabase);
+    document.getElementById('carValue').textContent = car.name;
+    document.getElementById('carIcon').src = car.icon;
+    document.getElementById('carIcon').style.display = "block";
+    displaySimilarCars(car);
 }
 
 function refreshSimilarCars() {
-    // ... (ваша функция)
+   if (currentRefCar) {
+        const randomSimilarCars = findSimilarCars(currentRefCar, 5, true);
+        document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${currentRefCar.name}</strong><br>📊 ${currentRefCar.hp} л.с. | ⚖️ ${currentRefCar.weight} кг | ⚡ ${(currentRefCar.powerToWeight * 1000).toFixed(1)} л.с./т`;
+        document.getElementById('similarList').innerHTML = randomSimilarCars.map((car, index) => `<li onclick="selectCar('${car.name.replace(/'/g, "\\'")}')"><span class="car-name">${index + 1}. ${car.name}</span><div class="car-stats"><span>🔧 ${car.hp} л.с.</span><span>⚖️ ${car.weight} кг</span><span>⚡ ${(car.powerToWeight * 1000).toFixed(1)} л.с./т</span></div><span class="similarity-badge">${car.similarity.toFixed(1)}%</span></li>`).join('');
+    } else {
+        const randomCar = getRandomItem(carsDatabase);
+        displaySimilarCars(randomCar);
 }
 
 function updateWeatherByTrack(trackName) {
-    // ... (ваша функция)
+    if (locks.weather) return;
+    let conditions = trackConditions[trackName];
+    if (!conditions) {
+        for (let key in trackConditions) {
+            if (trackName.includes(key.split(" - ")[0]) || trackName.includes(key.split(" ")[0])) {
+                conditions = trackConditions[key];
+                break;
+            }
+        }
+    }
+    if (!conditions) conditions = { weather: ["S01-C06"], times: ["День"] };
+    const weatherCategory = getRandomItem(conditions.weather);
+    const weatherObj = getRandomWeatherByCategory(weatherCategory);
+    document.getElementById('weatherValue').textContent = weatherObj.name;
+    document.getElementById('weatherIcon').src = weatherObj.icon;
 }
 
 function updateTimeByTrack(trackName) {
-    // ... (ваша функция)
+    if (locks.time) return;
+    let conditions = trackConditions[trackName];
+    if (!conditions) {
+        for (let key in trackConditions) {
+            if (trackName.includes(key.split(" - ")[0]) || trackName.includes(key.split(" ")[0])) {
+                conditions = trackConditions[key];
+                break;
+            }
+        }
+    }
+    if (!conditions) conditions = { weather: ["S01-C06"], times: ["День"] };
+    const randomTimeName = getRandomItem(conditions.times);
+    const timeObj = times.find(t => t.name === randomTimeName) || times[5];
+    document.getElementById('timeValue').textContent = timeObj.name;
+    document.getElementById('timeIcon').src = timeObj.icon;
+    const randomX = Math.floor(Math.random() * 30) + 1;
+    document.getElementById('xValue').textContent = `X${randomX.toString().padStart(2, '0')}`;
 }
 
 function updateTrack() {
-    // ... (ваша функция)
+    if (locks.track) return;
+    const trackName = getRandomItem(tracks);
+    currentTrack = trackName;
+    document.getElementById('trackValue').textContent = trackName;
+    const iconUrl = getTrackIcon(trackName);
+    const trackIcon = document.getElementById('trackIcon');
+    if (iconUrl) {
+        trackIcon.src = iconUrl;
+        trackIcon.style.display = "block";
+    } else {
+        trackIcon.style.display = "none";
+    }
+    if (!locks.weather) updateWeatherByTrack(trackName);
+    if (!locks.time) updateTimeByTrack(trackName);
 }
 
 function updateWeather() {
-    // ... (ваша функция)
+    if (locks.weather) return;
+    let trackToUse = currentTrack;
+    if (!trackToUse || trackToUse === "—") {
+        trackToUse = document.getElementById('trackValue').textContent;
+    }
+    if (trackToUse && trackToUse !== "—") {
+        updateWeatherByTrack(trackToUse);
+    } else {
+        const randomWeather = getRandomItem(weathers);
+        document.getElementById('weatherValue').textContent = randomWeather.name;
+        document.getElementById('weatherIcon').src = randomWeather.icon;
 }
 
 function updateTime() {
-    // ... (ваша функция)
+    if (locks.time) return;
+    let trackToUse = currentTrack;
+    if (!trackToUse || trackToUse === "—") {
+        trackToUse = document.getElementById('trackValue').textContent;
+    }
+    if (trackToUse && trackToUse !== "—") {
+        updateTimeByTrack(trackToUse);
+    } else {
+        const randomTime = getRandomItem(times);
+        document.getElementById('timeValue').textContent = randomTime.name;
+        document.getElementById('timeIcon').src = randomTime.icon;
+        const randomX = Math.floor(Math.random() * 30) + 1;
+        document.getElementById('xValue').textContent = `X${randomX.toString().padStart(2, '0')}`;
+    
 }
 
 function updateUnlockedOnly() {
