@@ -3,684 +3,468 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <title>GT7 Random Race — реальные условия трасс</title>
+    <title>GT7 Random Race</title>
+
     <link rel="apple-touch-icon" href="gt7.png">
+    
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
         }
-
+        
+        /* Запрещаем выделение текста и увеличение при долгом нажатии */
         body {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-image: url('images/gt7images.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #0a0a1a;
             color: #eee;
+            text-align: center;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 16px;
+            padding: 0;
+            margin: 0;
+            touch-action: pan-y pinch-zoom;
+            -webkit-tap-highlight-color: transparent;
         }
-
-        /* ОСНОВНОЙ КОНТЕЙНЕР */
+        
+        /* Запрещаем выделение текста на всех элементах */
+        * {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        /* Разрешаем выделение только в полях ввода (если они появятся) */
+        input, textarea {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+        
+        /* Контейнер с фоном на весь экран — фон ЗАМОЩАЕТ экран */
         .container {
-            background: rgba(30, 41, 59, 0.75);
-            backdrop-filter: blur(5px);
-            border-radius: 32px;
-            padding: 20px 16px;
+            background-image: url('images/gt7images.jpg');
+            background-size: cover;      /* ← cover — замощение на весь экран */
+            background-position: center;
+            background-repeat: no-repeat;
             width: 100%;
-            max-width: 700px;
-            box-shadow: 0 10px 25px rgba(30, 41, 59, 0.7);
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: all 0.2s ease;
-        }
-
-        /* СЕТКА — ВСЕГДА 2 КОЛОНКИ */
-        .params-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 18px;
-        }
-
-        /* КАРТОЧКА ПАРАМЕТРА */
-        .param-block {
-            text-align: center;
+            height: 100vh;
             display: flex;
             flex-direction: column;
+            justify-content: center;
             align-items: center;
-            background: rgba(0,0,0,0.25);
-            border-radius: 24px;
-            padding: 12px 8px;
-            transition: all 0.2s;
+            padding: 20px;
+            position: relative;
+            box-shadow: none;
         }
-
+        
+        /* Затемнение фона для читаемости текста (blur остался тем же) */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(1px);
+            z-index: 0;
+        }
+        
+        .container > * {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Контент — без отдельной карточки */
+        .content {
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto;
+        }
+        
+        .param-block {
+            margin-bottom: 24px;
+            padding: 8px 12px;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(1px);
+            border-radius: 28px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .param-block:last-child {
+            margin-bottom: 20px;
+        }
+        
+        /* Строка: замок + название + иконка */
         .param-header {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 10px;
-            width: 100%;
+            gap: 10px;
+            margin-bottom: 8px;
         }
-
-        .param-label {
-            font-weight: 700;
-            color: #ffffff;
-            background: #0f172a;
-            padding: 6px 14px;
-            border-radius: 40px;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
+        
+        .lock-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        
+        button.lock-btn {
+            background: transparent !important;
+            border: none !important;
+            cursor: pointer !important;
+            padding: 6px 8px !important;
+            margin: 0 !important;
+            width: auto !important;
+            min-width: 44px !important;
+            box-shadow: none !important;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-        }
-
-        .lock-btn {
-            background: rgba(0,0,0,0.6);
-            border: none;
-            border-radius: 30px;
-            font-size: 1rem;
-            padding: 4px 12px;
-            cursor: pointer;
-            backdrop-filter: blur(4px);
-            transition: 0.1s linear;
-        }
-        .lock-btn:active { transform: scale(0.94); }
-        .lock-btn[data-state="unlocked"] { background: #22c55e; color: white; box-shadow: 0 0 6px #22c55e; }
-        .lock-btn[data-state="locked"]   { background: #ef4444; color: white; box-shadow: 0 0 6px #ef4444; }
-
-        .header-icon {
-            width: 20px;
-            height: 20px;
-            object-fit: contain;
-            filter: drop-shadow(0 1px 2px black);
-        }
-
-        .icon-container,
-        .weather-icon-container,
-        .time-icon-container {
-            display: flex;
             justify-content: center;
-            align-items: center;
-            margin: 6px 0;
-            min-height: 85px;
         }
-
-        .car-icon, .track-icon {
-            max-width: 100%;
-            max-height: 90px;
-            width: auto;
-            object-fit: contain;
+        
+        button.lock-btn img {
+            width: 28px;
+            height: 28px;
+            display: block;
         }
-
-        .weather-display-icon, .time-display-icon {
-            width: 60px;
-            height: 60px;
-            object-fit: contain;
+        
+        button.lock-btn:active {
+            transform: scale(0.92);
         }
-
-        .param-value {
-            background: #0f172a80;
-            padding: 8px 10px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            width: 100%;
-            margin-top: 6px;
-            word-break: break-word;
-            text-align: center;
-        }
-
-        /* БЛОК ПОХОЖИХ АВТО */
-        .similar-cars-container {
-            background: rgba(0,0,0,0.5);
-            border-radius: 24px;
-            padding: 14px;
-            margin: 20px 0 12px;
-            border: 1px solid #ff4d4d;
-        }
-        .similar-title {
+        
+        .param-label {
+            font-weight: 700;
             color: #ff4d4d;
-            font-size: 1.1rem;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 12px;
+            background: rgba(15, 23, 42, 0.8);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 15px;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        
+        /* Контейнер иконки — занимает всё оставшееся место */
+        .icon-container {
+            flex: 1;
+            background: transparent;
             display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            min-height: 55px;
+            padding: 4px 0;
+        }
+        
+        .car-icon {
+            max-width: 100%;
+            max-height: 150px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+        }
+        
+        .track-icon {
+            max-width: 100%;
+            max-height: 70px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+        }
+        
+        .param-value {
+            display: block;
+            width: 100%;
+            font-size: 16px;
+            font-weight: 600;
+            color: #f1f5f9;
+            line-height: 1.4;
+            word-break: break-word;
+            white-space: normal;
+            overflow-wrap: break-word;
+            background: rgba(15, 23, 42, 0.7);
+            padding: 10px 14px;
+            border-radius: 20px;
+            margin-top: 6px;
+            text-align: left;
+        }
+        
+        button:not(.lock-btn) {
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
             justify-content: center;
             gap: 8px;
+            box-shadow: 0 4px 12px rgba(255,77,77,0.25);
+            width: 100%;
         }
-        .ref-car-info {
-            background: #ff4d4d20;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            border-left: 4px solid #ff4d4d;
-            margin-bottom: 12px;
-            text-align: left;
+        
+        button:not(.lock-btn):active {
+            transform: scale(0.97);
+            background: #e03a3a;
         }
-        .similar-list {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .similar-list li {
-            background: #0f172a;
-            padding: 10px 12px;
-            border-radius: 18px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            cursor: pointer;
-            transition: 0.1s;
-            font-size: 0.75rem;
-            gap: 8px;
-        }
-        .similar-list li:active { transform: scale(0.98); background: #1e293b; }
-        .car-name { 
-            font-weight: bold; 
-            font-size: 0.85rem; 
-            flex: 2; 
-            min-width: 120px;
-            text-align: left;
-        }
-        .car-stats { 
-            display: flex; 
-            gap: 12px; 
-            color: #ff4d4d; 
-            font-weight: 500;
-            font-size: 0.7rem;
-            flex-wrap: wrap;
-            justify-content: flex-start;
-        }
-        .similarity-badge { 
-            background: #22c55e; 
-            border-radius: 40px; 
-            padding: 2px 8px; 
-            font-weight: bold;
-            font-size: 0.7rem;
-            white-space: nowrap;
-        }
-
-        /* КНОПКИ */
+        
         .btn-main {
             background: #ff4d4d;
-            border: none;
-            font-weight: 800;
-            padding: 12px 24px;
-            border-radius: 60px;
-            font-size: 1rem;
-            letter-spacing: 1px;
-            color: white;
-            width: 100%;
-            cursor: pointer;
-            transition: 0.1s;
-            margin-top: 6px;
-            text-transform: uppercase;
-        }
-        .btn-similar {
-            background: #7c3aed;
-            width: 100%;
-            border: none;
-            padding: 10px;
-            border-radius: 40px;
-            font-weight: bold;
-            color: white;
+            font-size: 18px;
+            padding: 14px;
             margin-top: 8px;
-            cursor: pointer;
         }
-        button:active { transform: scale(0.97); }
-
-        /* ===== АДАПТАЦИЯ ПОД ТЕЛЕФОН (вертикаль / горизонталь) И ПК ===== */
-        @media (orientation: portrait) and (max-width: 600px) {
-            body { padding: 10px; }
-            .params-grid { gap: 12px; }
-            .car-icon, .track-icon { max-height: 75px; }
-            .weather-display-icon, .time-display-icon { width: 50px; height: 50px; }
-            .param-label { font-size: 0.75rem; padding: 4px 10px; }
-            .param-value { font-size: 0.75rem; }
-            .car-name { font-size: 0.75rem; min-width: 100px; }
-            .car-stats { gap: 8px; font-size: 0.65rem; }
+        
+        /* Адаптация для телефонов */
+        @media (max-width: 480px) {
+            .container { padding: 16px; }
+            .param-block { padding: 10px 12px; margin-bottom: 20px; }
+            .param-label { font-size: 14px; padding: 5px 12px; }
+            .icon-container { min-height: 50px; }
+            .car-icon { max-height: 200px; }
+            .track-icon { max-height: 65px; }
+            .param-value { font-size: 15px; padding: 9px 12px; }
+            button.lock-btn img { width: 36px; height: 36px; }
+            button:not(.lock-btn) { padding: 12px 18px; font-size: 17px; }
+            .btn-main { font-size: 17px; padding: 13px; }
+            .param-block { margin-bottom: 18px; }
         }
-
-        @media (orientation: landscape) and (max-width: 900px) {
-            body { padding: 8px; }
-            .container { max-width: 95%; padding: 12px; }
-            .params-grid { gap: 12px; }
-            .car-icon, .track-icon { max-height: 55px; }
-            .weather-display-icon, .time-display-icon { width: 40px; height: 40px; }
-            .param-label { font-size: 0.7rem; padding: 4px 8px; }
-            .param-value { font-size: 0.7rem; padding: 5px 6px; }
-            .icon-container, .weather-icon-container, .time-icon-container { min-height: 60px; }
-            .similar-list li { font-size: 0.65rem; padding: 6px 10px; }
-            .car-name { font-size: 0.7rem; min-width: 90px; }
-            .car-stats { font-size: 0.6rem; gap: 6px; }
-            .btn-main { font-size: 0.8rem; padding: 8px 12px; }
-        }
-
-        @media (min-width: 1024px) {
-            body { padding: 30px; }
-            .container { max-width: 900px; padding: 28px 24px; }
-            .params-grid { gap: 28px; }
-            .car-icon, .track-icon { max-height: 130px; }
-            .weather-display-icon, .time-display-icon { width: 80px; height: 80px; }
-            .param-label { font-size: 1.1rem; padding: 8px 20px; }
-            .param-value { font-size: 1rem; }
-            .btn-main { font-size: 1.2rem; padding: 14px; }
-            .car-name { font-size: 1rem; }
-            .car-stats { font-size: 0.85rem; }
+        
+        @media (max-width: 360px) {
+            .container { padding: 12px; }
+            .param-label { font-size: 13px; padding: 4px 10px; }
+            .car-icon { max-height: 75px; }
+            .track-icon { max-height: 55px; }
+            .param-value { font-size: 14px; padding: 8px 10px; }
+            button.lock-btn img { width: 24px; height: 24px; }
+            .btn-main { font-size: 16px; padding: 12px; }
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="params-grid">
-        <!-- МАШИНА -->
-        <div class="param-block" id="carBlock" data-param="car">
-            <div class="param-header">
-                <div class="param-label">🏎️ МАШИНА</div>
-                <button class="lock-btn" data-param="car" data-state="unlocked">🔓</button>
+    <div class="container">
+        <div class="content">
+            <!-- МАШИНА -->
+            <div class="param-block">
+                <div class="param-header">
+                    <div class="lock-container">
+                        <button class="lock-btn" id="lockCar">
+                            <img src="unlocked.png" alt="Разблокировано">
+                        </button>
+                    </div>
+                    <span class="param-label">🏎️ МАШИНА</span>
+                    <div class="icon-container">
+                        <img class="car-icon" id="carIcon" src="" style="display: none;">
+                    </div>
+                </div>
+                <div class="param-value" id="carValue">—</div>
             </div>
-            <div class="icon-container"><img class="car-icon" id="carIcon" style="display: none;"></div>
-            <div class="param-value" id="carValue">—</div>
-        </div>
-        <!-- ТРАССА -->
-        <div class="param-block" id="trackBlock" data-param="track">
-            <div class="param-header">
-                <div class="param-label">🛣️ ТРАССА</div>
-                <button class="lock-btn" data-param="track" data-state="unlocked">🔓</button>
+            
+            <!-- ТРАССА -->
+            <div class="param-block">
+                <div class="param-header">
+                    <div class="lock-container">
+                        <button class="lock-btn" id="lockTrack">
+                            <img src="unlocked.png" alt="Разблокировано">
+                        </button>
+                    </div>
+                    <span class="param-label">🛣️ ТРАССА</span>
+                    <div class="icon-container">
+                        <img class="track-icon" id="trackIcon" src="" style="display: none;">
+                    </div>
+                </div>
+                <div class="param-value" id="trackValue">—</div>
             </div>
-            <div class="icon-container"><img class="track-icon" id="trackIcon" style="display: none;"></div>
-            <div class="param-value" id="trackValue">—</div>
-        </div>
-        <!-- ПОГОДА -->
-        <div class="param-block" id="weatherBlock" data-param="weather">
-            <div class="param-header">
-                <div class="param-label">🌦️ ПОГОДА</div>
-                <button class="lock-btn" data-param="weather" data-state="unlocked">🔓</button>
+            
+            <!-- ПОГОДА -->
+            <div class="param-block">
+                <div class="param-header">
+                    <div class="lock-container">
+                        <button class="lock-btn" id="lockWeather">
+                            <img src="unlocked.png" alt="Разблокировано">
+                        </button>
+                    </div>
+                    <span class="param-label">🌦️ ПОГОДА</span>
+                </div>
+                <div class="param-value" id="weatherValue">—</div>
             </div>
-            <div class="weather-icon-container"><img id="weatherIcon" class="weather-display-icon"></div>
-            <div class="param-value" id="weatherValue">—</div>
-        </div>
-        <!-- ВРЕМЯ (динамическое время в одной строке) -->
-        <div class="param-block" id="timeBlock" data-param="time">
-            <div class="param-header">
-                <div class="param-label">⏰ ВРЕМЯ</div>
-                <button class="lock-btn" data-param="time" data-state="unlocked">🔓</button>
+            
+            <!-- ВРЕМЯ -->
+            <div class="param-block">
+                <div class="param-header">
+                    <div class="lock-container">
+                        <button class="lock-btn" id="lockTime">
+                            <img src="unlocked.png" alt="Разблокировано">
+                        </button>
+                    </div>
+                    <span class="param-label">⏰ ВРЕМЯ</span>
+                </div>
+                <div class="param-value" id="timeValue">—</div>
             </div>
-            <div class="time-icon-container"><img id="timeIcon" class="time-display-icon"></div>
-            <div class="param-value" id="timeValue">— <span id="xValue" style="color: #ff9999;">(X--)</span></div>
+            
+            <button id="randomBtn" class="btn-main">🎲 СЛУЧАЙНАЯ ГОНКА</button>
         </div>
     </div>
 
-    <!-- Блок похожих авто -->
-    <div class="similar-cars-container">
-        <div class="similar-title">🎯 ПОДБОР АВТО ПО ПАРАМЕТРАМ 🎯</div>
-        <div id="refCarInfo" class="ref-car-info">Выберите референс (нажмите на авто в списке)</div>
-        <ul class="similar-list" id="similarList"><li>⬅️ Нажмите на любую машину ниже</li></ul>
-        <button id="refreshSimilarBtn" class="btn-similar">🔄 ПОВТОРНЫЙ ВЫБОР 5 АВТО</button>
-    </div>
-
-    <button id="randomBtn" class="btn-main">🎲 СЛУЧАЙНАЯ ГОНКА</button>
-</div>
-
-<script>
-    // ============================================================
-    // ПОГОДА (полный набор)
-    // ============================================================
-    const weathers = [
-        { name: "S01 (Ясно, безоблачно)", code: "S01-C06", icon: "https://img.icons8.com/?size=48&id=8EUmYhfLPTCF&format=png" },
-        { name: "S02 (Ясно, малооблачно)", code: "S02-C06", icon: "https://img.icons8.com/?size=48&id=8EUmYhfLPTCF&format=png" },
-        { name: "S03 (Ясно, переменная облачность)", code: "S03-C06", icon: "https://img.icons8.com/?size=48&id=qA3w9Yp2vY7r&format=png" },
-        { name: "C01 (Пасмурно, но ярко)", code: "C01-C06", icon: "https://img.icons8.com/?size=64&id=HeerCPLqyxuQ&format=png" },
-        { name: "C02 (Пасмурно, тепло)", code: "C02-C06", icon: "https://img.icons8.com/?size=64&id=GkzB2qzp1Ogf&format=png" },
-        { name: "R01 (Мелкий дождь, морось)", code: "R01-R08", icon: "https://img.icons8.com/?size=48&id=PIXtKMDAXCzo&format=png" },
-        { name: "R02 (Умеренный дождь)", code: "R02-R08", icon: "https://img.icons8.com/?size=48&id=kKxyuLXD4w0n&format=png" },
-        { name: "R03 (Сильный дождь, ливень)", code: "R03-R08", icon: "https://img.icons8.com/?size=48&id=R1kPtXvDMnWj&format=png" }
-    ];
-
-    // ============================================================
-    // ВРЕМЯ СУТОК (полный набор)
-    // ============================================================
-    const times = [
-        { name: "Заря", icon: "https://img.icons8.com/?size=64&id=eyfQLJcRAECO&format=png" },
-        { name: "Рассвет", icon: "https://img.icons8.com/?size=64&id=eyfQLJcRAECO&format=png" },
-        { name: "Восход", icon: "https://img.icons8.com/?size=64&id=eyfQLJcRAECO&format=png" },
-        { name: "Раннее утро", icon: "https://img.icons8.com/?size=64&id=WthylEaM51Fy&format=png" },
-        { name: "День", icon: "https://img.icons8.com/?size=64&id=d8hn2NDFO0Xa&format=png" },
-        { name: "Вечер", icon: "https://img.icons8.com/?size=64&id=Y99GcERWY0xR&format=png" },
-        { name: "Закат", icon: "https://img.icons8.com/?size=64&id=0EKLxGXpW9ga&format=png" },
-        { name: "Сумерки", icon: "https://images.icon-icons.com/1448/PNG/96/42518cityscapeatdusk_99026.png" },
-        { name: "Ночь", icon: "https://img.icons8.com/?size=48&id=MwB9VqhaZWPz&format=png" },
-        { name: "Полночь", icon: "https://images.icon-icons.com/1448/PNG/96/42513nightwithstars_99010.png" }
-    ];
-
-    // ============================================================
-    // УСЛОВИЯ ТРАСС (все трассы с погодой и временем)
-    // ============================================================
-    const trackConditions = {
-        "Франция Alsace - Деревня": { weather: ["S01-C06"], times: ["Рассвет","Восход","Раннее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-        "Италия Autodrome Lago Maggiore - полная трасса": { weather: ["S01-C06"], times: ["Восход","Раннее утро","День","Вечер","Закат","Сумерки"] },
-        "Италия Autodromo Nazionale Monza": { weather: ["S01-C06"], times: ["Ранее утро","День","Вечер","Закат"] },
-        "Бразилия Autódromo de Interlagos": { weather: ["S01-C06"], times: ["Рассвет","Восход","День","Вечер","Закат","Сумерки"] },
-        "Япония Autopolis International Racing Course": { weather: ["S01-R08"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-        "США Blue Moon Bay Speedway - внутренняя A": { weather: ["S01-C06"], times: ["Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-        "Великобритания Brands Hatch - Grand Prix Circuit": { weather: ["S01-C06"], times: ["Ранее утро","Позднее утро","День","Вечер","Закат"] },
-        "Канада Circuit Gilles-Villeneuve": { weather: ["S01-C06"], times: ["Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки"] },
-        "Испания Circuit de Barcelona-Catalunya, вариант GP": { weather: ["S01-C06"], times: ["Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-        "Франция Circuit de Sainte-Croix - A": { weather: ["S01-C06"], times: ["Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-        "Бельгия Spa (24 часа)": { weather: ["S01-R08"], times: ["Заря","Рассвет","День","Вечер","Закат","Ночь","Полночь"] },
-        "США Daytona - дорожная": { weather: ["S01-C06"], times: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
-        "Швейцария Deep Forest Raceway": { weather: ["S01-C06"], times: ["Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-        "Хорватия Dragon Trail - Побережье": { weather: ["S01-C06"], times: ["Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-        "Хорватия Dragon Trail - Сады": { weather: ["S01-R08"], times: ["Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-        "Швейцария Eiger Nordwand": { weather: ["S01-C06"], times: ["Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-        "Япония Fuji International Speedway": { weather: ["S01-R08"], times: ["День","Вечер","Закат"] },
-        "США Grand Valley - шоссе №1": { weather: ["S01-C06"], times: ["Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-        "Франция Heures du Mans (24 часа)": { weather: ["S01-C06","S01-R08"], times: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
-        "Франция Heures du Mans (24 часа) (без шиканы)": { weather: ["S01-R08"], times: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
-        "Япония High Speed Ring": { weather: ["S01-R08"], times: ["Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки"] },
-        "Япония Kyoto Driving Park - Yamagiwa": { weather: ["S01-C06"], times: ["Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-        "США Michelin Raceway Road Atlanta": { weather: ["S01-C06"], times: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
-        "Австралия Mount Panorama Motor Racing Circuit": { weather: ["S01-C06"], times: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
-        "Германия Nürburgring Nordschleife": { weather: ["S01-R08"], times: ["Восход","Утро","День","Вечер","Закат","Сумерки"] },
-        "Германия Nürburgring (24 часа)": { weather: ["S01-R08"], times: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
-        "Австрия Red Bull Ring - полная трасса": { weather: ["S01-R08"], times: ["Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-        "Италия Sardegna - Road Track - A": { weather: ["S01-C06"], times: ["Ранее утро","Позднее утро","День","Вечер","Закат"] },
-        "Япония Suzuka Circuit": { weather: ["S01-R08"], times: ["Восход","Утро","День","Вечер","Закат","Ночь"] },
-        "Япония Tokyo Expressway - Восток (по часовой)": { weather: ["S01-R08"], times: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
-        "Япония Tokyo Expressway - Центр (по часовой)": { weather: ["S01-R08"], times: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
-        "Япония Tokyo Expressway - Юг (по часовой)": { weather: ["S01-C06"], times: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
-        "США Trial Mountain Circuit": { weather: ["S01-C06"], times: ["Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-        "Япония Tsukuba Circuit": { weather: ["S01-R08"], times: ["Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-        "США Watkins Glen (длинная трасса)": { weather: ["S01-C06"], times: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-        "США WeatherTech Raceway Laguna Seca": { weather: ["S01-C06"], times: ["Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки"] },
-        "США Willow Springs International Raceway: Big Willow": { weather: ["S01-C06"], times: ["Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-        "ОАЭ Yas Marina Circuit": { weather: ["S01-C06"], times: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] }
-    };
-
-    // ============================================================
-    // МАШИНЫ (ВСТАВЬТЕ ВАШ ПОЛНЫЙ СПИСОК)
-    // ============================================================
-    const carsDatabase = [
-        // ВСТАВЬТЕ ВАШИ МАШИНЫ СЮДА
-        // Пример: { name: "Abarth 500 '09", rating: 415.44, category: "", powerToWeight: 0.13, hp: 135, torque: 180.2, weight: 1035, icon: "car_icons/car3438.png" },
-    ];
-
-    // ============================================================
-    // ТРАССЫ (ВСТАВЬТЕ ВАШ ПОЛНЫЙ СПИСОК)
-    // ============================================================
-    const tracks = [
-        // ВСТАВЬТЕ ВАШИ ТРАССЫ СЮДА
-        // Пример: "Франция Alsace - Деревня",
-    ];
-
-    // ============================================================
-    // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (НЕ ТРОГАТЬ)
-    // ============================================================
-    
-    // при отсутствии трассы в словаре — дефолт
-    function getTrackWeatherTime(trackName) {
-        for (let key in trackConditions) {
-            if (trackName.includes(key.split(" - ")[0]) || trackName.includes(key.split(" ")[0]))
-                return trackConditions[key];
-        }
-        return { weather: ["S01-C06"], times: ["День","Вечер"] };
-    }
-
-    // ---------------------------- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ----------------------------
-    let currentRefCar = null;
-    let currentTrack = null;
-    const locks = { car: false, track: false, weather: false, time: false };
-
-    function getRandomItem(arr) { 
-        if (!arr || arr.length === 0) return null;
-        return arr[Math.floor(Math.random() * arr.length)]; 
-    }
-
-    // иконка трассы
-    function getTrackIcon(trackName) {
-        if (trackName.includes("Alsace")) return "track_icons/bbe708-D-n15MKA.png";
-        if (trackName.includes("Lago Maggiore")) return "track_icons/39f155-Dg_fFdVS.png";
-        if (trackName.includes("Monza")) return "track_icons/f8bd64-VsJVPuq0.png";
-        if (trackName.includes("Blue Moon")) return "track_icons/971481-BdMNGGxX.png";
-        if (trackName.includes("Nürburgring")) return "track_icons/246f6d-B2a8UX0a.png";
-        if (trackName.includes("Tokyo Expressway")) return "track_icons/e9dd33-B7sGBTmw.png";
-        return "track_icons/placeholder.png";
-    }
-
-    function getRandomWeatherByCategory(weatherCategory) {
-        let isRain = weatherCategory && weatherCategory.includes("R08");
-        let filtered = weathers.filter(w => isRain ? (w.code && w.code.includes("R08")) : (w.code && w.code.includes("C06")));
-        if (!filtered.length) filtered = weathers;
-        return getRandomItem(filtered);
-    }
-
-    // Подсчёт схожести автомобилей
-    function calculateSimilarity(c1, c2) {
-        let hpDiff = Math.abs(c1.hp - c2.hp) / Math.max(c1.hp, c2.hp, 100);
-        let wDiff = Math.abs(c1.weight - c2.weight) / Math.max(c1.weight, c2.weight, 500);
-        let ptwDiff = Math.abs(c1.powerToWeight - c2.powerToWeight) / Math.max(c1.powerToWeight, c2.powerToWeight, 0.1);
-        let sim = (1 - (hpDiff * 0.3 + wDiff * 0.3 + ptwDiff * 0.4)) * 100;
-        return Math.min(100, Math.max(0, sim));
-    }
-
-    function findSimilarCars(ref, count = 5, randomize = true) {
-        if (!carsDatabase.length) return [];
-        let list = carsDatabase.filter(c => c.name !== ref.name).map(c => ({ ...c, similarity: calculateSimilarity(ref, c) }));
-        list.sort((a,b) => b.similarity - a.similarity);
-        let top = list.slice(0, 15);
-        if (randomize) {
-            for (let i = top.length - 1; i > 0; i--) {
-                let j = Math.floor(Math.random() * (i+1));
-                [top[i], top[j]] = [top[j], top[i]];
-            }
-        }
-        return top.slice(0, count);
-    }
-
-    function displaySimilarCars(ref) {
-        if (!ref) return;
-        currentRefCar = ref;
-        let similar = findSimilarCars(ref, 5, false);
-        let ptwFormatted = (ref.powerToWeight * 1000).toFixed(1);
-        document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${ref.name}</strong><br>⚡ ${ref.hp} л.с. | ⚖️ ${ref.weight} кг | 🚀 ${ptwFormatted} л.с./т`;
+    <script>
+        // ==================== ВРЕМЯ СУТОК ====================
+        const timesBase = [
+            "Ранний рассвет",
+            "Рассвет", 
+            "Восход", 
+            "Раннее утро", 
+            "Утро",
+            "Позднее утро", 
+            "День", 
+            "После полудня", 
+            "Полдень", 
+            "Ранний вечер",
+            "Вечер", 
+            "Закат", 
+            "Сумерки", 
+            "Ночь", 
+            "Полночь"
+        ];
         
-        if (similar.length === 0) {
-            document.getElementById('similarList').innerHTML = '<li>Нет данных для сравнения</li>';
-            return;
+        // ==================== МАШИНЫ ====================
+        const carIcons = {
+            "Abarth 1500 Biposto Bertone B.A.T 1 '52": "car_icons/car1932.png",
+            "Abarth 500 '09": "car_icons/car1973.png",
+            "BMW M3 '07": "car_icons/car1399.png",
+            "Nissan GT-R '17": "car_icons/car2167.png",
+            "Porsche 911 GT3 RS '22": "car_icons/car3539.png"
+        };
+        const cars = Object.keys(carIcons);
+        
+        // ==================== ТРАССЫ ====================
+        const tracksIcons = {
+            "Франция Alsace - Деревня": "track_icons/bbe708-D-n15MKA.png",
+            "Италия Autodrome Lago Maggiore - Восток": "track_icons/39f155-Dg_fFdVS.png",
+            "США Blue Moon Bay Speedway": "track_icons/971481-BdMNGGxX.png",
+            "Япония Tokyo Expressway - Восток": "track_icons/e9dd33-B7sGBTmw.png",
+            "Германия Nürburgring Nordschleife": "track_icons/246f6d-B2a8UX0a.png"
+        };
+        const tracks = Object.keys(tracksIcons);
+        
+        // ==================== ПОГОДА ====================
+        const weathers = [
+            "S01 (Ясно, безоблачно)", "S02 (Ясно, малооблачно)", "S03 (Ясно, переменная облачность)",
+            "C01 (Пасмурно, но ярко)", "C02 (Пасмурно, тепло)",
+            "R01 (Мелкий дождь, морось)", "R02 (Умеренный дождь)", "R03 (Сильный дождь, ливень)"
+        ];
+        
+        // ==================== СОСТОЯНИЕ БЛОКИРОВОК ====================
+        let lockCar = false;
+        let lockTrack = false;
+        let lockWeather = false;
+        let lockTime = false;
+        
+        // ==================== ДИНАМИКА ВРЕМЕНИ ====================
+        function getRandomTimeDynamic() {
+            return Math.floor(Math.random() * 30) + 1;
         }
         
-        document.getElementById('similarList').innerHTML = similar.map((c, idx) => {
-            let ptw = (c.powerToWeight * 1000).toFixed(1);
-            return `
-                <li onclick="selectCar('${c.name.replace(/'/g, "\\'")}')">
-                    <span class="car-name">${idx+1}. ${c.name}</span>
-                    <div class="car-stats">${c.hp} л.с. / ${c.weight} кг / ${ptw} л.с./т</div>
-                    <span class="similarity-badge">${c.similarity.toFixed(1)}%</span>
-                </li>
-            `;
-        }).join('');
-    }
-
-    window.selectCar = function(carName) {
-        let car = carsDatabase.find(c => c.name === carName);
-        if (car) {
-            displaySimilarCars(car);
-            document.getElementById('carValue').innerText = car.name;
-            let iconImg = document.getElementById('carIcon');
-            iconImg.src = car.icon;
-            iconImg.style.display = 'block';
+        function getRandomItem(arr) {
+            if (!arr || arr.length === 0) return "—";
+            return arr[Math.floor(Math.random() * arr.length)];
         }
-    };
-
-    function updateCarAndSync() {
-        if (locks.car) return;
-        let car = getRandomItem(carsDatabase);
-        if (!car) return;
-        document.getElementById('carValue').innerText = car.name;
-        document.getElementById('carIcon').src = car.icon;
-        document.getElementById('carIcon').style.display = 'block';
-        displaySimilarCars(car);
-    }
-
-    function refreshSimilarCars() {
-        if (currentRefCar) {
-            let randomSim = findSimilarCars(currentRefCar, 5, true);
-            if (randomSim.length === 0) {
-                document.getElementById('similarList').innerHTML = '<li>Нет данных для сравнения</li>';
-                return;
-            }
-            document.getElementById('similarList').innerHTML = randomSim.map((c, idx) => {
-                let ptw = (c.powerToWeight * 1000).toFixed(1);
-                return `
-                    <li onclick="selectCar('${c.name.replace(/'/g, "\\'")}')">
-                        <span class="car-name">${idx+1}. ${c.name}</span>
-                        <div class="car-stats">${c.hp} л.с. / ${c.weight} кг / ${ptw} л.с./т</div>
-                        <span class="similarity-badge">${c.similarity.toFixed(1)}%</span>
-                    </li>
-                `;
-            }).join('');
-        } else {
-            let rand = getRandomItem(carsDatabase);
-            if (rand) displaySimilarCars(rand);
-        }
-    }
-
-    // обновление погоды / времени по трассе
-    function updateWeatherByTrack(trackName) {
-        if (locks.weather) return;
-        let cond = getTrackWeatherTime(trackName);
-        let weatherCat = getRandomItem(cond.weather);
-        let wObj = getRandomWeatherByCategory(weatherCat);
-        if (wObj) {
-            document.getElementById('weatherValue').innerText = wObj.name;
-            document.getElementById('weatherIcon').src = wObj.icon;
-        }
-    }
-    
-    function updateTimeByTrack(trackName) {
-        if (locks.time) return;
-        let cond = getTrackWeatherTime(trackName);
-        let timeName = getRandomItem(cond.times);
-        let tObj = times.find(t => t.name === timeName) || times[5];
-        if (tObj) {
-            document.getElementById('timeValue').innerHTML = `${tObj.name} <span id="xValue" style="color: #ff9999;">(X--)</span>`;
-            document.getElementById('timeIcon').src = tObj.icon;
-        }
-        let x = Math.floor(Math.random() * 30) + 1;
-        let xSpan = document.getElementById('xValue');
-        if (xSpan) xSpan.innerText = `(X${x.toString().padStart(2, '0')})`;
-    }
-
-    function updateTrack() {
-        if (locks.track) return;
-        let track = getRandomItem(tracks);
-        if (!track) return;
-        currentTrack = track;
-        document.getElementById('trackValue').innerText = track;
-        let iconUrl = getTrackIcon(track);
-        let trackIcon = document.getElementById('trackIcon');
-        if (iconUrl) { trackIcon.src = iconUrl; trackIcon.style.display = 'block'; }
-        else trackIcon.style.display = 'none';
-        if (!locks.weather) updateWeatherByTrack(track);
-        if (!locks.time) updateTimeByTrack(track);
-    }
-    
-    function updateWeather() {
-        if (locks.weather) return;
-        let track = currentTrack || document.getElementById('trackValue').innerText;
-        if (track && track !== "—" && track !== "Нет данных") updateWeatherByTrack(track);
-        else {
-            let w = getRandomItem(weathers);
-            if (w) {
-                document.getElementById('weatherValue').innerText = w.name;
-                document.getElementById('weatherIcon').src = w.icon;
-            }
-        }
-    }
-    
-    function updateTime() {
-        if (locks.time) return;
-        let track = currentTrack || document.getElementById('trackValue').innerText;
-        if (track && track !== "—" && track !== "Нет данных") updateTimeByTrack(track);
-        else {
-            let t = getRandomItem(times);
-            if (t) {
-                document.getElementById('timeValue').innerHTML = `${t.name} <span id="xValue" style="color: #ff9999;">(X--)</span>`;
-                document.getElementById('timeIcon').src = t.icon;
-            }
-            let x = Math.floor(Math.random() * 30) + 1;
-            let xSpan = document.getElementById('xValue');
-            if (xSpan) xSpan.innerText = `(X${x.toString().padStart(2, '0')})`;
-        }
-    }
-    
-    function updateUnlockedOnly() {
-        if (!locks.car) updateCarAndSync();
-        if (!locks.track) updateTrack();
-        if (!locks.weather) updateWeather();
-        if (!locks.time) updateTime();
-    }
-
-    function toggleLock(param) {
-        locks[param] = !locks[param];
-        let btn = document.querySelector(`.lock-btn[data-param="${param}"]`);
-        if (locks[param]) { 
-            btn.innerHTML = '🔒'; 
-            btn.setAttribute('data-state','locked'); 
-            if(param==='track') currentTrack = document.getElementById('trackValue').innerText; 
-        }
-        else { 
-            btn.innerHTML = '🔓'; 
-            btn.setAttribute('data-state','unlocked'); 
-        }
-    }
-
-    // ИНИЦИАЛИЗАЦИЯ
-    function init() {
-        document.querySelectorAll('.lock-btn').forEach(btn => btn.addEventListener('click', (e) => { 
-            e.stopPropagation(); 
-            toggleLock(btn.getAttribute('data-param')); 
-        }));
         
-        document.getElementById('randomBtn').addEventListener('click', updateUnlockedOnly);
-        document.getElementById('refreshSimilarBtn').addEventListener('click', refreshSimilarCars);
-        
-        if (carsDatabase.length > 0) {
-            let initCar = getRandomItem(carsDatabase);
-            if (initCar) {
-                document.getElementById('carValue').innerText = initCar.name;
-                document.getElementById('carIcon').src = initCar.icon;
-                document.getElementById('carIcon').style.display = 'block';
-                displaySimilarCars(initCar);
+        // ==================== ФУНКЦИИ ОБНОВЛЕНИЯ ====================
+        function updateCar(force = false) {
+            if (!lockCar || force) {
+                const car = getRandomItem(cars);
+                const carElement = document.getElementById('carValue');
+                if (carElement) carElement.textContent = car;
+                const icon = document.getElementById('carIcon');
+                if (icon && carIcons[car]) {
+                    icon.src = carIcons[car];
+                    icon.style.display = "block";
+                    icon.onerror = () => { if(icon) icon.style.display = "none"; };
+                } else if (icon) {
+                    icon.style.display = "none";
+                }
             }
         }
         
-        if (tracks.length > 0) {
-            let initTrack = tracks[0];
-            currentTrack = initTrack;
-            document.getElementById('trackValue').innerText = initTrack;
-            let ic = getTrackIcon(initTrack);
-            if(ic) { 
-                document.getElementById('trackIcon').src = ic; 
-                document.getElementById('trackIcon').style.display = 'block'; 
+        function updateTrack(force = false) {
+            if (!lockTrack || force) {
+                const track = getRandomItem(tracks);
+                const trackElement = document.getElementById('trackValue');
+                if (trackElement) trackElement.textContent = track;
+                const icon = document.getElementById('trackIcon');
+                if (icon && tracksIcons[track]) {
+                    icon.src = tracksIcons[track];
+                    icon.style.display = "block";
+                    icon.onerror = () => { if(icon) icon.style.display = "none"; };
+                } else if (icon) {
+                    icon.style.display = "none";
+                }
             }
-            updateWeatherByTrack(initTrack);
-            updateTimeByTrack(initTrack);
-        } else {
-            document.getElementById('trackValue').innerText = "Нет данных";
         }
-    }
-    
-    init();
-</script>
+        
+        function updateWeather(force = false) {
+            if (!lockWeather || force) {
+                const weather = getRandomItem(weathers);
+                const weatherElement = document.getElementById('weatherValue');
+                if (weatherElement) weatherElement.textContent = weather;
+            }
+        }
+        
+        function updateTime(force = false) {
+            if (!lockTime || force) {
+                const time = getRandomItem(timesBase);
+                const dynamic = getRandomTimeDynamic();
+                const timeElement = document.getElementById('timeValue');
+                if (timeElement) timeElement.textContent = `${time} (x${dynamic})`;
+            }
+        }
+        
+        function updateAll() {
+            updateCar();
+            updateTrack();
+            updateWeather();
+            updateTime();
+        }
+        
+        // ==================== ОБНОВЛЕНИЕ ВИДА КНОПОК-ЗАМОЧКОВ ====================
+        function updateLockButtons() {
+            const carBtn = document.getElementById('lockCar');
+            const trackBtn = document.getElementById('lockTrack');
+            const weatherBtn = document.getElementById('lockWeather');
+            const timeBtn = document.getElementById('lockTime');
+            
+            if (carBtn) carBtn.innerHTML = lockCar ? '<img src="locked.png" alt="Заблокировано">' : '<img src="unlocked.png" alt="Разблокировано">';
+            if (trackBtn) trackBtn.innerHTML = lockTrack ? '<img src="locked.png" alt="Заблокировано">' : '<img src="unlocked.png" alt="Разблокировано">';
+            if (weatherBtn) weatherBtn.innerHTML = lockWeather ? '<img src="locked.png" alt="Заблокировано">' : '<img src="unlocked.png" alt="Разблокировано">';
+            if (timeBtn) timeBtn.innerHTML = lockTime ? '<img src="locked.png" alt="Заблокировано">' : '<img src="unlocked.png" alt="Разблокировано">';
+        }
+        
+        // ==================== ОБРАБОТЧИКИ КНОПОК ====================
+        const lockCarBtn = document.getElementById('lockCar');
+        const lockTrackBtn = document.getElementById('lockTrack');
+        const lockWeatherBtn = document.getElementById('lockWeather');
+        const lockTimeBtn = document.getElementById('lockTime');
+        const randomBtn = document.getElementById('randomBtn');
+        
+        if (lockCarBtn) lockCarBtn.addEventListener('click', () => { lockCar = !lockCar; updateLockButtons(); });
+        if (lockTrackBtn) lockTrackBtn.addEventListener('click', () => { lockTrack = !lockTrack; updateLockButtons(); });
+        if (lockWeatherBtn) lockWeatherBtn.addEventListener('click', () => { lockWeather = !lockWeather; updateLockButtons(); });
+        if (lockTimeBtn) lockTimeBtn.addEventListener('click', () => { lockTime = !lockTime; updateLockButtons(); });
+        if (randomBtn) randomBtn.addEventListener('click', updateAll);
+        
+        // ==================== ИНИЦИАЛИЗАЦИЯ ====================
+        updateLockButtons();
+        updateAll();
+    </script>
 </body>
 </html>
