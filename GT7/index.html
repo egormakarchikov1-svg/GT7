@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <title>GT7 Random Race — Погода и время по трассам</title>
+    <title>GT7 Random Race — Полный список трасс (погода + время)</title>
     <style>
         * {
             margin: 0;
@@ -45,7 +45,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.62);
             backdrop-filter: blur(2px);
             z-index: 0;
         }
@@ -55,17 +55,16 @@
         }
         .content {
             width: 100%;
-            max-width: 500px;
+            max-width: 520px;
             margin: 0 auto;
         }
         .param-block {
             margin-bottom: 24px;
             padding: 12px 16px;
-            background: rgba(10, 15, 30, 0.65);
-            backdrop-filter: blur(4px);
-            border-radius: 32px;
-            border: 1px solid rgba(255,255,240,0.15);
-            transition: all 0.2s;
+            background: rgba(10, 15, 30, 0.7);
+            backdrop-filter: blur(5px);
+            border-radius: 36px;
+            border: 1px solid rgba(255,255,240,0.2);
         }
         .param-header {
             display: flex;
@@ -124,13 +123,12 @@
         .param-value {
             font-size: 16px;
             font-weight: 600;
-            background: rgba(0, 0, 0, 0.55);
+            background: rgba(0, 0, 0, 0.6);
             padding: 12px 16px;
             border-radius: 28px;
             margin-top: 8px;
             word-break: break-word;
             text-align: left;
-            backdrop-filter: blur(2px);
             border-left: 3px solid #ff4d4d;
         }
         button:not(.lock-btn) {
@@ -148,7 +146,7 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            box-shadow: 0 6px 14px rgba(0,0,0,0.3);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.4);
         }
         button:not(.lock-btn):active {
             transform: scale(0.97);
@@ -161,10 +159,6 @@
             .car-icon { max-height: 65px; }
             .track-icon { max-height: 55px; }
             .lock-container img { width: 28px; height: 28px; }
-        }
-        @media (max-width: 380px) {
-            .param-header { gap: 8px; }
-            .param-label { font-size: 12px; }
         }
     </style>
 </head>
@@ -211,14 +205,11 @@
 
 <script>
     // --------------------------------------------------------------
-    // 1. БАЗА ТРАСС (полностью из файла погода рандом.xlsx)
-    //    Каждая трасса содержит:
-    //      - name (полное название)
-    //      - icon (путь к иконке)
-    //      - weatherType: "S01-C06" (только ясная, без дождя) или "S01-R08" (включая дождь)
-    //      - timeOptions: массив вариантов времени суток (как в колонке time_options)
+    // ПОЛНЫЙ СПИСОК ТРАСС ИЗ EXCEL (все строки)
+    // Каждая трасса содержит: name, icon, weatherType (S01-C06 или S01-R08),
+    // timeOptions (массив времени суток строго из столбца D)
     // --------------------------------------------------------------
-    const tracksDatabase = [
+    const fullTracksList = [
         { name: "Франция Alsace - Деревня", icon: "track_icons/bbe708-D-n15MKA.png", weatherType: "S01-C06", timeOptions: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
         { name: "Франция Alsace - Деревня (обратн.)", icon: "track_icons/bbe708-D-n15MKA.png", weatherType: "S01-C06", timeOptions: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
         { name: "Франция Alsace - тестовая трасса", icon: "track_icons/bbe708-D-n15MKA.png", weatherType: "S01-C06", timeOptions: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
@@ -274,12 +265,7 @@
         { name: "Франция Heures du Mans (24 часа)", icon: "track_icons/1d5980-BtTwZ0Sf.png", weatherType: "S01-R08", timeOptions: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","ночь","полночь"] },
         { name: "Франция Heures du Mans (24 часа) (без шиканы)", icon: "track_icons/1d5980-BtTwZ0Sf.png", weatherType: "S01-R08", timeOptions: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","ночь","полночь"] },
         { name: "Япония High Speed Ring", icon: "track_icons/9a42fb-ctw1_rUB.png", weatherType: "S01-R08", timeOptions: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-        { name: "Япония High Speed Ring (обратн.)", icon: "track_icons/9a42fb-ctw1_rUB.png", weatherType: "S01-R08", timeOptions: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] }
-    ];
-    
-    // Добавляем недостающие трассы из файла до 83 позиций (обрезка не требуется, база полная)
-    // Дополним несколько недостающих вручную (из финала таблицы)
-    const extraTracks = [
+        { name: "Япония High Speed Ring (обратн.)", icon: "track_icons/9a42fb-ctw1_rUB.png", weatherType: "S01-R08", timeOptions: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
         { name: "Япония Kyoto Driving Park - Miyabi", icon: "track_icons/16ccbf-HZopm0Jc.png", weatherType: "S01-C06", timeOptions: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
         { name: "Япония Kyoto Driving Park - Yamagiwa", icon: "track_icons/16ccbf-HZopm0Jc.png", weatherType: "S01-C06", timeOptions: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
         { name: "Япония Kyoto Driving Park - Yamagiwa (обратн.)", icon: "track_icons/16ccbf-HZopm0Jc.png", weatherType: "S01-C06", timeOptions: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
@@ -289,11 +275,39 @@
         { name: "Австралия Mount Panorama Motor Racing Circuit", icon: "track_icons/28b64f-DwW557Cx.png", weatherType: "S01-C06", timeOptions: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","ночь","полночь"] },
         { name: "Германия Nürburgring (24 часа)", icon: "track_icons/246f6d-B2a8UX0a.png", weatherType: "S01-R08", timeOptions: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","ночь","полночь"] },
         { name: "Германия Nürburgring (гонка на выносливость)", icon: "track_icons/246f6d-B2a8UX0a.png", weatherType: "S01-R08", timeOptions: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки"] },
-        { name: "Германия Nürburgring (спринт)", icon: "track_icons/246f6d-B2a8UX0a.png", weatherType: "S01-R08", timeOptions: ["Ранее утро","Позднее утро","день","Вечер","Закат"] }
+        { name: "Германия Nürburgring (спринт)", icon: "track_icons/246f6d-B2a8UX0a.png", weatherType: "S01-R08", timeOptions: ["Ранее утро","Позднее утро","день","Вечер","Закат"] },
+        { name: "Германия Nürburgring GP", icon: "track_icons/246f6d-B2a8UX0a.png", weatherType: "S01-R08", timeOptions: ["Ранее утро","Позднее утро","день","Вечер","Закат"] },
+        { name: "Германия Nürburgring Nordschleife", icon: "track_icons/246f6d-B2a8UX0a.png", weatherType: "S01-R08", timeOptions: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки"] },
+        { name: "Австрия Red Bull Ring - полная трасса", icon: "track_icons/f99788-CkF30Q0q.png", weatherType: "S01-R08", timeOptions: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
+        { name: "Италия Sardegna - Road Track - A", icon: "track_icons/748156-BVeffrVD.png", weatherType: "S01-C06", timeOptions: ["Ранее утро","Позднее утро","день","Вечер","Закат"] },
+        { name: "Италия Sardegna - Road Track - A (обратн.)", icon: "track_icons/748156-BVeffrVD.png", weatherType: "S01-C06", timeOptions: ["Ранее утро","Позднее утро","день","Вечер","Закат"] },
+        { name: "Италия Sardegna - Road Track - B", icon: "track_icons/748156-BVeffrVD.png", weatherType: "S01-C06", timeOptions: ["Ранее утро","Позднее утро","день","Вечер","Закат"] },
+        { name: "Италия Sardegna - Road Track - B (обратн.)", icon: "track_icons/748156-BVeffrVD.png", weatherType: "S01-C06", timeOptions: ["Ранее утро","Позднее утро","день","Вечер","Закат"] },
+        { name: "Италия Sardegna - Road Track - C", icon: "track_icons/748156-BVeffrVD.png", weatherType: "S01-C06", timeOptions: ["Ранее утро","Позднее утро","день","Вечер","Закат"] },
+        { name: "Италия Sardegna - Road Track - C (обратн.)", icon: "track_icons/748156-BVeffrVD.png", weatherType: "S01-C06", timeOptions: ["Ранее утро","Позднее утро","день","Вечер","Закат"] },
+        { name: "Япония Suzuka Circuit", icon: "track_icons/fd167d-J52xhRm4.png", weatherType: "S01-R08", timeOptions: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","ночь"] },
+        { name: "Япония Suzuka Circuit - восточная трасса", icon: "track_icons/fd167d-J52xhRm4.png", weatherType: "S01-R08", timeOptions: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","ночь"] },
+        { name: "Япония Tokyo Expressway - Восток (по часовой)", icon: "track_icons/e9dd33-B7sGBTmw.png", weatherType: "S01-R08", timeOptions: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","ночь","полночь"] },
+        { name: "Япония Tokyo Expressway - Восток (против часовой)", icon: "track_icons/e9dd33-B7sGBTmw.png", weatherType: "S01-R08", timeOptions: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","ночь","полночь"] },
+        { name: "Япония Tokyo Expressway - Центр (по часовой)", icon: "track_icons/e9dd33-B7sGBTmw.png", weatherType: "S01-R08", timeOptions: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","ночь","полночь"] },
+        { name: "Япония Tokyo Expressway - Центр (против часовой)", icon: "track_icons/e9dd33-B7sGBTmw.png", weatherType: "S01-R08", timeOptions: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","ночь","полночь"] },
+        { name: "Япония Tokyo Expressway - Юг (по часовой)", icon: "track_icons/e9dd33-B7sGBTmw.png", weatherType: "S01-C06", timeOptions: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","ночь","полночь"] },
+        { name: "Япония Tokyo Expressway - Юг (против часовой)", icon: "track_icons/e9dd33-B7sGBTmw.png", weatherType: "S01-C06", timeOptions: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","ночь","полночь"] },
+        { name: "США Trial Mountain - обратн.", icon: "track_icons/e60841-DkNFRL37.png", weatherType: "S01-C06", timeOptions: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
+        { name: "США Trial Mountain Circuit", icon: "track_icons/e60841-DkNFRL37.png", weatherType: "S01-C06", timeOptions: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
+        { name: "Япония Tsukuba Circuit", icon: "track_icons/c5de8a-DX9dzSPz.png", weatherType: "S01-R08", timeOptions: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
+        { name: "США Watkins Glen (длинная трасса)", icon: "track_icons/e6ef89-CkruxU9Z.png", weatherType: "S01-C06", timeOptions: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","ночь"] },
+        { name: "США Watkins Glen (короткая трасса)", icon: "track_icons/e6ef89-CkruxU9Z.png", weatherType: "S01-C06", timeOptions: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","ночь"] },
+        { name: "США WeatherTech Raceway Laguna Seca", icon: "track_icons/c75e61-DBxJ7RQM.png", weatherType: "S01-C06", timeOptions: ["Ранее утро","Позднее утро","день","Вечер","Закат","сумерки"] },
+        { name: "США Willow Springs International Raceway: Big Willow", icon: "track_icons/fb6d1f-DDZuZmtt.png", weatherType: "S01-C06", timeOptions: ["Ранее утро","Позднее утро","день","Вечер","Закат","сумерки","ночь"] },
+        { name: "США Willow Springs International Raceway: Horse Thief Mile", icon: "track_icons/fb6d1f-DDZuZmtt.png", weatherType: "S01-C06", timeOptions: ["Ранее утро","Позднее утро","день","Вечер","Закат","сумерки","ночь"] },
+        { name: "США Willow Springs International Raceway: Horse Thief Mile (обратн.)", icon: "track_icons/fb6d1f-DDZuZmtt.png", weatherType: "S01-C06", timeOptions: ["Ранее утро","Позднее утро","день","Вечер","Закат","сумерки","ночь"] },
+        { name: "США Willow Springs International Raceway: Streets of Willow Springs", icon: "track_icons/fb6d1f-DDZuZmtt.png", weatherType: "S01-C06", timeOptions: ["Ранее утро","Позднее утро","день","Вечер","Закат","сумерки","ночь"] },
+        { name: "США Willow Springs International Raceway: Streets of Willow Springs (обратн.)", icon: "track_icons/fb6d1f-DDZuZmtt.png", weatherType: "S01-C06", timeOptions: ["Ранее утро","Позднее утро","день","Вечер","Закат","сумерки","ночь"] },
+        { name: "ОАЭ Yas Marina Circuit", icon: "track_icons/27adb9-DCBqBoAB.png", weatherType: "S01-C06", timeOptions: ["Заря","Рассвет","Восход","Ранее утро","Позднее утро","День","Вечер","Закат","Сумерки","ночь","полночь"] }
     ];
-    const fullTracks = [...tracksDatabase, ...extraTracks];
-    
-    // МАШИНЫ (из примера, но можно расширить)
+
+    // Машины (расширенный набор)
     const carIcons = {
         "Abarth 1500 Biposto Bertone B.A.T 1 '52": "car_icons/car1932.png",
         "Abarth 500 '09": "car_icons/car1973.png",
@@ -301,71 +315,72 @@
         "Nissan GT-R '17": "car_icons/car2167.png",
         "Porsche 911 GT3 RS '22": "car_icons/car3539.png",
         "Ferrari 488 GTB '19": "car_icons/ferrari488.png",
-        "Lamborghini Huracan GT3": "car_icons/lambo.png"
+        "Lamborghini Huracan GT3": "car_icons/lambo.png",
+        "Mercedes-AMG GT R '20": "car_icons/amggt.png",
+        "Audi R8 LMS Evo": "car_icons/audir8.png"
     };
     const cars = Object.keys(carIcons);
     
-    // ПОГОДА по правилам S01-C06 и S01-R08
-    const clearWeathers = ["S01 (Ясно, безоблачно)", "S02 (Ясно, малооблачно)", "S03 (Ясно, переменная облачность)", "C01 (Пасмурно, но ярко)", "C02 (Пасмурно, тепло)"];
-    const fullWeathers = [...clearWeathers, "R01 (Мелкий дождь, морось)", "R02 (Умеренный дождь)", "R03 (Сильный дождь, ливень)"];
-    
-    function getWeatherByTrack(weatherType) {
-        const pool = weatherType === "S01-R08" ? fullWeathers : clearWeathers;
+    // Пул погоды: сухая (C01-C06) и полная (с дождями R01-R03)
+    const dryWeather = ["S01 (Ясно, безоблачно)", "S02 (Ясно, малооблачно)", "S03 (Ясно, переменная облачность)", "C01 (Пасмурно, но ярко)", "C02 (Пасмурно, тепло)", "C03 (Пасмурно, свежо)", "C04 (Облачно, сухо)", "C05 (Серое небо)", "C06 (Туманно, сухо)"];
+    const fullWeather = [...dryWeather, "R01 (Мелкий дождь, морось)", "R02 (Умеренный дождь)", "R03 (Сильный дождь, ливень)"];
+
+    function getWeatherByType(type) {
+        const pool = type === "S01-R08" ? fullWeather : dryWeather;
         return pool[Math.floor(Math.random() * pool.length)];
     }
-    
+
     let lockCar = false, lockTrack = false, lockWeather = false, lockTime = false;
-    let currentTrackObj = null;
+    let currentTrack = null;
     let currentCar = "", currentTrackName = "", currentWeather = "", currentTimeOption = "";
     
-    function getRandomTimeMultiplier() { return Math.floor(Math.random() * 30) + 1; }
+    function getRandomMultiplier() { return Math.floor(Math.random() * 30) + 1; }
     
-    function randomCar() { return cars[Math.floor(Math.random() * cars.length)]; }
-    function randomTrack() { return fullTracks[Math.floor(Math.random() * fullTracks.length)]; }
+    function randomCarItem() { return cars[Math.floor(Math.random() * cars.length)]; }
+    function randomTrackItem() { return fullTracksList[Math.floor(Math.random() * fullTracksList.length)]; }
     
-    function updateUI() {
+    function updateDisplay() {
         document.getElementById('carValue').innerText = currentCar;
         document.getElementById('trackValue').innerText = currentTrackName;
         document.getElementById('weatherValue').innerText = currentWeather;
-        const multiplier = getRandomTimeMultiplier();
-        document.getElementById('timeValue').innerHTML = `${currentTimeOption} <span style="opacity:0.8; font-size:0.85rem;">(x${multiplier})</span>`;
+        const mult = getRandomMultiplier();
+        document.getElementById('timeValue').innerHTML = `${currentTimeOption} <span style="opacity:0.8; font-size:0.8rem;">(x${mult})</span>`;
         
         const carIconEl = document.getElementById('carIcon');
         if (carIconEl && carIcons[currentCar]) { carIconEl.src = carIcons[currentCar]; carIconEl.style.display = "block"; carIconEl.onerror = () => carIconEl.style.display = "none"; }
         else if(carIconEl) carIconEl.style.display = "none";
         
         const trackIconEl = document.getElementById('trackIcon');
-        if (trackIconEl && currentTrackObj?.icon) { trackIconEl.src = currentTrackObj.icon; trackIconEl.style.display = "block"; trackIconEl.onerror = () => trackIconEl.style.display = "none"; }
+        if (trackIconEl && currentTrack?.icon) { trackIconEl.src = currentTrack.icon; trackIconEl.style.display = "block"; trackIconEl.onerror = () => trackIconEl.style.display = "none"; }
         else if(trackIconEl) trackIconEl.style.display = "none";
     }
     
-    function refreshAll(forceAll = true) {
-        if (!lockCar || forceAll) currentCar = randomCar();
-        if (!lockTrack || forceAll) { currentTrackObj = randomTrack(); currentTrackName = currentTrackObj.name; }
-        if (!lockWeather || forceAll) currentWeather = getWeatherByTrack(currentTrackObj.weatherType);
-        if (!lockTime || forceAll) {
-            const timeArr = currentTrackObj.timeOptions;
-            currentTimeOption = timeArr.length ? timeArr[Math.floor(Math.random() * timeArr.length)] : "День";
+    function refreshAll(force = true) {
+        if (!lockCar || force) currentCar = randomCarItem();
+        if (!lockTrack || force) { currentTrack = randomTrackItem(); currentTrackName = currentTrack.name; }
+        if (!lockWeather || force) currentWeather = getWeatherByType(currentTrack.weatherType);
+        if (!lockTime || force) {
+            const times = currentTrack.timeOptions;
+            currentTimeOption = times.length ? times[Math.floor(Math.random() * times.length)] : "День";
         }
-        updateUI();
+        updateDisplay();
     }
     
-    function updateLockButtonsUI() {
+    function updateLockIcons() {
         document.querySelector('#lockCar img').src = lockCar ? "locked.png" : "unlocked.png";
         document.querySelector('#lockTrack img').src = lockTrack ? "locked.png" : "unlocked.png";
         document.querySelector('#lockWeather img').src = lockWeather ? "locked.png" : "unlocked.png";
         document.querySelector('#lockTime img').src = lockTime ? "locked.png" : "unlocked.png";
     }
     
-    document.getElementById('lockCar').addEventListener('click', () => { lockCar = !lockCar; updateLockButtonsUI(); if(!lockCar) refreshAll(false); });
-    document.getElementById('lockTrack').addEventListener('click', () => { lockTrack = !lockTrack; updateLockButtonsUI(); if(!lockTrack) refreshAll(false); });
-    document.getElementById('lockWeather').addEventListener('click', () => { lockWeather = !lockWeather; updateLockButtonsUI(); if(!lockWeather) refreshAll(false); });
-    document.getElementById('lockTime').addEventListener('click', () => { lockTime = !lockTime; updateLockButtonsUI(); if(!lockTime) refreshAll(false); });
+    document.getElementById('lockCar').addEventListener('click', () => { lockCar = !lockCar; updateLockIcons(); if(!lockCar) refreshAll(false); });
+    document.getElementById('lockTrack').addEventListener('click', () => { lockTrack = !lockTrack; updateLockIcons(); if(!lockTrack) refreshAll(false); });
+    document.getElementById('lockWeather').addEventListener('click', () => { lockWeather = !lockWeather; updateLockIcons(); if(!lockWeather) refreshAll(false); });
+    document.getElementById('lockTime').addEventListener('click', () => { lockTime = !lockTime; updateLockIcons(); if(!lockTime) refreshAll(false); });
     document.getElementById('randomBtn').addEventListener('click', () => refreshAll(true));
     
-    // инициализация
     refreshAll(true);
-    updateLockButtonsUI();
+    updateLockIcons();
 </script>
 </body>
 </html>
