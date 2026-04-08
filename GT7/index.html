@@ -132,6 +132,11 @@
             text-align: left;
             border-left: 3px solid #ff4d4d;
         }
+        .param-value small {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            font-weight: normal;
+        }
         .locked-param .param-value {
             border-left-color: #4caf50;
             background: rgba(76, 175, 80, 0.15);
@@ -211,7 +216,7 @@
 
 <script>
     (function() {
-        // ==================== ТРАССЫ (пример с разными погодными условиями) ====================
+        // ==================== ТРАССЫ ====================
         const fullTracksList = [
             // S01-C06 — только сухая погода (без дождя)
             { name: "Франция Alsace - Деревня", icon: "track_icons/bbe708-D-n15MKA.png", weatherType: "S01-C06", timeOptions: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
@@ -243,22 +248,18 @@
         const cars = Object.keys(carIcons);
         
         // ==================== ПОГОДА ====================
-        // Сухая погода (C01-C06 и S01-S03)
         const dryWeather = [
             "S01 (Ясно, безоблачно)", "S02 (Ясно, малооблачно)", "S03 (Ясно, переменная облачность)",
             "C01 (Пасмурно, но ярко)", "C02 (Пасмурно, тепло)", "C03 (Пасмурно, свежо)",
             "C04 (Облачно, сухо)", "C05 (Серое небо)", "C06 (Туманно, сухо)"
         ];
         
-        // Дождливая погода (добавляется только для S01-R08)
         const rainWeather = [
             "R01 (Мелкий дождь, морось)", "R02 (Умеренный дождь)", "R03 (Сильный дождь, ливень)"
         ];
         
-        // Полная погода (с дождём)
         const fullWeather = [...dryWeather, ...rainWeather];
         
-        // Функция выбора погоды в зависимости от типа трассы
         function getWeatherByType(weatherType) {
             const pool = weatherType === "S01-R08" ? fullWeather : dryWeather;
             return pool[Math.floor(Math.random() * pool.length)];
@@ -279,6 +280,7 @@
         let currentTrack = null;
         let currentWeather = "";
         let currentTimeOption = "";
+        let currentMultiplier = 1;
         
         // ==================== ФУНКЦИИ ГЕНЕРАЦИИ ====================
         function randomCar() {
@@ -294,9 +296,18 @@
             return options.length ? options[Math.floor(Math.random() * options.length)] : "День";
         }
         
+        // Обновление времени и множителя (с учётом блокировки)
+        function updateTimeAndMultiplier(forceRandom = false) {
+            if (!lockTime || forceRandom) {
+                if (currentTrack) {
+                    currentTimeOption = randomTimeFromTrack(currentTrack);
+                }
+                currentMultiplier = getRandomMultiplier();
+            }
+        }
+        
         // ==================== ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ====================
         function updateDisplay() {
-            // Обновляем текстовые значения
             const carValueEl = document.getElementById('carValue');
             const trackValueEl = document.getElementById('trackValue');
             const weatherValueEl = document.getElementById('weatherValue');
@@ -305,11 +316,8 @@
             if (carValueEl) carValueEl.textContent = currentCar;
             if (trackValueEl && currentTrack) trackValueEl.textContent = currentTrack.name;
             if (weatherValueEl) weatherValueEl.textContent = currentWeather;
-            
-            // Время с множителем
-            const multiplier = getRandomMultiplier();
             if (timeValueEl) {
-                timeValueEl.innerHTML = `${currentTimeOption} <span style="opacity:0.7; font-size:0.75rem;">(x${multiplier})</span>`;
+                timeValueEl.innerHTML = `${currentTimeOption} <small>(x${currentMultiplier})</small>`;
             }
             
             // Иконка машины
@@ -357,76 +365,58 @@
             if (lockTimeImg) lockTimeImg.src = lockTime ? "locked.png" : "unlocked.png";
         }
         
-        // ==================== ГЛАВНАЯ ФУНКЦИЯ ОБНОВЛЕНИЯ ====================
-        // forceRandom — принудительно обновить все незаблокированные параметры
-        function refreshAll(forceRandom = true) {
-            // Машина
-            if (!lockCar || forceRandom) {
-                currentCar = randomCar();
-            }
-            
-            // Трасса (если разблокирована или принудительно)
-            if (!lockTrack || forceRandom) {
-                currentTrack = randomTrack();
-            }
-            
-            // Погода (зависит от текущей трассы)
-            if (!lockWeather || forceRandom) {
-                if (currentTrack) {
-                    currentWeather = getWeatherByType(currentTrack.weatherType);
-                } else {
-                    currentWeather = dryWeather[0];
-                }
-            }
-            
-            // Время суток (зависит от текущей трассы)
-            if (!lockTime || forceRandom) {
-                if (currentTrack) {
-                    currentTimeOption = randomTimeFromTrack(currentTrack);
-                } else {
-                    currentTimeOption = "День";
-                }
-            }
-            
-            updateDisplay();
-        }
-        
-        // Обновление только разблокированных параметров (без принудительного обновления всех)
+        // ==================== ГЛАВНЫЕ ФУНКЦИИ ====================
+        // Полное обновление всех незаблокированных параметров
         function refreshUnlockedOnly() {
-            // Машина — только если не заблокирована
+            // Машина
             if (!lockCar) {
                 currentCar = randomCar();
             }
             
-            // Трасса — только если не заблокирована
+            // Трасса
             if (!lockTrack) {
                 currentTrack = randomTrack();
             }
             
-            // Погода — только если не заблокирована (зависит от текущей трассы)
+            // Погода (зависит от текущей трассы)
             if (!lockWeather && currentTrack) {
                 currentWeather = getWeatherByType(currentTrack.weatherType);
             }
             
-            // Время — только если не заблокировано (зависит от текущей трассы)
-            if (!lockTime && currentTrack) {
-                currentTimeOption = randomTimeFromTrack(currentTrack);
+            // Время и множитель (если время не заблокировано)
+            if (!lockTime) {
+                if (currentTrack) {
+                    currentTimeOption = randomTimeFromTrack(currentTrack);
+                }
+                currentMultiplier = getRandomMultiplier();
             }
             
             updateDisplay();
         }
         
-        // ==================== ИНИЦИАЛИЗАЦИЯ ====================
+        // Принудительное обновление (при смене трассы через блокировку)
+        function refreshForced() {
+            if (!lockCar) currentCar = randomCar();
+            if (!lockTrack) currentTrack = randomTrack();
+            if (!lockWeather && currentTrack) currentWeather = getWeatherByType(currentTrack.weatherType);
+            if (!lockTime) {
+                if (currentTrack) currentTimeOption = randomTimeFromTrack(currentTrack);
+                currentMultiplier = getRandomMultiplier();
+            }
+            updateDisplay();
+        }
+        
+        // ==================== ОБРАБОТЧИКИ ====================
         function init() {
             // Начальная генерация
             currentCar = randomCar();
             currentTrack = randomTrack();
             currentWeather = getWeatherByType(currentTrack.weatherType);
             currentTimeOption = randomTimeFromTrack(currentTrack);
+            currentMultiplier = getRandomMultiplier();
             updateDisplay();
             updateLockIcons();
             
-            // Обработчики кнопок замков
             const lockCarBtn = document.getElementById('lockCar');
             const lockTrackBtn = document.getElementById('lockTrack');
             const lockWeatherBtn = document.getElementById('lockWeather');
@@ -438,7 +428,7 @@
                     e.preventDefault();
                     lockCar = !lockCar;
                     updateLockIcons();
-                    updateDisplay(); // Обновляем визуальную индикацию блокировки
+                    updateDisplay();
                 });
             }
             
@@ -469,7 +459,6 @@
                 });
             }
             
-            // Кнопка случайной гонки — обновляем только НЕзаблокированные параметры
             if (randomBtn) {
                 randomBtn.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -478,7 +467,6 @@
             }
         }
         
-        // Запуск после загрузки DOM
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init);
         } else {
