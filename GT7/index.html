@@ -1134,7 +1134,7 @@ const carsDatabase = [
     { name: "Abarth 595 SS '70", rating: 175.22, category: "", powerToWeight: 0.06, hp: 30, torque: 44, weight: 470, icon: "car_icons/car3579.png" },
     { name: "Abarth 1500 Biposto Bertone B.A.T 1 '52", rating: 262.24, category: "", powerToWeight: 0.08, hp: 75, torque: 99.8, weight: 870, icon: "car_icons/car1932.png" },
     { name: "AFEELA Prototype 2024", rating: 536.95, category: "", powerToWeight: 0.21, hp: 489, torque: "-", weight: 2350, icon: "car_icons/car365.png" },
-    { name: "AFEELA 1 '26", rating: 530.28, category: "", powerToWeight: 0.20, hp: 489, torque: "-", weight: 2420, icon: "car_icons/car3546.png" },
+    { name: "AFEELA 1 '26", rating: 530.28, category: "", powerToWeight: 0.20, hp: 489, torque: "-", weight: 2420, icon: "car_icons/car3546.png" }
     
 ];
 
@@ -1355,8 +1355,7 @@ function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]
 function getRandomXValue() { return `X${Math.floor(Math.random() * 10) + 1}`; }
 
 function getTrackIcon(trackName) {
-    if (trackName.includes("Alsace")) return track_icons/bbe708-D-n15MKA.png";
-    
+    if (trackName.includes("Alsace")) reutrn "track_icons/bbe708-D-n15MKA.png";
     track_icons/placeholder.png";
 
 }
