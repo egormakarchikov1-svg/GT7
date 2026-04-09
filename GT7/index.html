@@ -930,10 +930,17 @@
     .settings-value-small {
         font-size: 7px !important;
     }
-    .time-x-badge {
-        font-size: 6px !important;
-        padding: 1px 2px !important;
-    }
+    .time-x-badge { 
+    font-size: 7px; 
+    padding: 2px 3px; 
+    margin-left: 2px;
+    white-space: nowrap;
+}
+#timeValue {
+    white-space: normal !important;
+    word-break: break-word !important;
+    line-height: 1.3 !important;
+}
     .result-icon {
         font-size: 10px !important;
     }
@@ -2083,11 +2090,19 @@ function updateTimeByTrack(trackName) {
     const randomTimeName = getRandomItem(conditions.times);
     const timeObj = times.find(t => t.name === randomTimeName) || times[5];
     const randomX = Math.floor(Math.random() * 30) + 1;
-    const formattedX = `x${randomX}`;  // Убрали X, оставили только число с маленькой x
+    const formattedX = `x${randomX}`;
     
-    // Для мобильных устройств показываем компактно
+    // Для мобильных устройств показываем с переносом
     if (window.innerWidth <= 480) {
-        document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name.substring(0, 4)} ${formattedX}`;
+        document.getElementById('timeValue').innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                <div style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: center;">
+                    <span class="result-icon">${timeObj.icon}</span>
+                    <span style="word-break: break-word; white-space: normal;">${timeObj.name}</span>
+                </div>
+                <span class="time-x-badge">${formattedX}</span>
+            </div>
+        `;
     } else {
         document.getElementById('timeValue').innerHTML = `<span class="result-icon">${timeObj.icon}</span> ${timeObj.name} <span class="time-x-badge">${formattedX}</span>`;
     }
