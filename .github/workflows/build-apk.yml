@@ -17,8 +17,8 @@ jobs:
           node-version: '20'
           
       - name: Install PWA Builder CLI
-        run: npm install -g @pwabuilder/cli
-        
+        run: npm install -g @pwabuilder/pwabuilder-cli@latest
+          
       - name: Build APK
         run: pwabuilder build --platform android --url https://egormakarchikov1-svg.github.io/GT7/
         
