@@ -22,12 +22,22 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install Bubblewrap
-        run: npm install -g @bubblewrap/cli
+      - name: Install Bubblewrap and expect
+        run: |
+          npm install -g @bubblewrap/cli
+          sudo apt-get update
+          sudo apt-get install -y expect
 
       - name: Initialize Bubblewrap project
         run: |
-          echo -e "Y\nY" | bubblewrap init --manifest https://egormakarchikov1-svg.github.io/GT7/manifest.json
+          expect -c '
+          spawn bubblewrap init --manifest https://egormakarchikov1-svg.github.io/GT7/manifest.json
+          expect "Do you want Bubblewrap to install the JDK (recommended)?"
+          send "Y\r"
+          expect "Do you want Bubblewrap to install the Android SDK (recommended)?"
+          send "Y\r"
+          interact
+          '
 
       - name: Build APK
         run: bubblewrap build
