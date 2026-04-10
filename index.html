@@ -2207,32 +2207,36 @@ function toggleCategory() {
 }
 
 function shareResult() {
-    // Собираем текущие значения
-    const car = document.getElementById('carValue').textContent;
-    const track = document.getElementById('trackValue').textContent;
-    const category = document.getElementById('categoryValue').textContent;
-    const weather = document.getElementById('weatherValue').textContent;
-    const time = document.getElementById('timeValue').textContent;
-    const tires = document.getElementById('tiresValue').textContent;
-    const fuel = document.getElementById('fuelValue').textContent;
+    // Собираем данные прямо со страницы
+    const car = document.getElementById('carValue').innerText;
+    const track = document.getElementById('trackValue').innerText;
+    const category = document.getElementById('categoryValue').innerText;
+    const weather = document.getElementById('weatherValue').innerText;
+    const time = document.getElementById('timeValue').innerText;
+    const tires = document.getElementById('tiresValue').innerText;
+    const fuel = document.getElementById('fuelValue').innerText;
     
-    // Формируем текст для публикации
-    const shareText = `🏁 GT7 Random Race 🏁\n\n🚗 Машина: ${car}\n🛣️ Трасса: ${track}\n🏆 Класс: ${category}\n🌤️ Погода: ${weather}\n⏰ Время: ${time}\n🛞 Износ шин: ${tires}\n⛽ Расход топлива: ${fuel}\n\n🎲 Сгенерировано в GT7 Random Race!`;
+    // Формируем текст
+    const shareText = `🏁 GT7 Random Race 🏁%0A%0A🚗 Машина: ${car}%0A🛣️ Трасса: ${track}%0A🏆 Класс: ${category}%0A🌤️ Погода: ${weather}%0A⏰ Время: ${time}%0A🛞 Износ шин: ${tires}%0A⛽ Расход топлива: ${fuel}%0A%0A🎲 Сгенерировано в GT7 Random Race!%0A🔗 gt7-random.ru`;
     
-    // Пробуем использовать нативный API (работает на телефонах)
+    // Кодируем для URL
+    const encodedText = encodeURIComponent(shareText);
+    
+    // Открываем окно поделиться (работает на телефонах)
     if (navigator.share) {
         navigator.share({
             title: 'GT7 Random Race',
-            text: shareText,
+            text: decodeURIComponent(encodedText),
             url: 'https://gt7-random.ru'
-        }).catch(err => {
-            if (err.name !== 'AbortError') {
-                fallbackShare(shareText);
-            }
-        });
+        }).catch(err => console.log('Ошибка:', err));
     } else {
-        // fallback для ПК и старых браузеров
-        fallbackShare(shareText);
+        // Для ПК - копируем в буфер
+        const plainText = decodeURIComponent(encodedText);
+        navigator.clipboard.writeText(plainText).then(() => {
+            alert('✅ Результат скопирован в буфер обмена!\n\nВставьте куда нужно.');
+        }).catch(() => {
+            alert('❌ Не удалось скопировать. Выделите текст вручную.');
+        });
     }
 }
 
