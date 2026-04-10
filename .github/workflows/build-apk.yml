@@ -26,7 +26,9 @@ jobs:
         run: npm install -g @bubblewrap/cli
 
       - name: Initialize Bubblewrap project
-        run: bubblewrap init --manifest https://egormakarchikov1-svg.github.io/GT7/manifest.json
+        run: |
+          export JAVA_HOME=$JAVA_HOME_17_X64
+          echo "Y" | bubblewrap init --manifest https://egormakarchikov1-svg.github.io/GT7/manifest.json
 
       - name: Build APK
         run: bubblewrap build
