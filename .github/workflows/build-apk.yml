@@ -21,7 +21,7 @@ jobs:
 
       - name: Initialize Bubblewrap project
         # Эта команда создаст проект Android из вашего manifest.json
-        run: bubblewrap init --manifest https://egormakarchikov1-svg.github.io/GT7/manifest.json
+        run: bubblewrap init --manifest https://egormakarchikov1-svg.github.io/GT7/manifest.json --yes
 
       - name: Build APK
         run: bubblewrap build
