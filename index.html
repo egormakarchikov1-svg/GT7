@@ -972,6 +972,13 @@
     }
 }
  
+     #shareBtn {
+            background: #3b82f6;
+            margin-top: 8px;
+        }
+        #shareBtn:hover {
+            background: #2563eb;
+        }
    </style>
 </head>
 <body>
@@ -1122,6 +1129,7 @@
     <div style="text-align: center;">
         <button id="randomBtn" class="btn-main">
        🏁 СЛУЧАЙНАЯ ГОНКА 🏁
+        <button id="shareBtn" class="btn-main" style="background: #3b82f6; margin-top: 5px;">📤 ПОДЕЛИТЬСЯ РЕЗУЛЬТАТОМ</button>
 </button>
     </div>
 
@@ -2198,6 +2206,45 @@ function toggleCategory() {
     else { content.classList.add('collapsed'); icon.innerHTML = '▶'; }
 }
 
+function shareResult() {
+    // Собираем текущие значения
+    const car = document.getElementById('carValue').textContent;
+    const track = document.getElementById('trackValue').textContent;
+    const category = document.getElementById('categoryValue').textContent;
+    const weather = document.getElementById('weatherValue').textContent;
+    const time = document.getElementById('timeValue').textContent;
+    const tires = document.getElementById('tiresValue').textContent;
+    const fuel = document.getElementById('fuelValue').textContent;
+    
+    // Формируем текст для публикации
+    const shareText = `🏁 GT7 Random Race 🏁\n\n🚗 Машина: ${car}\n🛣️ Трасса: ${track}\n🏆 Класс: ${category}\n🌤️ Погода: ${weather}\n⏰ Время: ${time}\n🛞 Износ шин: ${tires}\n⛽ Расход топлива: ${fuel}\n\n🎲 Сгенерировано в GT7 Random Race!`;
+    
+    // Пробуем использовать нативный API (работает на телефонах)
+    if (navigator.share) {
+        navigator.share({
+            title: 'GT7 Random Race',
+            text: shareText,
+            url: 'https://gt7-random.ru'
+        }).catch(err => {
+            if (err.name !== 'AbortError') {
+                fallbackShare(shareText);
+            }
+        });
+    } else {
+        // fallback для ПК и старых браузеров
+        fallbackShare(shareText);
+    }
+}
+
+function fallbackShare(text) {
+    // Копируем в буфер обмена
+    navigator.clipboard.writeText(text).then(() => {
+        alert('✅ Результат скопирован в буфер обмена!\n\nТеперь вы можете вставить его куда угодно.');
+    }).catch(() => {
+        alert('❌ Не удалось скопировать текст. Попробуйте выделить его вручную.');
+    });
+}
+
 function init() {
     document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
         btn.addEventListener('click', (e) => { e.stopPropagation(); toggleLock(btn.getAttribute('data-param')); });
@@ -2207,6 +2254,7 @@ function init() {
     document.getElementById('carsTrackHeader').addEventListener('click', toggleCarsTrack);
     document.getElementById('categoryHeader').addEventListener('click', toggleCategory);
     document.getElementById('randomBtn').addEventListener('click', () => updateUnlockedOnly());
+    document.getElementById('shareBtn').addEventListener('click', shareResult);
     document.getElementById('refreshSimilarBtn').addEventListener('click', () => refreshSimilarCars());
     window.selectCar = selectCar;
     const randomCar = getRandomItem(carsDatabase);
