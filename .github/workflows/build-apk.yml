@@ -1,4 +1,4 @@
-name: Build APK
+name: Build Android APK
 
 on:
   push:
@@ -10,20 +10,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          
-      - name: Install PWABuilder
-        run: npm install -g @pwabuilder/pwabuilder-cli
-        
+
+      - name: Install Bubblewrap
+        run: npm install -g @bubblewrap/cli
+
+      - name: Initialize Bubblewrap project
+        # Эта команда создаст проект Android из вашего manifest.json
+        run: bubblewrap init --manifest https://egormakarchikov1-svg.github.io/GT7/manifest.json
+
       - name: Build APK
-        run: pwabuilder build --platform android
-        
+        run: bubblewrap build
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-release
-          path: ./*.apk
+          name: gt7-android-app
+          path: |
+            ./*.apk
+            ./*.aab
