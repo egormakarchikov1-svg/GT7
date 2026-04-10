@@ -16,12 +16,17 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Install JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: Install Bubblewrap
         run: npm install -g @bubblewrap/cli
 
       - name: Initialize Bubblewrap project
-        # Эта команда создаст проект Android из вашего manifest.json
-        run: bubblewrap init --manifest https://egormakarchikov1-svg.github.io/GT7/manifest.json --yes
+        run: bubblewrap init --manifest https://egormakarchikov1-svg.github.io/GT7/manifest.json
 
       - name: Build APK
         run: bubblewrap build
