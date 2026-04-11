@@ -2088,24 +2088,26 @@ function toggleCategory() {
 
 // Функция для кнопки "Поделиться результатом" (объявлена глобально)
 // Функция для кнопки "Поделиться результатом"
+// Функция для кнопки "Поделиться результатом"
 function shareResult() {
     const car = document.getElementById('carValue')?.innerText || '—';
     const track = document.getElementById('trackValue')?.innerText || '—';
     const category = document.getElementById('categoryValue')?.innerText || '—';
     const weather = document.getElementById('weatherValue')?.innerText || '—';
     
+    // Обрабатываем время отдельно для буфера обмена
     const timeElement = document.getElementById('timeValue');
     const timeIcon = timeElement?.querySelector('.result-icon')?.innerText || '';
-    const timeText = timeElement?.innerText || '—';
-    // Очищаем от иконки и лишних переносов
-    let cleanTime = timeText.replace(/[🌅🌄🌇🌙🌚🌕🔆🌤️⛅☀️🌆]/g, '').trim();
-    // Формируем время в одну строку для буфера обмена
-    const shareTime = `${timeIcon} ${cleanTime}`;
+    // Получаем чистый текст (название + множитель)
+    let timeText = timeElement?.innerText || '—';
+    // Убираем иконку из текста
+    timeText = timeText.replace(timeIcon, '').trim();
+    // Склеиваем в одну строку
+    const shareTime = `${timeIcon} ${timeText}`;
     
     const tires = document.getElementById('tiresValue')?.innerText || '—';
     const fuel = document.getElementById('fuelValue')?.innerText || '—';
     
-    // ВАЖНО: используем shareTime, а не time
     const shareText = `🏁 GT7 RANDOM RACE 🏁\n\n🛣️ Трасса: ${track}\n🏆 Класс: ${category}\n🌤️ Погода: ${weather}\n⏰ Время: ${shareTime}\n🛞 Износ шин: ${tires}\n⛽ Расход топлива: ${fuel}\n\n🎲 Сгенерировано в gt7-random.ru\n\n`;
     
     const shareBtn = document.getElementById('shareBtn');
