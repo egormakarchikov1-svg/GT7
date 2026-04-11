@@ -2090,10 +2090,29 @@ function shareResult() {
     
     const shareText = `🏁 GT7 Random Race 🏁\n\n🛣️ Трасса: ${track}\n🏆 Класс: ${category}\n🌤️ Погода: ${weather}\n⏰ Время: ${time}\n🛞 Износ шин: ${tires}\n⛽ Расход топлива: ${fuel}\n\n🎲 Сгенерировано в GT7 Random Race!\n🔗 gt7-random.ru`;
     
+    const shareBtn = document.getElementById('shareBtn');
+    const originalText = shareBtn.innerHTML;
+    
     navigator.clipboard.writeText(shareText).then(() => {
-        alert('✅ Результат скопирован в буфер обмена!');
+        // Меняем кнопку на зелёную галочку
+        shareBtn.innerHTML = '✅';
+        shareBtn.style.background = '#22c55e';
+        shareBtn.style.transition = 'all 0.3s ease';
+        
+        // Возвращаем исходный вид через 2 секунды
+        setTimeout(() => {
+            shareBtn.innerHTML = originalText;
+            shareBtn.style.background = '#3b82f6';
+        }, 2000);
     }).catch(() => {
-        alert('❌ Не удалось скопировать. Попробуйте выделить текст вручную.');
+        // Если ошибка — показываем красный крестик
+        shareBtn.innerHTML = '❌';
+        shareBtn.style.background = '#ef4444';
+        
+        setTimeout(() => {
+            shareBtn.innerHTML = originalText;
+            shareBtn.style.background = '#3b82f6';
+        }, 2000);
     });
 }
 
