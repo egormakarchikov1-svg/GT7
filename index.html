@@ -2023,7 +2023,7 @@ function updateTime() {
     if (locks.time) return;
     let trackToUse = currentTrack || document.getElementById('trackValue').textContent;
     if (trackToUse && trackToUse !== "—") { updateTimeByTrack(trackToUse); }
-    else { const randomTime = getRandomItem(times); const randomX = Math.floor(Math.random() * 30) + 1; document.getElementById('timeValue').innerHTML = ${timeObj.icon} ${timeObj.name} ${formattedX};
+    else { const randomTime = getRandomItem(times); const randomX = Math.floor(Math.random() * 30) + 1; document.getElementById('timeValue').innerHTML = <span class="result-icon">${timeObj.icon}</span> ${timeObj.name} ${formattedX};
 }
 
 function updateUnlockedOnly() {
