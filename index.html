@@ -1965,7 +1965,8 @@ function updateWeatherByTrack(trackName) {
     if (!conditions) conditions = { weather: ["both"], times: ["День"] };
     const weatherType = getRandomItem(conditions.weather);
     const weatherObj = getWeatherByTrackType(weatherType);
-    document.getElementById('weatherValue').innerHTML = `<span class="result-icon">${weatherObj.icon}</span> ${weatherObj.name}`;
+    // ВАЖНО: эта строка должна быть без <span>
+    document.getElementById('weatherValue').innerHTML = `${weatherObj.icon} ${weatherObj.name}`;
 }
 
 function updateTimeByTrack(trackName) {
