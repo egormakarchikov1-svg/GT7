@@ -2089,18 +2089,20 @@ function toggleCategory() {
 // Функция для кнопки "Поделиться результатом" (объявлена глобально)
 // Функция для кнопки "Поделиться результатом"
 // Функция для кнопки "Поделиться результатом"
+// Функция для кнопки "Поделиться результатом"
 function shareResult() {
     const car = document.getElementById('carValue')?.innerText || '—';
     const track = document.getElementById('trackValue')?.innerText || '—';
     const category = document.getElementById('categoryValue')?.innerText || '—';
     const weather = document.getElementById('weatherValue')?.innerText || '—';
     
-    // Обрабатываем время отдельно для буфера обмена
+    // Обрабатываем время: убираем все переносы строк
     const timeElement = document.getElementById('timeValue');
     const timeIcon = timeElement?.querySelector('.result-icon')?.innerText || '';
-    // Получаем чистый текст (название + множитель)
+    // Получаем текст и заменяем переносы на пробел
     let timeText = timeElement?.innerText || '—';
-    // Убираем иконку из текста
+    timeText = timeText.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+    // Убираем иконку из текста, если она там есть
     timeText = timeText.replace(timeIcon, '').trim();
     // Склеиваем в одну строку
     const shareTime = `${timeIcon} ${timeText}`;
