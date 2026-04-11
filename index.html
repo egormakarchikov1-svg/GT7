@@ -1231,319 +1231,625 @@ const trackConditions = {
     "ОАЭ Yas Marina Circuit": { weather: ["dry"], times: ["Заря","Рассвет","Восход","День","Вечер","Закат","Сумерки","Ночь"] }
 };
 
-// --------------------------------------------------------------
-// ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
-// --------------------------------------------------------------
-let currentRefCar = null;
-let currentTrack = null;
-const locks = { car: false, track: false, weather: false, time: false, tires: false, fuel: false };
-let settingsExpanded = true;
-let similarExpanded = true;
-let carsTrackExpanded = true;
-let categoryExpanded = true;
+// ============================================
+// СОВРЕМЕННАЯ ВЕРСИЯ - GT7 Random Race 2025
+// ============================================
 
-function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-function getRandomXValue() { return `X${Math.floor(Math.random() * 10) + 1}`; }
-
-function getTrackIcon(trackName) {
-    if (trackName.includes("Alsace")) return "track_icons/bbe708-D-n15MKA.png";
-    return "track_icons/placeholder.png";
-}
-
-function getWeatherByTrackType(weatherType) {
-    let availableWeathers = [];
-    if (weatherType === "dry") {
-        availableWeathers = weathers.filter(w => w.code.startsWith('S') || w.code.startsWith('C'));
-    } else if (weatherType === "rain") {
-        availableWeathers = weathers.filter(w => w.code.startsWith('R'));
-    } else if (weatherType === "both") {
-        const rand = Math.random();
-        if (rand < 0.5) {
-            availableWeathers = weathers.filter(w => w.code.startsWith('S') || w.code.startsWith('C'));
-        } else {
-            availableWeathers = weathers.filter(w => w.code.startsWith('R'));
-        }
-    }
-    if (availableWeathers.length === 0) {
-        availableWeathers = weathers.filter(w => w.code.startsWith('S'));
-    }
-    return getRandomItem(availableWeathers);
-}
-
-function updateCategory() {
-    const category = getRandomItem(categories);
-    document.getElementById('categoryValue').innerHTML = `${category.icon} ${category.name} (${category.description})`;
-}
-
-function calculateSimilarity(car1, car2) {
-    const maxRating = 1500, maxHp = 2000, maxTorque = 2000, maxWeight = 3000, maxPtw = 2.5;
-    const ratingDiff = Math.abs(car1.rating - car2.rating) / maxRating;
-    const hpDiff = Math.abs(car1.hp - car2.hp) / maxHp;
-    let torque1 = typeof car1.torque === 'number' ? car1.torque : 0;
-    let torque2 = typeof car2.torque === 'number' ? car2.torque : 0;
-    const torqueDiff = Math.abs(torque1 - torque2) / maxTorque;
-    const weightDiff = Math.abs(car1.weight - car2.weight) / maxWeight;
-    const ptwDiff = Math.abs(car1.powerToWeight - car2.powerToWeight) / maxPtw;
-    const totalDiff = ratingDiff * 0.25 + hpDiff * 0.20 + torqueDiff * 0.15 + weightDiff * 0.20 + ptwDiff * 0.20;
-    return Math.max(0, Math.min(100, (1 - totalDiff) * 100));
-}
-
-function findSimilarCars(referenceCar, count = 5, randomize = true) {
-    let carsWithSimilarity = carsDatabase.filter(car => car.name !== referenceCar.name).map(car => ({ ...car, similarity: calculateSimilarity(referenceCar, car) })).sort((a, b) => b.similarity - a.similarity);
-    const topSimilar = carsWithSimilarity.slice(0, 15);
-    if (randomize && topSimilar.length > count) {
-        for (let i = topSimilar.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [topSimilar[i], topSimilar[j]] = [topSimilar[j], topSimilar[i]];
-        }
-        return topSimilar.slice(0, count);
-    }
-    return topSimilar.slice(0, count);
-}
-
-function displaySimilarCars(referenceCar) {
-    if (!referenceCar) return;
-    currentRefCar = referenceCar;
-    const similarCars = findSimilarCars(referenceCar, 5, false);
-    document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${referenceCar.name}</strong><br>⭐ Рейтинг: ${referenceCar.rating.toFixed(0)} | 🔧 ${referenceCar.hp} л.с. | ⚙️ ${typeof referenceCar.torque === 'number' ? referenceCar.torque : '?'} Н·м | ⚖️ ${referenceCar.weight} кг | ⚡ ${(referenceCar.powerToWeight * 1000).toFixed(1)} л.с./т`;
-    document.getElementById('similarList').innerHTML = similarCars.map((car, index) => `
-        <li onclick="selectCar('${car.name.replace(/'/g, "\\'")}')">
-            <span class="car-name">${index + 1}. ${car.name}</span>
-            <div class="car-stats">
-                <span>⭐ ${car.rating.toFixed(0)}</span>
-                <span>🔧 ${car.hp} л.с.</span>
-                <span>⚙️ ${typeof car.torque === 'number' ? car.torque : '?'}</span>
-                <span>⚖️ ${car.weight} кг</span>
-                <span>⚡ ${(car.powerToWeight * 1000).toFixed(1)}</span>
-            </div>
-            <span class="similarity-badge">${car.similarity.toFixed(1)}%</span>
-        </li>
-    `).join('');
-}
-
-function selectCar(carName) {
-    const car = carsDatabase.find(c => c.name === carName);
-    if (car) {
-        displaySimilarCars(car);
-        document.getElementById('carValue').textContent = car.name;
-        document.getElementById('carIcon').src = car.icon;
-        document.getElementById('carIcon').style.display = "block";
-    }
-}
-
-function updateCarAndSync() {
-    if (locks.car) return;
-    const car = getRandomItem(carsDatabase);
-    document.getElementById('carValue').textContent = car.name;
-    document.getElementById('carIcon').src = car.icon;
-    document.getElementById('carIcon').style.display = "block";
-    displaySimilarCars(car);
-}
-
-function refreshSimilarCars() {
-    if (currentRefCar) {
-        const randomSimilarCars = findSimilarCars(currentRefCar, 5, true);
-        document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${currentRefCar.name}</strong><br>⭐ Рейтинг: ${currentRefCar.rating.toFixed(0)} | 🔧 ${currentRefCar.hp} л.с. | ⚙️ ${typeof currentRefCar.torque === 'number' ? currentRefCar.torque : '?'} Н·м | ⚖️ ${currentRefCar.weight} кг | ⚡ ${(currentRefCar.powerToWeight * 1000).toFixed(1)} л.с./т`;
-        document.getElementById('similarList').innerHTML = randomSimilarCars.map((car, index) => `
-            <li onclick="selectCar('${car.name.replace(/'/g, "\\'")}')">
-                <span class="car-name">${index + 1}. ${car.name}</span>
-                <div class="car-stats">
-                    <span>⭐ ${car.rating.toFixed(0)}</span>
-                    <span>🔧 ${car.hp} л.с.</span>
-                    <span>⚙️ ${typeof car.torque === 'number' ? car.torque : '?'}</span>
-                    <span>⚖️ ${car.weight} кг</span>
-                    <span>⚡ ${(car.powerToWeight * 1000).toFixed(1)}</span>
-                </div>
-                <span class="similarity-badge">${car.similarity.toFixed(1)}%</span>
-            </li>
-        `).join('');
-    } else {
-        const randomCar = getRandomItem(carsDatabase);
-        displaySimilarCars(randomCar);
-    }
-}
-
-function updateWeatherByTrack(trackName) {
-    if (locks.weather) return;
-    let conditions = trackConditions[trackName];
-    if (!conditions) {
-        for (let key in trackConditions) {
-            if (trackName.includes(key.split(" - ")[0]) || trackName.includes(key.split(" ")[0])) {
-                conditions = trackConditions[key];
-                break;
+(async function() {
+    'use strict';
+    
+    // --- Конфигурация ---
+    const CONFIG = {
+        MAX_SIMILAR_CARS: 5,
+        SIMILAR_POOL_SIZE: 15,
+        ANIMATION_DURATION: 200,
+        DEBOUNCE_DELAY: 300,
+        STORAGE_KEY: 'gt7_random_settings'
+    };
+    
+    // --- Состояние приложения (реактивное) ---
+    const state = {
+        locks: { car: false, track: false, weather: false, time: false, tires: false, fuel: false },
+        currentRefCar: null,
+        currentTrack: null,
+        expanded: { settings: true, similar: true, carsTrack: true, category: true },
+        isLoading: false,
+        lastUpdate: Date.now()
+    };
+    
+    // --- DOM элементы (кэшируем один раз) ---
+    const DOM = {
+        carValue: document.getElementById('carValue'),
+        carIcon: document.getElementById('carIcon'),
+        trackValue: document.getElementById('trackValue'),
+        trackIcon: document.getElementById('trackIcon'),
+        categoryValue: document.getElementById('categoryValue'),
+        weatherValue: document.getElementById('weatherValue'),
+        timeValue: document.getElementById('timeValue'),
+        tiresValue: document.getElementById('tiresValue'),
+        fuelValue: document.getElementById('fuelValue'),
+        similarList: document.getElementById('similarList'),
+        refCarInfo: document.getElementById('refCarInfo')
+    };
+    
+    // --- Утилиты ---
+    const utils = {
+        debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        },
+        
+        showLoading(show) {
+            state.isLoading = show;
+            const btn = document.getElementById('randomBtn');
+            if (btn) {
+                btn.disabled = show;
+                btn.style.opacity = show ? '0.7' : '1';
+                btn.innerHTML = show ? '⏳ ГЕНЕРАЦИЯ...' : '🏁 СЛУЧАЙНАЯ ГОНКА 🏁';
             }
-        }
-    }
-    if (!conditions) conditions = { weather: ["both"], times: ["День"] };
-    const weatherType = getRandomItem(conditions.weather);
-    const weatherObj = getWeatherByTrackType(weatherType);
-    document.getElementById('weatherValue').innerHTML = `<span class="result-icon">${weatherObj.icon}</span> ${weatherObj.name}`;
-}
-
-function updateTimeByTrack(trackName) {
-    if (locks.time) return;
-    let conditions = trackConditions[trackName];
-    if (!conditions) {
-        for (let key in trackConditions) {
-            if (trackName.includes(key.split(" - ")[0]) || trackName.includes(key.split(" ")[0])) {
-                conditions = trackConditions[key];
-                break;
+        },
+        
+        getRandomItem(arr, fallback = null) {
+            if (!arr || arr.length === 0) return fallback;
+            return arr[Math.floor(Math.random() * arr.length)];
+        },
+        
+        getRandomXValue() {
+            return `X${Math.floor(Math.random() * 10) + 1}`;
+        },
+        
+        getTrackIcon(trackName) {
+            if (trackName?.includes("Alsace")) return "track_icons/bbe708-D-n15MKA.png";
+            return "track_icons/placeholder.png";
+        },
+        
+        async preloadImage(url) {
+            return new Promise((resolve) => {
+                if (!url) return resolve(false);
+                const img = new Image();
+                img.onload = () => resolve(true);
+                img.onerror = () => resolve(false);
+                img.src = url;
+            });
+        },
+        
+        saveToLocalStorage() {
+            try {
+                const data = {
+                    locks: state.locks,
+                    expanded: state.expanded,
+                    version: '2.0',
+                    timestamp: Date.now()
+                };
+                localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(data));
+            } catch (e) {
+                console.warn('Failed to save to localStorage:', e);
             }
+        },
+        
+        loadFromLocalStorage() {
+            try {
+                const saved = localStorage.getItem(CONFIG.STORAGE_KEY);
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    if (data.locks) Object.assign(state.locks, data.locks);
+                    if (data.expanded) Object.assign(state.expanded, data.expanded);
+                    return true;
+                }
+            } catch (e) {
+                console.warn('Failed to load from localStorage:', e);
+            }
+            return false;
         }
-    }
-    if (!conditions) conditions = { weather: ["both"], times: ["День"] };
-    const randomTimeName = getRandomItem(conditions.times);
-    const timeObj = times.find(t => t.name === randomTimeName) || times[5];
-    const randomX = Math.floor(Math.random() * 30) + 1;
-    const formattedX = `x${randomX}`;
+    };
     
-    // Для мобильных устройств показываем компактно
-    if (window.innerWidth <= 480) {
-        document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name.substring(0, 4)} ${formattedX}`;
+    // --- Основная логика ---
+    const logic = {
+        calculateSimilarity(car1, car2) {
+            const maxRating = 1500, maxHp = 2000, maxTorque = 2000, maxWeight = 3000, maxPtw = 2.5;
+            const ratingDiff = Math.abs(car1.rating - car2.rating) / maxRating;
+            const hpDiff = Math.abs(car1.hp - car2.hp) / maxHp;
+            const torque1 = typeof car1.torque === 'number' ? car1.torque : 0;
+            const torque2 = typeof car2.torque === 'number' ? car2.torque : 0;
+            const torqueDiff = Math.abs(torque1 - torque2) / maxTorque;
+            const weightDiff = Math.abs(car1.weight - car2.weight) / maxWeight;
+            const ptwDiff = Math.abs(car1.powerToWeight - car2.powerToWeight) / maxPtw;
+            const totalDiff = ratingDiff * 0.25 + hpDiff * 0.20 + torqueDiff * 0.15 + weightDiff * 0.20 + ptwDiff * 0.20;
+            return Math.max(0, Math.min(100, (1 - totalDiff) * 100));
+        },
+        
+        findSimilarCars(referenceCar, count = CONFIG.MAX_SIMILAR_CARS, randomize = true) {
+            if (!referenceCar) return [];
+            
+            const carsWithSimilarity = carsDatabase
+                .filter(car => car.name !== referenceCar.name)
+                .map(car => ({
+                    ...car,
+                    similarity: this.calculateSimilarity(referenceCar, car)
+                }))
+                .sort((a, b) => b.similarity - a.similarity);
+            
+            const topSimilar = carsWithSimilarity.slice(0, CONFIG.SIMILAR_POOL_SIZE);
+            
+            if (randomize && topSimilar.length > count) {
+                // Fisher-Yates shuffle
+                for (let i = topSimilar.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [topSimilar[i], topSimilar[j]] = [topSimilar[j], topSimilar[i]];
+                }
+                return topSimilar.slice(0, count);
+            }
+            return topSimilar.slice(0, count);
+        },
+        
+        getWeatherByTrackType(weatherType) {
+            let availableWeathers = [];
+            if (weatherType === "dry") {
+                availableWeathers = weathers.filter(w => w.code.startsWith('S') || w.code.startsWith('C'));
+            } else if (weatherType === "rain") {
+                availableWeathers = weathers.filter(w => w.code.startsWith('R'));
+            } else {
+                const rand = Math.random();
+                if (rand < 0.5) {
+                    availableWeathers = weathers.filter(w => w.code.startsWith('S') || w.code.startsWith('C'));
+                } else {
+                    availableWeathers = weathers.filter(w => w.code.startsWith('R'));
+                }
+            }
+            if (availableWeathers.length === 0) {
+                availableWeathers = weathers.filter(w => w.code.startsWith('S'));
+            }
+            return utils.getRandomItem(availableWeathers);
+        },
+        
+        getTrackConditions(trackName) {
+            let conditions = trackConditions[trackName];
+            if (!conditions) {
+                for (let key in trackConditions) {
+                    if (trackName?.includes(key.split(" - ")[0]) || trackName?.includes(key.split(" ")[0])) {
+                        conditions = trackConditions[key];
+                        break;
+                    }
+                }
+            }
+            return conditions || { weather: ["both"], times: ["День"] };
+        }
+    };
+    
+    // --- UI Обновления ---
+    const ui = {
+        updateLockButtons() {
+            document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
+                const param = btn.getAttribute('data-param');
+                if (state.locks[param]) {
+                    btn.innerHTML = '🔒';
+                    btn.setAttribute('data-state', 'locked');
+                } else {
+                    btn.innerHTML = '🔓';
+                    btn.setAttribute('data-state', 'unlocked');
+                }
+            });
+        },
+        
+        updateCategory() {
+            const category = utils.getRandomItem(categories);
+            if (DOM.categoryValue) {
+                DOM.categoryValue.innerHTML = `${category.icon} ${category.name} (${category.description})`;
+            }
+        },
+        
+        async updateCar() {
+            if (state.locks.car) return;
+            
+            const car = utils.getRandomItem(carsDatabase);
+            if (!car) return;
+            
+            DOM.carValue.textContent = car.name;
+            
+            // Асинхронная загрузка иконки с fallback
+            if (car.icon) {
+                const loaded = await utils.preloadImage(car.icon);
+                if (loaded) {
+                    DOM.carIcon.src = car.icon;
+                    DOM.carIcon.style.display = "block";
+                } else {
+                    DOM.carIcon.style.display = "none";
+                    console.warn(`Failed to load icon for ${car.name}`);
+                }
+            } else {
+                DOM.carIcon.style.display = "none";
+            }
+            
+            this.displaySimilarCars(car);
+        },
+        
+        updateTrack() {
+            if (state.locks.track) return;
+            
+            const trackName = utils.getRandomItem(tracks);
+            state.currentTrack = trackName;
+            DOM.trackValue.textContent = trackName || '—';
+            
+            const iconUrl = utils.getTrackIcon(trackName);
+            if (iconUrl && DOM.trackIcon) {
+                DOM.trackIcon.src = iconUrl;
+                DOM.trackIcon.style.display = "block";
+            } else if (DOM.trackIcon) {
+                DOM.trackIcon.style.display = "none";
+            }
+            
+            if (!state.locks.weather) this.updateWeather();
+            if (!state.locks.time) this.updateTime();
+        },
+        
+        updateWeather() {
+            if (state.locks.weather) return;
+            
+            const trackToUse = state.currentTrack || DOM.trackValue?.textContent;
+            if (trackToUse && trackToUse !== "—") {
+                const conditions = logic.getTrackConditions(trackToUse);
+                const weatherType = utils.getRandomItem(conditions.weather);
+                const weatherObj = logic.getWeatherByTrackType(weatherType);
+                if (DOM.weatherValue) {
+                    DOM.weatherValue.innerHTML = `<span class="result-icon">${weatherObj.icon}</span> ${weatherObj.name}`;
+                }
+            } else {
+                const randomWeather = utils.getRandomItem(weathers.filter(w => w.code.startsWith('S')));
+                if (DOM.weatherValue) {
+                    DOM.weatherValue.innerHTML = `<span class="result-icon">${randomWeather.icon}</span> ${randomWeather.name}`;
+                }
+            }
+        },
+        
+        updateTime() {
+            if (state.locks.time) return;
+            
+            const trackToUse = state.currentTrack || DOM.trackValue?.textContent;
+            if (trackToUse && trackToUse !== "—") {
+                const conditions = logic.getTrackConditions(trackToUse);
+                const randomTimeName = utils.getRandomItem(conditions.times);
+                const timeObj = times.find(t => t.name === randomTimeName) || times[5];
+                const randomX = Math.floor(Math.random() * 30) + 1;
+                const formattedX = `x${randomX}`;
+                
+                if (window.innerWidth <= 480 && DOM.timeValue) {
+                    DOM.timeValue.innerHTML = `${timeObj.icon} ${timeObj.name.substring(0, 4)} ${formattedX}`;
+                } else if (DOM.timeValue) {
+                    DOM.timeValue.innerHTML = `<span class="result-icon">${timeObj.icon}</span> ${timeObj.name} <span class="time-x-badge">${formattedX}</span>`;
+                }
+            } else {
+                const randomTime = utils.getRandomItem(times);
+                const randomX = Math.floor(Math.random() * 30) + 1;
+                if (DOM.timeValue) {
+                    DOM.timeValue.innerHTML = `<span class="result-icon">${randomTime.icon}</span> ${randomTime.name} <span class="time-x-badge">X${randomX.toString().padStart(2, '0')}</span>`;
+                }
+            }
+        },
+        
+        updateTires() {
+            if (!state.locks.tires && DOM.tiresValue) {
+                DOM.tiresValue.textContent = utils.getRandomXValue();
+            }
+        },
+        
+        updateFuel() {
+            if (!state.locks.fuel && DOM.fuelValue) {
+                DOM.fuelValue.textContent = utils.getRandomXValue();
+            }
+        },
+        
+        displaySimilarCars(referenceCar) {
+            if (!referenceCar) return;
+            
+            state.currentRefCar = referenceCar;
+            const similarCars = logic.findSimilarCars(referenceCar, CONFIG.MAX_SIMILAR_CARS, false);
+            
+            if (DOM.refCarInfo) {
+                DOM.refCarInfo.innerHTML = `🎯 РЕФЕРЕНС: <strong>${this.escapeHtml(referenceCar.name)}</strong><br>⭐ Рейтинг: ${referenceCar.rating.toFixed(0)} | 🔧 ${referenceCar.hp} л.с. | ⚙️ ${typeof referenceCar.torque === 'number' ? referenceCar.torque : '?'} Н·м | ⚖️ ${referenceCar.weight} кг | ⚡ ${(referenceCar.powerToWeight * 1000).toFixed(1)} л.с./т`;
+            }
+            
+            if (DOM.similarList) {
+                DOM.similarList.innerHTML = similarCars.map((car, index) => `
+                    <li data-car-name="${this.escapeHtml(car.name)}" class="similar-car-item">
+                        <span class="car-name">${index + 1}. ${this.escapeHtml(car.name)}</span>
+                        <div class="car-stats">
+                            <span>⭐ ${car.rating.toFixed(0)}</span>
+                            <span>🔧 ${car.hp} л.с.</span>
+                            <span>⚙️ ${typeof car.torque === 'number' ? car.torque : '?'}</span>
+                            <span>⚖️ ${car.weight} кг</span>
+                            <span>⚡ ${(car.powerToWeight * 1000).toFixed(1)}</span>
+                        </div>
+                        <span class="similarity-badge">${car.similarity.toFixed(1)}%</span>
+                    </li>
+                `).join('');
+                
+                // Добавляем обработчики событий для каждого элемента
+                document.querySelectorAll('.similar-car-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const carName = item.getAttribute('data-car-name');
+                        const car = carsDatabase.find(c => c.name === carName);
+                        if (car) this.displaySimilarCars(car);
+                    });
+                });
+            }
+        },
+        
+        refreshSimilarCars() {
+            if (state.currentRefCar) {
+                const randomSimilarCars = logic.findSimilarCars(state.currentRefCar, CONFIG.MAX_SIMILAR_CARS, true);
+                if (DOM.refCarInfo) {
+                    DOM.refCarInfo.innerHTML = `🎯 РЕФЕРЕНС: <strong>${this.escapeHtml(state.currentRefCar.name)}</strong><br>⭐ Рейтинг: ${state.currentRefCar.rating.toFixed(0)} | 🔧 ${state.currentRefCar.hp} л.с. | ⚙️ ${typeof state.currentRefCar.torque === 'number' ? state.currentRefCar.torque : '?'} Н·м | ⚖️ ${state.currentRefCar.weight} кг | ⚡ ${(state.currentRefCar.powerToWeight * 1000).toFixed(1)} л.с./т`;
+                }
+                
+                if (DOM.similarList) {
+                    DOM.similarList.innerHTML = randomSimilarCars.map((car, index) => `
+                        <li data-car-name="${this.escapeHtml(car.name)}" class="similar-car-item">
+                            <span class="car-name">${index + 1}. ${this.escapeHtml(car.name)}</span>
+                            <div class="car-stats">
+                                <span>⭐ ${car.rating.toFixed(0)}</span>
+                                <span>🔧 ${car.hp} л.с.</span>
+                                <span>⚙️ ${typeof car.torque === 'number' ? car.torque : '?'}</span>
+                                <span>⚖️ ${car.weight} кг</span>
+                                <span>⚡ ${(car.powerToWeight * 1000).toFixed(1)}</span>
+                            </div>
+                            <span class="similarity-badge">${car.similarity.toFixed(1)}%</span>
+                        </li>
+                    `).join('');
+                    
+                    document.querySelectorAll('.similar-car-item').forEach(item => {
+                        item.addEventListener('click', () => {
+                            const carName = item.getAttribute('data-car-name');
+                            const car = carsDatabase.find(c => c.name === carName);
+                            if (car) this.displaySimilarCars(car);
+                        });
+                    });
+                }
+            } else {
+                const randomCar = utils.getRandomItem(carsDatabase);
+                if (randomCar) this.displaySimilarCars(randomCar);
+            }
+        },
+        
+        escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        },
+        
+        async updateAll() {
+            utils.showLoading(true);
+            
+            // Анимация "обновления"
+            const container = document.querySelector('.container');
+            if (container) {
+                container.style.transform = 'scale(0.99)';
+                setTimeout(() => { if (container) container.style.transform = ''; }, 150);
+            }
+            
+            try {
+                await this.updateCar();
+                this.updateTrack();
+                this.updateWeather();
+                this.updateTime();
+                this.updateTires();
+                this.updateFuel();
+                this.updateCategory();
+                state.lastUpdate = Date.now();
+                utils.saveToLocalStorage();
+            } catch (error) {
+                console.error('Update failed:', error);
+                // Показываем пользователю, что что-то пошло не так
+                if (DOM.carValue) DOM.carValue.textContent = 'Ошибка загрузки';
+            } finally {
+                setTimeout(() => utils.showLoading(false), 100);
+            }
+        },
+        
+        toggleLock(param) {
+            state.locks[param] = !state.locks[param];
+            this.updateLockButtons();
+            utils.saveToLocalStorage();
+            
+            // Визуальная обратная связь
+            const btn = document.querySelector(`.lock-btn[data-param="${param}"], .settings-lock-btn[data-param="${param}"]`);
+            if (btn) {
+                btn.style.transform = 'scale(1.1)';
+                setTimeout(() => { if (btn) btn.style.transform = ''; }, 200);
+            }
+        },
+        
+        toggleSection(sectionName) {
+            state.expanded[sectionName] = !state.expanded[sectionName];
+            const content = document.getElementById(`${sectionName}Content`);
+            const icon = document.getElementById(`${sectionName}ToggleIcon`);
+            
+            if (content) {
+                if (state.expanded[sectionName]) {
+                    content.classList.remove('collapsed');
+                    if (icon) icon.innerHTML = '▼';
+                } else {
+                    content.classList.add('collapsed');
+                    if (icon) icon.innerHTML = '▶';
+                }
+            }
+            utils.saveToLocalStorage();
+        },
+        
+        shareResult() {
+            const car = DOM.carValue?.innerText || '—';
+            const track = DOM.trackValue?.innerText || '—';
+            const category = DOM.categoryValue?.innerText || '—';
+            const weather = DOM.weatherValue?.innerText || '—';
+            const time = DOM.timeValue?.innerText || '—';
+            const tires = DOM.tiresValue?.innerText || '—';
+            const fuel = DOM.fuelValue?.innerText || '—';
+            
+            const shareText = `🏁 GT7 Random Race 🏁\n\n🚗 Машина: ${car}\n🛣️ Трасса: ${track}\n🏆 Класс: ${category}\n🌤️ Погода: ${weather}\n⏰ Время: ${time}\n🛞 Износ шин: ${tires}\n⛽ Расход топлива: ${fuel}\n\n🎲 Сгенерировано в GT7 Random Race!\n🔗 gt7-random.ru`;
+            
+            // Современный Web Share API если доступен
+            if (navigator.share) {
+                navigator.share({
+                    title: 'GT7 Random Race',
+                    text: shareText,
+                    url: 'https://gt7-random.ru'
+                }).catch(() => {
+                    this.fallbackCopy(shareText);
+                });
+            } else {
+                this.fallbackCopy(shareText);
+            }
+        },
+        
+        fallbackCopy(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                this.showToast('✅ Результат скопирован в буфер обмена!');
+            }).catch(() => {
+                this.showToast('❌ Не удалось скопировать. Попробуйте выделить текст вручную.', true);
+            });
+        },
+        
+        showToast(message, isError = false) {
+            // Создаем toast-уведомление
+            const toast = document.createElement('div');
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: ${isError ? '#ef4444' : '#22c55e'};
+                color: white;
+                padding: 12px 24px;
+                border-radius: 50px;
+                font-size: 14px;
+                font-weight: bold;
+                z-index: 10000;
+                animation: slideUp 0.3s ease;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideDown 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    };
+    
+    // --- Инициализация ---
+    function init() {
+        // Загружаем сохраненные настройки
+        utils.loadFromLocalStorage();
+        
+        // Восстанавливаем состояние блоков
+        Object.keys(state.expanded).forEach(section => {
+            const content = document.getElementById(`${section}Content`);
+            const icon = document.getElementById(`${section}ToggleIcon`);
+            if (content && icon) {
+                if (!state.expanded[section]) {
+                    content.classList.add('collapsed');
+                    icon.innerHTML = '▶';
+                }
+            }
+        });
+        
+        // Инициализируем UI
+        ui.updateLockButtons();
+        
+        // Добавляем анимации в CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideUp {
+                from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+                to { opacity: 1; transform: translateX(-50%) translateY(0); }
+            }
+            @keyframes slideDown {
+                from { opacity: 1; transform: translateX(-50%) translateY(0); }
+                to { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            }
+            .similar-car-item {
+                cursor: pointer;
+                transition: transform 0.2s ease, background 0.2s ease;
+            }
+            .similar-car-item:active {
+                transform: scale(0.98);
+            }
+            button:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Привязываем обработчики событий
+        document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                ui.toggleLock(btn.getAttribute('data-param'));
+            });
+        });
+        
+        document.getElementById('settingsHeader')?.addEventListener('click', () => ui.toggleSection('settings'));
+        document.getElementById('similarHeader')?.addEventListener('click', () => ui.toggleSection('similar'));
+        document.getElementById('carsTrackHeader')?.addEventListener('click', () => ui.toggleSection('carsTrack'));
+        document.getElementById('categoryHeader')?.addEventListener('click', () => ui.toggleSection('category'));
+        
+        const randomBtn = document.getElementById('randomBtn');
+        if (randomBtn) {
+            randomBtn.addEventListener('click', () => ui.updateAll());
+        }
+        
+        const refreshBtn = document.getElementById('refreshSimilarBtn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => ui.refreshSimilarCars());
+        }
+        
+        const shareBtn = document.getElementById('shareBtn');
+        if (shareBtn) {
+            shareBtn.addEventListener('click', () => ui.shareResult());
+        }
+        
+        // Загружаем начальные данные
+        const randomCar = utils.getRandomItem(carsDatabase);
+        if (randomCar) {
+            ui.displaySimilarCars(randomCar);
+        }
+        
+        const firstTrack = tracks[0];
+        state.currentTrack = firstTrack;
+        if (DOM.trackValue) DOM.trackValue.textContent = firstTrack;
+        
+        ui.updateAll();
+        
+        // Добавляем поддержку жестов (свайп влево/вправо для новой генерации)
+        let touchStartX = 0;
+        document.body.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+        });
+        document.body.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const diff = touchEndX - touchStartX;
+            if (Math.abs(diff) > 50) {
+                ui.updateAll(); // Свайп в любую сторону - новая гонка
+            }
+        });
+    }
+    
+    // Запускаем приложение после полной загрузки DOM
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
     } else {
-        document.getElementById('timeValue').innerHTML = `<span class="result-icon">${timeObj.icon}</span> ${timeObj.name} <span class="time-x-badge">${formattedX}</span>`;
+        init();
     }
-}
-
-function updateTires() { if (!locks.tires) document.getElementById('tiresValue').textContent = getRandomXValue(); }
-function updateFuel() { if (!locks.fuel) document.getElementById('fuelValue').textContent = getRandomXValue(); }
-
-function updateTrack() {
-    if (locks.track) return;
-    const trackName = getRandomItem(tracks);
-    currentTrack = trackName;
-    document.getElementById('trackValue').textContent = trackName;
-    const iconUrl = getTrackIcon(trackName);
-    const trackIcon = document.getElementById('trackIcon');
-    if (iconUrl) { trackIcon.src = iconUrl; trackIcon.style.display = "block"; }
-    else { trackIcon.style.display = "none"; }
-    if (!locks.weather) updateWeatherByTrack(trackName);
-    if (!locks.time) updateTimeByTrack(trackName);
-}
-
-function updateWeather() {
-    if (locks.weather) return;
-    let trackToUse = currentTrack || document.getElementById('trackValue').textContent;
-    if (trackToUse && trackToUse !== "—") { updateWeatherByTrack(trackToUse); }
-    else { 
-        const randomWeather = getRandomItem(weathers.filter(w => w.code.startsWith('S')));
-        document.getElementById('weatherValue').innerHTML = `<span class="result-icon">${randomWeather.icon}</span> ${randomWeather.name}`;
-    }
-}
-
-function updateTime() {
-    if (locks.time) return;
-    let trackToUse = currentTrack || document.getElementById('trackValue').textContent;
-    if (trackToUse && trackToUse !== "—") { updateTimeByTrack(trackToUse); }
-    else { const randomTime = getRandomItem(times); const randomX = Math.floor(Math.random() * 30) + 1; document.getElementById('timeValue').innerHTML = `<span class="result-icon">${randomTime.icon}</span> ${randomTime.name} <span class="time-x-badge">X${randomX.toString().padStart(2, '0')}</span>`; }
-}
-
-function updateUnlockedOnly() {
-    if (!locks.car) updateCarAndSync();
-    if (!locks.track) updateTrack();
-    if (!locks.weather) updateWeather();
-    if (!locks.time) updateTime();
-    if (!locks.tires) updateTires();
-    if (!locks.fuel) updateFuel();
-    updateCategory();
-}
-
-function toggleLock(param) {
-    locks[param] = !locks[param];
-    document.querySelectorAll(`.lock-btn[data-param="${param}"], .settings-lock-btn[data-param="${param}"]`).forEach(btn => {
-        if (locks[param]) { btn.innerHTML = '🔒'; btn.setAttribute('data-state', 'locked'); }
-        else { btn.innerHTML = '🔓'; btn.setAttribute('data-state', 'unlocked'); }
-    });
-    if (param === 'track') currentTrack = document.getElementById('trackValue').textContent;
-}
-
-function toggleSettings() {
-    settingsExpanded = !settingsExpanded;
-    const content = document.getElementById('settingsContent');
-    const icon = document.getElementById('settingsToggleIcon');
-    if (settingsExpanded) { content.classList.remove('collapsed'); icon.innerHTML = '▼'; }
-    else { content.classList.add('collapsed'); icon.innerHTML = '▶'; }
-}
-
-function toggleSimilar() {
-    similarExpanded = !similarExpanded;
-    const content = document.getElementById('similarContent');
-    const icon = document.getElementById('similarToggleIcon');
-    if (similarExpanded) { content.classList.remove('collapsed'); icon.innerHTML = '▼'; }
-    else { content.classList.add('collapsed'); icon.innerHTML = '▶'; }
-}
-
-function toggleCarsTrack() {
-    carsTrackExpanded = !carsTrackExpanded;
-    const content = document.getElementById('carsTrackContent');
-    const icon = document.getElementById('carsTrackToggleIcon');
-    if (carsTrackExpanded) { content.classList.remove('collapsed'); icon.innerHTML = '▼'; }
-    else { content.classList.add('collapsed'); icon.innerHTML = '▶'; }
-}
-
-function toggleCategory() {
-    categoryExpanded = !categoryExpanded;
-    const content = document.getElementById('categoryContent');
-    const icon = document.getElementById('categoryToggleIcon');
-    if (categoryExpanded) { content.classList.remove('collapsed'); icon.innerHTML = '▼'; }
-    else { content.classList.add('collapsed'); icon.innerHTML = '▶'; }
-}
-
-// Функция для кнопки "Поделиться результатом" (объявлена глобально)
-function shareResult() {
-    const car = document.getElementById('carValue')?.innerText || '—';
-    const track = document.getElementById('trackValue')?.innerText || '—';
-    const category = document.getElementById('categoryValue')?.innerText || '—';
-    const weather = document.getElementById('weatherValue')?.innerText || '—';
-    const time = document.getElementById('timeValue')?.innerText || '—';
-    const tires = document.getElementById('tiresValue')?.innerText || '—';
-    const fuel = document.getElementById('fuelValue')?.innerText || '—';
-    
-    const shareText = `🏁 GT7 Random Race 🏁\n\n🚗 Машина: ${car}\n🛣️ Трасса: ${track}\n🏆 Класс: ${category}\n🌤️ Погода: ${weather}\n⏰ Время: ${time}\n🛞 Износ шин: ${tires}\n⛽ Расход топлива: ${fuel}\n\n🎲 Сгенерировано в GT7 Random Race!\n🔗 gt7-random.ru`;
-    
-    navigator.clipboard.writeText(shareText).then(() => {
-        alert('✅ Результат скопирован в буфер обмена!');
-    }).catch(() => {
-        alert('❌ Не удалось скопировать. Попробуйте выделить текст вручную.');
-    });
-}
-
-function init() {
-    document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => { e.stopPropagation(); toggleLock(btn.getAttribute('data-param')); });
-    });
-    document.getElementById('settingsHeader').addEventListener('click', toggleSettings);
-    document.getElementById('similarHeader').addEventListener('click', toggleSimilar);
-    document.getElementById('carsTrackHeader').addEventListener('click', toggleCarsTrack);
-    document.getElementById('categoryHeader').addEventListener('click', toggleCategory);
-    document.getElementById('randomBtn').addEventListener('click', () => updateUnlockedOnly());
-    document.getElementById('refreshSimilarBtn').addEventListener('click', () => refreshSimilarCars());
-    
-    // Подключаем кнопку "Поделиться"
-    const shareButton = document.getElementById('shareBtn');
-    if (shareButton) {
-        shareButton.addEventListener('click', shareResult);
-    }
-    
-    window.selectCar = selectCar;
-    const randomCar = getRandomItem(carsDatabase);
-    document.getElementById('carValue').textContent = randomCar.name;
-    document.getElementById('carIcon').src = randomCar.icon;
-    document.getElementById('carIcon').style.display = "block";
-    displaySimilarCars(randomCar);
-    const firstTrack = tracks[0];
-    currentTrack = firstTrack;
-    document.getElementById('trackValue').textContent = firstTrack;
-    const iconUrl = getTrackIcon(firstTrack);
-    if (iconUrl) { document.getElementById('trackIcon').src = iconUrl; document.getElementById('trackIcon').style.display = "block"; }
-    updateWeatherByTrack(firstTrack);
-    updateTimeByTrack(firstTrack);
-    updateTires();
-    updateFuel();
-    updateCategory();
-}
-init();
-
+})();
 </script>
 </body>
 </html>
