@@ -1987,7 +1987,7 @@ function updateTimeByTrack(trackName) {
     
     // Для мобильных устройств показываем компактно
     if (window.innerWidth <= 480) {
-        document.getElementById('timeValue').innerHTML = ${timeObj.icon} ${timeObj.name} ${formattedX};
+        document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name.substring(0, 4)} ${formattedX}`;
     } else {
         document.getElementById('timeValue').innerHTML = `<span class="result-icon">${timeObj.icon}</span> ${timeObj.name} <span class="time-x-badge">${formattedX}</span>`;
     }
