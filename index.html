@@ -1986,9 +1986,17 @@ function updateTimeByTrack(trackName) {
     const randomX = Math.floor(Math.random() * 30) + 1;
     const formattedX = `x${randomX}`;
     
-    // Для мобильных устройств показываем компактно
+    // На телефонах: название сверху, множитель снизу
     if (window.innerWidth <= 480) {
-        document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name.substring(0, 4)} ${formattedX}`;
+        document.getElementById('timeValue').innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <span class="result-icon">${timeObj.icon}</span>
+                    <span>${timeObj.name}</span>
+                </div>
+                <span class="time-x-badge" style="font-size: 14px;">${formattedX}</span>
+            </div>
+        `;
     } else {
         document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name} ${formattedX}`;
     }
