@@ -1926,9 +1926,50 @@ function selectCar(carName) {
     }
 }
 
+// ========== НОВЫЕ ФУНКЦИИ ДЛЯ ИСКЛЮЧЕНИЯ ПОВТОРОВ ==========
+let shownCars = [];
+
+function loadShownCars() {
+    const saved = localStorage.getItem('gt7_shown_cars');
+    if (saved) {
+        shownCars = JSON.parse(saved);
+    } else {
+        shownCars = [];
+    }
+}
+
+function saveShownCars() {
+    localStorage.setItem('gt7_shown_cars', JSON.stringify(shownCars));
+}
+
+function addToShownCars(carName) {
+    if (!shownCars.includes(carName)) {
+        shownCars.push(carName);
+        if (shownCars.length > 50) {
+            shownCars.shift();
+        }
+        saveShownCars();
+    }
+}
+
+function getRandomCarWithoutRepeat() {
+    let availableCars = carsDatabase.filter(car => !shownCars.includes(car.name));
+    
+    if (availableCars.length === 0) {
+        shownCars = [];
+        saveShownCars();
+        availableCars = carsDatabase;
+    }
+    
+    const randomCar = getRandomItem(availableCars);
+    addToShownCars(randomCar.name);
+    return randomCar;
+}
+// ========== КОНЕЦ НОВЫХ ФУНКЦИЙ ==========
+
 function updateCarAndSync() {
     if (locks.car) return;
-    const car = getRandomItem(carsDatabase);
+    const car = getRandomCarWithoutRepeat();  // ← ИЗМЕНЕНО
     document.getElementById('carValue').textContent = car.name;
     document.getElementById('carIcon').src = car.icon;
     document.getElementById('carIcon').style.display = "block";
@@ -1953,7 +1994,7 @@ function refreshSimilarCars() {
             </li>
         `).join('');
     } else {
-        const randomCar = getRandomItem(carsDatabase);
+        const randomCar = getRandomCarWithoutRepeat();
         displaySimilarCars(randomCar);
     }
 }
@@ -1972,7 +2013,6 @@ function updateWeatherByTrack(trackName) {
     if (!conditions) conditions = { weather: ["both"], times: ["День"] };
     const weatherType = getRandomItem(conditions.weather);
     const weatherObj = getWeatherByTrackType(weatherType);
-    // ВАЖНО: эта строка должна быть без <span>
     document.getElementById('weatherValue').innerHTML = `${weatherObj.icon} ${weatherObj.name}`;
 }
 
@@ -1993,7 +2033,6 @@ function updateTimeByTrack(trackName) {
     const randomX = Math.floor(Math.random() * 30) + 1;
     const formattedX = `x${randomX}`;
     
-    // На телефонах: название сверху, множитель снизу
     if (window.innerWidth <= 480) {
         document.getElementById('timeValue').innerHTML = `
             <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
@@ -2093,25 +2132,17 @@ function toggleCategory() {
     else { content.classList.add('collapsed'); icon.innerHTML = '▶'; }
 }
 
-// Функция для кнопки "Поделиться результатом" (объявлена глобально)
-// Функция для кнопки "Поделиться результатом"
-// Функция для кнопки "Поделиться результатом"
-// Функция для кнопки "Поделиться результатом"
 function shareResult() {
     const car = document.getElementById('carValue')?.innerText || '—';
     const track = document.getElementById('trackValue')?.innerText || '—';
     const category = document.getElementById('categoryValue')?.innerText || '—';
     const weather = document.getElementById('weatherValue')?.innerText || '—';
     
-    // Обрабатываем время: убираем все переносы строк
     const timeElement = document.getElementById('timeValue');
     const timeIcon = timeElement?.querySelector('.result-icon')?.innerText || '';
-    // Получаем текст и заменяем переносы на пробел
     let timeText = timeElement?.innerText || '—';
     timeText = timeText.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
-    // Убираем иконку из текста, если она там есть
     timeText = timeText.replace(timeIcon, '').trim();
-    // Склеиваем в одну строку
     const shareTime = `${timeIcon} ${timeText}`;
     
     const tires = document.getElementById('tiresValue')?.innerText || '—';
@@ -2143,6 +2174,8 @@ function shareResult() {
 }
 
 function init() {
+    loadShownCars();  // ← ДОБАВЛЕНО
+    
     document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
         btn.addEventListener('click', (e) => { e.stopPropagation(); toggleLock(btn.getAttribute('data-param')); });
     });
@@ -2153,14 +2186,13 @@ function init() {
     document.getElementById('randomBtn').addEventListener('click', () => updateUnlockedOnly());
     document.getElementById('refreshSimilarBtn').addEventListener('click', () => refreshSimilarCars());
     
-    // Подключаем кнопку "Поделиться"
     const shareButton = document.getElementById('shareBtn');
     if (shareButton) {
         shareButton.addEventListener('click', shareResult);
     }
     
     window.selectCar = selectCar;
-    const randomCar = getRandomItem(carsDatabase);
+    const randomCar = getRandomCarWithoutRepeat();  // ← ИЗМЕНЕНО
     document.getElementById('carValue').textContent = randomCar.name;
     document.getElementById('carIcon').src = randomCar.icon;
     document.getElementById('carIcon').style.display = "block";
