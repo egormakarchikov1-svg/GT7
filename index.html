@@ -2173,8 +2173,114 @@ function shareResult() {
     });
 }
 
+// ========== ФУНКЦИИ ДЛЯ ИСКЛЮЧЕНИЯ ПОВТОРОВ МАШИН ==========
+let shownCars = [];
+
+function loadShownCars() {
+    const saved = localStorage.getItem('gt7_shown_cars');
+    if (saved) {
+        shownCars = JSON.parse(saved);
+    } else {
+        shownCars = [];
+    }
+}
+
+function saveShownCars() {
+    localStorage.setItem('gt7_shown_cars', JSON.stringify(shownCars));
+}
+
+function addToShownCars(carName) {
+    if (!shownCars.includes(carName)) {
+        shownCars.push(carName);
+        if (shownCars.length > 50) {
+            shownCars.shift();
+        }
+        saveShownCars();
+    }
+}
+
+function getRandomCarWithoutRepeat() {
+    let availableCars = carsDatabase.filter(car => !shownCars.includes(car.name));
+    
+    if (availableCars.length === 0) {
+        shownCars = [];
+        saveShownCars();
+        availableCars = carsDatabase;
+    }
+    
+    const randomCar = getRandomItem(availableCars);
+    addToShownCars(randomCar.name);
+    return randomCar;
+}
+
+// ========== ФУНКЦИИ ДЛЯ ИСКЛЮЧЕНИЯ ПОВТОРОВ ТРАСС ==========
+let shownTracks = [];
+
+function loadShownTracks() {
+    const saved = localStorage.getItem('gt7_shown_tracks');
+    if (saved) {
+        shownTracks = JSON.parse(saved);
+    } else {
+        shownTracks = [];
+    }
+}
+
+function saveShownTracks() {
+    localStorage.setItem('gt7_shown_tracks', JSON.stringify(shownTracks));
+}
+
+function addToShownTracks(trackName) {
+    if (!shownTracks.includes(trackName)) {
+        shownTracks.push(trackName);
+        if (shownTracks.length > 50) {
+            shownTracks.shift();
+        }
+        saveShownTracks();
+    }
+}
+
+function getRandomTrackWithoutRepeat() {
+    let availableTracks = tracks.filter(track => !shownTracks.includes(track));
+    
+    if (availableTracks.length === 0) {
+        shownTracks = [];
+        saveShownTracks();
+        availableTracks = tracks;
+    }
+    
+    const randomTrack = getRandomItem(availableTracks);
+    addToShownTracks(randomTrack);
+    return randomTrack;
+}
+
+// ========== ИЗМЕНЁННАЯ ФУНКЦИЯ updateTrack ==========
+function updateTrack() {
+    if (locks.track) return;
+    const trackName = getRandomTrackWithoutRepeat();
+    currentTrack = trackName;
+    document.getElementById('trackValue').textContent = trackName;
+    const iconUrl = getTrackIcon(trackName);
+    const trackIcon = document.getElementById('trackIcon');
+    if (iconUrl) { trackIcon.src = iconUrl; trackIcon.style.display = "block"; }
+    else { trackIcon.style.display = "none"; }
+    if (!locks.weather) updateWeatherByTrack(trackName);
+    if (!locks.time) updateTimeByTrack(trackName);
+}
+
+// ========== ИЗМЕНЁННАЯ ФУНКЦИЯ updateCarAndSync ==========
+function updateCarAndSync() {
+    if (locks.car) return;
+    const car = getRandomCarWithoutRepeat();
+    document.getElementById('carValue').textContent = car.name;
+    document.getElementById('carIcon').src = car.icon;
+    document.getElementById('carIcon').style.display = "block";
+    displaySimilarCars(car);
+}
+
+// ========== ФУНКЦИЯ init ==========
 function init() {
-    loadShownCars();  // ← ДОБАВЛЕНО
+    loadShownCars();
+    loadShownTracks();
     
     document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
         btn.addEventListener('click', (e) => { e.stopPropagation(); toggleLock(btn.getAttribute('data-param')); });
@@ -2192,12 +2298,13 @@ function init() {
     }
     
     window.selectCar = selectCar;
-    const randomCar = getRandomCarWithoutRepeat();  // ← ИЗМЕНЕНО
+    const randomCar = getRandomCarWithoutRepeat();
     document.getElementById('carValue').textContent = randomCar.name;
     document.getElementById('carIcon').src = randomCar.icon;
     document.getElementById('carIcon').style.display = "block";
     displaySimilarCars(randomCar);
-    const firstTrack = tracks[0];
+    
+    const firstTrack = getRandomTrackWithoutRepeat();
     currentTrack = firstTrack;
     document.getElementById('trackValue').textContent = firstTrack;
     const iconUrl = getTrackIcon(firstTrack);
@@ -2208,6 +2315,7 @@ function init() {
     updateFuel();
     updateCategory();
 }
+
 init();
 
 </script>
