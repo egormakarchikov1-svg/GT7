@@ -2124,8 +2124,9 @@ function shareResult() {
  let shownCars = [];
 
 function loadShownCars() {
-    const saved = localStorage.getItem('gt7_shown_cars');
-    shownCars = saved ? JSON.parse(saved) : [];
+    // Всегда начинаем с пустого списка при загрузке страницы
+    shownCars = [];
+    saveShownCars();
 }
 
 function saveShownCars() {
@@ -2135,7 +2136,7 @@ function saveShownCars() {
 function addToShownCars(carName) {
     if (!shownCars.includes(carName)) {
         shownCars.push(carName);
-        if (shownCars.length > 50) shownCars.shift();
+        if (shownCars.length > 561) shownCars.shift();
         saveShownCars();
     }
 }
@@ -2156,8 +2157,9 @@ function getRandomCarWithoutRepeat() {
 let shownTracks = [];
 
 function loadShownTracks() {
-    const saved = localStorage.getItem('gt7_shown_tracks');
-    shownTracks = saved ? JSON.parse(saved) : [];
+    // Всегда начинаем с пустого списка при загрузке страницы
+    shownTracks = [];
+    saveShownTracks();
 }
 
 function saveShownTracks() {
@@ -2167,7 +2169,7 @@ function saveShownTracks() {
 function addToShownTracks(trackName) {
     if (!shownTracks.includes(trackName)) {
         shownTracks.push(trackName);
-        if (shownTracks.length > 50) shownTracks.shift();
+        if (shownTracks.length > 94) shownTracks.shift();
         saveShownTracks();
     }
 }
