@@ -368,10 +368,11 @@
         }
         
         .params-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    min-height: 200px;
+}
         
         .param-block {
             margin-bottom: 0;
@@ -454,6 +455,7 @@
             justify-content: center;
             min-height: 90px;
             margin-bottom: 8px;
+            min-height: 70px;
         }
         
         .car-icon, .track-icon {
@@ -503,6 +505,10 @@
             border-radius: 16px;
             width: 100%;
             text-align: center;
+            min-height: 65px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .category-icon {
@@ -623,6 +629,7 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 15px;
+            min-height: 180px;
         }
         
         .settings-item {
@@ -778,6 +785,7 @@
         .similar-list {
             list-style: none;
             text-align: left;
+            min-height: 250px;
         }
         
         .similar-list li {
