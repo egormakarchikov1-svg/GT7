@@ -1006,6 +1006,9 @@
                 <img src="https://images.icon-icons.com/4321/PNG/96/repeat_sign_direction_re_arrows_icon_267811.png" class="btn-icon-refresh" alt="refresh" style="width: 20px; height: 20px; filter: brightness(0) invert(1);"> 
                 ПОВТОРНЫЙ ВЫБОР 5 СХОЖИХ АВТО
             </button>
+                <button id="resetCarsBtn" class="btn-similar" style="width: 100%; background: #ef4444; margin-top: 8px;">
+    🔄 СБРОСИТЬ ИСТОРИЮ МАШИН
+            </button>
         </div>
     </div>
     
@@ -2058,8 +2061,12 @@ function shareResult() {
 let shownCars = [];
 
 function loadShownCars() {
-    shownCars = [];
-    saveShownCars();
+    const saved = localStorage.getItem('gt7_shown_cars');
+    if (saved) {
+        shownCars = JSON.parse(saved);
+    } else {
+        shownCars = [];
+    }
 }
 
 function saveShownCars() {
@@ -2069,21 +2076,31 @@ function saveShownCars() {
 function addToShownCars(carName) {
     if (!shownCars.includes(carName)) {
         shownCars.push(carName);
-        if (shownCars.length > 561) shownCars.shift();
         saveShownCars();
     }
 }
 
 function getRandomCarWithoutRepeat() {
     let availableCars = carsDatabase.filter(car => !shownCars.includes(car.name));
+    
+    // Если все машины показаны — автоматически сбрасываем историю
     if (availableCars.length === 0) {
         shownCars = [];
         saveShownCars();
         availableCars = carsDatabase;
     }
+    
     const randomCar = getRandomItem(availableCars);
     addToShownCars(randomCar.name);
     return randomCar;
+}
+
+// Кнопка ручного сброса истории машин
+function resetCarsHistory() {
+    shownCars = [];
+    saveShownCars();
+    alert('✅ История машин сброшена! Цикл начинается заново.');
+    updateCarAndSync();
 }
 
 // ========== ФУНКЦИИ ДЛЯ ИСКЛЮЧЕНИЯ ПОВТОРОВ ТРАСС ==========
@@ -2156,6 +2173,10 @@ function init() {
     document.getElementById('categoryHeader').addEventListener('click', toggleCategory);
     document.getElementById('randomBtn').addEventListener('click', () => updateUnlockedOnly());
     document.getElementById('refreshSimilarBtn').addEventListener('click', () => refreshSimilarCars());
+    
+    // Кнопка сброса истории машин
+    const resetBtn = document.getElementById('resetCarsBtn');
+    if (resetBtn) resetBtn.addEventListener('click', resetCarsHistory);
     
     const shareButton = document.getElementById('shareBtn');
     if (shareButton) shareButton.addEventListener('click', shareResult);
