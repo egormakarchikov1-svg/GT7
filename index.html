@@ -49,218 +49,236 @@
         }
         
         /* ============================================ */
-        /* ТЕЛЕФОНЫ 5-7" ВЕРТИКАЛЬНАЯ ОРИЕНТАЦИЯ */
-        /* ============================================ */
-        @media (max-width: 480px) and (orientation: portrait) {
-            body { padding: 4px; }
-            .container { padding: 8px 6px; border-radius: 16px; max-width: 100%; }
-            .cars-track-container, .category-container, .settings-container, .similar-cars-container { padding: 3px; margin-bottom: 4px; }
-            .cars-track-header-clickable, .category-header-clickable, .settings-header-clickable, .similar-header-clickable { padding: 8px; }
-            .cars-track-title, .category-title, .settings-title, .similar-title { font-size: 13px; }
-            .cars-track-toggle-icon, .category-toggle-icon, .toggle-icon, .similar-toggle-icon { font-size: 16px; }
-            .params-grid { gap: 6px; grid-template-columns: 1fr !important; }
-            .param-label { font-size: 10px; padding: 5px 10px; }
-            .param-label img { width: 16px; height: 16px; }
-            .lock-btn { padding: 4px 8px; font-size: 10px; min-width: 32px; }
-            .param-header { gap: 6px; margin-bottom: 4px; }
-            .icon-container { min-height: 44px; margin-bottom: 3px; }
-            .car-icon, .track-icon { max-height: 40px; }
-            .param-value, .category-value { font-size: 10px; padding: 5px 6px; margin-top: 3px; }
-            .btn-group button { font-size: 8px; padding: 5px 4px; min-width: 52px; }
-            .btn-main { min-width: 120px; font-size: 12px; padding: 8px 11px; }
-            .btn-icon { width: 16px; height: 16px; }
-            .btn-similar { font-size: 10px; padding: 6px 10px; }
-            .similar-title { font-size: 11px; margin-bottom: 6px; }
-            .ref-car-info { font-size: 9px; padding: 6px; margin-bottom: 8px; }
-            .similar-list li { padding: 6px; font-size: 9px; }
-            .car-name { font-size: 10px; }
-            .car-stats { font-size: 7px; gap: 3px; }
-            .similarity-badge { font-size: 8px; padding: 2px 4px; }
-            
-            /* НАСТРОЙКИ СЛОЖНОСТИ - ИСПРАВЛЕНО */
-            .settings-container { padding: 6px; margin: 6px 0; }
-            .settings-item { padding: 6px; }
-            .settings-label { font-size: 9px; white-space: nowrap; }
-            .settings-value { 
-                font-size: 11px; 
-                padding: 4px; 
-                word-break: break-word;
-                line-height: 1.2;
-            }
-            .settings-lock-btn { padding: 2px 6px; font-size: 8px; min-width: 32px; }
-            .settings-items { 
-                display: grid; 
-                grid-template-columns: repeat(2, 1fr); 
-                gap: 6px; 
-            }
-            .settings-header {
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                justify-content: space-between;
-                flex-wrap: nowrap;
-                gap: 4px;
-                margin-bottom: 6px;
-            }
-            .settings-value-small { 
-                font-size: 9px !important; 
-                line-height: 1.2;
-            }
-            .settings-icon { width: 16px !important; height: 16px !important; }
-            
-            /* ИСПРАВЛЕНИЕ ДЛЯ БЛОКА ВРЕМЯ */
-            .time-x-badge { 
-                font-size: 7px; 
-                padding: 2px 3px; 
-                margin-left: 2px;
-                white-space: nowrap;
-            }
-            .result-icon { font-size: 12px !important; }
-            
-            /* БЛОК РАСХОД ТОПЛИВА И ИЗНОС ШИН */
-            #tiresValue, #fuelValue {
-                font-size: 14px !important;
-                padding: 3px !important;
-            }
-            
-            .header-icon { width: 28px !important; height: 28px !important; }
-            .category-icon { width: 22px !important; height: 22px !important; }
-        }
-        
-        /* ============================================ */
-        /* ТЕЛЕФОНЫ 5-7" ГОРИЗОНТАЛЬНАЯ ОРИЕНТАЦИЯ */
-        /* ============================================ */
-        @media (max-width: 850px) and (orientation: landscape) {
-            body { padding: 6px; }
-            .container { padding: 8px 10px; border-radius: 16px; max-width: 95%; }
-            .cars-track-container, .category-container, .settings-container, .similar-cars-container { padding: 5px; margin-bottom: 6px; }
-            .cars-track-header-clickable, .category-header-clickable, .settings-header-clickable, .similar-header-clickable { padding: 6px 10px; }
-            .cars-track-title, .category-title, .settings-title, .similar-title { font-size: 12px; }
-            .cars-track-toggle-icon, .category-toggle-icon, .toggle-icon, .similar-toggle-icon { font-size: 14px; }
-            .params-grid { gap: 10px; grid-template-columns: repeat(2, 1fr) !important; }
-            .param-label { font-size: 9px; padding: 4px 8px; }
-            .param-label img { width: 14px; height: 14px; }
-            .lock-btn { padding: 3px 6px; font-size: 9px; min-width: 29px; }
-            .param-header { gap: 5px; margin-bottom: 4px; }
-            .icon-container { min-height: 36px; margin-bottom: 3px; }
-            .car-icon, .track-icon { max-height: 32px; }
-            .param-value, .category-value { font-size: 8px; padding: 4px 5px; margin-top: 3px; }
-            .btn-group button { font-size: 7px; padding: 4px 3px; min-width: 48px; }
-            .btn-main { min-width: 112px; font-size: 11px; padding: 6px 10px; }
-            .btn-icon { width: 14px; height: 14px; }
-            .btn-similar { font-size: 9px; padding: 5px 8px; }
-            .similar-title { font-size: 10px; margin-bottom: 5px; }
-            .ref-car-info { font-size: 8px; padding: 5px; margin-bottom: 6px; }
-            .similar-list li { padding: 5px; font-size: 8px; }
-            .car-name { font-size: 9px; }
-            .car-stats { font-size: 6px; gap: 2px; }
-            .similarity-badge { font-size: 7px; padding: 1px 3px; }
-            .settings-container { padding: 6px; margin: 6px 0; }
-            .settings-item { padding: 5px; }
-            .settings-label { font-size: 8px; white-space: nowrap; }
-            .settings-value { font-size: 11px; padding: 3px; }
-            .settings-lock-btn { padding: 2px 5px; font-size: 7px; min-width: 28px; }
-            .settings-items { gap: 5px; }
-            .settings-header { gap: 3px; margin-bottom: 4px; }
-            .settings-value-small { font-size: 9px !important; }
-            .settings-icon { width: 14px !important; height: 14px !important; }
-            .result-icon { font-size: 12px !important; }
-            .time-x-badge { font-size: 7px; padding: 2px 4px; }
-            .header-icon { width: 24px !important; height: 24px !important; }
-            .category-icon { width: 18px !important; height: 18px !important; }
-        }
-        
-        /* ============================================ */
-        /* ПЛАНШЕТЫ 7-10" ПОРТРЕТ */
-        /* ============================================ */
-        @media (min-width: 481px) and (max-width: 800px) and (orientation: portrait) {
-            body { padding: 10px; }
-            .container { padding: 16px 14px; border-radius: 24px; max-width: 550px; }
-            .cars-track-container, .category-container, .settings-container, .similar-cars-container { padding: 8px; margin-bottom: 10px; }
-            .params-grid { gap: 15px; grid-template-columns: repeat(2, 1fr) !important; }
-            .param-label { font-size: 14px; padding: 8px 16px; }
-            .param-label img { width: 22px; height: 22px; }
-            .lock-btn { padding: 6px 12px; font-size: 13px; min-width: 45px; }
-            .param-header { gap: 10px; margin-bottom: 8px; }
-            .icon-container { min-height: 70px; margin-bottom: 6px; }
-            .car-icon, .track-icon { max-height: 65px; }
-            .param-value, .category-value { font-size: 14px; padding: 8px 10px; margin-top: 5px; }
-            .btn-group button { font-size: 11px; padding: 8px 8px; min-width: 75px; }
-            .btn-main { min-width: 180px; font-size: 17px; padding: 11px 16px; }
-            .btn-icon { width: 22px; height: 22px; }
-            .btn-similar { font-size: 13px; padding: 8px 12px; }
-            .similar-title { font-size: 16px; margin-bottom: 10px; }
-            .ref-car-info { font-size: 12px; padding: 10px; margin-bottom: 12px; }
-            .similar-list li { padding: 10px; font-size: 12px; }
-            .car-name { font-size: 13px; }
-            .car-stats { font-size: 10px; gap: 6px; }
-            .similarity-badge { font-size: 11px; padding: 3px 6px; }
-            .settings-container { padding: 12px; margin: 12px 0; }
-            .settings-item { padding: 10px; }
-            .settings-label { font-size: 14px; }
-            .settings-value { font-size: 22px; padding: 8px; }
-            .settings-lock-btn { padding: 5px 12px; font-size: 12px; }
-            .settings-value-small { font-size: 15px !important; }
-            .settings-icon { width: 28px !important; height: 28px !important; }
-            .result-icon { font-size: 26px !important; }
-            .category-icon { width: 28px !important; height: 28px !important; }
-        }
-        
-        /* ============================================ */
-        /* ПЛАНШЕТЫ 7-10" ГОРИЗОНТАЛЬ */
-        /* ============================================ */
-        @media (min-width: 801px) and (max-width: 1024px) and (orientation: landscape) {
-            body { padding: 15px; }
-            .container { max-width: 900px; padding: 18px 16px; border-radius: 28px; }
-            .cars-track-container, .category-container, .settings-container, .similar-cars-container { padding: 10px; margin-bottom: 12px; }
-            .params-grid { gap: 20px; grid-template-columns: repeat(2, 1fr) !important; }
-            .param-label { font-size: 16px; padding: 10px 18px; }
-            .param-label img { width: 28px; height: 28px; }
-            .lock-btn { padding: 7px 14px; font-size: 14px; min-width: 50px; }
-            .param-header { gap: 12px; margin-bottom: 10px; }
-            .icon-container { min-height: 85px; margin-bottom: 8px; }
-            .car-icon, .track-icon { max-height: 80px; }
-            .param-value, .category-value { font-size: 15px; padding: 10px 12px; margin-top: 6px; }
-            .btn-group button { font-size: 12px; padding: 9px 12px; min-width: 90px; }
-            .btn-main { min-width: 220px; font-size: 19px; padding: 12px 20px; }
-            .btn-icon { width: 26px; height: 26px; }
-            .btn-similar { font-size: 14px; padding: 10px 14px; }
-            .similar-title { font-size: 18px; margin-bottom: 12px; }
-            .ref-car-info { font-size: 13px; padding: 12px; margin-bottom: 14px; }
-            .similar-list li { padding: 12px; font-size: 13px; }
-            .car-name { font-size: 14px; }
-            .car-stats { font-size: 11px; gap: 8px; }
-            .similarity-badge { font-size: 12px; padding: 3px 8px; }
-            .settings-container { padding: 15px; margin: 15px 0; }
-            .settings-item { padding: 12px; }
-            .settings-label { font-size: 16px; }
-            .settings-value { font-size: 26px; padding: 10px; }
-            .settings-lock-btn { padding: 6px 14px; font-size: 14px; }
-            .settings-value-small { font-size: 17px !important; }
-            .settings-icon { width: 32px !important; height: 32px !important; }
-            .result-icon { font-size: 30px !important; }
-            .category-icon { width: 32px !important; height: 32px !important; }
-        }
-        
-        /* ============================================ */
-        /* ДЕСКТОПЫ И БОЛЬШИЕ ЭКРАНЫ */
-        /* ============================================ */
-        @media (min-width: 1281px) {
-            .container { max-width: 1100px; padding: 24px 22px; }
-            .cars-track-container, .category-container, .settings-container, .similar-cars-container { padding: 15px; margin-bottom: 18px; }
-            .params-grid { gap: 30px; grid-template-columns: repeat(2, 1fr) !important; }
-            .param-label { font-size: 20px; padding: 14px 28px; }
-            .param-label img { width: 36px; height: 36px; }
-            .lock-btn { padding: 10px 18px; font-size: 18px; min-width: 70px; }
-            .car-icon, .track-icon { max-height: 120px; }
-            .param-value, .category-value { font-size: 18px; padding: 14px 16px; }
-            .btn-group button { font-size: 15px; padding: 12px 18px; }
-            .btn-main { min-width: 300px; font-size: 24px; padding: 16px 28px; }
-            .btn-icon { width: 34px; height: 34px; }
-            .similar-title { font-size: 24px; }
-            .settings-value { font-size: 34px; }
-            .category-icon { width: 36px !important; height: 36px !important; }
-        }
+/* ТЕЛЕФОНЫ 5-7" ВЕРТИКАЛЬНАЯ ОРИЕНТАЦИЯ */
+/* ============================================ */
+@media (max-width: 480px) and (orientation: portrait) {
+    body { padding: 4px; }
+    .container { padding: 8px 6px; border-radius: 16px; max-width: 100%; min-height: 85vh; display: flex; flex-direction: column; justify-content: center; }
+    .cars-track-container, .category-container, .settings-container, .similar-cars-container { padding: 3px; margin-bottom: 4px; }
+    .cars-track-header-clickable, .category-header-clickable, .settings-header-clickable, .similar-header-clickable { padding: 8px; }
+    .cars-track-title, .category-title, .settings-title, .similar-title { font-size: 13px; }
+    .cars-track-toggle-icon, .category-toggle-icon, .toggle-icon, .similar-toggle-icon { font-size: 16px; }
+    .params-grid { gap: 6px; grid-template-columns: 1fr !important; min-height: 200px; }
+    .param-label { font-size: 10px; padding: 5px 10px; }
+    .param-label img { width: 16px; height: 16px; }
+    .lock-btn { padding: 4px 8px; font-size: 10px; min-width: 32px; }
+    .param-header { gap: 6px; margin-bottom: 4px; }
+    .icon-container { min-height: 50px; margin-bottom: 3px; }
+    .car-icon, .track-icon { max-height: 40px; min-height: 40px; }
+    .param-value, .category-value { font-size: 10px; padding: 5px 6px; margin-top: 3px; min-height: 50px; display: flex; align-items: center; justify-content: center; }
+    .btn-group button { font-size: 8px; padding: 5px 4px; min-width: 52px; }
+    .btn-main { min-width: 120px; font-size: 12px; padding: 8px 11px; min-height: 44px; }
+    .btn-icon { width: 16px; height: 16px; }
+    .btn-similar { font-size: 10px; padding: 6px 10px; }
+    .similar-title { font-size: 11px; margin-bottom: 6px; }
+    .ref-car-info { font-size: 9px; padding: 6px; margin-bottom: 8px; min-height: 65px; }
+    .similar-list li { padding: 6px; font-size: 9px; min-height: 40px; }
+    .similar-list { min-height: 240px; }
+    .car-name { font-size: 10px; }
+    .car-stats { font-size: 7px; gap: 3px; }
+    .similarity-badge { font-size: 8px; padding: 2px 4px; }
+    
+    /* НАСТРОЙКИ СЛОЖНОСТИ - ИСПРАВЛЕНО */
+    .settings-container { padding: 6px; margin: 6px 0; }
+    .settings-item { padding: 6px; }
+    .settings-label { font-size: 9px; white-space: nowrap; }
+    .settings-value { 
+        font-size: 11px; 
+        padding: 4px; 
+        word-break: break-word;
+        line-height: 1.2;
+        min-height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .settings-lock-btn { padding: 2px 6px; font-size: 8px; min-width: 32px; }
+    .settings-items { 
+        display: grid; 
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 6px;
+        min-height: 170px;
+    }
+    .settings-header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: nowrap;
+        gap: 4px;
+        margin-bottom: 6px;
+    }
+    .settings-value-small { 
+        font-size: 9px !important; 
+        line-height: 1.2;
+    }
+    .settings-icon { width: 16px !important; height: 16px !important; }
+    
+    /* ИСПРАВЛЕНИЕ ДЛЯ БЛОКА ВРЕМЯ */
+    .time-x-badge { 
+        font-size: 7px; 
+        padding: 2px 3px; 
+        margin-left: 2px;
+        white-space: nowrap;
+    }
+    .result-icon { font-size: 12px !important; }
+    
+    /* БЛОК РАСХОД ТОПЛИВА И ИЗНОС ШИН */
+    #tiresValue, #fuelValue {
+        font-size: 14px !important;
+        padding: 3px !important;
+    }
+    
+    .header-icon { width: 28px !important; height: 28px !important; }
+    .category-icon { width: 22px !important; height: 22px !important; }
+    .category-value { min-height: 55px; }
+}
+
+/* ============================================ */
+/* ТЕЛЕФОНЫ 5-7" ГОРИЗОНТАЛЬНАЯ ОРИЕНТАЦИЯ */
+/* ============================================ */
+@media (max-width: 850px) and (orientation: landscape) {
+    body { padding: 6px; }
+    .container { padding: 8px 10px; border-radius: 16px; max-width: 95%; min-height: 85vh; }
+    .cars-track-container, .category-container, .settings-container, .similar-cars-container { padding: 5px; margin-bottom: 6px; }
+    .cars-track-header-clickable, .category-header-clickable, .settings-header-clickable, .similar-header-clickable { padding: 6px 10px; }
+    .cars-track-title, .category-title, .settings-title, .similar-title { font-size: 12px; }
+    .cars-track-toggle-icon, .category-toggle-icon, .toggle-icon, .similar-toggle-icon { font-size: 14px; }
+    .params-grid { gap: 10px; grid-template-columns: repeat(2, 1fr) !important; min-height: 180px; }
+    .param-label { font-size: 9px; padding: 4px 8px; }
+    .param-label img { width: 14px; height: 14px; }
+    .lock-btn { padding: 3px 6px; font-size: 9px; min-width: 29px; }
+    .param-header { gap: 5px; margin-bottom: 4px; }
+    .icon-container { min-height: 40px; margin-bottom: 3px; }
+    .car-icon, .track-icon { max-height: 32px; min-height: 32px; }
+    .param-value, .category-value { font-size: 8px; padding: 4px 5px; margin-top: 3px; min-height: 45px; display: flex; align-items: center; justify-content: center; }
+    .btn-group button { font-size: 7px; padding: 4px 3px; min-width: 48px; }
+    .btn-main { min-width: 112px; font-size: 11px; padding: 6px 10px; min-height: 40px; }
+    .btn-icon { width: 14px; height: 14px; }
+    .btn-similar { font-size: 9px; padding: 5px 8px; }
+    .similar-title { font-size: 10px; margin-bottom: 5px; }
+    .ref-car-info { font-size: 8px; padding: 5px; margin-bottom: 6px; min-height: 55px; }
+    .similar-list li { padding: 5px; font-size: 8px; min-height: 35px; }
+    .similar-list { min-height: 220px; }
+    .car-name { font-size: 9px; }
+    .car-stats { font-size: 6px; gap: 2px; }
+    .similarity-badge { font-size: 7px; padding: 1px 3px; }
+    .settings-container { padding: 6px; margin: 6px 0; }
+    .settings-item { padding: 5px; }
+    .settings-label { font-size: 8px; white-space: nowrap; }
+    .settings-value { font-size: 11px; padding: 3px; min-height: 40px; display: flex; align-items: center; justify-content: center; }
+    .settings-lock-btn { padding: 2px 5px; font-size: 7px; min-width: 28px; }
+    .settings-items { gap: 5px; min-height: 150px; }
+    .settings-header { gap: 3px; margin-bottom: 4px; }
+    .settings-value-small { font-size: 9px !important; }
+    .settings-icon { width: 14px !important; height: 14px !important; }
+    .result-icon { font-size: 12px !important; }
+    .time-x-badge { font-size: 7px; padding: 2px 4px; }
+    .header-icon { width: 24px !important; height: 24px !important; }
+    .category-icon { width: 18px !important; height: 18px !important; }
+    .category-value { min-height: 45px; }
+}
+
+/* ============================================ */
+/* ПЛАНШЕТЫ 7-10" ПОРТРЕТ */
+/* ============================================ */
+@media (min-width: 481px) and (max-width: 800px) and (orientation: portrait) {
+    body { padding: 10px; }
+    .container { padding: 16px 14px; border-radius: 24px; max-width: 550px; min-height: 85vh; }
+    .cars-track-container, .category-container, .settings-container, .similar-cars-container { padding: 8px; margin-bottom: 10px; }
+    .params-grid { gap: 15px; grid-template-columns: repeat(2, 1fr) !important; min-height: 220px; }
+    .param-label { font-size: 14px; padding: 8px 16px; }
+    .param-label img { width: 22px; height: 22px; }
+    .lock-btn { padding: 6px 12px; font-size: 13px; min-width: 45px; }
+    .param-header { gap: 10px; margin-bottom: 8px; }
+    .icon-container { min-height: 70px; margin-bottom: 6px; }
+    .car-icon, .track-icon { max-height: 65px; min-height: 65px; }
+    .param-value, .category-value { font-size: 14px; padding: 8px 10px; margin-top: 5px; min-height: 65px; display: flex; align-items: center; justify-content: center; }
+    .btn-group button { font-size: 11px; padding: 8px 8px; min-width: 75px; }
+    .btn-main { min-width: 180px; font-size: 17px; padding: 11px 16px; min-height: 55px; }
+    .btn-icon { width: 22px; height: 22px; }
+    .btn-similar { font-size: 13px; padding: 8px 12px; }
+    .similar-title { font-size: 16px; margin-bottom: 10px; }
+    .ref-car-info { font-size: 12px; padding: 10px; margin-bottom: 12px; min-height: 80px; }
+    .similar-list li { padding: 10px; font-size: 12px; min-height: 55px; }
+    .similar-list { min-height: 320px; }
+    .car-name { font-size: 13px; }
+    .car-stats { font-size: 10px; gap: 6px; }
+    .similarity-badge { font-size: 11px; padding: 3px 6px; }
+    .settings-container { padding: 12px; margin: 12px 0; }
+    .settings-item { padding: 10px; }
+    .settings-label { font-size: 14px; }
+    .settings-value { font-size: 22px; padding: 8px; min-height: 65px; display: flex; align-items: center; justify-content: center; }
+    .settings-lock-btn { padding: 5px 12px; font-size: 12px; }
+    .settings-value-small { font-size: 15px !important; }
+    .settings-icon { width: 28px !important; height: 28px !important; }
+    .settings-items { min-height: 220px; }
+    .result-icon { font-size: 26px !important; }
+    .category-icon { width: 28px !important; height: 28px !important; }
+    .category-value { min-height: 70px; }
+}
+
+/* ============================================ */
+/* ПЛАНШЕТЫ 7-10" ГОРИЗОНТАЛЬ */
+/* ============================================ */
+@media (min-width: 801px) and (max-width: 1024px) and (orientation: landscape) {
+    body { padding: 15px; }
+    .container { max-width: 900px; padding: 18px 16px; border-radius: 28px; min-height: 85vh; }
+    .cars-track-container, .category-container, .settings-container, .similar-cars-container { padding: 10px; margin-bottom: 12px; }
+    .params-grid { gap: 20px; grid-template-columns: repeat(2, 1fr) !important; min-height: 240px; }
+    .param-label { font-size: 16px; padding: 10px 18px; }
+    .param-label img { width: 28px; height: 28px; }
+    .lock-btn { padding: 7px 14px; font-size: 14px; min-width: 50px; }
+    .param-header { gap: 12px; margin-bottom: 10px; }
+    .icon-container { min-height: 85px; margin-bottom: 8px; }
+    .car-icon, .track-icon { max-height: 80px; min-height: 80px; }
+    .param-value, .category-value { font-size: 15px; padding: 10px 12px; margin-top: 6px; min-height: 70px; display: flex; align-items: center; justify-content: center; }
+    .btn-group button { font-size: 12px; padding: 9px 12px; min-width: 90px; }
+    .btn-main { min-width: 220px; font-size: 19px; padding: 12px 20px; min-height: 60px; }
+    .btn-icon { width: 26px; height: 26px; }
+    .btn-similar { font-size: 14px; padding: 10px 14px; }
+    .similar-title { font-size: 18px; margin-bottom: 12px; }
+    .ref-car-info { font-size: 13px; padding: 12px; margin-bottom: 14px; min-height: 85px; }
+    .similar-list li { padding: 12px; font-size: 13px; min-height: 60px; }
+    .similar-list { min-height: 350px; }
+    .car-name { font-size: 14px; }
+    .car-stats { font-size: 11px; gap: 8px; }
+    .similarity-badge { font-size: 12px; padding: 3px 8px; }
+    .settings-container { padding: 15px; margin: 15px 0; }
+    .settings-item { padding: 12px; }
+    .settings-label { font-size: 16px; }
+    .settings-value { font-size: 26px; padding: 10px; min-height: 70px; display: flex; align-items: center; justify-content: center; }
+    .settings-lock-btn { padding: 6px 14px; font-size: 14px; }
+    .settings-value-small { font-size: 17px !important; }
+    .settings-icon { width: 32px !important; height: 32px !important; }
+    .settings-items { min-height: 240px; }
+    .result-icon { font-size: 30px !important; }
+    .category-icon { width: 32px !important; height: 32px !important; }
+    .category-value { min-height: 75px; }
+}
+
+/* ============================================ */
+/* ДЕСКТОПЫ И БОЛЬШИЕ ЭКРАНЫ */
+/* ============================================ */
+@media (min-width: 1281px) {
+    .container { max-width: 1100px; padding: 24px 22px; min-height: 85vh; }
+    .cars-track-container, .category-container, .settings-container, .similar-cars-container { padding: 15px; margin-bottom: 18px; }
+    .params-grid { gap: 30px; grid-template-columns: repeat(2, 1fr) !important; min-height: 280px; }
+    .param-label { font-size: 20px; padding: 14px 28px; }
+    .param-label img { width: 36px; height: 36px; }
+    .lock-btn { padding: 10px 18px; font-size: 18px; min-width: 70px; }
+    .car-icon, .track-icon { max-height: 120px; min-height: 120px; }
+    .param-value, .category-value { font-size: 18px; padding: 14px 16px; min-height: 85px; display: flex; align-items: center; justify-content: center; }
+    .btn-group button { font-size: 15px; padding: 12px 18px; }
+    .btn-main { min-width: 300px; font-size: 24px; padding: 16px 28px; min-height: 70px; }
+    .btn-icon { width: 34px; height: 34px; }
+    .similar-title { font-size: 24px; }
+    .settings-value { font-size: 34px; min-height: 85px; }
+    .settings-items { min-height: 280px; }
+    .similar-list { min-height: 400px; }
+    .category-icon { width: 36px !important; height: 36px !important; }
+    .category-value { min-height: 85px; }
+}
         
         /* ============================================ */
         /* ОБЩИЕ СТИЛИ */
