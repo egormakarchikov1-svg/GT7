@@ -892,8 +892,182 @@
     </style>
 </head>
 <body>
+    
 
 <div class="container">
+    <!-- Блок для отображения телеметрии -->
+    <div class="settings-container" id="telemetryContainer" style="display: none;">
+        <div class="settings-header-clickable" id="telemetryHeader">
+            <div style="width:30px"></div>
+            <div class="settings-title">📡 ТЕЛЕМЕТРИЯ GT7 <span>🎮</span></div>
+            <div class="toggle-icon" id="telemetryToggleIcon">▼</div>
+        </div>
+        <div class="settings-content" id="telemetryContent">
+            <div class="settings-items">
+                <div class="settings-item">
+                    <div class="settings-label">🏎️ СКОРОСТЬ</div>
+                    <div class="settings-value" id="telemetrySpeed">0 км/ч</div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-label">🔄 ОБОРОТЫ</div>
+                    <div class="settings-value" id="telemetryRPM">0</div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-label">⚙️ ПЕРЕДАЧА</div>
+                    <div class="settings-value" id="telemetryGear">N</div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-label">🏁 ВРЕМЯ КРУГА</div>
+                    <div class="settings-value" id="telemetryLapTime">0:00.000</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Блок МАШИНА и ТРАССА (сворачиваемый вместе) -->
+    <div class="cars-track-container" id="carsTrackContainer">
+        <div class="cars-track-header-clickable" id="carsTrackHeader">
+            <div style="width: 30px;"></div>
+            <div class="cars-track-title">
+                <span>🏁</span> МАШИНА И ТРАССА <span>🏁</span>
+            </div>
+            <div class="cars-track-toggle-icon" id="carsTrackToggleIcon">▼</div>
+        </div>
+        <div class="cars-track-content" id="carsTrackContent">
+            <div class="params-grid">
+                <!-- Блок МАШИНА -->
+                <div class="param-block" id="carBlock" data-param="car">
+                    <div class="param-header">
+                        <button class="lock-btn" data-param="car" data-state="unlocked">🔓</button>
+                        <div class="param-label">
+                            <img src="car-icon.png" class="header-icon" alt="car">
+                            <span>МАШИНА</span>
+                        </div>
+                        <div style="width: 48px;"></div>
+                    </div>
+                    <div class="icon-container">
+                        <img class="car-icon" id="carIcon" src="" alt="Иконка" style="display: none;">
+                    </div>
+                    <div class="param-value" id="carValue">—</div>
+                </div>
+                
+                <!-- Блок ТРАССА -->
+                <div class="param-block" id="trackBlock" data-param="track">
+                    <div class="param-header">
+                        <button class="lock-btn" data-param="track" data-state="unlocked">🔓</button>
+                        <div class="param-label">
+                            <img src="track-icon.png" class="header-icon" alt="track">
+                            <span>ТРАССА</span>
+                        </div>
+                        <div style="width: 48px;"></div>
+                    </div>
+                    <div class="icon-container">
+                        <img class="track-icon" id="trackIcon" src="" alt="Иконка" style="display: none;">
+                    </div>
+                    <div class="param-value" id="trackValue">—</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Блок ГОНОЧНЫЙ КЛАСС (сворачиваемый) -->
+    <div class="category-container" id="categoryContainer">
+        <div class="category-header-clickable" id="categoryHeader">
+            <div style="width: 30px;"></div>
+            <div class="category-title">
+                <span>🏆</span> ГОНОЧНЫЙ КЛАСС <span>🏆</span>
+            </div>
+            <div class="category-toggle-icon" id="categoryToggleIcon">▼</div>
+        </div>
+        <div class="category-content" id="categoryContent">
+            <div class="category-value" id="categoryValue">—</div>
+        </div>
+    </div>
+    
+    <!-- остальные блоки (НАСТРОЙКИ СЛОЖНОСТИ, ПОДБОР АВТО, КНОПКИ) -->
+    <!-- ... -->
+    
+</div>
+
+<script>
+// Подключение к WebSocket серверу
+let gt7Socket = null;
+let gt7Connected = false;
+
+function connectGT7() {
+    try {
+        gt7Socket = new WebSocket('ws://localhost:8080');
+        
+        gt7Socket.onopen = () => {
+            gt7Connected = true;
+            document.getElementById('telemetryContainer').style.display = 'block';
+            console.log('✅ GT7 Telemetry подключена');
+        };
+        
+        gt7Socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            
+            if (data.speed) document.getElementById('telemetrySpeed').innerHTML = `${data.speed} км/ч`;
+            if (data.rpm) document.getElementById('telemetryRPM').innerHTML = `${data.rpm} об/мин`;
+            if (data.gear !== undefined) {
+                const gearDisplay = data.gear === 0 ? 'R' : data.gear;
+                document.getElementById('telemetryGear').innerHTML = gearDisplay;
+            }
+            if (data.currentLapTime) {
+                const lapTime = formatLapTime(data.currentLapTime);
+                document.getElementById('telemetryLapTime').innerHTML = lapTime;
+            }
+            
+            if (data.carName && data.carName !== '') {
+                document.getElementById('carValue').textContent = data.carName;
+            }
+            if (data.trackName && data.trackName !== '') {
+                document.getElementById('trackValue').textContent = data.trackName;
+            }
+        };
+        
+        gt7Socket.onerror = (error) => {
+            console.log('GT7 WebSocket ошибка:', error);
+        };
+        
+        gt7Socket.onclose = () => {
+            gt7Connected = false;
+            document.getElementById('telemetryContainer').style.display = 'none';
+            console.log('❌ GT7 Telemetry отключена, переподключение через 5 сек...');
+            setTimeout(connectGT7, 5000);
+        };
+        
+    } catch(e) {
+        console.log('Ошибка подключения к GT7:', e);
+        setTimeout(connectGT7, 10000);
+    }
+}
+
+function formatLapTime(seconds) {
+    if (!seconds || seconds === 0) return '0:00.000';
+    const mins = Math.floor(seconds / 60);
+    const secs = (seconds % 60).toFixed(3);
+    return `${mins}:${secs.toString().padStart(6, '0')}`;
+}
+
+setTimeout(connectGT7, 2000);
+
+// Сворачивание блока телеметрии
+const telemetryHeader = document.getElementById('telemetryHeader');
+if (telemetryHeader) {
+    telemetryHeader.addEventListener('click', () => {
+        const content = document.getElementById('telemetryContent');
+        const icon = document.getElementById('telemetryToggleIcon');
+        if (content.classList.contains('collapsed')) {
+            content.classList.remove('collapsed');
+            icon.innerHTML = '▼';
+        } else {
+            content.classList.add('collapsed');
+            icon.innerHTML = '▶';
+        }
+    });
+}
+</script>
     <!-- Блок МАШИНА и ТРАССА (сворачиваемый вместе) -->
     <div class="cars-track-container" id="carsTrackContainer">
         <div class="cars-track-header-clickable" id="carsTrackHeader">
