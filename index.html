@@ -49,6 +49,7 @@
         }
         
         /* ============================================ */
+/* ============================================ */
 /* ТЕЛЕФОНЫ 5-7" ВЕРТИКАЛЬНАЯ ОРИЕНТАЦИЯ */
 /* ============================================ */
 @media (max-width: 480px) and (orientation: portrait) {
@@ -113,6 +114,23 @@
         line-height: 1.2;
     }
     .settings-icon { width: 16px !important; height: 16px !important; }
+    
+    /* БЛОК БАЛАНСА СИЛ - УМЕНЬШЕНИЕ РАЗМЕРА */
+    #balanceContainer .settings-label {
+        font-size: 10px !important;
+        white-space: normal !important;
+        word-break: break-word;
+        text-align: center;
+    }
+    
+    #balanceContainer select {
+        font-size: 9px !important;
+        padding: 4px !important;
+    }
+    
+    #balanceContainer .settings-item {
+        padding: 6px !important;
+    }
     
     /* ИСПРАВЛЕНИЕ ДЛЯ БЛОКА ВРЕМЯ */
     .time-x-badge { 
