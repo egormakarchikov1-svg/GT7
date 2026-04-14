@@ -930,53 +930,29 @@
 
 <script>
 // Подключение к SimHub WebSocket
-let simhubWs = null;
-let simhubReconnectTimer = null;
+// ========== ТЕЛЕМЕТРИЯ SimHub (HTTP API) ==========
 
-function connectSimHub() {
-    if (simhubWs && simhubWs.readyState === WebSocket.OPEN) return;
-    
+async function fetchSimHubData() {
     try {
-        simhubWs = new WebSocket('ws://localhost:8888/');
+        const response = await fetch('http://localhost:8888/api/live');
+        const data = await response.json();
         
-        simhubWs.onopen = () => {
-            console.log('✅ SimHub подключен');
-            document.getElementById('simhubContainer').style.display = 'block';
-            
-            // Подписываемся на данные
-            simhubWs.send(JSON.stringify({ type: "subscribe", topics: ["live"] }));
-        };
+        updateTelemetry(data);
         
-        simhubWs.onmessage = (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                updateTelemetry(data);
-            } catch(e) {
-                console.log('Ошибка парсинга:', e);
-            }
-        };
-        
-        simhubWs.onerror = (error) => {
-            console.log('SimHub ошибка:', error);
-            document.getElementById('simhubContainer').style.display = 'none';
-        };
-        
-        simhubWs.onclose = () => {
-            console.log('SimHub отключен, переподключение через 5 сек...');
-            document.getElementById('simhubContainer').style.display = 'none';
-            if (simhubReconnectTimer) clearTimeout(simhubReconnectTimer);
-            simhubReconnectTimer = setTimeout(connectSimHub, 5000);
-        };
+        const container = document.getElementById('simhubContainer');
+        if (container && container.style.display === 'none') {
+            container.style.display = 'block';
+            console.log('✅ SimHub данные получены');
+        }
         
     } catch(e) {
-        console.log('Ошибка подключения:', e);
-        if (simhubReconnectTimer) clearTimeout(simhubReconnectTimer);
-        simhubReconnectTimer = setTimeout(connectSimHub, 10000);
+        console.log('SimHub HTTP ошибка:', e);
+        const container = document.getElementById('simhubContainer');
+        if (container) container.style.display = 'none';
     }
 }
 
 function updateTelemetry(data) {
-    // Обновляем отображение
     if (data.Speed !== undefined) {
         document.getElementById('simhubSpeed').innerHTML = `${Math.round(data.Speed)} км/ч`;
     }
@@ -988,14 +964,15 @@ function updateTelemetry(data) {
         document.getElementById('simhubGear').innerHTML = gearDisplay;
     }
     if (data.LapTime !== undefined && data.LapTime > 0) {
-        const lapTime = formatLapTime(data.LapTime);
-        document.getElementById('simhubLapTime').innerHTML = lapTime;
+        const mins = Math.floor(data.LapTime / 60);
+        const secs = (data.LapTime % 60).toFixed(3);
+        document.getElementById('simhubLapTime').innerHTML = `${mins}:${secs.toString().padStart(6, '0')}`;
     }
     if (data.FuelRemaining !== undefined) {
         document.getElementById('simhubFuel').innerHTML = `${Math.round(data.FuelRemaining)}%`;
     }
     
-    // Автоматически обновляем машину и трассу в основном приложении
+    // Обновляем машину и трассу в основном приложении
     if (data.CarName && data.CarName !== '') {
         document.getElementById('carValue').textContent = data.CarName;
     }
@@ -1004,15 +981,8 @@ function updateTelemetry(data) {
     }
 }
 
-function formatLapTime(seconds) {
-    if (!seconds || seconds === 0) return '0:00.000';
-    const mins = Math.floor(seconds / 60);
-    const secs = (seconds % 60).toFixed(3);
-    return `${mins}:${secs.toString().padStart(6, '0')}`;
-}
-
-// Запускаем подключение
-setTimeout(connectSimHub, 2000);
+// Запрашиваем данные каждую секунду
+setInterval(fetchSimHubData, 1000);
 
 // Сворачивание блока телеметрии
 const simhubHeader = document.getElementById('simhubHeader');
