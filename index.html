@@ -934,7 +934,7 @@
 
 async function fetchSimHubData() {
     try {
-        const response = await fetch('http://localhost:8888/api/live');
+        const response = await fetch('http://localhost:3000/api/simhub');
         const data = await response.json();
         
         updateTelemetry(data);
@@ -946,7 +946,7 @@ async function fetchSimHubData() {
         }
         
     } catch(e) {
-        console.log('SimHub HTTP ошибка:', e);
+        console.log('SimHub ошибка:', e);
         const container = document.getElementById('simhubContainer');
         if (container) container.style.display = 'none';
     }
