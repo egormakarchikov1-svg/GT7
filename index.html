@@ -1011,6 +1011,193 @@
             </div>
         </div>
     </div>
+
+    <!-- БЛОК БАЛАНСА СИЛ -->
+<div class="settings-container" id="balanceContainer">
+    <div class="settings-header-clickable" id="balanceHeader">
+        <div style="width:30px"></div>
+        <div class="settings-title">⚖️ БАЛАНС СИЛ <span>🏎️</span></div>
+        <div class="toggle-icon" id="balanceToggleIcon">▼</div>
+    </div>
+    <div class="settings-content" id="balanceContent">
+        <div class="settings-items">
+            <div class="settings-item">
+                <div class="settings-label">🐢 СЛАБАЯ МАШИНА</div>
+                <select id="weakCarSelect" class="settings-value" style="width: 100%; background: #0f172a; color: white; padding: 8px; border-radius: 12px;"></select>
+            </div>
+            <div class="settings-item">
+                <div class="settings-label">🐇 СИЛЬНАЯ МАШИНА</div>
+                <select id="strongCarSelect" class="settings-value" style="width: 100%; background: #0f172a; color: white; padding: 8px; border-radius: 12px;"></select>
+            </div>
+        </div>
+        <button id="calculateBoostBtn" class="btn-similar" style="width: 100%; margin-top: 10px; background: #ff4d4d;">📊 РАССЧИТАТЬ БУСТ</button>
+        <div id="boostResult" class="ref-car-info" style="margin-top: 12px; text-align: center;"></div>
+    </div>
+</div>
+
+<script>
+// ========== ФУНКЦИЯ РАСЧЁТА БУСТА ==========
+function calculateBoost(weakCar, strongCar) {
+    // Текущее соотношение мощность/вес у слабой машины (л.с./тонна)
+    const weakPtw = weakCar.powerToWeight * 1000;
+    
+    // Текущее соотношение мощность/вес у сильной машины
+    const strongPtw = strongCar.powerToWeight * 1000;
+    
+    // Вес слабой машины (кг)
+    const weakWeight = weakCar.weight;
+    
+    // Нужная мощность для слабой машины, чтобы сравняться с сильной (л.с.)
+    const requiredHP = (strongPtw * weakWeight) / 1000;
+    
+    // Добавка мощности (л.с.)
+    const boostHP = requiredHP - weakCar.hp;
+    
+    // Процент увеличения мощности
+    const boostPercent = (boostHP / weakCar.hp) * 100;
+    
+    // Проверка на отрицательный буст (если слабая машина на самом деле сильнее)
+    if (boostHP <= 0) {
+        return {
+            weakCar: weakCar.name,
+            strongCar: strongCar.name,
+            weakHP: weakCar.hp,
+            strongHP: strongCar.hp,
+            weakWeight: weakWeight,
+            strongWeight: strongCar.weight,
+            requiredHP: weakCar.hp,
+            boostHP: 0,
+            boostPercent: 0,
+            message: "⚠️ Эта машина уже сильнее или равна выбранной!"
+        };
+    }
+    
+    return {
+        weakCar: weakCar.name,
+        strongCar: strongCar.name,
+        weakHP: weakCar.hp,
+        strongHP: strongCar.hp,
+        weakWeight: weakWeight,
+        strongWeight: strongCar.weight,
+        requiredHP: Math.round(requiredHP),
+        boostHP: Math.round(boostHP),
+        boostPercent: Math.round(boostPercent),
+        message: null
+    };
+}
+
+// Заполнение выпадающих списков
+function populateCarSelects() {
+    const weakSelect = document.getElementById('weakCarSelect');
+    const strongSelect = document.getElementById('strongCarSelect');
+    
+    if (!weakSelect || !strongSelect) return;
+    
+    // Очищаем списки
+    weakSelect.innerHTML = '';
+    strongSelect.innerHTML = '';
+    
+    // Сортируем машины по названию
+    const sortedCars = [...carsDatabase].sort((a, b) => a.name.localeCompare(b.name));
+    
+    sortedCars.forEach(car => {
+        const option1 = document.createElement('option');
+        option1.value = car.name;
+        option1.textContent = `${car.name} (${car.hp} л.с., ${car.weight} кг)`;
+        
+        const option2 = document.createElement('option');
+        option2.value = car.name;
+        option2.textContent = `${car.name} (${car.hp} л.с., ${car.weight} кг)`;
+        
+        weakSelect.appendChild(option1);
+        strongSelect.appendChild(option2);
+    });
+    
+    // Устанавливаем значения по умолчанию (самый слабый и самый сильный)
+    const weakest = [...carsDatabase].sort((a, b) => a.powerToWeight - b.powerToWeight)[0];
+    const strongest = [...carsDatabase].sort((a, b) => b.powerToWeight - a.powerToWeight)[0];
+    
+    if (weakest) weakSelect.value = weakest.name;
+    if (strongest) strongSelect.value = strongest.name;
+}
+
+// Обработчик расчёта
+function setupBoostCalculator() {
+    const calculateBtn = document.getElementById('calculateBoostBtn');
+    const weakSelect = document.getElementById('weakCarSelect');
+    const strongSelect = document.getElementById('strongCarSelect');
+    const resultDiv = document.getElementById('boostResult');
+    
+    if (!calculateBtn || !weakSelect || !strongSelect) return;
+    
+    function calculateAndDisplay() {
+        const weakCar = carsDatabase.find(c => c.name === weakSelect.value);
+        const strongCar = carsDatabase.find(c => c.name === strongSelect.value);
+        
+        if (!weakCar || !strongCar) {
+            resultDiv.innerHTML = '❌ Ошибка: машины не найдены';
+            return;
+        }
+        
+        const result = calculateBoost(weakCar, strongCar);
+        
+        if (result.message) {
+            resultDiv.innerHTML = `<span style="color: #ffaa00;">${result.message}</span>`;
+            return;
+        }
+        
+        resultDiv.innerHTML = `
+            <div style="font-size: 14px; line-height: 1.6;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span>🐢 <strong>${result.weakCar}</strong></span>
+                    <span>→</span>
+                    <span>🐇 <strong>${result.strongCar}</strong></span>
+                </div>
+                <div style="background: #0f172a; padding: 8px; border-radius: 12px;">
+                    <div>📊 Мощность: <span style="color: #ff4d4d;">${result.weakHP} л.с.</span> → <span style="color: #22c55e;">${result.requiredHP} л.с.</span></div>
+                    <div>⚡ Добавить: <span style="color: #22c55e; font-weight: bold;">+${result.boostHP} л.с.</span> <span style="color: #ffaa00;">(${result.boostPercent}%)</span></div>
+                    <div>⚖️ Вес: ${result.weakWeight} кг (остаётся без изменений)</div>
+                    <div style="margin-top: 8px; font-size: 12px; color: #aaa;">🎯 Соотношение мощность/вес станет ${(result.requiredHP / result.weakWeight * 1000).toFixed(0)} л.с./т</div>
+                </div>
+            </div>
+        `;
+    }
+    
+    calculateBtn.addEventListener('click', calculateAndDisplay);
+    weakSelect.addEventListener('change', calculateAndDisplay);
+    strongSelect.addEventListener('change', calculateAndDisplay);
+    
+    // Первый расчёт при загрузке
+    setTimeout(calculateAndDisplay, 100);
+}
+
+// Запускаем заполнение и настройку после загрузки DOM
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        populateCarSelects();
+        setupBoostCalculator();
+    });
+} else {
+    populateCarSelects();
+    setupBoostCalculator();
+}
+
+// Сворачивание блока баланса сил
+const balanceHeader = document.getElementById('balanceHeader');
+if (balanceHeader) {
+    balanceHeader.addEventListener('click', () => {
+        const content = document.getElementById('balanceContent');
+        const icon = document.getElementById('balanceToggleIcon');
+        if (content.classList.contains('collapsed')) {
+            content.classList.remove('collapsed');
+            icon.innerHTML = '▼';
+        } else {
+            content.classList.add('collapsed');
+            icon.innerHTML = '▶';
+        }
+    });
+}
+</script>
     
     <!-- Блок подбора схожих авто (раскрывающийся) -->
     <div class="similar-cars-container" id="similarContainer">
