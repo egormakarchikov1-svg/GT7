@@ -894,6 +894,142 @@
 <body>
 
 <div class="container">
+
+    <!-- Блок телеметрии SimHub -->
+<div class="settings-container" id="simhubContainer" style="display: none;">
+    <div class="settings-header-clickable" id="simhubHeader">
+        <div style="width:30px"></div>
+        <div class="settings-title">📡 ТЕЛЕМЕТРИЯ GT7 <span>🎮</span></div>
+        <div class="toggle-icon" id="simhubToggleIcon">▼</div>
+    </div>
+    <div class="settings-content" id="simhubContent">
+        <div class="settings-items">
+            <div class="settings-item">
+                <div class="settings-label">🏎️ СКОРОСТЬ</div>
+                <div class="settings-value" id="simhubSpeed">0 км/ч</div>
+            </div>
+            <div class="settings-item">
+                <div class="settings-label">🔄 ОБОРОТЫ</div>
+                <div class="settings-value" id="simhubRPM">0</div>
+            </div>
+            <div class="settings-item">
+                <div class="settings-label">⚙️ ПЕРЕДАЧА</div>
+                <div class="settings-value" id="simhubGear">N</div>
+            </div>
+            <div class="settings-item">
+                <div class="settings-label">🏁 ВРЕМЯ КРУГА</div>
+                <div class="settings-value" id="simhubLapTime">0:00.000</div>
+            </div>
+            <div class="settings-item">
+                <div class="settings-label">⛽ ТОПЛИВО</div>
+                <div class="settings-value" id="simhubFuel">0%</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Подключение к SimHub WebSocket
+let simhubWs = null;
+let simhubReconnectTimer = null;
+
+function connectSimHub() {
+    if (simhubWs && simhubWs.readyState === WebSocket.OPEN) return;
+    
+    try {
+        simhubWs = new WebSocket('ws://localhost:8888/');
+        
+        simhubWs.onopen = () => {
+            console.log('✅ SimHub подключен');
+            document.getElementById('simhubContainer').style.display = 'block';
+            
+            // Подписываемся на данные
+            simhubWs.send(JSON.stringify({ type: "subscribe", topics: ["live"] }));
+        };
+        
+        simhubWs.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                updateTelemetry(data);
+            } catch(e) {
+                console.log('Ошибка парсинга:', e);
+            }
+        };
+        
+        simhubWs.onerror = (error) => {
+            console.log('SimHub ошибка:', error);
+            document.getElementById('simhubContainer').style.display = 'none';
+        };
+        
+        simhubWs.onclose = () => {
+            console.log('SimHub отключен, переподключение через 5 сек...');
+            document.getElementById('simhubContainer').style.display = 'none';
+            if (simhubReconnectTimer) clearTimeout(simhubReconnectTimer);
+            simhubReconnectTimer = setTimeout(connectSimHub, 5000);
+        };
+        
+    } catch(e) {
+        console.log('Ошибка подключения:', e);
+        if (simhubReconnectTimer) clearTimeout(simhubReconnectTimer);
+        simhubReconnectTimer = setTimeout(connectSimHub, 10000);
+    }
+}
+
+function updateTelemetry(data) {
+    // Обновляем отображение
+    if (data.Speed !== undefined) {
+        document.getElementById('simhubSpeed').innerHTML = `${Math.round(data.Speed)} км/ч`;
+    }
+    if (data.RPM !== undefined) {
+        document.getElementById('simhubRPM').innerHTML = `${Math.round(data.RPM)} об/мин`;
+    }
+    if (data.Gear !== undefined) {
+        const gearDisplay = data.Gear === 0 ? 'R' : data.Gear === 1 ? 'N' : data.Gear;
+        document.getElementById('simhubGear').innerHTML = gearDisplay;
+    }
+    if (data.LapTime !== undefined && data.LapTime > 0) {
+        const lapTime = formatLapTime(data.LapTime);
+        document.getElementById('simhubLapTime').innerHTML = lapTime;
+    }
+    if (data.FuelRemaining !== undefined) {
+        document.getElementById('simhubFuel').innerHTML = `${Math.round(data.FuelRemaining)}%`;
+    }
+    
+    // Автоматически обновляем машину и трассу в основном приложении
+    if (data.CarName && data.CarName !== '') {
+        document.getElementById('carValue').textContent = data.CarName;
+    }
+    if (data.TrackName && data.TrackName !== '') {
+        document.getElementById('trackValue').textContent = data.TrackName;
+    }
+}
+
+function formatLapTime(seconds) {
+    if (!seconds || seconds === 0) return '0:00.000';
+    const mins = Math.floor(seconds / 60);
+    const secs = (seconds % 60).toFixed(3);
+    return `${mins}:${secs.toString().padStart(6, '0')}`;
+}
+
+// Запускаем подключение
+setTimeout(connectSimHub, 2000);
+
+// Сворачивание блока телеметрии
+const simhubHeader = document.getElementById('simhubHeader');
+if (simhubHeader) {
+    simhubHeader.addEventListener('click', () => {
+        const content = document.getElementById('simhubContent');
+        const icon = document.getElementById('simhubToggleIcon');
+        if (content.classList.contains('collapsed')) {
+            content.classList.remove('collapsed');
+            icon.innerHTML = '▼';
+        } else {
+            content.classList.add('collapsed');
+            icon.innerHTML = '▶';
+        }
+    });
+}
+</script>
     <!-- Блок МАШИНА и ТРАССА (сворачиваемый вместе) -->
     <div class="cars-track-container" id="carsTrackContainer">
         <div class="cars-track-header-clickable" id="carsTrackHeader">
