@@ -939,6 +939,10 @@
                     <div class="param-value" id="trackValue">—</div>
                 </div>
             </div>
+
+            <div style="display: flex; justify-content: center; gap: 10px; margin: 10px 0; flex-wrap: wrap;">
+    <button class="lock-btn" data-param="category">🏆 Категория</button>
+</div>
         </div>
     </div>
     
@@ -1796,7 +1800,7 @@ const times = [
 let currentRefCar = null;
 let currentTrack = null;
 let currentTrackData = null;  // ← НОВАЯ ПЕРЕМЕННАЯ ДЛЯ ХРАНЕНИЯ ТЕКУЩИХ УСЛОВИЙ ТРАССЫ
-const locks = { car: false, track: false, weather: false, time: false, tires: false, fuel: false };
+const locks = { car: false, track: false, weather: false, time: false, tires: false, fuel: false, category: false };
 let settingsExpanded = true;
 let similarExpanded = true;
 let carsTrackExpanded = true;
@@ -2376,6 +2380,13 @@ window.generateRandomRace = async function() {
         if (!locks.fuel && synced.fuel_value) {
             document.getElementById('fuelValue').textContent = synced.fuel_value;
         }
+
+        if (!locks.category && synced.category_name) {
+    const category = categories.find(c => c.name === synced.category_name);
+    if (category) {
+        document.getElementById('categoryValue').innerHTML = `${category.icon} ${category.name} (${category.description})`;
+    }
+}
         
         // Баннер админского режима
         let adminBanner = document.getElementById('adminModeBanner');
