@@ -2194,7 +2194,227 @@ function updateTrack() {
     if (!locks.time) updateTimeByTrack(trackData);
 }
 
-// ========== ФУНКЦИЯ init ==========
+// ============================================
+// СИНХРОНИЗАЦИЯ ЧЕРЕЗ GOOGLE SHEETS
+// ============================================
+const GOOGLE_SHEETS_ID = '1YAJUPE73Nxwe1oEF1xZBHkGj_zg_uGdW7VkTyHtEOOE';
+let syncedModeActive = false;
+let syncedComboData = null;
+
+// Функция загрузки данных из Google Sheets
+async function loadSyncedCombo() {
+    try {
+        const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?tqx=out:json`;
+        const response = await fetch(url);
+        const text = await response.text();
+        
+        const jsonStart = text.indexOf('(');
+        const jsonEnd = text.lastIndexOf(')');
+        const jsonStr = text.substring(jsonStart + 1, jsonEnd);
+        const data = JSON.parse(jsonStr);
+        
+        const tableData = {};
+        for (let i = 0; i < data.table.rows.length; i++) {
+            const row = data.table.rows[i];
+            const key = row.c[0]?.v;
+            const value = row.c[1]?.v;
+            if (key && value !== undefined && value !== null) {
+                tableData[key] = value;
+            }
+        }
+        
+        if (tableData.active === 'TRUE' || tableData.active === true) {
+            if (tableData.expires) {
+                const expiresDate = new Date(tableData.expires);
+                const now = new Date();
+                if (expiresDate > now) {
+                    syncedModeActive = true;
+                    syncedComboData = tableData;
+                    console.log('✅ Админская комбинация активна:', tableData.car_name);
+                    return tableData;
+                } else {
+                    console.log('⏰ Админская комбинация истекла');
+                }
+            } else {
+                syncedModeActive = true;
+                syncedComboData = tableData;
+                return tableData;
+            }
+        }
+        
+        syncedModeActive = false;
+        syncedComboData = null;
+        return null;
+    } catch(e) {
+        console.error('Ошибка загрузки синхронизации:', e);
+        syncedModeActive = false;
+        syncedComboData = null;
+        return null;
+    }
+}
+
+function findCarByName(carName) {
+    return carsDatabase.find(car => car.name === carName) || null;
+}
+
+function findTrackByName(trackName) {
+    return tracksData.find(track => track.name === trackName) || null;
+}
+
+function findWeatherByName(weatherName) {
+    return weathers.find(w => w.name === weatherName) || null;
+}
+
+function findTimeByName(timeName) {
+    return times.find(t => t.name === timeName) || null;
+}
+
+// Главная функция генерации с синхронизацией
+window.generateRandomRace = async function() {
+    const synced = await loadSyncedCombo();
+    
+    if (syncedModeActive && synced) {
+        // === АДМИНСКАЯ КОМБИНАЦИЯ ===
+        
+        // 1. Машина и похожие авто
+        if (!locks.car && synced.car_name) {
+            const car = findCarByName(synced.car_name);
+            if (car) {
+                document.getElementById('carValue').textContent = car.name;
+                document.getElementById('carIcon').src = car.icon;
+                document.getElementById('carIcon').style.display = "block";
+                
+                // Загружаем похожие машины из таблицы
+                const similarCarsList = [];
+                for (let i = 1; i <= 5; i++) {
+                    const similarCarName = synced[`similar_car_${i}`];
+                    if (similarCarName) {
+                        const similarCar = findCarByName(similarCarName);
+                        if (similarCar) {
+                            const similarity = calculateSimilarity(car, similarCar);
+                            similarCarsList.push({ ...similarCar, similarity });
+                        }
+                    }
+                }
+                
+                if (similarCarsList.length === 5) {
+                    currentRefCar = car;
+                    document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${car.name}</strong><br>⭐ Рейтинг: ${car.rating.toFixed(0)} | 🔧 ${car.hp} л.с. | ⚙️ ${typeof car.torque === 'number' ? car.torque : '?'} Н·м | ⚖️ ${car.weight} кг | ⚡ ${(car.powerToWeight * 1000).toFixed(1)} л.с./т`;
+                    
+                    document.getElementById('similarList').innerHTML = similarCarsList.map((similarCar, index) => `
+                        <li onclick="selectCar('${similarCar.name.replace(/'/g, "\\'")}')">
+                            <span class="car-name">${index + 1}. ${similarCar.name}</span>
+                            <div class="car-stats">
+                                <span>⭐ ${similarCar.rating.toFixed(0)}</span>
+                                <span>🔧 ${similarCar.hp} л.с.</span>
+                                <span>⚙️ ${typeof similarCar.torque === 'number' ? similarCar.torque : '?'}</span>
+                                <span>⚖️ ${similarCar.weight} кг</span>
+                                <span>⚡ ${(similarCar.powerToWeight * 1000).toFixed(1)}</span>
+                            </div>
+                            <span class="similarity-badge">${similarCar.similarity.toFixed(1)}%</span>
+                        </li>
+                    `).join('');
+                } else {
+                    if (currentRefCar !== car) displaySimilarCars(car);
+                }
+            }
+        }
+        
+        // 2. Трасса
+        if (!locks.track && synced.track_name) {
+            const trackData = findTrackByName(synced.track_name);
+            if (trackData) {
+                currentTrack = trackData.name;
+                currentTrackData = trackData;
+                document.getElementById('trackValue').textContent = trackData.name;
+                const iconUrl = getTrackIcon(trackData.name);
+                const trackIcon = document.getElementById('trackIcon');
+                if (iconUrl && iconUrl !== "track_icons/placeholder.png") {
+                    trackIcon.src = iconUrl;
+                    trackIcon.style.display = "block";
+                } else {
+                    trackIcon.style.display = "none";
+                }
+            }
+        }
+        
+        // 3. Погода
+        if (!locks.weather && synced.weather_name) {
+            const weather = findWeatherByName(synced.weather_name);
+            if (weather) {
+                document.getElementById('weatherValue').innerHTML = `${weather.icon} ${weather.name}`;
+            }
+        }
+        
+        // 4. Время
+        if (!locks.time && synced.time_name) {
+            const time = findTimeByName(synced.time_name);
+            if (time) {
+                const randomX = Math.floor(Math.random() * 30) + 1;
+                const formattedX = `x${randomX}`;
+                if (window.innerWidth <= 480) {
+                    document.getElementById('timeValue').innerHTML = `
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <span class="result-icon">${time.icon}</span>
+                                <span>${time.name}</span>
+                            </div>
+                            <span class="time-x-badge" style="font-size: 14px;">${formattedX}</span>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('timeValue').innerHTML = `${time.icon} ${time.name} <span class="time-x-badge">${formattedX}</span>`;
+                }
+            }
+        }
+        
+        // 5. Шины и топливо
+        if (!locks.tires && synced.tires_value) {
+            document.getElementById('tiresValue').textContent = synced.tires_value;
+        }
+        
+        if (!locks.fuel && synced.fuel_value) {
+            document.getElementById('fuelValue').textContent = synced.fuel_value;
+        }
+        
+        // Баннер админского режима
+        let adminBanner = document.getElementById('adminModeBanner');
+        if (!adminBanner) {
+            adminBanner = document.createElement('div');
+            adminBanner.id = 'adminModeBanner';
+            adminBanner.style.cssText = `
+                background: linear-gradient(135deg, #ff4d4d20, #ff4d4d05);
+                border: 1px solid #ff4d4d;
+                border-radius: 12px;
+                padding: 8px 12px;
+                margin: 10px 0;
+                text-align: center;
+                font-size: 12px;
+                color: #ff9999;
+                backdrop-filter: blur(4px);
+            `;
+            adminBanner.innerHTML = '👑 СПЕЦИАЛЬНАЯ КОМБИНАЦИЯ ОТ АДМИНИСТРАТОРА 👑';
+            const container = document.querySelector('.container');
+            const firstChild = container.firstChild;
+            container.insertBefore(adminBanner, firstChild);
+        }
+        
+        updateCategory();
+        return;
+    }
+    
+    // === ОБЫЧНЫЙ РЕЖИМ (нет админской комбинации) ===
+    const adminBanner = document.getElementById('adminModeBanner');
+    if (adminBanner) adminBanner.remove();
+    
+    if (!locks.car) updateCarAndSync();
+    if (!locks.track) updateTrack();
+    if (!locks.weather) updateWeather();
+    if (!locks.time) updateTime();
+    if (!locks.tires) updateTires();
+    if (!locks.fuel) updateFuel();
+    updateCategory();
+};
 function init() {
     loadShownCars();
     loadShownTracks();
@@ -2206,7 +2426,7 @@ function init() {
     document.getElementById('similarHeader').addEventListener('click', toggleSimilar);
     document.getElementById('carsTrackHeader').addEventListener('click', toggleCarsTrack);
     document.getElementById('categoryHeader').addEventListener('click', toggleCategory);
-    document.getElementById('randomBtn').addEventListener('click', () => updateUnlockedOnly());
+    document.getElementById('randomBtn').addEventListener('click', () => window.generateRandomRace());
     document.getElementById('refreshSimilarBtn').addEventListener('click', () => refreshSimilarCars());
     
     // Кнопка сброса истории машин
@@ -2236,7 +2456,8 @@ function init() {
     updateCategory();
 }
 
-init();
+// Запускаем с синхронизацией
+window.generateRandomRace();
 
 </script>
 </body>
