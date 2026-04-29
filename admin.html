@@ -148,6 +148,7 @@
             <button class="lock-btn unlocked" data-param="time">⏰ Время</button>
             <button class="lock-btn unlocked" data-param="tires">🛞 Шины</button>
             <button class="lock-btn unlocked" data-param="fuel">⛽ Топливо</button>
+            <button class="lock-btn unlocked" data-param="category">🏆 Категория</button>
         </div>
     </div>
     
@@ -984,6 +985,7 @@ const locks = {
     time: false,
     tires: false,
     fuel: false
+    category: false
 };
 
 function toggleLock(param) {
@@ -1041,6 +1043,10 @@ async function generateAndSave() {
         // Шины и топливо
         if (!locks.tires) newCombo.tires_value = getRandomXValue();
         if (!locks.fuel) newCombo.fuel_value = getRandomXValue();
+        if (!locks.category) {
+    const category = getRandomItem(categories);
+    newCombo.category_name = category.name;
+            }
         
         // Показываем превью
         document.getElementById('preview').innerHTML = `
@@ -1050,6 +1056,7 @@ async function generateAndSave() {
             ⏰ ${newCombo.time_name || '—'}<br>
             🛞 ${newCombo.tires_value || '—'}<br>
             ⛽ ${newCombo.fuel_value || '—'}<br>
+            🏆 ${newCombo.category_name || '—'}<br>
             <hr>
             📋 Похожие машины:<br>
             ${newCombo.similar_car_1 ? `1️⃣ ${newCombo.similar_car_1}<br>` : ''}
@@ -1114,6 +1121,7 @@ async function loadCurrentCombo() {
                 ⏰ ${tableData.time_name || '—'}<br>
                 🛞 ${tableData.tires_value || '—'}<br>
                 ⛽ ${tableData.fuel_value || '—'}<br>
+                🏆 ${tableData.category_name || '—'}<br>
                 <hr>
                 📋 Похожие машины:<br>
                 ${tableData.similar_car_1 ? `1️⃣ ${tableData.similar_car_1}<br>` : ''}
