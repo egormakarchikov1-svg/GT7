@@ -3,59 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <title>GT7 Random - Админ панель</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
         body {
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: #eee;
             min-height: 100vh;
-            padding: 20px;
+            padding: 16px;
         }
         .container {
-            max-width: 800px;
+            max-width: 700px;
             margin: 0 auto;
             background: rgba(0,0,0,0.5);
             backdrop-filter: blur(10px);
-            border-radius: 24px;
-            padding: 20px;
+            border-radius: 28px;
+            padding: 20px 16px;
             border: 1px solid rgba(255,77,77,0.3);
         }
         h1 {
             text-align: center;
             color: #ff4d4d;
-            margin-bottom: 20px;
+            margin-bottom: 8px;
             font-size: 24px;
+        }
+        .sub {
+            text-align: center;
+            font-size: 13px;
+            color: #aaa;
+            margin-bottom: 20px;
         }
         .lock-panel {
             background: rgba(255,255,255,0.05);
-            border-radius: 16px;
-            padding: 15px;
+            border-radius: 20px;
+            padding: 16px;
             margin-bottom: 20px;
         }
         .lock-panel h3 {
             color: #ff4d4d;
-            margin-bottom: 10px;
-            font-size: 16px;
+            margin-bottom: 12px;
+            font-size: 15px;
+            text-align: center;
         }
         .lock-buttons {
             display: flex;
             flex-wrap: wrap;
+            justify-content: center;
             gap: 10px;
         }
         .lock-btn {
             background: rgba(255,255,255,0.1);
             border: 1px solid rgba(255,255,255,0.2);
-            padding: 8px 16px;
-            border-radius: 30px;
+            padding: 8px 14px;
+            border-radius: 40px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
+            font-weight: 500;
             transition: all 0.2s;
+            color: white;
         }
         .lock-btn.locked {
             background: #ef4444;
@@ -79,15 +90,15 @@
             transition: transform 0.2s;
         }
         .generate-btn:active {
-            transform: scale(0.98);
+            transform: scale(0.97);
         }
         .status {
             background: rgba(0,0,0,0.5);
-            border-radius: 12px;
+            border-radius: 16px;
             padding: 12px;
             margin-top: 15px;
             text-align: center;
-            font-size: 14px;
+            font-size: 13px;
         }
         .status.success {
             background: rgba(34,197,94,0.2);
@@ -99,28 +110,34 @@
         }
         .preview {
             background: rgba(255,255,255,0.05);
-            border-radius: 16px;
-            padding: 15px;
+            border-radius: 20px;
+            padding: 16px;
             margin: 15px 0;
             font-size: 14px;
             line-height: 1.6;
         }
         hr {
             border-color: rgba(255,255,255,0.1);
-            margin: 15px 0;
+            margin: 12px 0;
         }
         .note {
             text-align: center;
-            font-size: 12px;
+            font-size: 11px;
             color: #888;
             margin-top: 20px;
+        }
+        .refresh-btn {
+            background: #3b82f6;
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 13px;
         }
     </style>
 </head>
 <body>
 <div class="container">
     <h1>🎮 GT7 Random - Админ панель</h1>
-    <p style="text-align: center; margin-bottom: 20px;">Нажмите кнопку ниже, чтобы создать новую комбинацию для ВСЕХ пользователей</p>
+    <div class="sub">👑 Только для администратора</div>
     
     <div class="lock-panel">
         <h3>🔒 Заблокировать параметры (оставить текущие)</h3>
@@ -139,11 +156,12 @@
     </div>
     
     <button class="generate-btn" id="generateBtn">🎲 СЛУЧАЙНАЯ ГОНКА</button>
+    <button class="generate-btn refresh-btn" id="refreshBtn">🔄 ОБНОВИТЬ ТЕКУЩУЮ КОМБИНАЦИЮ</button>
     
     <div id="status" class="status"></div>
     <div class="note">
-        ⚡ Все изменения применяются мгновенно для всех пользователей.<br>
-        🔄 Новая комбинация будет активна 24 часа.
+        ⚡ Все изменения применяются мгновенно для всех пользователей<br>
+        🔄 Новая комбинация будет активна 24 часа
     </div>
 </div>
 
@@ -151,34 +169,14 @@
 // ============================================
 // НАСТРОЙКИ
 // ============================================
-// ⚠️ ЗАМЕНИТЕ ЭТУ ССЫЛКУ НА ВАШУ ИЗ APPS SCRIPT ⚠️
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyjkh4s1jQGK8_qRTCxkYrHgMcXDoOC0ajfhIrDbxF2EAMDNNkFnAoN4AJyFS2DcxlQuQ/exec';
-
-// Состояние блокировок
-const locks = {
-    car: false,
-    track: false,
-    weather: false,
-    time: false,
-    tires: false,
-    fuel: false
-};
-
-// Глобальные переменные для хранения текущей комбинации
-let currentCombo = null;
+const GOOGLE_SHEETS_ID = '1YAJUPE73Nxwe1oEF1xZBHkGj_zg_uGdW7VkTyHtEOOE';
 
 // ============================================
-// ФУНКЦИИ (копия базы машин и трасс из index.html)
+// ⚠️ СЮДА ВСТАВЬТЕ ВАШ МАССИВ carsDatabase ИЗ index.html
 // ============================================
-// ⚠️ СКОПИРУЙТЕ СЮДА МАССИВЫ carsDatabase, tracksData, weathers, times 
-// И ФУНКЦИИ getRandomItem, getRandomXValue, calculateSimilarity И Т.Д.
-// ИЗ ВАШЕГО index.html (всё что нужно для генерации)
-
-// Для краткости я показываю заглушки, но вы скопируете из index.html:
-
-// Пример (скопируйте реальные массивы из вашего index.html):
 const carsDatabase = [
-  { name: "Abarth 500 '09", rating: 415.44, category: "", powerToWeight: 0.13, hp: 135, torque: 180.2, weight: 1035, icon: "car_icons/car1973.png" },
+    { name: "Abarth 500 '09", rating: 415.44, category: "", powerToWeight: 0.13, hp: 135, torque: 180.2, weight: 1035, icon: "car_icons/car1973.png" },
     { name: "Abarth 595 SS '70", rating: 175.22, category: "", powerToWeight: 0.06, hp: 30, torque: 44, weight: 470, icon: "car_icons/car3438.png" },
     { name: "Abarth 1500 Biposto Bertone B.A.T 1 '52", rating: 262.24, category: "", powerToWeight: 0.08, hp: 75, torque: 99.8, weight: 870, icon: "car_icons/car1932.png" },
     { name: "AFEELA Prototype 2024", rating: 536.95, category: "", powerToWeight: 0.21, hp: 489, torque: "-", weight: 2350, icon: "car_icons/car3546.png" },
@@ -740,10 +738,12 @@ const carsDatabase = [
     { name: "Xiaomi SU7 Ultra '25", rating: 703.90, category: "", powerToWeight: 0.65, hp: 1548, torque: "-", weight: 2360, icon: "car_icons/car3599.png" },
     { name: "Zagato IsoRivolta VGT", rating: 676.87, category: "", powerToWeight: 0.49, hp: 567, torque: 579.9, weight: 1150, icon: "car_icons/car2122.png" },
     { name: "ŠKODA VGT", rating: 851.04, category: "", powerToWeight: 0.82, hp: 1087, torque: "-", weight: 1300, icon: "car_icons/car3542.png" }
+];
 
-  ];
+// ============================================
+// ⚠️ СЮДА ВСТАВЬТЕ ВАШ МАССИВ tracksData ИЗ index.html
+// ============================================
 const tracksData = [
-  const tracksData = [
     { name: "Франция Alsace - Деревня", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
     { name: "Франция Alsace - Деревня (обратн.)", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
     { name: "Франция Alsace - тестовая трасса", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
@@ -837,52 +837,63 @@ const tracksData = [
     { name: "США Willow Springs International Raceway: Streets of Willow Springs", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
     { name: "США Willow Springs International Raceway: Streets of Willow Springs (обратн.)", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
     { name: "ОАЭ Yas Marina Circuit", weather: ["dry"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] }
-
 ];
+
+// ============================================
+// МАССИВЫ ПОГОДЫ И ВРЕМЕНИ (скопируйте из index.html)
+// ============================================
 const weathers = [
-   { name: "S01 (Ясно, безоблачно)", code: "S01", icon: "☀️" },
-    { name: "S02 (Ясно, малооблачно)", code: "S02", icon: "🌤️" },
-    { name: "S03 (Ясно, переменная облачность)", code: "S03", icon: "⛅" },
-    { name: "S04 (Ясно, легкая дымка)", code: "S04", icon: "🌤️" },
-    { name: "S05 (Солнечно, местами облачно)", code: "S05", icon: "⛅" },
-    { name: "S06 (Солнечно, высокая влажность)", code: "S06", icon: "🌤️" },
-    { name: "S07 (Солнечно, легкий туман)", code: "S07", icon: "🌫️" },
-    { name: "S08 (Солнечно, густая облачность)", code: "S08", icon: "☁️" },
-    { name: "S09 (Солнечно, высокая облачность)", code: "S09", icon: "☁️" },
-    { name: "S10 (Солнечно, дымка от тумана)", code: "S10", icon: "🌫️" },
-    { name: "S11 (Солнечно, горный туман)", code: "S11", icon: "🌫️" },
-    { name: "S12 (Солнечно, муссонные облака)", code: "S12", icon: "☁️" },
-    { name: "S13 (Солнечно, редкие муссонные облака)", code: "S13", icon: "⛅" },
-    { name: "S14 (Солнечно, плотные муссонные облака)", code: "S14", icon: "☁️" },
-    { name: "S15 (Солнечно, легкая дымка)", code: "S15", icon: "🌤️" },
-    { name: "S16 (Солнечно, дымка и облака)", code: "S16", icon: "⛅" },
-    { name: "S17 (Солнечно, высокая облачность)", code: "S17", icon: "☁️" },
-    { name: "S18 (Солнечно, плотная высокая облачность)", code: "S18", icon: "☁️" },
-    { name: "C01 (Пасмурно, но ярко)", code: "C01", icon: "☁️" },
-    { name: "C02 (Пасмурно, тепло)", code: "C02", icon: "☁️" },
-    { name: "C03 (Пасмурно, темно)", code: "C03", icon: "☁️" },
-    { name: "C04 (Пасмурно, прохладно)", code: "C04", icon: "☁️" },
-    { name: "C05 (Пасмурно, плотные облака)", code: "C05", icon: "☁️" },
-    { name: "C06 (Пасмурно, тяжелые облака)", code: "C06", icon: "☁️" },
-    { name: "R01 (Мелкий дождь, морось)", code: "R01", icon: "🌦️" },
-    { name: "R02 (Умеренный дождь)", code: "R02", icon: "🌧️" },
-    { name: "R03 (Сильный дождь, ливень)", code: "R03", icon: "🌧️💧" },
-    { name: "R04 (Проливной дождь, гроза)", code: "R04", icon: "⛈️" },
-    { name: "R05 (Штормовой дождь, сильный ветер)", code: "R05", icon: "🌊🌧️" },
-    { name: "R06 (Тропический ливень)", code: "R06", icon: "🌧️💧💧" },
-    { name: "R07 (Шквалистый дождь)", code: "R07", icon: "💨🌧️" },
-    { name: "R08 (Экстремальный ливень, нулевая видимость)", code: "R08", icon: "🌊💧🌧️" }
-
+    { name: "S01 (Ясно, безоблачно)", icon: "☀️" },
+    { name: "S02 (Ясно, малооблачно)", icon: "🌤️" },
+    { name: "S03 (Ясно, переменная облачность)", icon: "⛅" },
+    { name: "S04 (Ясно, легкая дымка)", icon: "🌤️" },
+    { name: "S05 (Солнечно, местами облачно)", icon: "⛅" },
+    { name: "S06 (Солнечно, высокая влажность)", icon: "🌤️" },
+    { name: "S07 (Солнечно, легкий туман)", icon: "🌫️" },
+    { name: "S08 (Солнечно, густая облачность)", icon: "☁️" },
+    { name: "S09 (Солнечно, высокая облачность)", icon: "☁️" },
+    { name: "S10 (Солнечно, дымка от тумана)", icon: "🌫️" },
+    { name: "S11 (Солнечно, горный туман)", icon: "🌫️" },
+    { name: "S12 (Солнечно, муссонные облака)", icon: "☁️" },
+    { name: "S13 (Солнечно, редкие муссонные облака)", icon: "⛅" },
+    { name: "S14 (Солнечно, плотные муссонные облака)", icon: "☁️" },
+    { name: "S15 (Солнечно, легкая дымка)", icon: "🌤️" },
+    { name: "S16 (Солнечно, дымка и облака)", icon: "⛅" },
+    { name: "S17 (Солнечно, высокая облачность)", icon: "☁️" },
+    { name: "S18 (Солнечно, плотная высокая облачность)", icon: "☁️" },
+    { name: "C01 (Пасмурно, но ярко)", icon: "☁️" },
+    { name: "C02 (Пасмурно, тепло)", icon: "☁️" },
+    { name: "C03 (Пасмурно, темно)", icon: "☁️" },
+    { name: "C04 (Пасмурно, прохладно)", icon: "☁️" },
+    { name: "C05 (Пасмурно, плотные облака)", icon: "☁️" },
+    { name: "C06 (Пасмурно, тяжелые облака)", icon: "☁️" },
+    { name: "R01 (Мелкий дождь, морось)", icon: "🌦️" },
+    { name: "R02 (Умеренный дождь)", icon: "🌧️" },
+    { name: "R03 (Сильный дождь, ливень)", icon: "🌧️💧" },
+    { name: "R04 (Проливной дождь, гроза)", icon: "⛈️" },
+    { name: "R05 (Штормовой дождь, сильный ветер)", icon: "🌊🌧️" },
+    { name: "R06 (Тропический ливень)", icon: "🌧️💧💧" },
+    { name: "R07 (Шквалистый дождь)", icon: "💨🌧️" },
+    { name: "R08 (Экстремальный ливень, нулевая видимость)", icon: "🌊💧🌧️" }
 ];
 
-  Сonst times = [
-    { name: "Заря", icon: "🌅" }, { name: "Рассвет", icon: "🌅" }, { name: "Восход", icon: "🌄" },
-    { name: "Раннее утро", icon: "🌤️" }, { name: "Позднее утро", icon: "☀️" }, { name: "День", icon: "🔆" },
-    { name: "Вечер", icon: "🌆" }, { name: "Закат", icon: "🌇" }, { name: "Сумерки", icon: "🌙" },
-    { name: "Ночь", icon: "🌚" }, { name: "Полночь", icon: "🌕" }
+const times = [
+    { name: "Заря", icon: "🌅" },
+    { name: "Рассвет", icon: "🌅" },
+    { name: "Восход", icon: "🌄" },
+    { name: "Раннее утро", icon: "🌤️" },
+    { name: "Позднее утро", icon: "☀️" },
+    { name: "День", icon: "🔆" },
+    { name: "Вечер", icon: "🌆" },
+    { name: "Закат", icon: "🌇" },
+    { name: "Сумерки", icon: "🌙" },
+    { name: "Ночь", icon: "🌚" },
+    { name: "Полночь", icon: "🌕" }
+];
 
-  ];
-
+// ============================================
+// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+// ============================================
 function getRandomItem(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
 }
@@ -891,6 +902,9 @@ function getRandomXValue() {
     return `X${Math.floor(Math.random() * 20) + 1}`;
 }
 
+// ============================================
+// ФУНКЦИЯ РАСЧЁТА СХОЖЕСТИ (скопируйте из index.html)
+// ============================================
 function calculateSimilarity(car1, car2) {
     const maxRating = 1500, maxHp = 2000, maxTorque = 2000, maxWeight = 3000, maxPtw = 2.5;
     const ratingDiff = Math.abs(car1.rating - car2.rating) / maxRating;
@@ -904,12 +918,30 @@ function calculateSimilarity(car1, car2) {
     return Math.max(0, Math.min(100, (1 - totalDiff) * 100));
 }
 
+// ============================================
+// ПОИСК ПОХОЖИХ МАШИН
+// ============================================
 function findSimilarCars(referenceCar, count = 5, randomize = true) {
-    // Скопируйте функцию findSimilarCars из index.html
-    return [];
+    let carsWithSimilarity = carsDatabase.filter(car => car.name !== referenceCar.name).map(car => ({ 
+        ...car, 
+        similarity: calculateSimilarity(referenceCar, car) 
+    })).sort((a, b) => b.similarity - a.similarity);
+    
+    const topSimilar = carsWithSimilarity.slice(0, 15);
+    
+    if (randomize && topSimilar.length > count) {
+        for (let i = topSimilar.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [topSimilar[i], topSimilar[j]] = [topSimilar[j], topSimilar[i]];
+        }
+        return topSimilar.slice(0, count);
+    }
+    return topSimilar.slice(0, count);
 }
 
-// История машин (чтобы не повторялись)
+// ============================================
+// ИСТОРИЯ МАШИН (исключение повторов)
+// ============================================
 let shownCars = [];
 
 function getRandomCarWithoutRepeat() {
@@ -920,9 +952,14 @@ function getRandomCarWithoutRepeat() {
     }
     const randomCar = getRandomItem(availableCars);
     shownCars.push(randomCar.name);
+    // Оставляем только последние 50 машин в истории
+    if (shownCars.length > 50) shownCars.shift();
     return randomCar;
 }
 
+// ============================================
+// ИСТОРИЯ ТРАСС (исключение повторов)
+// ============================================
 let shownTracks = [];
 
 function getRandomTrackWithoutRepeat() {
@@ -933,67 +970,77 @@ function getRandomTrackWithoutRepeat() {
     }
     const randomTrack = getRandomItem(availableTracks);
     shownTracks.push(randomTrack.name);
+    if (shownTracks.length > 30) shownTracks.shift();
     return randomTrack;
 }
 
 // ============================================
-// ИНТЕРФЕЙС
+// СОСТОЯНИЕ БЛОКИРОВОК
 // ============================================
+const locks = {
+    car: false,
+    track: false,
+    weather: false,
+    time: false,
+    tires: false,
+    fuel: false
+};
+
 function toggleLock(param) {
     locks[param] = !locks[param];
     const btn = document.querySelector(`.lock-btn[data-param="${param}"]`);
     if (locks[param]) {
         btn.classList.remove('unlocked');
         btn.classList.add('locked');
-        btn.textContent = btn.textContent.replace(/[🔓🔒]/, '🔒');
+        btn.innerHTML = btn.innerHTML.replace('🔓', '🔒');
     } else {
         btn.classList.remove('locked');
         btn.classList.add('unlocked');
-        btn.textContent = btn.textContent.replace(/[🔓🔒]/, '🔓');
+        btn.innerHTML = btn.innerHTML.replace('🔒', '🔓');
     }
 }
 
+// ============================================
+// ГЕНЕРАЦИЯ И СОХРАНЕНИЕ КОМБИНАЦИИ
+// ============================================
 async function generateAndSave() {
-    // Показываем загрузку
     document.getElementById('status').innerHTML = '⏳ Генерация новой комбинации...';
     document.getElementById('status').className = 'status';
     
     try {
-        // 1. Генерируем новую комбинацию
         let newCombo = {};
         
+        // Машина и похожие
         if (!locks.car) {
             const car = getRandomCarWithoutRepeat();
             newCombo.car_name = car.name;
-            // Генерируем похожие машины
             const similar = findSimilarCars(car, 5, true);
             for (let i = 0; i < similar.length; i++) {
                 newCombo[`similar_car_${i+1}`] = similar[i].name;
             }
         }
         
+        // Трасса
         if (!locks.track) {
             const trackData = getRandomTrackWithoutRepeat();
             newCombo.track_name = trackData.name;
         }
         
+        // Погода
         if (!locks.weather) {
             const weather = getRandomItem(weathers);
             newCombo.weather_name = weather.name;
         }
         
+        // Время
         if (!locks.time) {
             const time = getRandomItem(times);
             newCombo.time_name = time.name;
         }
         
-        if (!locks.tires) {
-            newCombo.tires_value = getRandomXValue();
-        }
-        
-        if (!locks.fuel) {
-            newCombo.fuel_value = getRandomXValue();
-        }
+        // Шины и топливо
+        if (!locks.tires) newCombo.tires_value = getRandomXValue();
+        if (!locks.fuel) newCombo.fuel_value = getRandomXValue();
         
         // Показываем превью
         document.getElementById('preview').innerHTML = `
@@ -1012,7 +1059,7 @@ async function generateAndSave() {
             ${newCombo.similar_car_5 ? `5️⃣ ${newCombo.similar_car_5}` : ''}
         `;
         
-        // 2. Сохраняем в Google Sheets через Apps Script
+        // Отправляем в Google Sheets
         const response = await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
             mode: 'cors',
@@ -1030,27 +1077,18 @@ async function generateAndSave() {
         }
         
     } catch(e) {
-        document.getElementById('status').innerHTML = `❌ Ошибка: ${e.message}. Проверьте URL Apps Script.`;
+        document.getElementById('status').innerHTML = `❌ Ошибка: ${e.message}. Проверьте URL Apps Script и интернет.`;
         document.getElementById('status').className = 'status error';
         console.error(e);
     }
 }
 
 // ============================================
-// ИНИЦИАЛИЗАЦИЯ
+// ЗАГРУЗКА ТЕКУЩЕЙ КОМБИНАЦИИ ИЗ ТАБЛИЦЫ
 // ============================================
-document.getElementById('generateBtn').addEventListener('click', generateAndSave);
-document.querySelectorAll('.lock-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        toggleLock(btn.getAttribute('data-param'));
-    });
-});
-
-// Загружаем текущую комбинацию из таблицы (для отображения)
 async function loadCurrentCombo() {
     try {
-        const url = `https://docs.google.com/spreadsheets/d/1YAJUPE73Nxwe1oEF1xZBHkGj_zg_uGdW7VkTyHtEOOE/gviz/tq?tqx=out:json`;
+        const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?tqx=out:json`;
         const response = await fetch(url);
         const text = await response.text();
         const jsonStart = text.indexOf('(');
@@ -1090,6 +1128,19 @@ async function loadCurrentCombo() {
     }
 }
 
+// ============================================
+// ИНИЦИАЛИЗАЦИЯ
+// ============================================
+document.getElementById('generateBtn').addEventListener('click', generateAndSave);
+document.getElementById('refreshBtn').addEventListener('click', loadCurrentCombo);
+document.querySelectorAll('.lock-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleLock(btn.getAttribute('data-param'));
+    });
+});
+
+// Загружаем текущую комбинацию при старте
 loadCurrentCombo();
 </script>
 </body>
