@@ -1437,38 +1437,36 @@ async function loadCurrentCombo() {
             }
             
             // Категория
-            // Категория
-const category = categories.find(c => c.name === tableData.category_name);
-if (category) {
-    document.getElementById('categoryText').innerHTML = `${category.icon} ${category.name} (${category.description})`;
-}
+            const category = categories.find(c => c.name === tableData.category_name);
+            if (category) {
+                document.getElementById('categoryText').innerHTML = `${category.icon} ${category.name} (${category.description})`;
+            }
             
-            // Погода
             // Погода с эмодзи
-if (tableData.weather_name) {
-    const weatherObj = weathers.find(w => w.name === tableData.weather_name);
-    if (weatherObj) {
-        document.getElementById('weatherValue').innerHTML = `${weatherObj.icon} ${weatherObj.name}`;
-    } else {
-        document.getElementById('weatherValue').innerHTML = tableData.weather_name;
-    }
-}
+            if (tableData.weather_name) {
+                const weatherObj = weathers.find(w => w.name === tableData.weather_name);
+                if (weatherObj) {
+                    document.getElementById('weatherValue').innerHTML = `${weatherObj.icon} ${weatherObj.name}`;
+                } else {
+                    document.getElementById('weatherValue').innerHTML = tableData.weather_name;
+                }
+            }
             
-            // Время
-           // Время (с множителем)
-if (tableData.time_name) {
-    const timeObj = times.find(t => t.name === tableData.time_name);
-    const timeMultiplier = tableData.time_multiplier || 'X1';
-    if (timeObj) {
-        document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name} ${timeMultiplier}`;
-    } else {
-        document.getElementById('timeValue').innerHTML = `${tableData.time_name} ${timeMultiplier}`;
-    }
-}
+            // Время с эмодзи и множителем
+            if (tableData.time_name) {
+                const timeObj = times.find(t => t.name === tableData.time_name);
+                const timeMultiplier = tableData.time_multiplier || 'X1';
+                if (timeObj) {
+                    document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name} ${timeMultiplier}`;
+                } else {
+                    document.getElementById('timeValue').innerHTML = `${tableData.time_name} ${timeMultiplier}`;
+                }
+            }
             
-            // Шины и топливо
+            // Шины и топливо с красными кружками
             if (tableData.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${tableData.tires_value}</span>`;
-if (tableData.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${tableData.fuel_value}</span>`;
+            if (tableData.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${tableData.fuel_value}</span>`;
+        }
     } catch(e) {
         console.error('Ошибка загрузки комбинации:', e);
     }
@@ -1502,53 +1500,54 @@ async function generateAndSave() {
         }
         
         if (!locks.time) {
-    const time = getRandomItem(times);
-    newCombo.time_name = time.name;
-    newCombo.time_multiplier = getRandomXValue();  // ← ДОБАВИТЬ
-}
+            const time = getRandomItem(times);
+            newCombo.time_name = time.name;
+            newCombo.time_multiplier = getRandomXValue();
+        }
         
         if (!locks.tires) newCombo.tires_value = getRandomXValue();
         if (!locks.fuel) newCombo.fuel_value = getRandomXValue();
         
         if (!locks.category) {
-    const category = getRandomItem(categories);
-    newCombo.category_name = category.name;
-} else {
-    // Если заблокирована — оставляем текущую категорию из таблицы
-    const currentCategoryText = document.getElementById('categoryText').innerText;
-    const currentCategory = categories.find(c => currentCategoryText.includes(c.name));
-    if (currentCategory) {
-        newCombo.category_name = currentCategory.name;
-    }
-}
+            const category = getRandomItem(categories);
+            newCombo.category_name = category.name;
+        } else {
+            const currentCategoryText = document.getElementById('categoryText').innerText;
+            const currentCategory = categories.find(c => currentCategoryText.includes(c.name));
+            if (currentCategory) {
+                newCombo.category_name = currentCategory.name;
+            }
+        }
         
-                // Отображаем превью
+        // Отображаем превью
         document.getElementById('carValue').textContent = newCombo.car_name || '—';
         document.getElementById('trackValue').textContent = newCombo.track_name || '—';
+        
         const cat = categories.find(c => c.name === newCombo.category_name);
-if (cat) {
-    document.getElementById('categoryText').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
-}
+        if (cat) {
+            document.getElementById('categoryText').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
+        }
         
         if (newCombo.weather_name) {
-    const weatherObj = weathers.find(w => w.name === newCombo.weather_name);
-    if (weatherObj) {
-        document.getElementById('weatherValue').innerHTML = `${weatherObj.icon} ${weatherObj.name}`;
-    } else {
-        document.getElementById('weatherValue').innerHTML = newCombo.weather_name;
-    }
-}
+            const weatherObj = weathers.find(w => w.name === newCombo.weather_name);
+            if (weatherObj) {
+                document.getElementById('weatherValue').innerHTML = `${weatherObj.icon} ${weatherObj.name}`;
+            } else {
+                document.getElementById('weatherValue').innerHTML = newCombo.weather_name;
+            }
+        }
+        
         if (newCombo.time_name) {
-    const timeObj = times.find(t => t.name === newCombo.time_name);
-    if (timeObj) {
-        document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name} ${newCombo.time_multiplier || 'X1'}`;
-    } else {
-        document.getElementById('timeValue').innerHTML = `${newCombo.time_name} ${newCombo.time_multiplier || 'X1'}`;
-    }
-}
+            const timeObj = times.find(t => t.name === newCombo.time_name);
+            if (timeObj) {
+                document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name} ${newCombo.time_multiplier || 'X1'}`;
+            } else {
+                document.getElementById('timeValue').innerHTML = `${newCombo.time_name} ${newCombo.time_multiplier || 'X1'}`;
+            }
+        }
         
         if (newCombo.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${newCombo.tires_value}</span>`;
-if (newCombo.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${newCombo.fuel_value}</span>`;
+        if (newCombo.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${newCombo.fuel_value}</span>`;
 
         console.log('=== ПРОВЕРКА ОТПРАВЛЯЕМЫХ ДАННЫХ ===');
         console.log('fuel_value:', newCombo.fuel_value);
@@ -1556,7 +1555,6 @@ if (newCombo.fuel_value) document.getElementById('fuelValue').innerHTML = `<span
         console.log('tires_value:', newCombo.tires_value);
         console.log('car_name:', newCombo.car_name);
         
-        // Отправляем в Google Sheets
         await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors',
