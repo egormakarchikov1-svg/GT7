@@ -653,16 +653,16 @@
                     <div class="settings-value settings-value-small" id="weatherValue">—</div>
                 </div>
                 
-                <div class="settings-item" data-param="time">
-                    <div class="settings-header">
-                        <div class="settings-label">
-                            <img src="https://images.icon-icons.com/3780/PNG/96/clock_timer_calendar_alarm_date_schedule_hour_watch_stopwatch_time_icon_231897.png" class="settings-icon">
-                            <span>ВРЕМЯ</span>
-                        </div>
-                        <button class="settings-lock-btn unlocked" data-param="time">🔓</button>
-                    </div>
-                    <div class="settings-value settings-value-small" id="timeValue">—</div>
-                </div>
+               <div class="settings-item" data-param="time">
+    <div class="settings-header">
+        <div class="settings-label">
+            <img src="https://images.icon-icons.com/3780/PNG/96/clock_timer_calendar_alarm_date_schedule_hour_watch_stopwatch_time_icon_231897.png" class="settings-icon">
+            <span>ВРЕМЯ</span>
+        </div>
+        <button class="settings-lock-btn unlocked" data-param="time">🔓</button>
+    </div>
+    <div class="settings-value settings-value-small" id="timeValue">—</div>
+</div>
                 
                 <div class="settings-item" data-param="tires">
                     <div class="settings-header">
@@ -1678,9 +1678,11 @@ async function loadCurrentCombo() {
             }
             
             // Время
-            if (tableData.time_name) {
-                document.getElementById('timeValue').innerHTML = tableData.time_name;
-            }
+           // Время (с множителем)
+if (tableData.time_name) {
+    const timeMultiplier = tableData.time_multiplier || 'X1';
+    document.getElementById('timeValue').innerHTML = `${tableData.time_name} ${timeMultiplier}`;
+}
             
             // Шины и топливо
             if (tableData.tires_value) document.getElementById('tiresValue').textContent = tableData.tires_value;
@@ -1719,9 +1721,10 @@ async function generateAndSave() {
         }
         
         if (!locks.time) {
-            const time = getRandomItem(times);
-            newCombo.time_name = time.name;
-        }
+    const time = getRandomItem(times);
+    newCombo.time_name = time.name;
+    newCombo.time_multiplier = getRandomXValue();  // ← ДОБАВИТЬ
+}
         
         if (!locks.tires) newCombo.tires_value = getRandomXValue();
         if (!locks.fuel) newCombo.fuel_value = getRandomXValue();
@@ -1737,7 +1740,8 @@ async function generateAndSave() {
         const cat = categories.find(c => c.name === newCombo.category_name);
         if (cat) document.getElementById('categoryValue').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
         if (newCombo.weather_name) document.getElementById('weatherValue').innerHTML = newCombo.weather_name;
-        if (newCombo.time_name) document.getElementById('timeValue').innerHTML = newCombo.time_name;
+        if (newCombo.time_name) {
+    document.getElementById('timeValue').innerHTML = `${newCombo.time_name} ${newCombo.time_multiplier || 'X1'}`;
         if (newCombo.tires_value) document.getElementById('tiresValue').textContent = newCombo.tires_value;
         if (newCombo.fuel_value) document.getElementById('fuelValue').textContent = newCombo.fuel_value;
         
