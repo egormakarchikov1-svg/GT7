@@ -288,7 +288,19 @@
     .category-icon { width: 36px !important; height: 36px !important; }
     .category-value { min-height: 85px; }
 }
-   
+
+        #tiresValue, #fuelValue { font-size: 16px !important; }
+
+/* Планшеты 7-10" вертикаль */
+@media (min-width: 481px) and (max-width: 800px) and (orientation: portrait) {
+    #tiresValue, #fuelValue { font-size: 18px !important; }
+}
+
+/* Планшеты 7-10" горизонталь */
+@media (min-width: 801px) and (max-width: 1024px) and (orientation: landscape) {
+    #tiresValue, #fuelValue { font-size: 18px !important; }
+}
+        
     </style>
 </head>
 <body>
