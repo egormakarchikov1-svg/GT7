@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>GT7 Random - Админ панель</title>
-    
     <link rel="apple-touch-icon" href="gt7.png">
     <link rel="icon" type="image/png" sizes="192x192" href="gt7.png">
     <link rel="shortcut icon" href="gt7.png">
@@ -12,627 +11,115 @@
     <meta name="theme-color" content="#ff4d4d">
     
     <style>
-        /* ===== ВСЕ СТИЛИ ПОЛНОСТЬЮ ИЗ INDEX.HTML ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
+        /* ===== ОСНОВНЫЕ СТИЛИ (как в index.html) ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-image: url('gt7images.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            color: #eee;
-            text-align: center;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 12px;
+            background-size: cover; background-position: center; background-attachment: fixed;
+            color: #eee; text-align: center; min-height: 100vh;
+            display: flex; justify-content: center; align-items: center; padding: 12px;
         }
-        
         .container {
-            background: rgba(109, 110, 116, 0.7);
-            backdrop-filter: blur(8px);
-            border-radius: 28px;
-            padding: 16px 12px;
-            width: 100%;
-            max-width: 700px;
-            box-shadow: 0 10px 25px rgba(30, 41, 59, 0.7);
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: all 0.3s ease;
+            background: rgba(109, 110, 116, 0.7); backdrop-filter: blur(8px);
+            border-radius: 28px; padding: 16px 12px; width: 100%; max-width: 700px;
+            box-shadow: 0 10px 25px rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.1);
         }
-        
-        /* Админский баннер (добавлен специально для админки) */
         .admin-banner {
             background: linear-gradient(135deg, #ff4d4d20, #ff4d4d05);
-            border: 1px solid #ff4d4d;
-            border-radius: 12px;
-            padding: 8px 12px;
-            margin-bottom: 15px;
-            text-align: center;
-            font-size: 12px;
-            color: #ff9999;
-            backdrop-filter: blur(4px);
+            border: 1px solid #ff4d4d; border-radius: 12px; padding: 8px 12px;
+            margin-bottom: 15px; text-align: center; font-size: 12px; color: #ff9999;
         }
-        
-        /* Блок МАШИНА и ТРАССА */
-        .cars-track-container {
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 16px;
-            margin: 12px 0;
-            border: 1px solid #ff4d4d;
-            overflow: hidden;
-            transition: all 0.3s ease;
+        .cars-track-container, .category-container, .settings-container, .similar-cars-container {
+            background: rgba(0, 0, 0, 0.4); border-radius: 16px; margin: 12px 0;
+            border: 1px solid #ff4d4d; overflow: hidden;
         }
-        
-        .cars-track-header-clickable {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px;
-            cursor: pointer;
-            transition: background 0.2s ease;
+        .cars-track-header-clickable, .category-header-clickable, .settings-header-clickable, .similar-header-clickable {
+            display: flex; align-items: center; justify-content: space-between; padding: 12px; cursor: pointer;
         }
-        
-        .cars-track-header-clickable:hover {
-            background: rgba(255, 77, 77, 0.1);
+        .cars-track-title, .category-title, .settings-title, .similar-title {
+            color: #ff4d4d; font-size: 14px; font-weight: bold; display: flex; align-items: center;
+            justify-content: center; gap: 4px; flex: 1;
         }
-        
-        .cars-track-title {
-            color: #ff4d4d;
-            font-size: 14px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            flex: 1;
+        .cars-track-toggle-icon, .category-toggle-icon, .toggle-icon, .similar-toggle-icon {
+            color: #ff4d4d; font-size: 20px; font-weight: bold; transition: transform 0.3s ease;
         }
-        
-        .cars-track-toggle-icon {
-            color: #ff4d4d;
-            font-size: 20px;
-            font-weight: bold;
-            transition: transform 0.3s ease;
-        }
-        
-        .cars-track-content {
+        .cars-track-content, .category-content, .settings-content, .similar-content {
             padding: 0 12px 12px 12px;
-            transition: all 0.3s ease;
         }
-        
-        .cars-track-content.collapsed {
+        .cars-track-content.collapsed, .category-content.collapsed, .settings-content.collapsed, .similar-content.collapsed {
             display: none;
         }
-        
-        /* Блок ГОНОЧНЫЙ КЛАСС */
-        .category-container {
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 16px;
-            margin: 12px 0;
-            border: 1px solid #ff4d4d;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .category-header-clickable {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px;
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-        
-        .category-header-clickable:hover {
-            background: rgba(255, 77, 77, 0.1);
-        }
-        
-        .category-title {
-            color: #ff4d4d;
-            font-size: 14px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            flex: 1;
-        }
-        
-        .category-toggle-icon {
-            color: #ff4d4d;
-            font-size: 20px;
-            font-weight: bold;
-            transition: transform 0.3s ease;
-        }
-        
-        .category-content {
-            padding: 0 12px 12px 12px;
-            transition: all 0.3s ease;
-            text-align: center;
-        }
-        
-        .category-content.collapsed {
-            display: none;
-        }
-        
-        .params-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            min-height: 200px;
-        }
-        
-        .param-block {
-            margin-bottom: 0;
-            text-align: center;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-        }
-        
-        .param-header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 10px;
-            width: 100%;
-            position: relative;
-        }
-        
+        .params-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; min-height: 200px; }
+        .param-block { text-align: center; display: flex; flex-direction: column; align-items: center; }
+        .param-header { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 10px; width: 100%; }
         .param-label {
-            font-weight: 700;
-            color: #ffffff;
-            background: #0f172a;
-            padding: 12px 20px;
-            border-radius: 30px;
-            font-size: 16px;
-            letter-spacing: 1px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            font-weight: 700; color: #fff; background: #0f172a; padding: 12px 20px;
+            border-radius: 30px; font-size: 16px; display: inline-flex; align-items: center; gap: 8px;
         }
-        
-        .lock-btn {
-            background: rgba(0, 0, 0, 0.6);
-            border: none;
-            border-radius: 30px;
-            font-size: 14px;
-            padding: 8px 14px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            backdrop-filter: blur(4px);
-            margin: 0;
-            box-shadow: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 48px;
+        .lock-btn, .settings-lock-btn {
+            background: rgba(0, 0, 0, 0.6); border: none; border-radius: 30px; cursor: pointer;
+            transition: all 0.2s ease; backdrop-filter: blur(4px);
         }
-        
-        .lock-btn:hover {
-            transform: scale(1.05);
+        .lock-btn { font-size: 14px; padding: 8px 14px; min-width: 48px; }
+        .settings-lock-btn { font-size: 12px; padding: 5px 12px; }
+        .lock-btn.locked, .settings-lock-btn.locked { background: #ef4444; color: white; }
+        .lock-btn.unlocked, .settings-lock-btn.unlocked { background: #22c55e; color: white; }
+        .header-icon { width: 45px; height: 45px; object-fit: contain; }
+        .icon-container { min-height: 90px; margin-bottom: 8px; }
+        .car-icon, .track-icon { max-width: 100%; max-height: 100px; width: auto; height: auto; object-fit: contain; }
+        .param-value, .category-value {
+            font-size: 16px; font-weight: 600; color: #f1f5f9; background: #0f172a80;
+            padding: 8px 10px; border-radius: 16px; margin-top: 6px; width: 100%; text-align: center;
         }
-        
-        .lock-btn.unlocked {
-            background: #22c55e;
-            color: white;
-            box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
-        }
-        
-        .lock-btn.locked {
-            background: #ef4444;
-            color: white;
-            box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
-        }
-        
-        .header-icon {
-            width: 45px;
-            height: 45px;
-            object-fit: contain;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-        }
-        
-        .icon-container {
-            background: transparent;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 90px;
-            margin-bottom: 8px;
-        }
-        
-        .car-icon, .track-icon {
-            max-width: 100%;
-            max-height: 100px;
-            width: auto;
-            height: auto;
-            object-fit: contain;
-        }
-        
-        .param-value {
-            font-size: 16px;
-            font-weight: 600;
-            color: #f1f5f9;
-            line-height: 1.3;
-            word-break: break-word;
-            background: #0f172a80;
-            padding: 8px 10px;
-            border-radius: 16px;
-            margin-top: 6px;
-            width: 100%;
-        }
-        
-        .category-value {
-            font-size: 16px;
-            font-weight: 600;
-            color: #f1f5f9;
-            line-height: 1.3;
-            word-break: break-word;
-            background: #0f172a80;
-            padding: 8px 10px;
-            border-radius: 16px;
-            width: 100%;
-            text-align: center;
-            min-height: 65px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .settings-container {
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 16px;
-            margin: 12px 0;
-            border: 1px solid #22c55e;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .settings-header-clickable {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px;
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-        
-        .settings-header-clickable:hover {
-            background: rgba(34, 197, 94, 0.1);
-        }
-        
-        .settings-title {
-            color: #22c55e;
-            font-size: 14px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            flex: 1;
-        }
-        
-        .toggle-icon {
-            color: #22c55e;
-            font-size: 20px;
-            font-weight: bold;
-            transition: transform 0.3s ease;
-        }
-        
-        .settings-content {
-            padding: 0 12px 12px 12px;
-            transition: all 0.3s ease;
-        }
-        
-        .settings-content.collapsed {
-            display: none;
-        }
-        
-        .settings-items {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            min-height: 180px;
-        }
-        
-        .settings-item {
-            background: rgba(15, 23, 42, 0.7);
-            border-radius: 12px;
-            padding: 12px;
-            text-align: center;
-            border: 1px solid rgba(34, 197, 94, 0.3);
-        }
-        
-        .settings-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .settings-label {
-            font-weight: 700;
-            color: #22c55e;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .settings-icon {
-            width: 24px;
-            height: 24px;
-            object-fit: contain;
-            vertical-align: middle;
-        }
-        
-        .settings-lock-btn {
-            background: rgba(0, 0, 0, 0.5);
-            border: none;
-            border-radius: 30px;
-            font-size: 12px;
-            padding: 5px 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-weight: 600;
-        }
-        
-        .settings-lock-btn.unlocked {
-            background: #22c55e;
-            color: white;
-        }
-        
-        .settings-lock-btn.locked {
-            background: #ef4444;
-            color: white;
-        }
-        
+        .category-value { min-height: 65px; display: flex; align-items: center; justify-content: center; }
+        .settings-container { border-color: #22c55e; }
+        .settings-title { color: #22c55e; }
+        .toggle-icon { color: #22c55e; }
+        .settings-items { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .settings-item { background: rgba(15, 23, 42, 0.7); border-radius: 12px; padding: 12px; text-align: center; border: 1px solid rgba(34, 197, 94, 0.3); }
+        .settings-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; gap: 10px; flex-wrap: wrap; }
+        .settings-label { font-weight: 700; color: #22c55e; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+        .settings-icon { width: 24px; height: 24px; object-fit: contain; }
         .settings-value {
-            font-size: 16px;
-            font-weight: 700;
-            color: #f1f5f9;
-            background: rgba(0, 0, 0, 0.4);
-            padding: 10px;
-            border-radius: 12px;
-            margin-top: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
+            font-size: 16px; font-weight: 700; color: #f1f5f9; background: rgba(0, 0, 0, 0.4);
+            padding: 10px; border-radius: 12px; margin-top: 8px; display: flex;
+            align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;
         }
-        
-        .settings-value-small {
-            font-size: 16px !important;
-            font-weight: 600;
-        }
-        
-        .result-icon {
-            font-size: 24px;
-            display: inline-block;
-            vertical-align: middle;
-        }
-        
-        .time-x-badge {
-            color: #ff4d4d;
-            font-weight: 700;
-            background: rgba(255, 77, 77, 0.15);
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 14px;
-            display: inline-block;
-        }
-        
-        /* Блок подбора схожих авто */
-        .similar-cars-container {
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 16px;
-            margin: 12px 0;
-            border: 1px solid #ff4d4d;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .similar-header-clickable {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px;
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-        
-        .similar-header-clickable:hover {
-            background: rgba(255, 77, 77, 0.1);
-        }
-        
-        .similar-title {
-            color: #ff4d4d;
-            font-size: 14px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            flex: 1;
-        }
-        
-        .similar-toggle-icon {
-            color: #ff4d4d;
-            font-size: 20px;
-            font-weight: bold;
-            transition: transform 0.3s ease;
-        }
-        
-        .similar-content {
-            padding: 0 12px 12px 12px;
-            transition: all 0.3s ease;
-        }
-        
-        .similar-content.collapsed {
-            display: none;
-        }
-        
-        .ref-car-info {
-            background: #ff4d4d20;
-            padding: 10px;
-            border-radius: 10px;
-            margin-bottom: 14px;
-            font-size: 13px;
-            border-left: 3px solid #ff4d4d;
-            line-height: 1.4;
-        }
-        
-        .similar-list {
-            list-style: none;
-            text-align: left;
-            min-height: 250px;
-        }
-        
-        .similar-list li {
-            background: #0f172a80;
-            margin: 6px 0;
-            padding: 8px 10px;
-            border-radius: 10px;
-            font-size: 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-        
-        .similar-list li:hover {
-            background: #1e293b;
-            transform: scale(1.02);
-        }
-        
-        .car-name {
-            font-weight: bold;
-            flex: 2;
-            min-width: 100px;
-            font-size: 13px;
-        }
-        
-        .car-stats {
-            color: #ff4d4d;
-            font-size: 12px;
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-        }
-        
-        .car-stats span {
-            background: rgba(255, 77, 77, 0.1);
-            padding: 2px 5px;
-            border-radius: 10px;
-            white-space: nowrap;
-        }
-        
-        .similarity-badge {
-            background: #22c55e;
-            color: white;
-            padding: 2px 6px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: bold;
-        }
-        
+        .settings-value-small { font-size: 16px !important; font-weight: 600; }
+        .result-icon { font-size: 24px; }
+        .time-x-badge { color: #ff4d4d; font-weight: 700; background: rgba(255, 77, 77, 0.15); padding: 4px 10px; border-radius: 20px; font-size: 14px; }
+        .similar-cars-container { border-color: #ff4d4d; }
+        .similar-title { color: #ff4d4d; }
+        .ref-car-info { background: #ff4d4d20; padding: 10px; border-radius: 10px; margin-bottom: 14px; font-size: 13px; border-left: 3px solid #ff4d4d; }
+        .similar-list { list-style: none; text-align: left; min-height: 250px; }
+        .similar-list li { background: #0f172a80; margin: 6px 0; padding: 8px 10px; border-radius: 10px; font-size: 14px; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; cursor: pointer; }
+        .similar-list li:hover { background: #1e293b; }
+        .car-name { font-weight: bold; flex: 2; min-width: 100px; font-size: 13px; }
+        .car-stats { color: #ff4d4d; font-size: 12px; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+        .car-stats span { background: rgba(255, 77, 77, 0.1); padding: 2px 5px; border-radius: 10px; white-space: nowrap; }
+        .similarity-badge { background: #22c55e; color: white; padding: 2px 6px; border-radius: 20px; font-size: 11px; font-weight: bold; }
         .btn-main {
-            width: auto;
-            min-width: 190px;
-            background: #ff4d4d;
-            font-size: 18px;
-            font-weight: 900;
-            text-transform: uppercase;
-            padding: 10px 16px;
-            display: inline-flex;
-            margin: 8px auto;
-            border: none;
-            border-radius: 60px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            color: white;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            width: auto; min-width: 190px; background: #ff4d4d; font-size: 18px; font-weight: 900;
+            text-transform: uppercase; padding: 10px 16px; display: inline-flex; margin: 8px auto;
+            border: none; border-radius: 60px; cursor: pointer; color: white; align-items: center;
+            justify-content: center; gap: 8px;
         }
+        .btn-main:active { transform: scale(0.96); }
+        .btn-secondary { background: #3b82f6; }
+        .btn-similar { background: #7c3aed; margin-top: 5px; font-size: 14px; font-weight: 700; text-transform: uppercase; padding: 8px 12px; width: 100%; border: none; border-radius: 60px; cursor: pointer; color: white; }
+        .status { background: rgba(0,0,0,0.5); border-radius: 16px; padding: 12px; margin-top: 15px; text-align: center; font-size: 13px; }
+        .status.success { background: rgba(34,197,94,0.2); border-left: 3px solid #22c55e; }
+        .status.error { background: rgba(239,68,68,0.2); border-left: 3px solid #ef4444; }
+        .button-group { display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; margin: 15px 0; }
         
-        .btn-main:active {
-            transform: scale(0.96);
-        }
-        
-        .btn-secondary {
-            background: #3b82f6;
-        }
-        
-        .btn-similar {
-            background: #7c3aed;
-            margin-top: 5px;
-            font-size: 14px;
-            font-weight: 700;
-            text-transform: uppercase;
-            padding: 8px 12px;
-            width: 100%;
-            border: none;
-            border-radius: 60px;
-            cursor: pointer;
-            color: white;
-        }
-        
-        .status {
-            background: rgba(0,0,0,0.5);
-            border-radius: 16px;
-            padding: 12px;
-            margin-top: 15px;
-            text-align: center;
-            font-size: 13px;
-        }
-        
-        .status.success {
-            background: rgba(34,197,94,0.2);
-            border-left: 3px solid #22c55e;
-        }
-        
-        .status.error {
-            background: rgba(239,68,68,0.2);
-            border-left: 3px solid #ef4444;
-        }
-        
-        .button-group {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin: 15px 0;
-        }
-        
-        /* ============================================ */
-        /* ТЕЛЕФОНЫ 5-7" ВЕРТИКАЛЬНАЯ ОРИЕНТАЦИЯ */
-        /* ============================================ */
+        /* ===== АДАПТИВНЫЕ СТИЛИ ДЛЯ ТЕЛЕФОНОВ (как в index.html) ===== */
         @media (max-width: 480px) and (orientation: portrait) {
             body { padding: 4px; }
             .container { padding: 8px 6px; border-radius: 16px; max-width: 100%; min-height: 85vh; display: flex; flex-direction: column; justify-content: center; }
             .cars-track-container, .category-container, .settings-container, .similar-cars-container { padding: 3px; margin-bottom: 4px; }
             .cars-track-header-clickable, .category-header-clickable, .settings-header-clickable, .similar-header-clickable { padding: 8px; }
             .cars-track-title, .category-title, .settings-title, .similar-title { font-size: 13px; }
-            .cars-track-toggle-icon, .category-toggle-icon, .toggle-icon, .similar-toggle-icon { font-size: 16px; }
             .params-grid { gap: 6px; grid-template-columns: 1fr !important; min-height: 200px; }
             .param-label { font-size: 10px; padding: 5px 10px; }
             .param-label img { width: 16px; height: 16px; }
@@ -643,7 +130,6 @@
             .param-value, .category-value { font-size: 10px; padding: 5px 6px; margin-top: 3px; min-height: 50px; display: flex; align-items: center; justify-content: center; }
             .btn-group button { font-size: 8px; padding: 5px 4px; min-width: 52px; }
             .btn-main { min-width: 120px; font-size: 12px; padding: 8px 11px; min-height: 44px; }
-            .btn-icon { width: 16px; height: 16px; }
             .btn-similar { font-size: 10px; padding: 6px 10px; }
             .similar-title { font-size: 11px; margin-bottom: 6px; }
             .ref-car-info { font-size: 9px; padding: 6px; margin-bottom: 8px; min-height: 65px; }
@@ -655,7 +141,7 @@
             .settings-container { padding: 6px; margin: 6px 0; }
             .settings-item { padding: 6px; }
             .settings-label { font-size: 9px; white-space: nowrap; }
-            .settings-value { font-size: 11px; padding: 4px; word-break: break-word; line-height: 1.2; min-height: 45px; display: flex; align-items: center; justify-content: center; }
+            .settings-value { font-size: 11px; padding: 4px; min-height: 45px; display: flex; align-items: center; justify-content: center; }
             .settings-lock-btn { padding: 2px 6px; font-size: 8px; min-width: 32px; }
             .settings-items { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; min-height: 170px; }
             .settings-header { display: flex; flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: nowrap; gap: 4px; margin-bottom: 6px; }
@@ -665,20 +151,15 @@
             .result-icon { font-size: 12px !important; }
             #tiresValue, #fuelValue { font-size: 14px !important; padding: 3px !important; }
             .header-icon { width: 28px !important; height: 28px !important; }
-            .category-icon { width: 22px !important; height: 22px !important; }
             .category-value { min-height: 55px; }
         }
         
-        /* ============================================ */
-        /* ТЕЛЕФОНЫ 5-7" ГОРИЗОНТАЛЬНАЯ ОРИЕНТАЦИЯ */
-        /* ============================================ */
         @media (max-width: 850px) and (orientation: landscape) {
             body { padding: 6px; }
             .container { padding: 8px 10px; border-radius: 16px; max-width: 95%; min-height: 85vh; }
             .cars-track-container, .category-container, .settings-container, .similar-cars-container { padding: 5px; margin-bottom: 6px; }
             .cars-track-header-clickable, .category-header-clickable, .settings-header-clickable, .similar-header-clickable { padding: 6px 10px; }
             .cars-track-title, .category-title, .settings-title, .similar-title { font-size: 12px; }
-            .cars-track-toggle-icon, .category-toggle-icon, .toggle-icon, .similar-toggle-icon { font-size: 14px; }
             .params-grid { gap: 10px; grid-template-columns: repeat(2, 1fr) !important; min-height: 180px; }
             .param-label { font-size: 9px; padding: 4px 8px; }
             .param-label img { width: 14px; height: 14px; }
@@ -687,9 +168,6 @@
             .icon-container { min-height: 40px; margin-bottom: 3px; }
             .car-icon, .track-icon { max-height: 32px; min-height: 32px; }
             .param-value, .category-value { font-size: 8px; padding: 4px 5px; margin-top: 3px; min-height: 45px; display: flex; align-items: center; justify-content: center; }
-            .btn-group button { font-size: 7px; padding: 4px 3px; min-width: 48px; }
-            .btn-main { min-width: 112px; font-size: 11px; padding: 6px 10px; min-height: 40px; }
-            .btn-icon { width: 14px; height: 14px; }
             .btn-similar { font-size: 9px; padding: 5px 8px; }
             .similar-title { font-size: 10px; margin-bottom: 5px; }
             .ref-car-info { font-size: 8px; padding: 5px; margin-bottom: 6px; min-height: 55px; }
@@ -710,124 +188,7 @@
             .result-icon { font-size: 12px !important; }
             .time-x-badge { font-size: 7px; padding: 2px 4px; }
             .header-icon { width: 24px !important; height: 24px !important; }
-            .category-icon { width: 18px !important; height: 18px !important; }
             .category-value { min-height: 45px; }
-        }
-        
-        /* ============================================ */
-        /* ПЛАНШЕТЫ 7-10" ПОРТРЕТ */
-        /* ============================================ */
-        @media (min-width: 481px) and (max-width: 800px) and (orientation: portrait) {
-            body { padding: 10px; }
-            .container { padding: 16px 14px; border-radius: 24px; max-width: 550px; min-height: 85vh; }
-            .cars-track-container, .category-container, .settings-container, .similar-cars-container { padding: 8px; margin-bottom: 10px; }
-            .params-grid { gap: 15px; grid-template-columns: repeat(2, 1fr) !important; min-height: 220px; }
-            .param-label { font-size: 14px; padding: 8px 16px; }
-            .param-label img { width: 22px; height: 22px; }
-            .lock-btn { padding: 6px 12px; font-size: 13px; min-width: 45px; }
-            .param-header { gap: 10px; margin-bottom: 8px; }
-            .icon-container { min-height: 70px; margin-bottom: 6px; }
-            .car-icon, .track-icon { max-height: 65px; min-height: 65px; }
-            .param-value, .category-value { font-size: 14px; padding: 8px 10px; margin-top: 5px; min-height: 65px; display: flex; align-items: center; justify-content: center; }
-            .btn-group button { font-size: 11px; padding: 8px 8px; min-width: 75px; }
-            .btn-main { min-width: 180px; font-size: 17px; padding: 11px 16px; min-height: 55px; }
-            .btn-icon { width: 22px; height: 22px; }
-            .btn-similar { font-size: 13px; padding: 8px 12px; }
-            .similar-title { font-size: 16px; margin-bottom: 10px; }
-            .ref-car-info { font-size: 12px; padding: 10px; margin-bottom: 12px; min-height: 80px; }
-            .similar-list li { padding: 10px; font-size: 12px; min-height: 55px; }
-            .similar-list { min-height: 320px; }
-            .car-name { font-size: 13px; }
-            .car-stats { font-size: 10px; gap: 6px; }
-            .similarity-badge { font-size: 11px; padding: 3px 6px; }
-            .settings-container { padding: 12px; margin: 12px 0; }
-            .settings-item { padding: 10px; }
-            .settings-label { font-size: 14px; }
-            .settings-value { font-size: 22px; padding: 8px; min-height: 65px; display: flex; align-items: center; justify-content: center; }
-            .settings-lock-btn { padding: 5px 12px; font-size: 12px; }
-            .settings-value-small { font-size: 15px !important; }
-            .settings-icon { width: 28px !important; height: 28px !important; }
-            .settings-items { min-height: 220px; }
-            .result-icon { font-size: 26px !important; }
-            .category-icon { width: 28px !important; height: 28px !important; }
-            .category-value { min-height: 70px; }
-        }
-        
-        /* ============================================ */
-        /* ПЛАНШЕТЫ 7-10" ГОРИЗОНТАЛЬ */
-        /* ============================================ */
-        @media (min-width: 801px) and (max-width: 1024px) and (orientation: landscape) {
-            body { padding: 15px; }
-            .container { max-width: 900px; padding: 18px 16px; border-radius: 28px; min-height: 85vh; }
-            .cars-track-container, .category-container, .settings-container, .similar-cars-container { padding: 10px; margin-bottom: 12px; }
-            .params-grid { gap: 20px; grid-template-columns: repeat(2, 1fr) !important; min-height: 240px; }
-            .param-label { font-size: 16px; padding: 10px 18px; }
-            .param-label img { width: 28px; height: 28px; }
-            .lock-btn { padding: 7px 14px; font-size: 14px; min-width: 50px; }
-            .param-header { gap: 12px; margin-bottom: 10px; }
-            .icon-container { min-height: 85px; margin-bottom: 8px; }
-            .car-icon, .track-icon { max-height: 80px; min-height: 80px; }
-            .param-value, .category-value { font-size: 15px; padding: 10px 12px; margin-top: 6px; min-height: 70px; display: flex; align-items: center; justify-content: center; }
-            .btn-group button { font-size: 12px; padding: 9px 12px; min-width: 90px; }
-            .btn-main { min-width: 220px; font-size: 19px; padding: 12px 20px; min-height: 60px; }
-            .btn-icon { width: 26px; height: 26px; }
-            .btn-similar { font-size: 14px; padding: 10px 14px; }
-            .similar-title { font-size: 18px; margin-bottom: 12px; }
-            .ref-car-info { font-size: 13px; padding: 12px; margin-bottom: 14px; min-height: 85px; }
-            .similar-list li { padding: 12px; font-size: 13px; min-height: 60px; }
-            .similar-list { min-height: 350px; }
-            .car-name { font-size: 14px; }
-            .car-stats { font-size: 11px; gap: 8px; }
-            .similarity-badge { font-size: 12px; padding: 3px 8px; }
-            .settings-container { padding: 15px; margin: 15px 0; }
-            .settings-item { padding: 12px; }
-            .settings-label { font-size: 16px; }
-            .settings-value { font-size: 26px; padding: 10px; min-height: 70px; display: flex; align-items: center; justify-content: center; }
-            .settings-lock-btn { padding: 6px 14px; font-size: 14px; }
-            .settings-value-small { font-size: 17px !important; }
-            .settings-icon { width: 32px !important; height: 32px !important; }
-            .settings-items { min-height: 240px; }
-            .result-icon { font-size: 30px !important; }
-            .category-icon { width: 32px !important; height: 32px !important; }
-            .category-value { min-height: 75px; }
-        }
-        
-        /* ============================================ */
-        /* ДЕСКТОПЫ И БОЛЬШИЕ ЭКРАНЫ */
-        /* ============================================ */
-        @media (min-width: 1281px) {
-            .container { max-width: 1100px; padding: 24px 22px; min-height: 85vh; }
-            .cars-track-container, .category-container, .settings-container, .similar-cars-container { padding: 15px; margin-bottom: 18px; }
-            .params-grid { gap: 30px; grid-template-columns: repeat(2, 1fr) !important; min-height: 280px; }
-            .param-label { font-size: 20px; padding: 14px 28px; }
-            .param-label img { width: 36px; height: 36px; }
-            .lock-btn { padding: 10px 18px; font-size: 18px; min-width: 70px; }
-            .car-icon, .track-icon { max-height: 120px; min-height: 120px; }
-            .param-value, .category-value { font-size: 18px; padding: 14px 16px; min-height: 85px; display: flex; align-items: center; justify-content: center; }
-            .btn-group button { font-size: 15px; padding: 12px 18px; }
-            .btn-main { min-width: 300px; font-size: 24px; padding: 16px 28px; min-height: 70px; }
-            .btn-icon { width: 34px; height: 34px; }
-            .similar-title { font-size: 24px; }
-            .settings-value { font-size: 34px; min-height: 85px; }
-            .settings-items { min-height: 280px; }
-            .similar-list { min-height: 400px; }
-            .category-icon { width: 36px !important; height: 36px !important; }
-            .category-value { min-height: 85px; }
-        }
-        
-        @media (hover: none) {
-            .lock-btn:hover, .similar-list li:hover, button:hover, .settings-lock-btn:hover,
-            .settings-header-clickable:hover, .similar-header-clickable:hover,
-            .cars-track-header-clickable:hover, .category-header-clickable:hover {
-                transform: none;
-            }
-        }
-        
-        @media (max-width: 850px) and (orientation: landscape) {
-            .settings-value-small { font-size: 8px !important; }
-            .time-x-badge { font-size: 6px !important; padding: 1px 3px !important; }
-            .result-icon { font-size: 10px !important; }
-            #tiresValue, #fuelValue { font-size: 12px !important; }
         }
     </style>
 </head>
