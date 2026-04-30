@@ -1061,7 +1061,18 @@
     СБРОСИТЬ ИСТОРИЮ МАШИН
             </button>
         </div>
+
+        <!-- Переключатель синхронизации -->
+<div class="sync-toggle-container" id="syncToggleContainer" style="margin-top: 12px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+        <span>👑</span>
+        <span style="font-size: 12px; font-weight: 600;">РЕЖИМ СИНХРОНИЗАЦИИ</span>
     </div>
+    <button id="syncToggleBtn" style="background: #3b82f6; padding: 6px 12px; font-size: 11px; margin: 0; min-width: auto;">
+        🔓 ВЫКЛ
+    </button>
+</div>
+    
     
     <!-- Основная кнопка и кнопка поделиться -->
     <div style="display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap;">
@@ -1818,6 +1829,7 @@ let settingsExpanded = true;
 let similarExpanded = true;
 let carsTrackExpanded = true;
 let categoryExpanded = true;
+let userSyncEnabled = true; // По умолчанию синхронизация включена
 
 function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function getRandomXValue() { return `X${Math.floor(Math.random() * 20) + 1}`; }
@@ -2192,6 +2204,13 @@ let syncedComboData = null;
 
 // Функция загрузки данных из Google Sheets
 async function loadSyncedCombo() {
+    // Если пользователь выключил синхронизацию — не загружаем
+    if (!userSyncEnabled) {
+        syncedModeActive = false;
+        syncedComboData = null;
+        return null;
+    }
+    
     try {
         const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?tqx=out:json`;
         const response = await fetch(url);
@@ -2457,6 +2476,7 @@ function init() {
     document.getElementById('categoryHeader').addEventListener('click', toggleCategory);
     document.getElementById('randomBtn').addEventListener('click', () => window.generateRandomRace());
     document.getElementById('refreshSimilarBtn').addEventListener('click', () => refreshSimilarCars());
+    document.getElementById('syncToggleBtn').addEventListener('click', toggleSyncMode);
     
     // Кнопка сброса истории машин
     const resetBtn = document.getElementById('resetCarsBtn');
@@ -2483,6 +2503,23 @@ function init() {
     updateTires();
     updateFuel();
     updateCategory();
+}
+
+    function toggleSyncMode() {
+    userSyncEnabled = !userSyncEnabled;
+    const syncBtn = document.getElementById('syncToggleBtn');
+    
+    if (userSyncEnabled) {
+        syncBtn.innerHTML = '🔓 ВЫКЛ';
+        syncBtn.style.background = '#3b82f6';
+        // Принудительно перезагружаем синхронизацию
+        setTimeout(() => window.generateRandomRace(), 100);
+    } else {
+        syncBtn.innerHTML = '🔒 ВКЛ';
+        syncBtn.style.background = '#ef4444';
+        // Генерируем случайную гонку без синхронизации
+        setTimeout(() => window.generateRandomRace(), 100);
+    }
 }
 
 // Запускаем с синхронизацией
