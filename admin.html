@@ -1387,34 +1387,35 @@ async function loadCurrentCombo() {
             }
             
             // Категория
-            const category = categories.find(c => c.name === tableData.category_name);
-            if (category) {
-                document.getElementById('categoryText').innerHTML = `${category.icon} ${category.name} (${category.description})`;
-            }
-            
-            // Погода с эмодзи
-            if (tableData.weather_name) {
-                const weatherObj = weathers.find(w => w.name === tableData.weather_name);
-                if (weatherObj) {
-                    document.getElementById('weatherValue').innerHTML = `${weatherObj.icon} ${weatherObj.name}`;
-                } else {
-                    document.getElementById('weatherValue').innerHTML = tableData.weather_name;
-                }
-            }
-            
-            // Время с эмодзи и множителем
-            if (tableData.time_name) {
-                const timeObj = times.find(t => t.name === tableData.time_name);
-                const timeMultiplier = tableData.time_multiplier || 'X1';
-                if (timeObj) {
-                    document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name} ${timeMultiplier}`;
-                } else {
-                    document.getElementById('timeValue').innerHTML = `${tableData.time_name} ${timeMultiplier}`;
-                }
-            }
-            
-            // Шины и топливо с красными кружками
-           if (tableData.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${tableData.tires_value}</span>`;
+            // Категория
+const category = categories.find(c => c.name === tableData.category_name);
+if (category) {
+    document.getElementById('categoryText').innerHTML = `${category.icon} ${category.name} (${category.description})`;
+}
+
+// Погода с эмодзи
+if (tableData.weather_name) {
+    const weatherObj = weathers.find(w => w.name === tableData.weather_name);
+    if (weatherObj) {
+        document.getElementById('weatherValue').innerHTML = `${weatherObj.icon} ${weatherObj.name}`;
+    } else {
+        document.getElementById('weatherValue').innerHTML = tableData.weather_name;
+    }
+}
+
+// Время с эмодзи и множителем в красном кружке
+if (tableData.time_name) {
+    const timeObj = times.find(t => t.name === tableData.time_name);
+    const timeMultiplier = tableData.time_multiplier || 'X1';
+    if (timeObj) {
+        document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name} <span class="time-x-badge">${timeMultiplier}</span>`;
+    } else {
+        document.getElementById('timeValue').innerHTML = `${tableData.time_name} <span class="time-x-badge">${timeMultiplier}</span>`;
+    }
+}
+
+// Шины и топливо с красными кружками
+if (tableData.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${tableData.tires_value}</span>`;
 if (tableData.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${tableData.fuel_value}</span>`;
         }
     } catch(e) {
@@ -1488,12 +1489,13 @@ async function generateAndSave() {
         }
         
         if (newCombo.time_name) {
-            const timeObj = times.find(t => t.name === newCombo.time_name);
-            if (timeObj) {
-                document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name} ${newCombo.time_multiplier || 'X1'}`;
-            } else {
-                document.getElementById('timeValue').innerHTML = `${newCombo.time_name} ${newCombo.time_multiplier || 'X1'}`;
-            }
+    const timeObj = times.find(t => t.name === newCombo.time_name);
+    if (timeObj) {
+        document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name} <span class="time-x-badge">${newCombo.time_multiplier || 'X1'}</span>`;
+    } else {
+        document.getElementById('timeValue').innerHTML = `${newCombo.time_name} <span class="time-x-badge">${newCombo.time_multiplier || 'X1'}</span>`;
+    }
+
         }
         
         if (newCombo.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${newCombo.tires_value}</span>`;
