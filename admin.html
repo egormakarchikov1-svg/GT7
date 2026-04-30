@@ -442,10 +442,75 @@
 </div>
 
 <script>
-// ============================================
-// НАСТРОЙКИ
-// ============================================
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxCyhSh42wr97fCsrS69lYXzDuJ3waxrmKzm3uBKnL0ZMCP2DGlCLy7soE86KlvapqATA/exec';
+
+// Секретный ключ для доступа (СМЕНИТЕ НА СВОЙ!)
+const ADMIN_SECRET_KEY = '939030312';
+
+// Переменная для хранения статуса доступа
+let adminAccessGranted = false;
+
+// Функция проверки доступа по URL параметру
+function checkAdminAccess() {
+    // Проверяем URL параметры
+    const urlParams = new URLSearchParams(window.location.search);
+    const secretKey = urlParams.get('admin');
+    
+    // Если ключ совпадает - активируем админ-доступ
+    if (secretKey === ADMIN_SECRET_KEY) {
+        adminAccessGranted = true;
+        localStorage.setItem('gt7_admin_access', 'true');
+        // Убираем параметр из URL для чистоты
+        window.history.replaceState({}, document.title, window.location.pathname);
+        alert('✅ Админ-доступ активирован!');
+        return true;
+    }
+    
+    // Проверяем сохранённый доступ
+    if (localStorage.getItem('gt7_admin_access') === 'true') {
+        adminAccessGranted = true;
+        return true;
+    }
+    
+    return false;
+}
+
+// Вызываем проверку при загрузке
+checkAdminAccess();
+
+// Функция для выхода из админ-режима
+function logoutAdmin() {
+    localStorage.removeItem('gt7_admin_access');
+    adminAccessGranted = false;
+    alert('🔴 Админ-доступ отключён. Страница будет перезагружена.');
+    location.reload();
+}
+
+// Добавляем кнопку выхода в DOM (если админ-доступ есть)
+if (adminAccessGranted) {
+    // Добавляем кнопку выхода в блок админ-баннера
+    const adminBanner = document.querySelector('.admin-banner');
+    if (adminBanner) {
+        const logoutBtn = document.createElement('button');
+        logoutBtn.innerHTML = '🚪 ВЫЙТИ';
+        logoutBtn.style.cssText = `
+            background: #ef4444;
+            border: none;
+            border-radius: 20px;
+            padding: 4px 12px;
+            margin-left: 10px;
+            font-size: 11px;
+            cursor: pointer;
+            color: white;
+        `;
+        logoutBtn.onclick = logoutAdmin;
+        adminBanner.appendChild(logoutBtn);
+    }
+}
+    
+    
+    
+    
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxCyhSh42wr97fCsrS69lYXzDuJ3waxrmKzm3uBKnL0ZMCP2DGlCLy7soE86KlvapqATA/exec';
 const GOOGLE_SHEETS_ID = '1YAJUPE73Nxwe1oEF1xZBHkGj_zg_uGdW7VkTyHtEOOE';
 
 // Состояние блокировок
@@ -1425,6 +1490,11 @@ if (tableData.fuel_value) document.getElementById('fuelValue').innerHTML = `<spa
 
 // ========== ГЕНЕРАЦИЯ И СОХРАНЕНИЕ ==========
 async function generateAndSave() {
+    if (!adminAccessGranted) {
+        document.getElementById('status').innerHTML = '⛔ Доступ запрещён! Только для администратора.';
+        document.getElementById('status').className = 'status error';
+        return;
+    }
     document.getElementById('status').innerHTML = '⏳ Генерация новой комбинации...';
     document.getElementById('status').className = 'status';
     
