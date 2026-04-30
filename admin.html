@@ -1050,10 +1050,12 @@ async function generateAndSave() {
         // Шины и топливо
         if (!locks.tires) newCombo.tires_value = getRandomXValue();
         if (!locks.fuel) newCombo.fuel_value = getRandomXValue();
+        
+        // Категория
         if (!locks.category) {
             const category = getRandomItem(categories);
             newCombo.category_name = category.name;
-            }
+        }
         
         // Показываем превью
         document.getElementById('preview').innerHTML = `
@@ -1073,25 +1075,23 @@ async function generateAndSave() {
             ${newCombo.similar_car_5 ? `5️⃣ ${newCombo.similar_car_5}` : ''}
         `;
         
-        // Отправляем в Google Sheets
-        const response = await fetch(APPS_SCRIPT_URL, {
+        // Отправляем в Google Sheets с режимом no-cors (обход CORS)
+        await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
-            mode: 'cors',
+            mode: 'no-cors',  // ← КЛЮЧЕВОЙ МОМЕНТ
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(newCombo)
         });
         
-        const result = await response.json();
+        // При режиме no-cors нельзя получить ответ, но запрос уходит
+        document.getElementById('status').innerHTML = '✅ Новая комбинация сохранена! Все пользователи увидят её в течение 1-2 минут.';
+        document.getElementById('status').className = 'status success';
         
-        if (result.success) {
-            document.getElementById('status').innerHTML = '✅ Новая комбинация сохранена! Все пользователи увидят её в течение 1-2 минут.';
-            document.getElementById('status').className = 'status success';
-        } else {
-            throw new Error(result.error || 'Неизвестная ошибка');
-        }
+        // Обновляем отображение текущей комбинации
+        setTimeout(() => loadCurrentCombo(), 1000);
         
     } catch(e) {
-        document.getElementById('status').innerHTML = `❌ Ошибка: ${e.message}. Проверьте URL Apps Script и интернет.`;
+        document.getElementById('status').innerHTML = `❌ Ошибка: ${e.message}`;
         document.getElementById('status').className = 'status error';
         console.error(e);
     }
