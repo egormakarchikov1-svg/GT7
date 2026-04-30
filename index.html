@@ -2044,38 +2044,6 @@ function toggleLock(param) {
     if (param === 'track') currentTrack = document.getElementById('trackValue').textContent;
 }
 
-function toggleSettings() {
-    settingsExpanded = !settingsExpanded;
-    const content = document.getElementById('settingsContent');
-    const icon = document.getElementById('settingsToggleIcon');
-    if (settingsExpanded) { content.classList.remove('collapsed'); icon.innerHTML = '▼'; }
-    else { content.classList.add('collapsed'); icon.innerHTML = '▶'; }
-}
-
-function toggleSimilar() {
-    similarExpanded = !similarExpanded;
-    const content = document.getElementById('similarContent');
-    const icon = document.getElementById('similarToggleIcon');
-    if (similarExpanded) { content.classList.remove('collapsed'); icon.innerHTML = '▼'; }
-    else { content.classList.add('collapsed'); icon.innerHTML = '▶'; }
-}
-
-function toggleCarsTrack() {
-    carsTrackExpanded = !carsTrackExpanded;
-    const content = document.getElementById('carsTrackContent');
-    const icon = document.getElementById('carsTrackToggleIcon');
-    if (carsTrackExpanded) { content.classList.remove('collapsed'); icon.innerHTML = '▼'; }
-    else { content.classList.add('collapsed'); icon.innerHTML = '▶'; }
-}
-
-function toggleCategory() {
-    categoryExpanded = !categoryExpanded;
-    const content = document.getElementById('categoryContent');
-    const icon = document.getElementById('categoryToggleIcon');
-    if (categoryExpanded) { content.classList.remove('collapsed'); icon.innerHTML = '▼'; }
-    else { content.classList.add('collapsed'); icon.innerHTML = '▶'; }
-}
-
 function shareResult() {
     const car = document.getElementById('carValue')?.innerText || '—';
     const track = document.getElementById('trackValue')?.innerText || '—';
@@ -2446,6 +2414,40 @@ if (!locks.fuel && synced.fuel_value) {
     if (!locks.fuel) updateFuel();
     updateCategory();
 };
+
+// ========== ФУНКЦИИ СВОРАЧИВАНИЯ БЛОКОВ (ДОЛЖНЫ БЫТЬ ОБЪЯВЛЕНЫ РАНЕЕ) ==========
+function toggleSettings() {
+    settingsExpanded = !settingsExpanded;
+    const content = document.getElementById('settingsContent');
+    const icon = document.getElementById('settingsToggleIcon');
+    if (settingsExpanded) { content.classList.remove('collapsed'); icon.innerHTML = '▼'; }
+    else { content.classList.add('collapsed'); icon.innerHTML = '▶'; }
+}
+
+function toggleSimilar() {
+    similarExpanded = !similarExpanded;
+    const content = document.getElementById('similarContent');
+    const icon = document.getElementById('similarToggleIcon');
+    if (similarExpanded) { content.classList.remove('collapsed'); icon.innerHTML = '▼'; }
+    else { content.classList.add('collapsed'); icon.innerHTML = '▶'; }
+}
+
+function toggleCarsTrack() {
+    carsTrackExpanded = !carsTrackExpanded;
+    const content = document.getElementById('carsTrackContent');
+    const icon = document.getElementById('carsTrackToggleIcon');
+    if (carsTrackExpanded) { content.classList.remove('collapsed'); icon.innerHTML = '▼'; }
+    else { content.classList.add('collapsed'); icon.innerHTML = '▶'; }
+}
+
+function toggleCategory() {
+    categoryExpanded = !categoryExpanded;
+    const content = document.getElementById('categoryContent');
+    const icon = document.getElementById('categoryToggleIcon');
+    if (categoryExpanded) { content.classList.remove('collapsed'); icon.innerHTML = '▼'; }
+    else { content.classList.add('collapsed'); icon.innerHTML = '▶'; }
+}
+    
 function init() {
     loadShownCars();
     loadShownTracks();
