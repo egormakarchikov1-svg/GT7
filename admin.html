@@ -984,7 +984,7 @@ const locks = {
     weather: false,
     time: false,
     tires: false,
-    fuel: false
+    fuel: false,
     category: false
 };
 
@@ -1044,8 +1044,8 @@ async function generateAndSave() {
         if (!locks.tires) newCombo.tires_value = getRandomXValue();
         if (!locks.fuel) newCombo.fuel_value = getRandomXValue();
         if (!locks.category) {
-    const category = getRandomItem(categories);
-    newCombo.category_name = category.name;
+            const category = getRandomItem(categories);
+            newCombo.category_name = category.name;
             }
         
         // Показываем превью
