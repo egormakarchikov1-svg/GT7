@@ -1734,14 +1734,15 @@ async function generateAndSave() {
             newCombo.category_name = category.name;
         }
         
-        // Отображаем превью
+                // Отображаем превью
         document.getElementById('carValue').textContent = newCombo.car_name || '—';
         document.getElementById('trackValue').textContent = newCombo.track_name || '—';
         const cat = categories.find(c => c.name === newCombo.category_name);
         if (cat) document.getElementById('categoryValue').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
         if (newCombo.weather_name) document.getElementById('weatherValue').innerHTML = newCombo.weather_name;
         if (newCombo.time_name) {
-    document.getElementById('timeValue').innerHTML = `${newCombo.time_name} ${newCombo.time_multiplier || 'X1'}`;
+            document.getElementById('timeValue').innerHTML = `${newCombo.time_name} ${newCombo.time_multiplier || 'X1'}`;
+        }
         if (newCombo.tires_value) document.getElementById('tiresValue').textContent = newCombo.tires_value;
         if (newCombo.fuel_value) document.getElementById('fuelValue').textContent = newCombo.fuel_value;
         
