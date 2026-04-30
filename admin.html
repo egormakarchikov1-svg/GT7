@@ -1548,8 +1548,8 @@ if (cat) {
     }
 }
         
-        if (newCombo.tires_value) document.getElementById('tiresValue').textContent = newCombo.tires_value;
-        if (newCombo.fuel_value) document.getElementById('fuelValue').textContent = newCombo.fuel_value;
+        if (newCombo.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${newCombo.tires_value}</span>`;
+if (newCombo.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${newCombo.fuel_value}</span>`;
 
         console.log('=== ПРОВЕРКА ОТПРАВЛЯЕМЫХ ДАННЫХ ===');
         console.log('fuel_value:', newCombo.fuel_value);
