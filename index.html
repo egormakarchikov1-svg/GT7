@@ -1829,7 +1829,8 @@ let settingsExpanded = true;
 let similarExpanded = true;
 let carsTrackExpanded = true;
 let categoryExpanded = true;
-let userSyncEnabled = true; // По умолчанию синхронизация включена
+// Загружаем сохранённый режим синхронизации из localStorage
+let userSyncEnabled = localStorage.getItem('gt7_sync_enabled') !== 'false'; // По умолчанию true
 
 function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function getRandomXValue() { return `X${Math.floor(Math.random() * 20) + 1}`; }
@@ -2477,6 +2478,7 @@ function init() {
     document.getElementById('randomBtn').addEventListener('click', () => window.generateRandomRace());
     document.getElementById('refreshSimilarBtn').addEventListener('click', () => refreshSimilarCars());
     document.getElementById('syncToggleBtn').addEventListener('click', toggleSyncMode);
+    updateSyncButtonAppearance();
     
     // Кнопка сброса истории машин
     const resetBtn = document.getElementById('resetCarsBtn');
@@ -2509,6 +2511,9 @@ function init() {
     userSyncEnabled = !userSyncEnabled;
     const syncBtn = document.getElementById('syncToggleBtn');
     
+    // Сохраняем выбор пользователя в localStorage
+    localStorage.setItem('gt7_sync_enabled', userSyncEnabled);
+    
     if (userSyncEnabled) {
         syncBtn.innerHTML = '🔓 ВЫКЛ';
         syncBtn.style.background = '#3b82f6';
@@ -2519,6 +2524,19 @@ function init() {
         syncBtn.style.background = '#ef4444';
         // Генерируем случайную гонку без синхронизации
         setTimeout(() => window.generateRandomRace(), 100);
+    }
+}  // ← ВАЖНО: закрыть функцию toggleSyncMode()
+
+function updateSyncButtonAppearance() {
+    const syncBtn = document.getElementById('syncToggleBtn');
+    if (!syncBtn) return;
+    
+    if (userSyncEnabled) {
+        syncBtn.innerHTML = '🔓 ВЫКЛ';
+        syncBtn.style.background = '#3b82f6';
+    } else {
+        syncBtn.innerHTML = '🔒 ВКЛ';
+        syncBtn.style.background = '#ef4444';
     }
 }
 
