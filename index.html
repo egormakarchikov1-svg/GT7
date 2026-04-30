@@ -891,6 +891,27 @@
         #shareBtn:hover {
             background: #2563eb;
         }
+
+        /* Красные кружки для шин и топлива */
+#tiresValue, #fuelValue {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#tiresValue .time-x-badge,
+#fuelValue .time-x-badge {
+    display: inline-block;
+    color: #ff4d4d;
+    font-weight: 700;
+    background: rgba(255, 77, 77, 0.15);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    min-width: 45px;
+    text-align: center;
+}
+        
     </style>
 </head>
 <body>
@@ -905,113 +926,114 @@
             </div>
             <div class="cars-track-toggle-icon" id="carsTrackToggleIcon">▼</div>
         </div>
-        <div class="cars-track-content" id="carsTrackContent">
-            <div class="params-grid">
-                <!-- Блок МАШИНА -->
-                <div class="param-block" id="carBlock" data-param="car">
-                    <div class="param-header">
-                        <button class="lock-btn" data-param="car" data-state="unlocked">🔓</button>
-                        <div class="param-label">
-                            <img src="car-icon.png" class="header-icon" alt="car">
-                            <span>МАШИНА</span>
-                        </div>
-                        <div style="width: 48px;"></div>
+       <div class="cars-track-content" id="carsTrackContent">
+        <div class="params-grid">
+            <!-- Блок МАШИНА -->
+            <div class="param-block" id="carBlock" data-param="car">
+                <div class="param-header">
+                    <button class="lock-btn" data-param="car" data-state="unlocked">🔓</button>
+                    <div class="param-label">
+                        <img src="car-icon.png" class="header-icon" alt="car">
+                        <span>МАШИНА</span>
                     </div>
-                    <div class="icon-container">
-                        <img class="car-icon" id="carIcon" src="" alt="Иконка" style="display: none;">
-                    </div>
-                    <div class="param-value" id="carValue">—</div>
+                    <div style="width: 48px;"></div>
                 </div>
-                
-                <!-- Блок ТРАССА -->
-                <div class="param-block" id="trackBlock" data-param="track">
-                    <div class="param-header">
-                        <button class="lock-btn" data-param="track" data-state="unlocked">🔓</button>
-                        <div class="param-label">
-                            <img src="track-icon.png" class="header-icon" alt="track">
-                            <span>ТРАССА</span>
-                        </div>
-                        <div style="width: 48px;"></div>
-                    </div>
-                    <div class="icon-container">
-                        <img class="track-icon" id="trackIcon" src="" alt="Иконка" style="display: none;">
-                    </div>
-                    <div class="param-value" id="trackValue">—</div>
+                <div class="icon-container">
+                    <img class="car-icon" id="carIcon" src="" alt="Иконка" style="display: none;">
                 </div>
+                <div class="param-value" id="carValue">—</div>
             </div>
+            
+            <!-- Блок ТРАССА -->
+            <div class="param-block" id="trackBlock" data-param="track">
+                <div class="param-header">
+                    <button class="lock-btn" data-param="track" data-state="unlocked">🔓</button>
+                    <div class="param-label">
+                        <img src="track-icon.png" class="header-icon" alt="track">
+                        <span>ТРАССА</span>
+                    </div>
+                    <div style="width: 48px;"></div>
+                </div>
+                <div class="icon-container">
+                    <img class="track-icon" id="trackIcon" src="" alt="Иконка" style="display: none;">
+                </div>
+                <div class="param-value" id="trackValue">—</div>
+            </div>
+        </div>
+    </div>  <!-- ← ЗАКРЫТИЕ cars-track-content -->
+</div>  <!-- ← ЗАКРЫТИЕ cars-track-container -->
 
-    
-    <!-- Блок ГОНОЧНЫЙ КЛАСС (сворачиваемый) -->
-    <div class="category-container" id="categoryContainer">
-        <div class="category-header-clickable" id="categoryHeader">
-            <div style="width: 30px;"></div>
-            <div class="category-title">
-                <span>🏆</span> ГОНОЧНЫЙ КЛАСС <span>🏆</span>
-            </div>
-            <div class="category-toggle-icon" id="categoryToggleIcon">▼</div>
+<!-- Блок ГОНОЧНЫЙ КЛАСС (сворачиваемый) -->
+<div class="category-container" id="categoryContainer">
+    <div class="category-header-clickable" id="categoryHeader">
+        <div style="width: 30px;"></div>
+        <div class="category-title">
+            <span>🏆</span> ГОНОЧНЫЙ КЛАСС <span>🏆</span>
         </div>
-        <div class="category-content" id="categoryContent">
-            <div class="category-value" id="categoryValue">—</div>
-        </div>
+        <div class="category-toggle-icon" id="categoryToggleIcon">▼</div>
     </div>
-    
-    <!-- БЛОК НАСТРОЙКИ СЛОЖНОСТИ (раскрывающийся) -->
-    <div class="settings-container" id="settingsContainer">
-        <div class="settings-header-clickable" id="settingsHeader">
-            <div style="width: 30px;"></div>
-            <div class="settings-title">
-                <span>⚙️</span> НАСТРОЙКИ СЛОЖНОСТИ <span>⚙️</span>
-            </div>
-            <div class="toggle-icon" id="settingsToggleIcon">▼</div>
+    <div class="category-content" id="categoryContent">
+        <div class="category-value" id="categoryValue">—</div>
+    </div>
+</div>
+
+<!-- БЛОК НАСТРОЙКИ СЛОЖНОСТИ (раскрывающийся) - ТОЛЬКО ОДИН! -->
+<div class="settings-container" id="settingsContainer">
+    <div class="settings-header-clickable" id="settingsHeader">
+        <div style="width: 30px;"></div>
+        <div class="settings-title">
+            <span>⚙️</span> НАСТРОЙКИ СЛОЖНОСТИ <span>⚙️</span>
         </div>
-        <div class="settings-content" id="settingsContent">
-            <div class="settings-items">
-                <div class="settings-item" id="weatherBlock" data-param="weather">
-                    <div class="settings-header">
-                        <div class="settings-label">
-                            <img src="https://images.icon-icons.com/1603/PNG/96/weather-forcast-storm-rain-thunder-day_108615.png" class="settings-icon">
-                            <span>ПОГОДА</span>
-                        </div>
-                        <button class="settings-lock-btn" data-param="weather" data-state="unlocked">🔓</button>
+        <div class="toggle-icon" id="settingsToggleIcon">▼</div>
+    </div>
+    <div class="settings-content" id="settingsContent">
+        <div class="settings-items">
+            <div class="settings-item" id="weatherBlock" data-param="weather">
+                <div class="settings-header">
+                    <div class="settings-label">
+                        <img src="https://images.icon-icons.com/1603/PNG/96/weather-forcast-storm-rain-thunder-day_108615.png" class="settings-icon">
+                        <span>ПОГОДА</span>
                     </div>
-                    <div class="settings-value settings-value-small" id="weatherValue">—</div>
+                    <button class="settings-lock-btn" data-param="weather" data-state="unlocked">🔓</button>
                 </div>
-                
-                <div class="settings-item" id="timeBlock" data-param="time">
-                    <div class="settings-header">
-                        <div class="settings-label">
-                            <img src="https://images.icon-icons.com/3780/PNG/96/clock_timer_calendar_alarm_date_schedule_hour_watch_stopwatch_time_icon_231897.png" class="settings-icon">
-                            <span>ВРЕМЯ</span>
-                        </div>
-                        <button class="settings-lock-btn" data-param="time" data-state="unlocked">🔓</button>
+                <div class="settings-value settings-value-small" id="weatherValue">—</div>
+            </div>
+            
+            <div class="settings-item" id="timeBlock" data-param="time">
+                <div class="settings-header">
+                    <div class="settings-label">
+                        <img src="https://images.icon-icons.com/3780/PNG/96/clock_timer_calendar_alarm_date_schedule_hour_watch_stopwatch_time_icon_231897.png" class="settings-icon">
+                        <span>ВРЕМЯ</span>
                     </div>
-                    <div class="settings-value settings-value-small" id="timeValue">—</div>
+                    <button class="settings-lock-btn" data-param="time" data-state="unlocked">🔓</button>
                 </div>
-                
-                <div class="settings-item" id="tiresBlock" data-param="tires">
-                    <div class="settings-header">
-                        <div class="settings-label">
-                            <img src="https://images.icon-icons.com/577/PNG/96/Wheel_icon-icons.com_54891.png" class="settings-icon">
-                            <span>ИЗНОС ШИН</span>
-                        </div>
-                        <button class="settings-lock-btn" data-param="tires" data-state="unlocked">🔓</button>
+                <div class="settings-value settings-value-small" id="timeValue">—</div>
+            </div>
+            
+            <div class="settings-item" id="tiresBlock" data-param="tires">
+                <div class="settings-header">
+                    <div class="settings-label">
+                        <img src="https://images.icon-icons.com/577/PNG/96/Wheel_icon-icons.com_54891.png" class="settings-icon">
+                        <span>ИЗНОС ШИН</span>
                     </div>
-                    <div class="settings-value" id="tiresValue">X1</div>
+                    <button class="settings-lock-btn" data-param="tires" data-state="unlocked">🔓</button>
                 </div>
-                
-                <div class="settings-item" id="fuelBlock" data-param="fuel">
-                    <div class="settings-header">
-                        <div class="settings-label">
-                            <img src="https://images.icon-icons.com/1448/PNG/96/42568fuelpump_98960.png" class="settings-icon">
-                            <span>РАСХОД ТОПЛИВА</span>
-                        </div>
-                        <button class="settings-lock-btn" data-param="fuel" data-state="unlocked">🔓</button>
+                <div class="settings-value" id="tiresValue"><span class="time-x-badge">X1</span></div>
+            </div>
+            
+            <div class="settings-item" id="fuelBlock" data-param="fuel">
+                <div class="settings-header">
+                    <div class="settings-label">
+                        <img src="https://images.icon-icons.com/1448/PNG/96/42568fuelpump_98960.png" class="settings-icon">
+                        <span>РАСХОД ТОПЛИВА</span>
                     </div>
-                    <div class="settings-value" id="fuelValue">X1</div>
+                    <button class="settings-lock-btn" data-param="fuel" data-state="unlocked">🔓</button>
                 </div>
+                <div class="settings-value" id="fuelValue"><span class="time-x-badge">X1</span></div>
             </div>
         </div>
     </div>
+</div>
 
     
 </script>
@@ -1979,8 +2001,8 @@ function updateTimeByTrack(trackData) {
     }
 }
 
-function updateTires() { if (!locks.tires) document.getElementById('tiresValue').textContent = getRandomXValue(); }
-function updateFuel() { if (!locks.fuel) document.getElementById('fuelValue').textContent = getRandomXValue(); }
+function updateTires() { if (!locks.tires) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${getRandomXValue()}</span>`; }
+function updateFuel() { if (!locks.fuel) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${getRandomXValue()}</span>`; }
 
 function updateWeather() {
     if (locks.weather) return;
@@ -2372,12 +2394,12 @@ if (!locks.time && synced.time_name && synced.time_multiplier) {
         
         // 5. Шины и топливо
         if (!locks.tires && synced.tires_value) {
-            document.getElementById('tiresValue').textContent = synced.tires_value;
-        }
-        
-        if (!locks.fuel && synced.fuel_value) {
-            document.getElementById('fuelValue').textContent = synced.fuel_value;
-        }
+    document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${synced.tires_value}</span>`;
+}
+
+if (!locks.fuel && synced.fuel_value) {
+    document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${synced.fuel_value}</span>`;
+}
 
         if (!locks.category && synced.category_name) {
     const category = categories.find(c => c.name === synced.category_name);
