@@ -620,16 +620,19 @@
     </div>
     
     <!-- Блок ГОНОЧНЫЙ КЛАСС -->
-    <div class="category-container" id="categoryContainer">
-        <div class="category-header-clickable" id="categoryHeader">
-            <div style="width: 30px;"></div>
-            <div class="category-title">🏆 ГОНОЧНЫЙ КЛАСС 🏆</div>
-            <div class="category-toggle-icon" id="categoryToggleIcon">▼</div>
-        </div>
-        <div class="category-content" id="categoryContent">
-            <div class="category-value" id="categoryValue">—</div>
+<div class="category-container" id="categoryContainer">
+    <div class="category-header-clickable" id="categoryHeader">
+        <div style="width: 30px;"></div>
+        <div class="category-title">🏆 ГОНОЧНЫЙ КЛАСС 🏆</div>
+        <div class="category-toggle-icon" id="categoryToggleIcon">▼</div>
+    </div>
+    <div class="category-content" id="categoryContent">
+        <div class="category-value" style="justify-content: space-between; display: flex; align-items: center;">
+            <span id="categoryText">—</span>
+            <button class="lock-btn unlocked" data-param="category" id="categoryLockBtn" style="margin-left: 15px; flex-shrink: 0;">🔓</button>
         </div>
     </div>
+</div>
     
     <!-- Блок НАСТРОЙКИ СЛОЖНОСТИ -->
     <div class="settings-container" id="settingsContainer">
@@ -1665,10 +1668,11 @@ async function loadCurrentCombo() {
             }
             
             // Категория
-            const category = categories.find(c => c.name === tableData.category_name);
-            if (category) {
-                document.getElementById('categoryValue').innerHTML = `${category.icon} ${category.name} (${category.description})`;
-            }
+            // Категория
+const category = categories.find(c => c.name === tableData.category_name);
+if (category) {
+    document.getElementById('categoryText').innerHTML = `${category.icon} ${category.name} (${category.description})`;
+}
             
             // Погода
             if (tableData.weather_name) {
@@ -1728,15 +1732,25 @@ async function generateAndSave() {
         if (!locks.fuel) newCombo.fuel_value = getRandomXValue();
         
         if (!locks.category) {
-            const category = getRandomItem(categories);
-            newCombo.category_name = category.name;
-        }
+    const category = getRandomItem(categories);
+    newCombo.category_name = category.name;
+} else {
+    // Если заблокирована — оставляем текущую категорию из таблицы
+    const currentCategoryText = document.getElementById('categoryText').innerText;
+    const currentCategory = categories.find(c => currentCategoryText.includes(c.name));
+    if (currentCategory) {
+        newCombo.category_name = currentCategory.name;
+    }
+}
         
                 // Отображаем превью
         document.getElementById('carValue').textContent = newCombo.car_name || '—';
         document.getElementById('trackValue').textContent = newCombo.track_name || '—';
         const cat = categories.find(c => c.name === newCombo.category_name);
-        if (cat) document.getElementById('categoryValue').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
+if (cat) {
+    document.getElementById('categoryText').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
+}
+        
         if (newCombo.weather_name) document.getElementById('weatherValue').innerHTML = newCombo.weather_name;
         if (newCombo.time_name) {
             document.getElementById('timeValue').innerHTML = `${newCombo.time_name} ${newCombo.time_multiplier || 'X1'}`;
