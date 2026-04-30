@@ -443,23 +443,68 @@
 
 <script>
 
+// ============================================
+// ЗАЩИТА АДМИН-ПАНЕЛИ С МОДАЛЬНЫМ ОКНОМ
+// ============================================
+
 // Секретный ключ для доступа (СМЕНИТЕ НА СВОЙ!)
 const ADMIN_SECRET_KEY = '939030312';
 
 // Переменная для хранения статуса доступа
 let adminAccessGranted = false;
 
-// Функция проверки доступа по URL параметру
+// Функция показа модального окна для ввода пароля
+function showPasswordModal() {
+    // Проверяем, нет ли уже модального окна
+    if (document.getElementById('adminPasswordModal')) return;
+    
+    const modalHtml = `
+        <div id="adminPasswordModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:10000; display:flex; align-items:center; justify-content:center;">
+            <div style="background:#1e293b; padding:25px; border-radius:20px; text-align:center; width:280px; box-shadow:0 0 20px rgba(255,77,77,0.3); border:1px solid #ff4d4d;">
+                <div style="font-size:48px; margin-bottom:10px;">👑</div>
+                <h3 style="color:#ff4d4d; margin-bottom:15px;">Вход в админ-панель</h3>
+                <input type="password" id="adminPasswordInput" placeholder="Введите пароль" style="width:100%; padding:10px; margin-bottom:15px; border-radius:10px; background:#334155; color:white; border:1px solid #ff4d4d; text-align:center; font-size:16px;">
+                <button id="adminPasswordSubmit" style="background:#ff4d4d; padding:10px 20px; border:none; border-radius:10px; color:white; font-weight:bold; width:100%; cursor:pointer; font-size:16px;">ВОЙТИ</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    const submitBtn = document.getElementById('adminPasswordSubmit');
+    const passwordInput = document.getElementById('adminPasswordInput');
+    
+    const checkPassword = () => {
+        if (passwordInput.value === ADMIN_SECRET_KEY) {
+            adminAccessGranted = true;
+            localStorage.setItem('gt7_admin_access', 'true');
+            document.getElementById('adminPasswordModal').remove();
+            alert('✅ Админ-доступ активирован!');
+            location.reload();
+        } else {
+            alert('❌ Неверный пароль!');
+            passwordInput.value = '';
+            passwordInput.focus();
+        }
+    };
+    
+    submitBtn.onclick = checkPassword;
+    passwordInput.onkeypress = (e) => {
+        if (e.key === 'Enter') checkPassword();
+    };
+    
+    passwordInput.focus();
+}
+
+// Основная функция проверки доступа
 function checkAdminAccess() {
-    // Проверяем URL параметры
+    // Проверяем URL параметры (для браузера)
     const urlParams = new URLSearchParams(window.location.search);
     const secretKey = urlParams.get('admin');
     
-    // Если ключ совпадает - активируем админ-доступ
     if (secretKey === ADMIN_SECRET_KEY) {
         adminAccessGranted = true;
         localStorage.setItem('gt7_admin_access', 'true');
-        // Убираем параметр из URL для чистоты
         window.history.replaceState({}, document.title, window.location.pathname);
         alert('✅ Админ-доступ активирован!');
         return true;
@@ -469,6 +514,14 @@ function checkAdminAccess() {
     if (localStorage.getItem('gt7_admin_access') === 'true') {
         adminAccessGranted = true;
         return true;
+    }
+    
+    // Проверяем, открыто ли приложение как PWA (с рабочего стола)
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    
+    // Если нет доступа и это PWA - показываем модальное окно
+    if (isPWA) {
+        setTimeout(() => showPasswordModal(), 100);
     }
     
     return false;
@@ -487,7 +540,6 @@ function logoutAdmin() {
 
 // Добавляем кнопку выхода в DOM (если админ-доступ есть)
 if (adminAccessGranted) {
-    // Добавляем кнопку выхода в блок админ-баннера
     const adminBanner = document.querySelector('.admin-banner');
     if (adminBanner) {
         const logoutBtn = document.createElement('button');
@@ -506,6 +558,9 @@ if (adminAccessGranted) {
         adminBanner.appendChild(logoutBtn);
     }
 }
+
+// Также добавим возможность открыть модалку по команде (если нужно перелогиниться)
+window.requestAdminLogin = showPasswordModal;
     
     
     
@@ -1490,6 +1545,7 @@ if (tableData.fuel_value) document.getElementById('fuelValue').innerHTML = `<spa
 
 // ========== ГЕНЕРАЦИЯ И СОХРАНЕНИЕ ==========
 async function generateAndSave() {
+    // ПРОВЕРКА АДМИН-ДОСТУПА
     if (!adminAccessGranted) {
         document.getElementById('status').innerHTML = '⛔ Доступ запрещён! Только для администратора.';
         document.getElementById('status').className = 'status error';
