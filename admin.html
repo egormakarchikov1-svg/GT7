@@ -345,6 +345,31 @@
         font-size: 16px;
     }
 }
+
+/* Красные кружки для шин и топлива (как у времени) */
+#tiresValue .time-x-badge,
+#fuelValue .time-x-badge {
+    display: inline-block;
+    background: #ff4d4d;
+    color: white;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 16px;
+    min-width: 60px;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(255, 77, 77, 0.3);
+}
+
+/* Для телефонов */
+@media (max-width: 480px) {
+    #tiresValue .time-x-badge,
+    #fuelValue .time-x-badge {
+        padding: 3px 8px;
+        font-size: 12px;
+        min-width: 45px;
+    }
+}
         
     </style>
 </head>
@@ -452,6 +477,7 @@
                         <button class="settings-lock-btn unlocked" data-param="tires">🔓</button>
                     </div>
                     <div class="settings-value" id="tiresValue"><span class="time-x-badge">X1</span></div>
+                    <div class="settings-value" id="fuelValue"><span class="time-x-badge">X1</span></div>
                 </div>
                 
                 <div class="settings-item" data-param="fuel">
@@ -1464,8 +1490,8 @@ async function loadCurrentCombo() {
             }
             
             // Шины и топливо с красными кружками
-            if (tableData.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${tableData.tires_value}</span>`;
-            if (tableData.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${tableData.fuel_value}</span>`;
+           if (tableData.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${tableData.tires_value}</span>`;
+if (tableData.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${tableData.fuel_value}</span>`;
         }
     } catch(e) {
         console.error('Ошибка загрузки комбинации:', e);
