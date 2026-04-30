@@ -1867,6 +1867,10 @@ function getWeatherByTrackType(weatherType) {
 }
 
 function updateCategory() {
+    // Если включён админский режим (синхронизация) — НЕ меняем категорию
+    if (syncedModeActive && syncedComboData && syncedComboData.category_name) {
+        return;
+    }
     const category = getRandomItem(categories);
     document.getElementById('categoryValue').innerHTML = `${category.icon} ${category.name} (${category.description})`;
 }
