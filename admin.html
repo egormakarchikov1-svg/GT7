@@ -9,7 +9,7 @@
     <link rel="shortcut icon" href="gt7.png">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#ff4d4d">
-    
+
     <style>
         /* ===== ОСНОВНЫЕ СТИЛИ (как в index.html) ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -1467,9 +1467,8 @@ if (tableData.time_name) {
 }
             
             // Шины и топливо
-            if (tableData.tires_value) document.getElementById('tiresValue').textContent = tableData.tires_value;
-            if (tableData.fuel_value) document.getElementById('fuelValue').textContent = tableData.fuel_value;
-        }
+            if (tableData.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${tableData.tires_value}</span>`;
+if (tableData.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${tableData.fuel_value}</span>`;
     } catch(e) {
         console.error('Ошибка загрузки комбинации:', e);
     }
