@@ -1745,6 +1745,12 @@ async function generateAndSave() {
         }
         if (newCombo.tires_value) document.getElementById('tiresValue').textContent = newCombo.tires_value;
         if (newCombo.fuel_value) document.getElementById('fuelValue').textContent = newCombo.fuel_value;
+
+        console.log('=== ПРОВЕРКА ОТПРАВЛЯЕМЫХ ДАННЫХ ===');
+        console.log('fuel_value:', newCombo.fuel_value);
+        console.log('category_name:', newCombo.category_name);
+        console.log('tires_value:', newCombo.tires_value);
+        console.log('car_name:', newCombo.car_name);
         
         // Отправляем в Google Sheets
         await fetch(APPS_SCRIPT_URL, {
