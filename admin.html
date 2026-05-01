@@ -1730,8 +1730,7 @@ window.selectCar = selectCar;
 loadCurrentCombo();
 
 // ============================================
-// ГОЛОСОВОЙ ПОМОЩНИК ДЛЯ VR (ФИНАЛЬНАЯ ВЕРСИЯ)
-// ТОЛЬКО ИКОНКА МИКРОФОНА + КРАТКИЕ ОТВЕТЫ
+// ГОЛОСОВОЙ ПОМОЩНИК ДЛЯ VR (АВТОМАТИЧЕСКОЕ ПРОБУЖДЕНИЕ + КРАТКАЯ ПОГОДА)
 // ============================================
 
 let isVoiceActive = false;
@@ -1763,24 +1762,6 @@ function speakText(text) {
 function getWeatherCode(weatherName) {
     const match = weatherName.match(/^([A-Z]\d{2})/);
     return match ? match[1] : weatherName.substring(0, 3);
-}
-
-// Краткое описание погоды по коду (для полной версии)
-function getWeatherShortDescription(code) {
-    const weatherMap = {
-        'S01': 'Ясно', 'S02': 'Малооблачно', 'S03': 'Переменная облачность',
-        'S04': 'Лёгкая дымка', 'S05': 'Солнечно', 'S06': 'Высокая влажность',
-        'S07': 'Лёгкий туман', 'S08': 'Густая облачность', 'S09': 'Высокая облачность',
-        'S10': 'Дымка', 'S11': 'Горный туман', 'S12': 'Муссонные облака',
-        'S13': 'Редкие облака', 'S14': 'Плотные облака', 'S15': 'Лёгкая дымка',
-        'S16': 'Дымка и облака', 'S17': 'Высокая облачность', 'S18': 'Плотная облачность',
-        'C01': 'Пасмурно', 'C02': 'Тепло', 'C03': 'Темно', 'C04': 'Прохладно',
-        'C05': 'Плотные облака', 'C06': 'Тяжёлые облака',
-        'R01': 'Мелкий дождь', 'R02': 'Умеренный дождь', 'R03': 'Сильный дождь',
-        'R04': 'Гроза', 'R05': 'Шторм', 'R06': 'Тропический ливень',
-        'R07': 'Шквалистый дождь', 'R08': 'Экстремальный ливень'
-    };
-    return weatherMap[code] || code;
 }
 
 // ПОГОДА (только код)
@@ -1933,11 +1914,12 @@ function stopListening() {
 function enterSleepMode() {
     if (isVoiceActive && !isSleepMode) {
         isSleepMode = true;
+        isVoiceActive = false;  // Микрофон продолжает слушать, но команды игнорируются
         console.log('💤 Вход в режим дремы');
-        updateVoiceStatus('💤 Режим ожидания. Скажите "Проснись"', false);
+        updateVoiceStatus('💤 Режим ожидания... Скажите любую команду', false);
         
         if (voiceAssistantEnabled) {
-            const utterance = new SpeechSynthesisUtterance('Режим ожидания. Скажите проснись');
+            const utterance = new SpeechSynthesisUtterance('Режим ожидания');
             utterance.lang = 'ru-RU';
             utterance.rate = 0.85;
             window.speechSynthesis.cancel();
@@ -1955,16 +1937,9 @@ function enterSleepMode() {
 function wakeFromSleep() {
     if (isSleepMode) {
         isSleepMode = false;
-        console.log('🔊 Пробуждение из режима дремы');
-        updateVoiceStatus('🎤 Проснулся! Говорите команды', false);
-        
-        if (voiceAssistantEnabled) {
-            const utterance = new SpeechSynthesisUtterance('Слушаю');
-            utterance.lang = 'ru-RU';
-            utterance.rate = 0.85;
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(utterance);
-        }
+        isVoiceActive = true;
+        console.log('🔊 Автоматическое пробуждение');
+        updateVoiceStatus('🎤 Слушаю команду...', false);
         
         const micBtn = document.getElementById('micBtn');
         if (micBtn) {
@@ -1979,19 +1954,15 @@ function wakeFromSleep() {
 // ============================================
 
 function processVoiceCommand(command) {
-    console.log('🎤 Обработка команды:', command);
+    console.log('🎤 Распознано:', command);
     
-    // Режим дремы
+    // АВТОМАТИЧЕСКОЕ ПРОБУЖДЕНИЕ: если в режиме дремы - просыпаемся при любой команде
     if (isSleepMode) {
-        if (command.includes('проснись') || command.includes('просыпайся') || 
-            command.includes('включи голос') || command.includes('включи помощника') ||
-            command.includes('разбуди')) {
-            wakeFromSleep();
-        }
-        return;
+        wakeFromSleep();
+        // Далее обрабатываем команду
     }
     
-    // Переход в режим дремы
+    // === КОМАНДЫ ДЛЯ ПЕРЕХОДА В РЕЖИМ ДРЕМЫ ===
     if (command.includes('выключи голос') || command.includes('выключи помощника') || 
         command.includes('замолчи') || command.includes('хватит') || command.includes('стоп') ||
         command.includes('отдохни') || command.includes('спи')) {
@@ -2029,7 +2000,8 @@ function processVoiceCommand(command) {
         speakWeather();
     }
     // Время
-    else if (command.includes('какое время') || command.includes('время суток') || command.includes('который час')) {
+    else if (command.includes('какое время') || command.includes('время суток') || 
+             command.includes('который час') || command.includes('освещение')) {
         speakTimeShort();
     }
     // Шины
@@ -2073,9 +2045,9 @@ function processVoiceCommand(command) {
     }
     // Помощь
     else if (command.includes('помощь') || command.includes('что ты умеешь') || command.includes('команды')) {
-        const helpText = 'Команды: условия гонки, какая машина, новая гонка, погода, время, шины, топливо, похожие авто, первый похожий, стоп, проснись';
+        const helpText = 'Команды: условия гонки, какая машина, новая гонка, погода, время, шины, топливо, похожие авто, первый похожий, стоп, помощь';
         speakText(helpText);
-        updateVoiceStatus('Говорите: условия гонки, новая гонка, погода, время, стоп', false);
+        updateVoiceStatus('Говорите: условия гонки, новая гонка, погода, время, шины, топливо, похожие авто, стоп', false);
     }
 }
 
@@ -2126,13 +2098,17 @@ function initVoiceVR() {
     recognition.onerror = (event) => {
         if (event.error === 'not-allowed') {
             updateVoiceStatus('Нет доступа к микрофону', true);
+        } else if (event.error === 'no-speech') {
+            // Если тишина, не выключаемся
         }
     };
     
     recognition.onend = () => {
-        if (isVoiceActive && !isSleepMode) {
+        // Перезапускаем только если активен режим прослушивания
+        if ((isVoiceActive || isSleepMode) && !wasVoiceActiveBeforeSleep) {
             try {
                 recognition.start();
+                console.log('🔄 Прослушивание перезапущено');
             } catch(e) {}
         }
     };
