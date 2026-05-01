@@ -1728,6 +1728,534 @@ document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
 
 window.selectCar = selectCar;
 loadCurrentCombo();
+
+// ============================================
+// ГОЛОСОВОЙ ПОМОЩНИК ДЛЯ VR (iOS + Android)
+// С АВТОМАТИЧЕСКИМ ВОССТАНОВЛЕНИЕМ ПОСЛЕ РАЗБЛОКИРОВКИ
+// ============================================
+
+let isVoiceActive = false;
+let recognition = null;
+let voiceAssistantEnabled = true;
+let wasVoiceActiveBeforeSleep = false;
+
+// ============================================
+// ФУНКЦИИ ОЗВУЧИВАНИЯ
+// ============================================
+
+function speakText(text) {
+    if (!voiceAssistantEnabled) return;
+    if (!('speechSynthesis' in window)) return;
+    
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'ru-RU';
+    utterance.rate = 0.85;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    
+    window.speechSynthesis.speak(utterance);
+}
+
+function speakCurrentRace() {
+    const car = document.getElementById('carValue').textContent;
+    const track = document.getElementById('trackValue').textContent;
+    const category = document.getElementById('categoryText').textContent;
+    const weather = document.getElementById('weatherValue').textContent;
+    let time = document.getElementById('timeValue').textContent;
+    const tires = document.getElementById('tiresValue').textContent;
+    const fuel = document.getElementById('fuelValue').textContent;
+    
+    time = time.replace(/x/i, 'X');
+    
+    const text = `Условия гонки: ${car}. Трасса: ${track}. Класс: ${category}. Погода: ${weather}. Время суток: ${time}. Износ шин: ${tires}. Расход топлива: ${fuel}.`;
+    speakText(text);
+}
+
+function speakShortRace() {
+    const car = document.getElementById('carValue').textContent;
+    const track = document.getElementById('trackValue').textContent;
+    speakText(`Гонка: ${car} на трассе ${track}`);
+}
+
+function speakSimilarCars() {
+    if (!voiceAssistantEnabled) return;
+    
+    const refCar = currentRefCar;
+    if (!refCar) {
+        speakText('Сначала выберите референсный автомобиль');
+        return;
+    }
+    
+    const similarItems = document.querySelectorAll('#similarList li');
+    if (!similarItems.length || similarItems[0].innerText.includes('Нажмите на любой автомобиль')) {
+        speakText('Список похожих автомобилей пуст');
+        return;
+    }
+    
+    let text = `Похожие автомобили для ${refCar.name}: `;
+    const similarCars = [];
+    
+    for (let i = 0; i < similarItems.length && i < 5; i++) {
+        const item = similarItems[i];
+        const carNameElement = item.querySelector('.car-name');
+        if (carNameElement) {
+            let carName = carNameElement.innerText;
+            carName = carName.replace(/^\d+\.\s*/, '');
+            const similaritySpan = item.querySelector('.similarity-badge');
+            const similarity = similaritySpan ? similaritySpan.innerText : '';
+            similarCars.push(`${carName}, сходство ${similarity}`);
+        }
+    }
+    
+    if (similarCars.length > 0) {
+        text += similarCars.join('. ');
+        speakText(text);
+        updateVoiceStatus(`Озвучиваю ${similarCars.length} похожих автомобилей`, false);
+    } else {
+        speakText('Не удалось найти похожие автомобили');
+    }
+}
+
+function speakSimilarCarByIndex(index) {
+    if (!voiceAssistantEnabled) return;
+    
+    const similarItems = document.querySelectorAll('#similarList li');
+    if (!similarItems.length || index > similarItems.length) {
+        speakText('Автомобиль не найден');
+        return;
+    }
+    
+    const item = similarItems[index - 1];
+    const carNameElement = item.querySelector('.car-name');
+    const statsSpans = item.querySelectorAll('.car-stats span');
+    
+    if (carNameElement) {
+        let carName = carNameElement.innerText;
+        carName = carName.replace(/^\d+\.\s*/, '');
+        
+        let stats = '';
+        if (statsSpans.length >= 5) {
+            stats = `Рейтинг ${statsSpans[0].innerText.replace('⭐', '')}, ${statsSpans[1].innerText} лошадиных сил, момент ${statsSpans[2].innerText} Ньютон метров, вес ${statsSpans[3].innerText} килограмм, удельная мощность ${statsSpans[4].innerText} лошадиных сил на тонну`;
+        }
+        
+        speakText(`${index}-й похожий автомобиль: ${carName}. ${stats}`);
+        updateVoiceStatus(`Озвучиваю ${carName}`, false);
+    }
+}
+
+// ============================================
+// ОБРАБОТКА ГОЛОСОВЫХ КОМАНД
+// ============================================
+
+function processVoiceCommand(command) {
+    console.log('🎤 Обработка команды:', command);
+    
+    // ВЫКЛЮЧИТЬ ПОМОЩНИКА
+    if (command.includes('выключи голос') || command.includes('выключи помощника') || command.includes('замолчи') || command.includes('хватит') || command.includes('стоп')) {
+        if (isVoiceActive) {
+            stopListening();
+            const voiceToggleBtn = document.getElementById('voiceToggleBtn');
+            if (voiceToggleBtn) {
+                voiceToggleBtn.innerHTML = '🎤 ВКЛЮЧИТЬ ГОЛОС';
+                voiceToggleBtn.style.background = '#22c55e';
+            }
+            updateVoiceStatus('Голосовой помощник выключен. Нажмите кнопку для включения.', false);
+            speakText('Голосовой помощник выключен');
+            wasVoiceActiveBeforeSleep = false;
+        }
+        return;
+    }
+    
+    // ВКЛЮЧИТЬ ПОМОЩНИКА
+    if (command.includes('включи голос') || command.includes('включи помощника')) {
+        if (!isVoiceActive) {
+            startListening();
+            const voiceToggleBtn = document.getElementById('voiceToggleBtn');
+            if (voiceToggleBtn) {
+                voiceToggleBtn.innerHTML = '🔴 ВЫКЛЮЧИТЬ ГОЛОС';
+                voiceToggleBtn.style.background = '#ef4444';
+            }
+            updateVoiceStatus('🎤 Голосовой помощник слушает... Говорите команды', false);
+            speakText('Включаю голосовой помощник');
+            wasVoiceActiveBeforeSleep = true;
+        }
+        return;
+    }
+    
+    // УСЛОВИЯ ГОНКИ (полные)
+    if (command.includes('условия гонки') || command.includes('какие условия') || command.includes('что за гонка') || command.includes('расскажи условия')) {
+        updateVoiceStatus('Озвучиваю условия гонки...', false);
+        speakCurrentRace();
+    }
+    // КРАТКИЕ УСЛОВИЯ
+    else if (command.includes('какая машина') || command.includes('какой автомобиль') || command.includes('что за машина') || command.includes('какой трасса') || command.includes('где гонка')) {
+        updateVoiceStatus('Озвучиваю...', false);
+        speakShortRace();
+    }
+    // НОВАЯ ГОНКА
+    else if (command.includes('новая гонка') || command.includes('следующая гонка') || command.includes('сгенерируй') ||
+             command.includes('случайная гонка') || command.includes('новые условия') || command.includes('новые параметры') ||
+             command.includes('другую гонку') || command.includes('поменяй гонку')) {
+        updateVoiceStatus('Генерирую новую гонку...', false);
+        speakText('Создаю новые условия гонки');
+        generateAndSave();
+        setTimeout(() => { speakCurrentRace(); }, 500);
+    }
+    // ПОГОДА
+    else if (command.includes('погода') || command.includes('какая погода')) {
+        const weather = document.getElementById('weatherValue').textContent;
+        speakText(`Погода: ${weather}`);
+        updateVoiceStatus(`Погода: ${weather}`, false);
+    }
+    // ВРЕМЯ
+    else if (command.includes('какое время') || command.includes('время суток') || command.includes('освещение')) {
+        let time = document.getElementById('timeValue').textContent;
+        time = time.replace(/x/i, 'икс');
+        speakText(`Время суток: ${time}`);
+        updateVoiceStatus(`Время: ${time}`, false);
+    }
+    // ШИНЫ
+    else if (command.includes('шины') || command.includes('износ шин')) {
+        const tires = document.getElementById('tiresValue').textContent;
+        speakText(`Износ шин: ${tires}`);
+        updateVoiceStatus(`Износ шин: ${tires}`, false);
+    }
+    // ТОПЛИВО
+    else if (command.includes('топливо') || command.includes('расход топлива')) {
+        const fuel = document.getElementById('fuelValue').textContent;
+        speakText(`Расход топлива: ${fuel}`);
+        updateVoiceStatus(`Расход топлива: ${fuel}`, false);
+    }
+    // ПОХОЖИЕ АВТО (все)
+    else if (command.includes('похожие авто') || command.includes('какие похожие') || command.includes('похожие машины') || command.includes('список похожих')) {
+        updateVoiceStatus('Озвучиваю похожие автомобили...', false);
+        speakSimilarCars();
+    }
+    // КОНКРЕТНЫЙ ПОХОЖИЙ (цифра)
+    else if (command.match(/похожий\s+(\d+)/) || command.match(/автомобиль\s+(\d+)/) || command.match(/машина\s+(\d+)/)) {
+        let match = command.match(/(\d+)/);
+        if (match) {
+            const num = parseInt(match[1]);
+            if (num >= 1 && num <= 5) {
+                updateVoiceStatus(`Озвучиваю ${num}-й похожий автомобиль...`, false);
+                speakSimilarCarByIndex(num);
+            } else {
+                speakText('Номер должен быть от 1 до 5');
+            }
+        }
+    }
+    else if (command.includes('первый похожий') || command.includes('первая машина') || command.includes('автомобиль 1')) { speakSimilarCarByIndex(1); }
+    else if (command.includes('второй похожий') || command.includes('вторая машина') || command.includes('автомобиль 2')) { speakSimilarCarByIndex(2); }
+    else if (command.includes('третий похожий') || command.includes('третья машина') || command.includes('автомобиль 3')) { speakSimilarCarByIndex(3); }
+    else if (command.includes('четвертый похожий') || command.includes('четвёртая машина') || command.includes('автомобиль 4')) { speakSimilarCarByIndex(4); }
+    else if (command.includes('пятый похожий') || command.includes('пятая машина') || command.includes('автомобиль 5')) { speakSimilarCarByIndex(5); }
+    // ОБНОВИТЬ
+    else if (command.includes('обнови') || command.includes('покажи') || command.includes('прочитай')) {
+        updateVoiceStatus('Обновляю данные...', false);
+        loadCurrentCombo();
+        setTimeout(() => { speakCurrentRace(); }, 500);
+    }
+    // ПОМОЩЬ
+    else if (command.includes('помощь') || command.includes('что ты умеешь') || command.includes('команды')) {
+        const helpText = 'Я понимаю команды: условия гонки, какая машина, новая гонка, новые условия, какая погода, какое время, износ шин, расход топлива, похожие авто, первый похожий, второй похожий, третий похожий, четвёртый похожий, пятый похожий, обнови, выключи голос, включи голос.';
+        speakText(helpText);
+        updateVoiceStatus('Команды: условия гонки, новая гонка, погода, время, шины, топливо, похожие авто, выключи голос', false);
+    }
+    // Неизвестная команда
+    else {
+        console.log('Неизвестная команда:', command);
+    }
+}
+
+// ============================================
+// УПРАВЛЕНИЕ ПРОСЛУШИВАНИЕМ
+// ============================================
+
+function startListening() {
+    if (recognition && !isVoiceActive) {
+        try {
+            recognition.start();
+            isVoiceActive = true;
+            wasVoiceActiveBeforeSleep = true;
+            console.log('🎤 Прослушивание запущено');
+            updateVoiceStatus('🎤 Слушаю... Говорите команды', false);
+        } catch(e) {
+            console.log('Ошибка запуска:', e);
+            updateVoiceStatus('Ошибка запуска микрофона. Попробуйте ещё раз.', true);
+            setTimeout(() => {
+                if (!isVoiceActive) {
+                    try {
+                        recognition.start();
+                        isVoiceActive = true;
+                        wasVoiceActiveBeforeSleep = true;
+                    } catch(e2) {}
+                }
+            }, 1000);
+        }
+    }
+}
+
+function stopListening() {
+    if (recognition && isVoiceActive) {
+        try {
+            recognition.stop();
+            isVoiceActive = false;
+            wasVoiceActiveBeforeSleep = false;
+            console.log('🔇 Прослушивание остановлено');
+        } catch(e) {
+            console.log('Ошибка остановки:', e);
+        }
+    }
+}
+
+// ============================================
+// АВТОМАТИЧЕСКОЕ ВОССТАНОВЛЕНИЕ ПОСЛЕ РАЗБЛОКИРОВКИ
+// ============================================
+
+// iOS и Android: отслеживаем блокировку/разблокировку
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        // Экран заблокировался или переключили приложение
+        console.log('💤 Приложение ушло в фон/заблокировано. Сохраняем состояние голоса:', isVoiceActive);
+    } else {
+        // Вернулись в приложение! (разблокировали экран)
+        console.log('🔄 Приложение снова активно. Пытаюсь восстановить голос, было активно:', wasVoiceActiveBeforeSleep);
+        
+        if (wasVoiceActiveBeforeSleep) {
+            // Если ДО блокировки голос был включён - включаем снова
+            setTimeout(() => {
+                if (!isVoiceActive) {
+                    console.log('🔊 Автоматическое восстановление голосового помощника');
+                    startListening();
+                    
+                    const voiceToggleBtn = document.getElementById('voiceToggleBtn');
+                    if (voiceToggleBtn) {
+                        voiceToggleBtn.innerHTML = '🔴 ВЫКЛЮЧИТЬ ГОЛОС';
+                        voiceToggleBtn.style.background = '#ef4444';
+                    }
+                    updateVoiceStatus('✅ Автоматическое восстановление! Голосовой помощник снова слушает.', false);
+                    
+                    // Короткое уведомление (необязательно)
+                    setTimeout(() => {
+                        if (voiceAssistantEnabled) {
+                            speakText('Восстановил прослушивание');
+                        }
+                    }, 300);
+                } else {
+                    console.log('Голосовой помощник уже активен, восстановление не требуется');
+                }
+            }, 500);
+        }
+    }
+});
+
+// Для iOS: отслеживаем, когда приложение становится активным после полного фона
+window.addEventListener('pageshow', (event) => {
+    console.log('📱 Страница восстановлена из кэша, persisted:', event.persisted);
+    if (event.persisted && wasVoiceActiveBeforeSleep) {
+        setTimeout(() => {
+            if (!isVoiceActive) {
+                startListening();
+                const voiceToggleBtn = document.getElementById('voiceToggleBtn');
+                if (voiceToggleBtn) {
+                    voiceToggleBtn.innerHTML = '🔴 ВЫКЛЮЧИТЬ ГОЛОС';
+                    voiceToggleBtn.style.background = '#ef4444';
+                }
+                updateVoiceStatus('✅ Голосовой помощник восстановлен после разблокировки', false);
+            }
+        }, 500);
+    }
+});
+
+// Для Android: дополнительно отслеживаем восстановление из спящего режима
+if ('onresume' in document) {
+    document.addEventListener('resume', () => {
+        console.log('📱 Приложение возобновлено (Android)');
+        if (wasVoiceActiveBeforeSleep && !isVoiceActive) {
+            setTimeout(() => {
+                startListening();
+                updateVoiceStatus('✅ Голосовой помощник автоматически восстановлен', false);
+            }, 500);
+        }
+    });
+}
+
+// ============================================
+// ИНИЦИАЛИЗАЦИЯ ГОЛОСОВОГО ПОМОЩНИКА
+// ============================================
+
+function initVoiceVR() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        console.log('Голосовое распознавание не поддерживается');
+        const voiceStatus = document.getElementById('voiceStatus');
+        if (voiceStatus) voiceStatus.innerHTML = '⚠️ Голосовое управление не поддерживается вашим браузером';
+        return;
+    }
+    
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.lang = 'ru-RU';
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    
+    recognition.onresult = (event) => {
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            if (event.results[i].isFinal) {
+                const command = event.results[i][0].transcript.toLowerCase();
+                console.log('🎤 Распознано:', command);
+                processVoiceCommand(command);
+            }
+        }
+    };
+    
+    recognition.onerror = (event) => {
+        console.log('Ошибка распознавания:', event.error);
+        if (event.error === 'no-speech') {
+            // Ничего не делаем, просто ждём дальше
+        } else if (event.error === 'network') {
+            updateVoiceStatus('Ошибка сети, попробуйте перезапустить', true);
+        } else if (event.error === 'not-allowed') {
+            updateVoiceStatus('Нет доступа к микрофону. Разрешите доступ в настройках', true);
+            wasVoiceActiveBeforeSleep = false;
+        }
+    };
+    
+    recognition.onend = () => {
+        if (isVoiceActive) {
+            // Автоматически перезапускаем, если всё ещё должен быть активен
+            try {
+                recognition.start();
+                console.log('🔄 Прослушивание перезапущено');
+            } catch(e) {
+                console.log('Ошибка перезапуска:', e);
+                isVoiceActive = false;
+                updateVoiceStatus('Ошибка перезапуска микрофона, нажмите кнопку', true);
+            }
+        }
+    };
+    
+    // Кнопка включения/выключения
+    const buttonGroup = document.querySelector('.button-group');
+    if (buttonGroup && !document.getElementById('voiceToggleBtn')) {
+        const voiceToggleBtn = document.createElement('button');
+        voiceToggleBtn.id = 'voiceToggleBtn';
+        voiceToggleBtn.innerHTML = '🎤 ВКЛЮЧИТЬ ГОЛОС';
+        voiceToggleBtn.style.cssText = `background: #22c55e; margin-top: 5px; padding: 10px 16px; font-size: 14px; cursor: pointer; transition: all 0.2s;`;
+        
+        voiceToggleBtn.onclick = () => {
+            if (isVoiceActive) {
+                stopListening();
+                voiceToggleBtn.innerHTML = '🎤 ВКЛЮЧИТЬ ГОЛОС';
+                voiceToggleBtn.style.background = '#22c55e';
+                updateVoiceStatus('Голосовой помощник выключен. Нажмите кнопку для включения.', false);
+                speakText('Голосовой помощник выключен');
+                wasVoiceActiveBeforeSleep = false;
+            } else {
+                startListening();
+                voiceToggleBtn.innerHTML = '🔴 ВЫКЛЮЧИТЬ ГОЛОС';
+                voiceToggleBtn.style.background = '#ef4444';
+                updateVoiceStatus('🎤 Голосовой помощник слушает... Говорите команды', false);
+                speakText('Голосовой помощник включён');
+                wasVoiceActiveBeforeSleep = true;
+            }
+        };
+        
+        buttonGroup.appendChild(voiceToggleBtn);
+    }
+    
+    // Статус
+    const statusDiv = document.getElementById('status');
+    if (statusDiv && !document.getElementById('voiceStatus')) {
+        const voiceStatus = document.createElement('div');
+        voiceStatus.id = 'voiceStatus';
+        voiceStatus.style.cssText = `margin-top: 10px; margin-bottom: 10px; padding: 10px; background: rgba(139, 92, 246, 0.2); border-radius: 12px; font-size: 13px; text-align: center; border-left: 3px solid #8b5cf6;`;
+        voiceStatus.innerHTML = '🎤 Голосовой помощник выключен. Нажмите кнопку для включения.';
+        statusDiv.parentNode.insertBefore(voiceStatus, statusDiv);
+    }
+    
+    // Кнопка озвучивания условий (без микрофона)
+    const voiceStatusDiv = document.getElementById('voiceStatus');
+    if (voiceStatusDiv && !document.getElementById('speakNowBtn')) {
+        const speakBtn = document.createElement('button');
+        speakBtn.id = 'speakNowBtn';
+        speakBtn.innerHTML = '🔊 ОЗВУЧИТЬ УСЛОВИЯ';
+        speakBtn.style.cssText = `background: #3b82f6; margin-top: 5px; padding: 8px 12px; font-size: 12px; width: 100%; cursor: pointer;`;
+        speakBtn.onclick = () => {
+            speakCurrentRace();
+            updateVoiceStatus('Озвучиваю условия гонки...', false);
+        };
+        voiceStatusDiv.parentNode.insertBefore(speakBtn, voiceStatusDiv.nextSibling);
+    }
+}
+
+// ============================================
+// КНОПКИ ДЛЯ ПОХОЖИХ АВТО
+// ============================================
+
+function addSimilarCarsVoiceButtons() {
+    const similarContent = document.getElementById('similarContent');
+    if (!similarContent) return;
+    if (document.getElementById('speakSimilarBtn')) return;
+    
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.cssText = `display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;`;
+    
+    const speakAllBtn = document.createElement('button');
+    speakAllBtn.id = 'speakSimilarBtn';
+    speakAllBtn.innerHTML = '🔊 ОЗВУЧИТЬ ВСЕ ПОХОЖИЕ';
+    speakAllBtn.style.cssText = `background: #8b5cf6; padding: 6px 10px; font-size: 11px; flex: 1; cursor: pointer;`;
+    speakAllBtn.onclick = () => speakSimilarCars();
+    buttonContainer.appendChild(speakAllBtn);
+    
+    for (let i = 1; i <= 5; i++) {
+        const btn = document.createElement('button');
+        btn.innerHTML = `🔊 ${i}`;
+        btn.style.cssText = `background: #3b82f6; padding: 6px 8px; font-size: 11px; min-width: 45px; cursor: pointer;`;
+        btn.onclick = (function(index) { return () => speakSimilarCarByIndex(index); })(i);
+        buttonContainer.appendChild(btn);
+    }
+    
+    const similarList = document.getElementById('similarList');
+    if (similarList) similarList.parentNode.insertBefore(buttonContainer, similarList.nextSibling);
+}
+
+// ============================================
+// ОБНОВЛЕНИЕ СТАТУСА
+// ============================================
+
+function updateVoiceStatus(message, isListeningMode = false) {
+    const voiceStatus = document.getElementById('voiceStatus');
+    if (voiceStatus) {
+        voiceStatus.innerHTML = `🎤 ${message}`;
+        if (isListeningMode) {
+            voiceStatus.style.background = 'rgba(139, 92, 246, 0.4)';
+            voiceStatus.style.borderLeftColor = '#22c55e';
+        } else {
+            voiceStatus.style.background = 'rgba(139, 92, 246, 0.2)';
+            voiceStatus.style.borderLeftColor = '#8b5cf6';
+        }
+    }
+}
+
+// ============================================
+// ЗАПУСК
+// ============================================
+
+const originalDisplaySimilarCars = window.displaySimilarCars;
+if (originalDisplaySimilarCars) {
+    window.displaySimilarCars = function(referenceCar) {
+        originalDisplaySimilarCars(referenceCar);
+        setTimeout(() => addSimilarCarsVoiceButtons(), 100);
+    };
+}
+
+setTimeout(() => {
+    initVoiceVR();
+    addSimilarCarsVoiceButtons();
+}, 1500);
+    
 </script>
 </body>
 </html>
