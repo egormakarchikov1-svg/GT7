@@ -1730,7 +1730,7 @@ window.selectCar = selectCar;
 loadCurrentCombo();
 
 // ============================================
-// ГОЛОСОВОЙ ПОМОЩНИК ДЛЯ VR (АВТОМАТИЧЕСКОЕ ПРОБУЖДЕНИЕ + КРАТКАЯ ПОГОДА)
+// ГОЛОСОВОЙ ПОМОЩНИК ДЛЯ VR (ТОЛЬКО КОД ПОГОДЫ + АВТОПРОБУЖДЕНИЕ)
 // ============================================
 
 let isVoiceActive = false;
@@ -1738,6 +1738,26 @@ let recognition = null;
 let voiceAssistantEnabled = true;
 let wasVoiceActiveBeforeSleep = false;
 let isSleepMode = false;
+
+// ============================================
+// ФУНКЦИИ ДЛЯ РАБОТЫ С ПОГОДОЙ (ТОЛЬКО КОД)
+// ============================================
+
+// Жёсткое извлечение ТОЛЬКО кода погоды (S01, R04, C03 и т.д.)
+function getWeatherCodeOnly(weatherName) {
+    // Ищем паттерн: буква + 2 цифры (S01, R04, C03)
+    const match = weatherName.match(/[SRC]\d{2}/i);
+    if (match) {
+        return match[0].toUpperCase();
+    }
+    // Если не нашли, ищем любые 2-3 символа, начинающиеся с буквы
+    const anyCode = weatherName.match(/[A-Za-z]\d{2,3}/);
+    if (anyCode) {
+        return anyCode[0].toUpperCase();
+    }
+    // Если совсем ничего - возвращаем пустую строку (не будем ничего говорить)
+    return '';
+}
 
 // ============================================
 // ФУНКЦИИ ОЗВУЧИВАНИЯ
@@ -1758,18 +1778,19 @@ function speakText(text) {
     window.speechSynthesis.speak(utterance);
 }
 
-// Получение кода погоды из строки (S01, R03, C02)
-function getWeatherCode(weatherName) {
-    const match = weatherName.match(/^([A-Z]\d{2})/);
-    return match ? match[1] : weatherName.substring(0, 3);
-}
-
-// ПОГОДА (только код)
+// ПОГОДА (ТОЛЬКО КОД)
 function speakWeather() {
-    const weatherName = document.getElementById('weatherValue').textContent;
-    const weatherCode = getWeatherCode(weatherName);
-    speakText(weatherCode);
-    updateVoiceStatus(`Погода: ${weatherCode}`, false);
+    const weatherElement = document.getElementById('weatherValue');
+    const weatherName = weatherElement ? weatherElement.textContent : '';
+    const weatherCode = getWeatherCodeOnly(weatherName);
+    
+    if (weatherCode) {
+        speakText(weatherCode);
+        updateVoiceStatus(`Погода: ${weatherCode}`, false);
+    } else {
+        speakText('Код погоды не найден');
+        updateVoiceStatus('Ошибка: код погоды не найден', true);
+    }
 }
 
 // ВРЕМЯ (только название, без множителя X7)
@@ -1780,12 +1801,12 @@ function speakTimeShort() {
     updateVoiceStatus(`Время: ${timeName}`, false);
 }
 
-// УСЛОВИЯ ГОНКИ (кратко, погода только кодом)
+// УСЛОВИЯ ГОНКИ (погода ТОЛЬКО кодом)
 function speakCurrentRace() {
     const car = document.getElementById('carValue').textContent;
     const track = document.getElementById('trackValue').textContent;
     const category = document.getElementById('categoryText').textContent;
-    const weatherCode = getWeatherCode(document.getElementById('weatherValue').textContent);
+    const weatherCode = getWeatherCodeOnly(document.getElementById('weatherValue').textContent);
     let time = document.getElementById('timeValue').textContent;
     const timeName = time.replace(/\s*[xX]\d+\s*/g, '').trim();
     const tires = document.getElementById('tiresValue').textContent;
@@ -1914,7 +1935,7 @@ function stopListening() {
 function enterSleepMode() {
     if (isVoiceActive && !isSleepMode) {
         isSleepMode = true;
-        isVoiceActive = false;  // Микрофон продолжает слушать, но команды игнорируются
+        isVoiceActive = false;
         console.log('💤 Вход в режим дремы');
         updateVoiceStatus('💤 Режим ожидания... Скажите любую команду', false);
         
@@ -1956,30 +1977,28 @@ function wakeFromSleep() {
 function processVoiceCommand(command) {
     console.log('🎤 Распознано:', command);
     
-    // АВТОМАТИЧЕСКОЕ ПРОБУЖДЕНИЕ: если в режиме дремы - просыпаемся при любой команде
+    // Автоматическое пробуждение из режима дремы
     if (isSleepMode) {
         wakeFromSleep();
-        // Далее обрабатываем команду
     }
     
-    // === КОМАНДЫ ДЛЯ ПЕРЕХОДА В РЕЖИМ ДРЕМЫ ===
-    if (command.includes('выключи голос') || command.includes('выключи помощника') || 
-        command.includes('замолчи') || command.includes('хватит') || command.includes('стоп') ||
-        command.includes('отдохни') || command.includes('спи')) {
+    // Команда для перехода в режим дремы
+    if (command.includes('выключи голос') || command.includes('замолчи') || 
+        command.includes('хватит') || command.includes('стоп') || command.includes('отдохни')) {
         enterSleepMode();
         return;
     }
     
     // === ОСНОВНЫЕ КОМАНДЫ ===
     
-    // Условия гонки (полные)
+    // Условия гонки
     if (command.includes('условия гонки') || command.includes('какие условия') || 
         command.includes('что за гонка') || command.includes('расскажи условия') ||
         command.includes('расскажи всё')) {
         updateVoiceStatus('Озвучиваю условия гонки...', false);
         speakCurrentRace();
     }
-    // Кратко (машина + трасса)
+    // Машина и трасса
     else if (command.includes('какая машина') || command.includes('какой автомобиль') || 
              command.includes('что за машина') || command.includes('какой трасса') || 
              command.includes('где гонка')) {
@@ -1988,8 +2007,7 @@ function processVoiceCommand(command) {
     // Новая гонка
     else if (command.includes('новая гонка') || command.includes('следующая гонка') || 
              command.includes('сгенерируй') || command.includes('случайная гонка') || 
-             command.includes('новые условия') || command.includes('другую гонку') ||
-             command.includes('поменяй гонку')) {
+             command.includes('новые условия') || command.includes('другую гонку')) {
         updateVoiceStatus('Генерирую новую гонку...', false);
         speakText('Создаю');
         generateAndSave();
@@ -2000,8 +2018,7 @@ function processVoiceCommand(command) {
         speakWeather();
     }
     // Время
-    else if (command.includes('какое время') || command.includes('время суток') || 
-             command.includes('который час') || command.includes('освещение')) {
+    else if (command.includes('какое время') || command.includes('время суток') || command.includes('который час')) {
         speakTimeShort();
     }
     // Шины
@@ -2011,19 +2028,19 @@ function processVoiceCommand(command) {
         updateVoiceStatus(`Шины: ${tires}`, false);
     }
     // Топливо
-    else if (command.includes('топливо') || command.includes('расход топлива') || command.includes('бензин')) {
+    else if (command.includes('топливо') || command.includes('расход топлива')) {
         const fuel = document.getElementById('fuelValue').textContent;
         speakText(fuel);
         updateVoiceStatus(`Топливо: ${fuel}`, false);
     }
-    // Похожие авто (все)
+    // Похожие авто
     else if (command.includes('похожие авто') || command.includes('какие похожие') || 
-             command.includes('похожие машины') || command.includes('список похожих')) {
+             command.includes('список похожих')) {
         speakSimilarCars();
     }
     // Конкретный похожий
     else if (command.match(/похожий\s+(\d+)/) || command.match(/автомобиль\s+(\d+)/) || 
-             command.match(/машина\s+(\d+)/) || command.match(/(\d+)-й/)) {
+             command.match(/машина\s+(\d+)/)) {
         let match = command.match(/(\d+)/);
         if (match) {
             const num = parseInt(match[1]);
@@ -2038,16 +2055,16 @@ function processVoiceCommand(command) {
     else if (command.includes('четвертый похожий')) { speakSimilarCarByIndex(4); }
     else if (command.includes('пятый похожий')) { speakSimilarCarByIndex(5); }
     // Обновить
-    else if (command.includes('обнови') || command.includes('покажи') || command.includes('прочитай')) {
+    else if (command.includes('обнови') || command.includes('покажи')) {
         updateVoiceStatus('Обновляю...', false);
         loadCurrentCombo();
         setTimeout(() => { speakCurrentRace(); }, 500);
     }
     // Помощь
-    else if (command.includes('помощь') || command.includes('что ты умеешь') || command.includes('команды')) {
+    else if (command.includes('помощь') || command.includes('что ты умеешь')) {
         const helpText = 'Команды: условия гонки, какая машина, новая гонка, погода, время, шины, топливо, похожие авто, первый похожий, стоп, помощь';
         speakText(helpText);
-        updateVoiceStatus('Говорите: условия гонки, новая гонка, погода, время, шины, топливо, похожие авто, стоп', false);
+        updateVoiceStatus('Говорите: условия гонки, новая гонка, погода, время, стоп', false);
     }
 }
 
@@ -2098,13 +2115,10 @@ function initVoiceVR() {
     recognition.onerror = (event) => {
         if (event.error === 'not-allowed') {
             updateVoiceStatus('Нет доступа к микрофону', true);
-        } else if (event.error === 'no-speech') {
-            // Если тишина, не выключаемся
         }
     };
     
     recognition.onend = () => {
-        // Перезапускаем только если активен режим прослушивания
         if ((isVoiceActive || isSleepMode) && !wasVoiceActiveBeforeSleep) {
             try {
                 recognition.start();
@@ -2113,7 +2127,7 @@ function initVoiceVR() {
         }
     };
     
-    // ТОЛЬКО ИКОНКА МИКРОФОНА
+    // ИКОНКА МИКРОФОНА
     const buttonGroup = document.querySelector('.button-group');
     if (buttonGroup && !document.getElementById('micBtn')) {
         const micBtn = document.createElement('button');
@@ -2148,7 +2162,7 @@ function initVoiceVR() {
         buttonGroup.appendChild(micBtn);
     }
     
-    // СТАТУС (только текст)
+    // СТАТУС
     const statusDiv = document.getElementById('status');
     if (statusDiv && !document.getElementById('voiceStatus')) {
         const voiceStatus = document.createElement('div');
