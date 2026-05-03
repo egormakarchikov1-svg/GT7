@@ -8,6 +8,7 @@
     <link rel="icon" type="image/png" sizes="192x192" href="gt7.png">
     <link rel="shortcut icon" href="gt7.png">
     <meta name="mobile-web-app-capable" content="yes">
+    
     <meta name="theme-color" content="#ff4d4d">
 
         <style>
@@ -296,6 +297,29 @@
 
         /* Убираем пустоту везде */
         .similar-list { min-height: auto !important; }
+
+            /* Прогресс-бар анимация */
+#progressBar {
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+#progressBar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
         
     </style>
 </head>
@@ -437,11 +461,145 @@
         <button id="generateBtn" class="btn-main">🎲 СЛУЧАЙНАЯ ГОНКА</button>
         <button id="refreshBtn" class="btn-main btn-secondary">🔄 ОБНОВИТЬ</button>
     </div>
+
+    <!-- Прогресс-бар генерации -->
+<div id="progressContainer" style="display: none; margin-top: 15px; margin-bottom: 15px;">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+        <span style="font-size: 12px; color: #eee;">🎲 Генерация условий...</span>
+        <span id="progressPercent" style="font-size: 12px; color: #ff4d4d;">0%</span>
+    </div>
+    <div style="background: rgba(0,0,0,0.5); border-radius: 10px; overflow: hidden; height: 20px;">
+        <div id="progressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #ff4d4d, #ff9999); border-radius: 10px; transition: width 0.3s ease;"></div>
+    </div>
+    <div id="progressStep" style="font-size: 10px; color: #aaa; margin-top: 5px; text-align: center;">Подготовка...</div>
+</div>
     
     <div id="status" class="status"></div>
 </div>
 
 <script>
+
+    // ============================================
+// ПРОГРЕСС-БАР ГЕНЕРАЦИИ
+
+
+let progressSteps = [
+    { step: 1, name: "Генерация машины", weight: 25, icon: "🚗" },
+    { step: 2, name: "Подбор похожих авто", weight: 15, icon: "🔍" },
+    { step: 3, name: "Выбор трассы", weight: 20, icon: "🛣️" },
+    { step: 4, name: "Настройка погоды", weight: 10, icon: "🌤️" },
+    { step: 5, name: "Настройка времени", weight: 10, icon: "⏰" },
+    { step: 6, name: "Расчёт износа шин", weight: 10, icon: "🛞" },
+    { step: 7, name: "Расчёт расхода топлива", weight: 5, icon: "⛽" },
+    { step: 8, name: "Определение класса", weight: 5, icon: "🏆" }
+];
+
+let currentProgress = 0;
+let progressInterval = null;
+
+function showProgress() {
+    const container = document.getElementById('progressContainer');
+    const statusDiv = document.getElementById('status');
+    if (container) {
+        container.style.display = 'block';
+    }
+    if (statusDiv) {
+        statusDiv.style.display = 'none';
+    }
+    currentProgress = 0;
+    updateProgressBar(0, 'Начинаем генерацию...');
+}
+
+function hideProgress() {
+    const container = document.getElementById('progressContainer');
+    const statusDiv = document.getElementById('status');
+    if (container) {
+        setTimeout(() => {
+            container.style.display = 'none';
+        }, 500);
+    }
+    if (statusDiv) {
+        statusDiv.style.display = 'block';
+    }
+    if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+    }
+}
+
+function updateProgressBar(percent, stepText) {
+    const progressBar = document.getElementById('progressBar');
+    const progressPercent = document.getElementById('progressPercent');
+    const progressStep = document.getElementById('progressStep');
+    
+    if (progressBar) {
+        progressBar.style.width = Math.min(100, percent) + '%';
+    }
+    if (progressPercent) {
+        progressPercent.innerHTML = Math.min(100, percent) + '%';
+    }
+    if (progressStep && stepText) {
+        progressStep.innerHTML = stepText;
+    }
+}
+
+function updateProgress(stepName, stepPercent) {
+    // Находим шаг по имени
+    const step = progressSteps.find(s => stepName.includes(s.name));
+    if (step) {
+        // Накапливаем прогресс от предыдущих шагов
+        let cumulativePercent = 0;
+        for (let i = 0; i < progressSteps.length; i++) {
+            if (progressSteps[i].step < step.step) {
+                cumulativePercent += progressSteps[i].weight;
+            } else if (progressSteps[i].step === step.step) {
+                cumulativePercent += stepPercent;
+                break;
+            }
+        }
+        currentProgress = cumulativePercent;
+        updateProgressBar(currentProgress, `${step.icon} ${step.name}... ${Math.round(stepPercent)}%`);
+    }
+}
+
+function completeProgress() {
+    updateProgressBar(100, '✅ Генерация завершена!');
+    setTimeout(() => {
+        hideProgress();
+    }, 800);
+}
+
+// Переопределяем функцию generateAndSave для добавления прогресс-бара
+const originalGenerateAndSave = generateAndSave;
+if (typeof originalGenerateAndSave === 'function') {
+    generateAndSave = async function() {
+        showProgress();
+        
+        // Имитация прогресса для визуального эффекта
+        let fakeProgress = 0;
+        const fakeInterval = setInterval(() => {
+            if (fakeProgress < 90) {
+                fakeProgress += Math.random() * 10;
+                if (fakeProgress > 90) fakeProgress = 90;
+                updateProgressBar(fakeProgress, '🎲 Обработка параметров...');
+            }
+        }, 200);
+        
+        try {
+            // Вызываем оригинальную функцию
+            await originalGenerateAndSave();
+        } catch(e) {
+            console.error('Ошибка генерации:', e);
+            updateProgressBar(100, '❌ Ошибка генерации!');
+            setTimeout(() => hideProgress(), 1500);
+            clearInterval(fakeInterval);
+            return;
+        }
+        
+        clearInterval(fakeInterval);
+        completeProgress();
+    };
+}
 
 // ============================================
 // ЗАЩИТА АДМИН-ПАНЕЛИ С МОДАЛЬНЫМ ОКНОМ
@@ -1551,40 +1709,82 @@ async function generateAndSave() {
         document.getElementById('status').className = 'status error';
         return;
     }
-    document.getElementById('status').innerHTML = '⏳ Генерация новой комбинации...';
-    document.getElementById('status').className = 'status';
+    
+    // ПОКАЗЫВАЕМ ПРОГРЕСС-БАР
+    showProgress();
     
     try {
         let newCombo = {};
         
+        // Шаг 1: Машина
+        updateProgressBar(5, '🚗 Генерация машины...');
+        await sleep(50);
         if (!locks.car) {
             const car = getRandomCarWithoutRepeat();
             newCombo.car_name = car.name;
+            updateProgressBar(15, '🚗 Машина выбрана');
+            await sleep(30);
+            
+            // Шаг 2: Похожие авто
+            updateProgressBar(25, '🔍 Подбор похожих автомобилей...');
             const similar = findSimilarCars(car, 5, true);
             for (let i = 0; i < similar.length; i++) {
                 newCombo[`similar_car_${i+1}`] = similar[i].name;
             }
+            updateProgressBar(40, '🔍 Похожие авто найдены');
+        } else {
+            updateProgressBar(40, '🔒 Машина заблокирована');
         }
+        await sleep(30);
         
+        // Шаг 3: Трасса
+        updateProgressBar(50, '🛣️ Выбор трассы...');
         if (!locks.track) {
             const trackData = getRandomTrackWithoutRepeat();
             newCombo.track_name = trackData.name;
+            updateProgressBar(60, '🛣️ Трасса выбрана');
+        } else {
+            updateProgressBar(60, '🔒 Трасса заблокирована');
         }
+        await sleep(30);
         
+        // Шаг 4: Погода
+        updateProgressBar(65, '🌤️ Настройка погоды...');
         if (!locks.weather) {
             const weather = getRandomItem(weathers);
             newCombo.weather_name = weather.name;
+            updateProgressBar(70, '🌤️ Погода настроена');
+        } else {
+            updateProgressBar(70, '🔒 Погода заблокирована');
         }
+        await sleep(30);
         
+        // Шаг 5: Время
+        updateProgressBar(75, '⏰ Настройка времени...');
         if (!locks.time) {
             const time = getRandomItem(times);
             newCombo.time_name = time.name;
             newCombo.time_multiplier = getRandomXValue();
+            updateProgressBar(80, '⏰ Время настроено');
+        } else {
+            updateProgressBar(80, '🔒 Время заблокировано');
         }
+        await sleep(30);
         
+        // Шаг 6: Шины
+        updateProgressBar(85, '🛞 Расчёт износа шин...');
         if (!locks.tires) newCombo.tires_value = getRandomXValue();
-        if (!locks.fuel) newCombo.fuel_value = getRandomXValue();
+        updateProgressBar(88, '🛞 Износ шин рассчитан');
+        await sleep(30);
         
+        // Шаг 7: Топливо
+        updateProgressBar(91, '⛽ Расчёт расхода топлива...');
+        if (!locks.fuel) newCombo.fuel_value = getRandomXValue();
+        updateProgressBar(94, '⛽ Расход топлива рассчитан');
+        await sleep(30);
+        
+        // Шаг 8: Класс
+        updateProgressBar(96, '🏆 Определение класса...');
         if (!locks.category) {
             const category = getRandomItem(categories);
             newCombo.category_name = category.name;
@@ -1595,6 +1795,8 @@ async function generateAndSave() {
                 newCombo.category_name = currentCategory.name;
             }
         }
+        updateProgressBar(98, '🏆 Класс определён');
+        await sleep(30);
         
         // Отображаем превью
         document.getElementById('carValue').textContent = newCombo.car_name || '—';
@@ -1615,23 +1817,18 @@ async function generateAndSave() {
         }
         
         if (newCombo.time_name) {
-    const timeObj = times.find(t => t.name === newCombo.time_name);
-    if (timeObj) {
-        document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name} <span class="time-x-badge">${newCombo.time_multiplier || 'X1'}</span>`;
-    } else {
-        document.getElementById('timeValue').innerHTML = `${newCombo.time_name} <span class="time-x-badge">${newCombo.time_multiplier || 'X1'}</span>`;
-    }
-
+            const timeObj = times.find(t => t.name === newCombo.time_name);
+            if (timeObj) {
+                document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name} <span class="time-x-badge">${newCombo.time_multiplier || 'X1'}</span>`;
+            } else {
+                document.getElementById('timeValue').innerHTML = `${newCombo.time_name} <span class="time-x-badge">${newCombo.time_multiplier || 'X1'}</span>`;
+            }
         }
         
         if (newCombo.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${newCombo.tires_value}</span>`;
         if (newCombo.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${newCombo.fuel_value}</span>`;
-
-        console.log('=== ПРОВЕРКА ОТПРАВЛЯЕМЫХ ДАННЫХ ===');
-        console.log('fuel_value:', newCombo.fuel_value);
-        console.log('category_name:', newCombo.category_name);
-        console.log('tires_value:', newCombo.tires_value);
-        console.log('car_name:', newCombo.car_name);
+        
+        updateProgressBar(99, '📤 Сохранение комбинации...');
         
         await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
@@ -1640,16 +1837,22 @@ async function generateAndSave() {
             body: JSON.stringify(newCombo)
         });
         
-        document.getElementById('status').innerHTML = '✅ Новая комбинация сохранена! Все пользователи увидят её в течение 1-2 минут.';
-        document.getElementById('status').className = 'status success';
+        updateProgressBar(100, '✅ Готово!');
         
-        setTimeout(() => loadCurrentCombo(), 1000);
+        setTimeout(() => loadCurrentCombo(), 500);
         
     } catch(e) {
+        updateProgressBar(100, '❌ Ошибка генерации!');
         document.getElementById('status').innerHTML = `❌ Ошибка: ${e.message}`;
         document.getElementById('status').className = 'status error';
         console.error(e);
     }
+    
+    setTimeout(() => {
+        hideProgress();
+        document.getElementById('status').innerHTML = '✅ Новая комбинация сохранена! Все пользователи увидят её в течение 1-2 минут.';
+        document.getElementById('status').className = 'status success';
+    }, 1000);
 }
 
 function toggleLock(param) {
