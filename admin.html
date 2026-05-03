@@ -569,37 +569,11 @@ function completeProgress() {
     }, 800);
 }
 
-// Переопределяем функцию generateAndSave для добавления прогресс-бара
-const originalGenerateAndSave = generateAndSave;
-if (typeof originalGenerateAndSave === 'function') {
-    generateAndSave = async function() {
-        showProgress();
-        
-        // Имитация прогресса для визуального эффекта
-        let fakeProgress = 0;
-        const fakeInterval = setInterval(() => {
-            if (fakeProgress < 90) {
-                fakeProgress += Math.random() * 10;
-                if (fakeProgress > 90) fakeProgress = 90;
-                updateProgressBar(fakeProgress, '🎲 Обработка параметров...');
-            }
-        }, 200);
-        
-        try {
-            // Вызываем оригинальную функцию
-            await originalGenerateAndSave();
-        } catch(e) {
-            console.error('Ошибка генерации:', e);
-            updateProgressBar(100, '❌ Ошибка генерации!');
-            setTimeout(() => hideProgress(), 1500);
-            clearInterval(fakeInterval);
-            return;
-        }
-        
-        clearInterval(fakeInterval);
-        completeProgress();
-    };
+    function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+
 
 // ============================================
 // ЗАЩИТА АДМИН-ПАНЕЛИ С МОДАЛЬНЫМ ОКНОМ
