@@ -1690,75 +1690,95 @@ async function generateAndSave() {
     try {
         let newCombo = {};
         
-        // Шаг 1: Машина
+        // Шаг 1: Машина (0% -> 15%)
         updateProgressBar(5, '🚗 Генерация машины...');
-        await sleep(50);
+        await sleep(150);
         if (!locks.car) {
             const car = getRandomCarWithoutRepeat();
             newCombo.car_name = car.name;
             updateProgressBar(15, '🚗 Машина выбрана');
-            await sleep(30);
+            await sleep(100);
             
-            // Шаг 2: Похожие авто
-            updateProgressBar(25, '🔍 Подбор похожих автомобилей...');
+            // Шаг 2: Похожие авто (15% -> 40%)
+            updateProgressBar(22, '🔍 Подбор похожих автомобилей...');
             const similar = findSimilarCars(car, 5, true);
             for (let i = 0; i < similar.length; i++) {
                 newCombo[`similar_car_${i+1}`] = similar[i].name;
+                // Обновляем прогресс для каждого похожего авто
+                const progress = 22 + Math.round((i + 1) * 3.6);
+                updateProgressBar(progress, `🔍 Похожие авто: ${i+1}/5`);
+                await sleep(80);
             }
             updateProgressBar(40, '🔍 Похожие авто найдены');
         } else {
             updateProgressBar(40, '🔒 Машина заблокирована');
         }
-        await sleep(30);
+        await sleep(100);
         
-        // Шаг 3: Трасса
-        updateProgressBar(50, '🛣️ Выбор трассы...');
+        // Шаг 3: Трасса (40% -> 60%)
+        updateProgressBar(48, '🛣️ Выбор трассы...');
+        await sleep(100);
         if (!locks.track) {
             const trackData = getRandomTrackWithoutRepeat();
             newCombo.track_name = trackData.name;
-            updateProgressBar(60, '🛣️ Трасса выбрана');
+            updateProgressBar(58, '🛣️ Трасса выбрана');
+            await sleep(80);
+            updateProgressBar(60, '🛣️ Готово');
         } else {
             updateProgressBar(60, '🔒 Трасса заблокирована');
         }
-        await sleep(30);
+        await sleep(100);
         
-        // Шаг 4: Погода
-        updateProgressBar(65, '🌤️ Настройка погоды...');
+        // Шаг 4: Погода (60% -> 70%)
+        updateProgressBar(63, '🌤️ Настройка погоды...');
+        await sleep(100);
         if (!locks.weather) {
             const weather = getRandomItem(weathers);
             newCombo.weather_name = weather.name;
-            updateProgressBar(70, '🌤️ Погода настроена');
+            updateProgressBar(68, '🌤️ Погода настроена');
+            await sleep(80);
+            updateProgressBar(70, '🌤️ Готово');
         } else {
             updateProgressBar(70, '🔒 Погода заблокирована');
         }
-        await sleep(30);
+        await sleep(100);
         
-        // Шаг 5: Время
-        updateProgressBar(75, '⏰ Настройка времени...');
+        // Шаг 5: Время (70% -> 80%)
+        updateProgressBar(73, '⏰ Настройка времени...');
+        await sleep(100);
         if (!locks.time) {
             const time = getRandomItem(times);
             newCombo.time_name = time.name;
             newCombo.time_multiplier = getRandomXValue();
-            updateProgressBar(80, '⏰ Время настроено');
+            updateProgressBar(78, '⏰ Время настроено');
+            await sleep(80);
+            updateProgressBar(80, '⏰ Готово');
         } else {
             updateProgressBar(80, '🔒 Время заблокировано');
         }
-        await sleep(30);
+        await sleep(100);
         
-        // Шаг 6: Шины
-        updateProgressBar(85, '🛞 Расчёт износа шин...');
+        // Шаг 6: Шины (80% -> 88%)
+        updateProgressBar(83, '🛞 Расчёт износа шин...');
+        await sleep(100);
         if (!locks.tires) newCombo.tires_value = getRandomXValue();
-        updateProgressBar(88, '🛞 Износ шин рассчитан');
-        await sleep(30);
+        updateProgressBar(86, '🛞 Износ шин рассчитан');
+        await sleep(80);
+        updateProgressBar(88, '🛞 Готово');
+        await sleep(100);
         
-        // Шаг 7: Топливо
-        updateProgressBar(91, '⛽ Расчёт расхода топлива...');
+        // Шаг 7: Топливо (88% -> 94%)
+        updateProgressBar(90, '⛽ Расчёт расхода топлива...');
+        await sleep(100);
         if (!locks.fuel) newCombo.fuel_value = getRandomXValue();
-        updateProgressBar(94, '⛽ Расход топлива рассчитан');
-        await sleep(30);
+        updateProgressBar(93, '⛽ Расход топлива рассчитан');
+        await sleep(80);
+        updateProgressBar(94, '⛽ Готово');
+        await sleep(100);
         
-        // Шаг 8: Класс
-        updateProgressBar(96, '🏆 Определение класса...');
+        // Шаг 8: Класс (94% -> 98%)
+        updateProgressBar(95, '🏆 Определение класса...');
+        await sleep(100);
         if (!locks.category) {
             const category = getRandomItem(categories);
             newCombo.category_name = category.name;
@@ -1769,8 +1789,10 @@ async function generateAndSave() {
                 newCombo.category_name = currentCategory.name;
             }
         }
-        updateProgressBar(98, '🏆 Класс определён');
-        await sleep(30);
+        updateProgressBar(97, '🏆 Класс определён');
+        await sleep(80);
+        updateProgressBar(98, '🏆 Готово');
+        await sleep(100);
         
         // Отображаем превью
         document.getElementById('carValue').textContent = newCombo.car_name || '—';
@@ -1803,6 +1825,7 @@ async function generateAndSave() {
         if (newCombo.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${newCombo.fuel_value}</span>`;
         
         updateProgressBar(99, '📤 Сохранение комбинации...');
+        await sleep(150);
         
         await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
@@ -1812,6 +1835,7 @@ async function generateAndSave() {
         });
         
         updateProgressBar(100, '✅ Готово!');
+        await sleep(200);
         
         setTimeout(() => loadCurrentCombo(), 500);
         
