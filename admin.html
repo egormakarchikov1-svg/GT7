@@ -1678,10 +1678,21 @@ if (tableData.time_name) {
     let timeObj = times.find(t => t.name === tableData.time_name);
     const timeMultiplier = tableData.time_multiplier || 'X1';
     
-    // Если время не найдено в списке — используем "День" как запасной вариант
+    // Если время не найдено в списке — используем доступное для трассы
     if (!timeObj) {
-        console.warn(`⚠️ Время "${tableData.time_name}" не найдено в списке, используем "День"`);
-        timeObj = times.find(t => t.name === "День") || times[5];
+        console.warn(`⚠️ Время "${tableData.time_name}" не найдено в списке`);
+        // Получаем доступные времена для текущей трассы
+        const track = tracksData.find(t => t.name === tableData.track_name);
+        if (track && track.times && track.times.length > 0) {
+            const fallbackTime = times.find(t => track.times.includes(t.name));
+            if (fallbackTime) {
+                timeObj = fallbackTime;
+                console.log(`✅ Используем "${timeObj.name}" как запасной вариант`);
+            }
+        }
+        if (!timeObj) {
+            timeObj = times.find(t => t.name === "День") || times[5];
+        }
     }
     
     if (window.innerWidth <= 480) {
@@ -1777,18 +1788,39 @@ async function generateAndSave() {
         await sleep(200);
         
         // Шаг 5: Время (70% -> 80%)
-        updateProgressBar(73, '⏰ Настройка времени...');
-        await sleep(200);
-        if (!locks.time) {
-            const time = getRandomItem(times);
-            newCombo.time_name = time.name;
-            newCombo.time_multiplier = getRandomXValue();
-            updateProgressBar(78, '⏰ Время настроено');
-            await sleep(150);
-            updateProgressBar(80, '⏰ Готово');
-        } else {
-            updateProgressBar(80, '🔒 Время заблокировано');
+        // Шаг 5: Время (70% -> 80%)
+updateProgressBar(73, '⏰ Настройка времени...');
+await sleep(200);
+if (!locks.time) {
+    // Получаем текущую трассу
+    let currentTrack = null;
+    if (!locks.track && newCombo.track_name) {
+        currentTrack = tracksData.find(t => t.name === newCombo.track_name);
+    } else {
+        // Если трек заблокирован или ещё не выбран, берём из отображаемого
+        const trackName = document.getElementById('trackValue').textContent;
+        if (trackName && trackName !== '—') {
+            currentTrack = tracksData.find(t => t.name === trackName);
         }
+    }
+    
+    // Получаем доступные времена для этой трассы
+    let availableTimes = times; // по умолчанию все времена
+    if (currentTrack && currentTrack.times && currentTrack.times.length > 0) {
+        availableTimes = times.filter(t => currentTrack.times.includes(t.name));
+        console.log(`📅 Доступные времена для ${currentTrack.name}:`, availableTimes.map(t => t.name));
+    }
+    
+    // Выбираем случайное время из доступных
+    const time = getRandomItem(availableTimes);
+    newCombo.time_name = time.name;
+    newCombo.time_multiplier = getRandomXValue();
+    updateProgressBar(78, '⏰ Время настроено');
+    await sleep(150);
+    updateProgressBar(80, '⏰ Готово');
+} else {
+    updateProgressBar(80, '🔒 Время заблокировано');
+}
         await sleep(200);
         
         // Шаг 6: Шины (80% -> 88%)
