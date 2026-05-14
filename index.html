@@ -1068,9 +1068,9 @@
         <span>👑</span>
         <span style="font-size: 12px; font-weight: 600;">РЕЖИМ СИНХРОНИЗАЦИИ</span>
     </div>
-    <button id="syncToggleBtn" style="background: #3b82f6; padding: 6px 12px; font-size: 11px; margin: 0; min-width: auto;">
-        🔓 ВЫКЛ
-    </button>
+    <button id="syncToggleBtn" style="background: #22c55e; padding: 6px 12px; font-size: 11px; margin: 0; min-width: auto;">
+    🔒 ВКЛ
+</button>
 </div>
     
     
@@ -2515,11 +2515,15 @@ function init() {
     localStorage.setItem('gt7_sync_enabled', userSyncEnabled);
     
     if (userSyncEnabled) {
-        syncBtn.innerHTML = '🔓 ВЫКЛ';
-        syncBtn.style.background = '#3b82f6';
-        // Принудительно перезагружаем синхронизацию
-        setTimeout(() => window.generateRandomRace(), 100);
+        syncBtn.innerHTML = '🔒 ВКЛ';  // ← было "🔓 ВЫКЛ"
+        syncBtn.style.background = '#22c55e';  // ← зелёный (включено)
     } else {
+        syncBtn.innerHTML = '🔓 ВЫКЛ';  // ← было "🔒 ВКЛ"
+        syncBtn.style.background = '#ef4444';  // ← красный (выключено)
+    }
+    // Принудительно перезагружаем
+    setTimeout(() => window.generateRandomRace(), 100);
+} else {
         syncBtn.innerHTML = '🔒 ВКЛ';
         syncBtn.style.background = '#ef4444';
         // Генерируем случайную гонку без синхронизации
@@ -2532,11 +2536,11 @@ function updateSyncButtonAppearance() {
     if (!syncBtn) return;
     
     if (userSyncEnabled) {
-        syncBtn.innerHTML = '🔓 ВЫКЛ';
-        syncBtn.style.background = '#3b82f6';
+        syncBtn.innerHTML = '🔒 ВКЛ';  // ← было "🔓 ВЫКЛ"
+        syncBtn.style.background = '#22c55e';  // ← зелёный
     } else {
-        syncBtn.innerHTML = '🔒 ВКЛ';
-        syncBtn.style.background = '#ef4444';
+        syncBtn.innerHTML = '🔓 ВЫКЛ';  // ← было "🔒 ВКЛ"
+        syncBtn.style.background = '#ef4444';  // ← красный
     }
 }
 
