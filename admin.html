@@ -1456,6 +1456,24 @@ const times = [
     { name: "Полночь", icon: "🌕" }
 ];
 
+    
+    // ============================================
+// ФУНКЦИЯ ПРОВЕРКИ СОВМЕСТИМОСТИ ПОГОДЫ
+// ============================================
+function isWeatherCompatibleForTrack(weatherName, trackName) {
+    const track = tracksData.find(t => t.name === trackName);
+    if (!track || !track.weather) return true;
+    
+    const isDry = weatherName.startsWith('S') || weatherName.startsWith('C');
+    const isWet = weatherName.startsWith('R');
+    
+    if (track.weather.includes('both')) return true;
+    if (track.weather.includes('dry') && isDry) return true;
+    if ((track.weather.includes('wet') || track.weather.includes('rain')) && isWet) return true;
+    
+    return false;
+}
+
 // ============================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 // ============================================
@@ -1661,9 +1679,44 @@ if (category) {
     document.getElementById('categoryText').innerHTML = `${category.icon} ${category.name} (${category.description})`;
 }
 
-// Погода с эмодзи
+// Погода с эмодзи и проверкой на совместимость с трассой
 if (tableData.weather_name) {
-    const weatherObj = weathers.find(w => w.name === tableData.weather_name);
+    let weatherObj = weathers.find(w => w.name === tableData.weather_name);
+    
+    // Проверяем, подходит ли погода для текущей трассы
+    if (weatherObj && tableData.track_name) {
+        const track = tracksData.find(t => t.name === tableData.track_name);
+        if (track && track.weather && track.weather.length > 0) {
+            const isDry = weatherObj.name.startsWith('S') || weatherObj.name.startsWith('C');
+            const isWet = weatherObj.name.startsWith('R');
+            
+            let isCompatible = false;
+            if (track.weather.includes('both')) {
+                isCompatible = true;
+            } else if (track.weather.includes('dry') && isDry) {
+                isCompatible = true;
+            } else if ((track.weather.includes('wet') || track.weather.includes('rain')) && isWet) {
+                isCompatible = true;
+            }
+            
+            // Если погода не подходит - заменяем на подходящую
+            if (!isCompatible) {
+                console.warn(`⚠️ Погода "${tableData.weather_name}" не подходит для трассы "${track.name}"`);
+                
+                let availableWeathers = weathers;
+                if (track.weather.includes('dry')) {
+                    availableWeathers = weathers.filter(w => w.name.startsWith('S') || w.name.startsWith('C'));
+                } else if (track.weather.includes('both')) {
+                    availableWeathers = weathers;
+                }
+                
+                const fallbackWeather = getRandomItem(availableWeathers);
+                weatherObj = fallbackWeather;
+                console.log(`✅ Заменено на "${fallbackWeather.name}"`);
+            }
+        }
+    }
+    
     if (weatherObj) {
         document.getElementById('weatherValue').innerHTML = `${weatherObj.icon} ${weatherObj.name}`;
     } else {
@@ -1774,17 +1827,52 @@ async function generateAndSave() {
         await sleep(200);
         
         // Шаг 4: Погода (60% -> 70%)
-        updateProgressBar(63, '🌤️ Настройка погоды...');
-        await sleep(200);
-        if (!locks.weather) {
-            const weather = getRandomItem(weathers);
-            newCombo.weather_name = weather.name;
-            updateProgressBar(68, '🌤️ Погода настроена');
-            await sleep(150);
-            updateProgressBar(70, '🌤️ Готово');
-        } else {
-            updateProgressBar(70, '🔒 Погода заблокирована');
+updateProgressBar(63, '🌤️ Настройка погоды...');
+await sleep(200);
+if (!locks.weather) {
+    // Получаем текущую трассу
+    let currentTrack = null;
+    if (!locks.track && newCombo.track_name) {
+        currentTrack = tracksData.find(t => t.name === newCombo.track_name);
+    } else {
+        const trackName = document.getElementById('trackValue').textContent;
+        if (trackName && trackName !== '—') {
+            currentTrack = tracksData.find(t => t.name === trackName);
         }
+    }
+    
+    // Определяем доступные типы погоды для этой трассы
+    let availableWeathers = weathers; // по умолчанию все
+    
+    if (currentTrack && currentTrack.weather && currentTrack.weather.length > 0) {
+        const weatherTypes = currentTrack.weather;
+        
+        // Фильтруем погоду в зависимости от типа
+        if (weatherTypes.includes('dry') && !weatherTypes.includes('both')) {
+            // Только сухая погода (S* и C*)
+            availableWeathers = weathers.filter(w => w.name.startsWith('S') || w.name.startsWith('C'));
+            console.log(`🌤️ Доступна только сухая погода для ${currentTrack.name}`);
+        } 
+        else if (weatherTypes.includes('both')) {
+            // Сухая и дождливая (все)
+            availableWeathers = weathers;
+            console.log(`🌧️ Доступна любая погода для ${currentTrack.name}`);
+        }
+        else if (weatherTypes.includes('wet') || weatherTypes.includes('rain')) {
+            // Только дождливая (R*)
+            availableWeathers = weathers.filter(w => w.name.startsWith('R'));
+            console.log(`🌧️ Доступна только дождливая погода для ${currentTrack.name}`);
+        }
+    }
+    
+    const weather = getRandomItem(availableWeathers);
+    newCombo.weather_name = weather.name;
+    updateProgressBar(68, `🌤️ Погода: ${weather.name.substring(0, 30)}`);
+    await sleep(150);
+    updateProgressBar(70, '🌤️ Готово');
+} else {
+    updateProgressBar(70, '🔒 Погода заблокирована');
+}
         await sleep(200);
         
         // Шаг 5: Время (70% -> 80%)
