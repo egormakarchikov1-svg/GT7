@@ -2515,21 +2515,15 @@ function init() {
     localStorage.setItem('gt7_sync_enabled', userSyncEnabled);
     
     if (userSyncEnabled) {
-        syncBtn.innerHTML = '🔒 ВКЛ';  // ← было "🔓 ВЫКЛ"
-        syncBtn.style.background = '#22c55e';  // ← зелёный (включено)
+        syncBtn.innerHTML = '🔒 ВКЛ';
+        syncBtn.style.background = '#22c55e';
     } else {
-        syncBtn.innerHTML = '🔓 ВЫКЛ';  // ← было "🔒 ВКЛ"
-        syncBtn.style.background = '#ef4444';  // ← красный (выключено)
+        syncBtn.innerHTML = '🔓 ВЫКЛ';
+        syncBtn.style.background = '#ef4444';
     }
     // Принудительно перезагружаем
     setTimeout(() => window.generateRandomRace(), 100);
-} else {
-        syncBtn.innerHTML = '🔒 ВКЛ';
-        syncBtn.style.background = '#ef4444';
-        // Генерируем случайную гонку без синхронизации
-        setTimeout(() => window.generateRandomRace(), 100);
-    }
-}  // ← ВАЖНО: закрыть функцию toggleSyncMode()
+}
 
 function updateSyncButtonAppearance() {
     const syncBtn = document.getElementById('syncToggleBtn');
