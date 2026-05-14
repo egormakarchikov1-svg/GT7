@@ -1381,6 +1381,22 @@ const tracksData = [
     { name: "ОАЭ Yas Marina Circuit", weather: ["dry"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] }
 ];
 
+    
+    // Функция для проверки и исправления времён у трасс
+function fixTracksTimes() {
+    const allTimes = ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"];
+    
+    for (let track of tracksData) {
+        if (!track.times || track.times.length === 0) {
+            track.times = [...allTimes];
+            console.log(`✅ Добавлены все времена для трассы: ${track.name}`);
+        }
+    }
+}
+
+// Вызовите функцию
+fixTracksTimes();
+
 // ============================================
 // МАССИВЫ ПОГОДЫ, ВРЕМЕНИ И КАТЕГОРИЙ
 // ============================================
@@ -1656,13 +1672,30 @@ if (tableData.weather_name) {
 }
 
 // Время с эмодзи и множителем в красном кружке
+// Время с эмодзи и множителем в красном кружке
+// Время с эмодзи и множителем в красном кружке
 if (tableData.time_name) {
-    const timeObj = times.find(t => t.name === tableData.time_name);
+    let timeObj = times.find(t => t.name === tableData.time_name);
     const timeMultiplier = tableData.time_multiplier || 'X1';
-    if (timeObj) {
-        document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name} <span class="time-x-badge">${timeMultiplier}</span>`;
+    
+    // Если время не найдено в списке — используем "День" как запасной вариант
+    if (!timeObj) {
+        console.warn(`⚠️ Время "${tableData.time_name}" не найдено в списке, используем "День"`);
+        timeObj = times.find(t => t.name === "День") || times[5];
+    }
+    
+    if (window.innerWidth <= 480) {
+        document.getElementById('timeValue').innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <span class="result-icon">${timeObj.icon}</span>
+                    <span>${timeObj.name}</span>
+                </div>
+                <span class="time-x-badge" style="font-size: 14px;">${timeMultiplier}</span>
+            </div>
+        `;
     } else {
-        document.getElementById('timeValue').innerHTML = `${tableData.time_name} <span class="time-x-badge">${timeMultiplier}</span>`;
+        document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name} <span class="time-x-badge">${timeMultiplier}</span>`;
     }
 }
 
