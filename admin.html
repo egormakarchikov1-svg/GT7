@@ -8,11 +8,10 @@
     <link rel="icon" type="image/png" sizes="192x192" href="gt7.png">
     <link rel="shortcut icon" href="gt7.png">
     <meta name="mobile-web-app-capable" content="yes">
-    
     <meta name="theme-color" content="#ff4d4d">
 
-        <style>
-        /* ===== ОСНОВНЫЕ СТИЛИ (как в index.html) ===== */
+    <style>
+        /* ===== ОСНОВНЫЕ СТИЛИ ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -90,7 +89,6 @@
         .settings-value-small { font-size: 16px !important; font-weight: 600; }
         .result-icon { font-size: 24px; }
         
-        /* ЕДИНЫЙ СТИЛЬ ДЛЯ КРУЖКОВ (красный текст, полупрозрачный красный фон) */
         .time-x-badge {
             color: #ff4d4d;
             font-weight: 700;
@@ -125,202 +123,33 @@
         .status.error { background: rgba(239,68,68,0.2); border-left: 3px solid #ef4444; }
         .button-group { display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; margin: 15px 0; }
         
-        /* ===== АДАПТИВНЫЕ СТИЛИ ДЛЯ ТЕЛЕФОНОВ ===== */
         @media (max-width: 480px) and (orientation: portrait) {
             body { padding: 4px; }
-            .container { padding: 8px 6px; border-radius: 16px; max-width: 100%; min-height: 85vh; display: flex; flex-direction: column; justify-content: center; }
-            .cars-track-container, .category-container, .settings-container, .similar-cars-container { padding: 3px; margin-bottom: 4px; }
-            .cars-track-header-clickable, .category-header-clickable, .settings-header-clickable, .similar-header-clickable { padding: 8px; }
-            .cars-track-title, .category-title, .settings-title, .similar-title { font-size: 13px; }
-            .params-grid { gap: 6px; grid-template-columns: 1fr !important; min-height: 200px; }
+            .container { padding: 8px 6px; border-radius: 16px; max-width: 100%; min-height: 85vh; }
+            .params-grid { gap: 6px; grid-template-columns: 1fr !important; }
             .param-label { font-size: 10px; padding: 5px 10px; }
-            .param-label img { width: 16px; height: 16px; }
-            .lock-btn { padding: 4px 8px; font-size: 10px; min-width: 32px; }
-            .param-header { gap: 6px; margin-bottom: 4px; }
-            .icon-container { min-height: 50px; margin-bottom: 3px; }
-            .car-icon, .track-icon { max-height: 100px; min-height: 100px; }
-            .param-value, .category-value { font-size: 10px; padding: 5px 6px; margin-top: 3px; min-height: 50px; display: flex; align-items: center; justify-content: center; }
-            .btn-group button { font-size: 8px; padding: 5px 4px; min-width: 52px; }
-            .btn-main { min-width: 120px; font-size: 12px; padding: 8px 11px; min-height: 44px; }
-            .btn-similar { font-size: 10px; padding: 6px 10px; }
-            .similar-title { font-size: 11px; margin-bottom: 6px; }
-            .ref-car-info { font-size: 9px; padding: 6px; margin-bottom: 8px; min-height: 65px; }
-            .similar-list li { padding: 6px; font-size: 9px; min-height: 40px; }
-            .similar-list { min-height: 240px; }
-            .car-name { font-size: 10px; }
-            .car-stats { font-size: 7px; gap: 3px; }
-            .similarity-badge { font-size: 8px; padding: 2px 4px; }
-            .settings-container { padding: 6px; margin: 6px 0; }
-            .settings-item { padding: 6px; }
-            .settings-label { font-size: 9px; white-space: nowrap; }
-            .settings-value { font-size: 11px; padding: 4px; min-height: 45px; display: flex; align-items: center; justify-content: center; }
-            .settings-lock-btn { padding: 2px 6px; font-size: 8px; min-width: 32px; }
-            .settings-items { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; min-height: 170px; }
-            .settings-header { display: flex; flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: nowrap; gap: 4px; margin-bottom: 6px; }
-            .settings-value-small { font-size: 11px !important; line-height: 1.2; }
-            .settings-icon { width: 16px !important; height: 16px !important; }
-            .time-x-badge { font-size: 11px; padding: 2px 3px; margin-left: 2px; white-space: nowrap; }
-            .result-icon { font-size: 12px !important; }
-            #tiresValue, #fuelValue { font-size: 9px !important; padding: 3px !important; }
-            .header-icon { width: 28px !important; height: 28px !important; }
-            .category-value { min-height: 55px; }
+            .time-x-badge { font-size: 11px; padding: 2px 6px; }
         }
         
-        @media (max-width: 850px) and (orientation: landscape) {
-            body { padding: 6px; }
-            .container { padding: 8px 10px; border-radius: 16px; max-width: 95%; min-height: 85vh; }
-            .cars-track-container, .category-container, .settings-container, .similar-cars-container { padding: 5px; margin-bottom: 6px; }
-            .cars-track-header-clickable, .category-header-clickable, .settings-header-clickable, .similar-header-clickable { padding: 6px 10px; }
-            .cars-track-title, .category-title, .settings-title, .similar-title { font-size: 12px; }
-            .params-grid { gap: 10px; grid-template-columns: repeat(2, 1fr) !important; min-height: 180px; }
-            .param-label { font-size: 9px; padding: 4px 8px; }
-            .param-label img { width: 14px; height: 14px; }
-            .lock-btn { padding: 3px 6px; font-size: 9px; min-width: 29px; }
-            .param-header { gap: 5px; margin-bottom: 4px; }
-            .icon-container { min-height: 40px; margin-bottom: 3px; }
-            .car-icon, .track-icon { max-height: 32px; min-height: 32px; }
-            .param-value, .category-value { font-size: 8px; padding: 4px 5px; margin-top: 3px; min-height: 45px; display: flex; align-items: center; justify-content: center; }
-            .btn-similar { font-size: 9px; padding: 5px 8px; }
-            .similar-title { font-size: 10px; margin-bottom: 5px; }
-            .ref-car-info { font-size: 8px; padding: 5px; margin-bottom: 6px; min-height: 55px; }
-            .similar-list li { padding: 5px; font-size: 8px; min-height: 35px; }
-            .similar-list { min-height: 220px; }
-            .car-name { font-size: 9px; }
-            .car-stats { font-size: 6px; gap: 2px; }
-            .similarity-badge { font-size: 7px; padding: 1px 3px; }
-            .settings-container { padding: 6px; margin: 6px 0; }
-            .settings-item { padding: 5px; }
-            .settings-label { font-size: 8px; white-space: nowrap; }
-            .settings-value { font-size: 11px; padding: 3px; min-height: 40px; display: flex; align-items: center; justify-content: center; }
-            .settings-lock-btn { padding: 2px 5px; font-size: 7px; min-width: 28px; }
-            .settings-items { gap: 5px; min-height: 150px; }
-            .settings-header { gap: 3px; margin-bottom: 4px; }
-            .settings-value-small { font-size: 9px !important; }
-            .settings-icon { width: 14px !important; height: 14px !important; }
-            .result-icon { font-size: 12px !important; }
-            .time-x-badge { font-size: 7px; padding: 2px 4px; }
-            .header-icon { width: 24px !important; height: 24px !important; }
-            .category-value { min-height: 45px; }
+        #progressBar {
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
-
-        @media (min-width: 481px) and (max-width: 800px) and (orientation: portrait) {
-            body { padding: 10px; }
-            .container { padding: 16px 14px; border-radius: 24px; max-width: 550px; min-height: 85vh; }
-            .cars-track-container, .category-container, .settings-container, .similar-cars-container { padding: 8px; margin-bottom: 10px; }
-            .params-grid { gap: 15px; grid-template-columns: repeat(2, 1fr) !important; min-height: 220px; }
-            .param-label { font-size: 14px; padding: 8px 16px; }
-            .param-label img { width: 22px; height: 22px; }
-            .lock-btn { padding: 6px 12px; font-size: 13px; min-width: 45px; }
-            .param-header { gap: 10px; margin-bottom: 8px; }
-            .icon-container { min-height: 70px; margin-bottom: 6px; }
-            .car-icon, .track-icon { max-height: 65px; min-height: 65px; }
-            .param-value, .category-value { font-size: 14px; padding: 8px 10px; margin-top: 5px; min-height: 65px; display: flex; align-items: center; justify-content: center; }
-            .btn-group button { font-size: 11px; padding: 8px 8px; min-width: 75px; }
-            .btn-main { min-width: 180px; font-size: 17px; padding: 11px 16px; min-height: 55px; }
-            .btn-icon { width: 22px; height: 22px; }
-            .btn-similar { font-size: 13px; padding: 8px 12px; }
-            .similar-title { font-size: 16px; margin-bottom: 10px; }
-            .ref-car-info { font-size: 12px; padding: 10px; margin-bottom: 12px; min-height: 80px; }
-            .similar-list li { padding: 10px; font-size: 12px; min-height: 55px; }
-            .similar-list { min-height: 320px; }
-            .car-name { font-size: 13px; }
-            .car-stats { font-size: 10px; gap: 6px; }
-            .similarity-badge { font-size: 11px; padding: 3px 6px; }
-            .settings-container { padding: 12px; margin: 12px 0; }
-            .settings-item { padding: 10px; }
-            .settings-label { font-size: 14px; }
-            .settings-value { font-size: 22px; padding: 8px; min-height: 65px; display: flex; align-items: center; justify-content: center; }
-            .settings-lock-btn { padding: 5px 12px; font-size: 12px; }
-            .settings-value-small { font-size: 15px !important; }
-            .settings-icon { width: 28px !important; height: 28px !important; }
-            .settings-items { min-height: 220px; }
-            .result-icon { font-size: 26px !important; }
-            .category-icon { width: 28px !important; height: 28px !important; }
-            .category-value { min-height: 70px; }
+        #progressBar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 1.5s infinite;
         }
-
-        @media (min-width: 801px) and (max-width: 1024px) and (orientation: landscape) {
-            body { padding: 15px; }
-            .container { max-width: 900px; padding: 18px 16px; border-radius: 28px; min-height: 85vh; }
-            .cars-track-container, .category-container, .settings-container, .similar-cars-container { padding: 10px; margin-bottom: 12px; }
-            .params-grid { gap: 20px; grid-template-columns: repeat(2, 1fr) !important; min-height: 240px; }
-            .param-label { font-size: 16px; padding: 10px 18px; }
-            .param-label img { width: 28px; height: 28px; }
-            .lock-btn { padding: 7px 14px; font-size: 14px; min-width: 50px; }
-            .param-header { gap: 12px; margin-bottom: 10px; }
-            .icon-container { min-height: 85px; margin-bottom: 8px; }
-            .car-icon, .track-icon { max-height: 110px; min-height: 110px; }
-            .param-value, .category-value { font-size: 15px; padding: 10px 12px; margin-top: 6px; min-height: 70px; display: flex; align-items: center; justify-content: center; }
-            .btn-group button { font-size: 12px; padding: 9px 12px; min-width: 90px; }
-            .btn-main { min-width: 220px; font-size: 19px; padding: 12px 20px; min-height: 60px; }
-            .btn-icon { width: 26px; height: 26px; }
-            .btn-similar { font-size: 14px; padding: 10px 14px; }
-            .similar-title { font-size: 18px; margin-bottom: 12px; }
-            .ref-car-info { font-size: 13px; padding: 12px; margin-bottom: 14px; min-height: 85px; }
-            .similar-list li { padding: 12px; font-size: 13px; min-height: 60px; }
-            .similar-list { min-height: 350px; }
-            .car-name { font-size: 14px; }
-            .car-stats { font-size: 11px; gap: 8px; }
-            .similarity-badge { font-size: 12px; padding: 3px 8px; }
-            .settings-container { padding: 15px; margin: 15px 0; }
-            .settings-item { padding: 12px; }
-            .settings-label { font-size: 16px; }
-            .settings-value { font-size: 26px; padding: 10px; min-height: 70px; display: flex; align-items: center; justify-content: center; }
-            .settings-lock-btn { padding: 6px 14px; font-size: 14px; }
-            .settings-value-small { font-size: 17px !important; }
-            .settings-icon { width: 32px !important; height: 32px !important; }
-            .settings-items { min-height: 240px; }
-            .result-icon { font-size: 30px !important; }
-            .category-icon { width: 32px !important; height: 32px !important; }
-            .category-value { min-height: 75px; }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
-
-        @media (min-width: 1281px) {
-            .container { max-width: 1100px; padding: 24px 22px; min-height: 85vh; }
-            .cars-track-container, .category-container, .settings-container, .similar-cars-container { padding: 15px; margin-bottom: 18px; }
-            .params-grid { gap: 30px; grid-template-columns: repeat(2, 1fr) !important; min-height: 280px; }
-            .param-label { font-size: 20px; padding: 14px 28px; }
-            .param-label img { width: 36px; height: 36px; }
-            .lock-btn { padding: 10px 18px; font-size: 18px; min-width: 70px; }
-            .car-icon, .track-icon { max-height: 150px; min-height: 150px; }
-            .param-value, .category-value { font-size: 18px; padding: 14px 16px; min-height: 85px; display: flex; align-items: center; justify-content: center; }
-            .btn-group button { font-size: 15px; padding: 12px 18px; }
-            .btn-main { min-width: 300px; font-size: 24px; padding: 16px 28px; min-height: 70px; }
-            .btn-icon { width: 34px; height: 34px; }
-            .similar-title { font-size: 24px; }
-            .settings-value { font-size: 34px; min-height: 85px; }
-            .settings-items { min-height: 280px; }
-            .similar-list { min-height: 400px; }
-            .category-icon { width: 36px !important; height: 36px !important; }
-            .category-value { min-height: 85px; }
-        }
-
-        /* Убираем пустоту везде */
-        .similar-list { min-height: auto !important; }
-
-            /* Прогресс-бар анимация */
-#progressBar {
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-}
-
-#progressBar::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-}
-        
     </style>
 </head>
 <body>
@@ -330,7 +159,6 @@
         👑 АДМИН-ПАНЕЛЬ: Вы управляете общей комбинацией 👑
     </div>
     
-    <!-- Блок МАШИНА и ТРАССА -->
     <div class="cars-track-container" id="carsTrackContainer">
         <div class="cars-track-header-clickable" id="carsTrackHeader">
             <div style="width: 30px;"></div>
@@ -372,7 +200,6 @@
         </div>
     </div>
     
-    <!-- Блок ГОНОЧНЫЙ КЛАСС -->
     <div class="category-container" id="categoryContainer">
         <div class="category-header-clickable" id="categoryHeader">
             <div style="width: 30px;"></div>
@@ -387,7 +214,6 @@
         </div>
     </div>
     
-    <!-- Блок НАСТРОЙКИ СЛОЖНОСТИ -->
     <div class="settings-container" id="settingsContainer">
         <div class="settings-header-clickable" id="settingsHeader">
             <div style="width: 30px;"></div>
@@ -418,31 +244,29 @@
                     <div class="settings-value settings-value-small" id="timeValue">—</div>
                 </div>
                 <div class="settings-item" data-param="tires">
-    <div class="settings-header">
-        <div class="settings-label">
-            <img src="https://images.icon-icons.com/577/PNG/96/Wheel_icon-icons.com_54891.png" class="settings-icon">
-            <span>ИЗНОС ШИН</span>
-        </div>
-        <button class="settings-lock-btn unlocked" data-param="tires">🔓</button>
-    </div>
-    <div class="settings-value" id="tiresValue"><span class="time-x-badge">X1</span></div>
-</div>
-
-<div class="settings-item" data-param="fuel">
-    <div class="settings-header">
-        <div class="settings-label">
-            <img src="https://images.icon-icons.com/1448/PNG/96/42568fuelpump_98960.png" class="settings-icon">
-            <span>РАСХОД ТОПЛИВА</span>
-        </div>
-        <button class="settings-lock-btn unlocked" data-param="fuel">🔓</button>
-    </div>
-    <div class="settings-value" id="fuelValue"><span class="time-x-badge">X1</span></div>
-</div>
+                    <div class="settings-header">
+                        <div class="settings-label">
+                            <img src="https://images.icon-icons.com/577/PNG/96/Wheel_icon-icons.com_54891.png" class="settings-icon">
+                            <span>ИЗНОС ШИН</span>
+                        </div>
+                        <button class="settings-lock-btn unlocked" data-param="tires">🔓</button>
+                    </div>
+                    <div class="settings-value" id="tiresValue"><span class="time-x-badge">X1</span></div>
+                </div>
+                <div class="settings-item" data-param="fuel">
+                    <div class="settings-header">
+                        <div class="settings-label">
+                            <img src="https://images.icon-icons.com/1448/PNG/96/42568fuelpump_98960.png" class="settings-icon">
+                            <span>РАСХОД ТОПЛИВА</span>
+                        </div>
+                        <button class="settings-lock-btn unlocked" data-param="fuel">🔓</button>
+                    </div>
+                    <div class="settings-value" id="fuelValue"><span class="time-x-badge">X1</span></div>
+                </div>
             </div>
         </div>
     </div>
     
-    <!-- Блок подбора схожих авто -->
     <div class="similar-cars-container" id="similarContainer">
         <div class="similar-header-clickable" id="similarHeader">
             <div style="width: 30px;"></div>
@@ -462,262 +286,48 @@
         <button id="refreshBtn" class="btn-main btn-secondary">🔄 ОБНОВИТЬ</button>
     </div>
 
-    <!-- Прогресс-бар генерации -->
-<div id="progressContainer" style="display: none; margin-top: 15px; margin-bottom: 15px;">
-    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-        <span style="font-size: 12px; color: #eee;">🎲 Генерация условий...</span>
-        <span id="progressPercent" style="font-size: 12px; color: #ff4d4d;">0%</span>
+    <div id="progressContainer" style="display: none; margin-top: 15px; margin-bottom: 15px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+            <span style="font-size: 12px; color: #eee;">🎲 Генерация условий...</span>
+            <span id="progressPercent" style="font-size: 12px; color: #ff4d4d;">0%</span>
+        </div>
+        <div style="background: rgba(0,0,0,0.5); border-radius: 10px; overflow: hidden; height: 20px;">
+            <div id="progressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #ff4d4d, #ff9999); border-radius: 10px; transition: width 0.3s ease;"></div>
+        </div>
+        <div id="progressStep" style="font-size: 10px; color: #aaa; margin-top: 5px; text-align: center;">Подготовка...</div>
     </div>
-    <div style="background: rgba(0,0,0,0.5); border-radius: 10px; overflow: hidden; height: 20px;">
-        <div id="progressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #ff4d4d, #ff9999); border-radius: 10px; transition: width 0.3s ease;"></div>
-    </div>
-    <div id="progressStep" style="font-size: 10px; color: #aaa; margin-top: 5px; text-align: center;">Подготовка...</div>
-</div>
     
     <div id="status" class="status"></div>
 </div>
 
 <script>
-
     // ============================================
-// ПРОГРЕСС-БАР ГЕНЕРАЦИИ
-
-
-let progressSteps = [
-    { step: 1, name: "Генерация машины", weight: 25, icon: "🚗" },
-    { step: 2, name: "Подбор похожих авто", weight: 15, icon: "🔍" },
-    { step: 3, name: "Выбор трассы", weight: 20, icon: "🛣️" },
-    { step: 4, name: "Настройка погоды", weight: 10, icon: "🌤️" },
-    { step: 5, name: "Настройка времени", weight: 10, icon: "⏰" },
-    { step: 6, name: "Расчёт износа шин", weight: 10, icon: "🛞" },
-    { step: 7, name: "Расчёт расхода топлива", weight: 5, icon: "⛽" },
-    { step: 8, name: "Определение класса", weight: 5, icon: "🏆" }
-];
-
-let currentProgress = 0;
-let progressInterval = null;
-
-function showProgress() {
-    const container = document.getElementById('progressContainer');
-    const statusDiv = document.getElementById('status');
-    if (container) {
-        container.style.display = 'block';
-    }
-    if (statusDiv) {
-        statusDiv.style.display = 'none';
-    }
-    currentProgress = 0;
-    updateProgressBar(0, 'Начинаем генерацию...');
-}
-
-function hideProgress() {
-    const container = document.getElementById('progressContainer');
-    const statusDiv = document.getElementById('status');
-    if (container) {
-        setTimeout(() => {
-            container.style.display = 'none';
-        }, 500);
-    }
-    if (statusDiv) {
-        statusDiv.style.display = 'block';
-    }
-    if (progressInterval) {
-        clearInterval(progressInterval);
-        progressInterval = null;
-    }
-}
-
-function updateProgressBar(percent, stepText) {
-    const progressBar = document.getElementById('progressBar');
-    const progressPercent = document.getElementById('progressPercent');
-    const progressStep = document.getElementById('progressStep');
-    
-    if (progressBar) {
-        progressBar.style.width = Math.min(100, percent) + '%';
-    }
-    if (progressPercent) {
-        progressPercent.innerHTML = Math.min(100, percent) + '%';
-    }
-    if (progressStep && stepText) {
-        progressStep.innerHTML = stepText;
-    }
-}
-
-function updateProgress(stepName, stepPercent) {
-    // Находим шаг по имени
-    const step = progressSteps.find(s => stepName.includes(s.name));
-    if (step) {
-        // Накапливаем прогресс от предыдущих шагов
-        let cumulativePercent = 0;
-        for (let i = 0; i < progressSteps.length; i++) {
-            if (progressSteps[i].step < step.step) {
-                cumulativePercent += progressSteps[i].weight;
-            } else if (progressSteps[i].step === step.step) {
-                cumulativePercent += stepPercent;
-                break;
-            }
-        }
-        currentProgress = cumulativePercent;
-        updateProgressBar(currentProgress, `${step.icon} ${step.name}... ${Math.round(stepPercent)}%`);
-    }
-}
-
-function completeProgress() {
-    updateProgressBar(100, '✅ Генерация завершена!');
-    setTimeout(() => {
-        hideProgress();
-    }, 800);
-}
-
-    function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-
-
-// ============================================
-// ЗАЩИТА АДМИН-ПАНЕЛИ С МОДАЛЬНЫМ ОКНОМ
-// ============================================
-
-// Секретный ключ для доступа (СМЕНИТЕ НА СВОЙ!)
-const ADMIN_SECRET_KEY = '939030312';
-
-// Переменная для хранения статуса доступа
-let adminAccessGranted = false;
-
-// Функция показа модального окна для ввода пароля
-function showPasswordModal() {
-    // Проверяем, нет ли уже модального окна
-    if (document.getElementById('adminPasswordModal')) return;
-    
-    const modalHtml = `
-        <div id="adminPasswordModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:10000; display:flex; align-items:center; justify-content:center;">
-            <div style="background:#1e293b; padding:25px; border-radius:20px; text-align:center; width:280px; box-shadow:0 0 20px rgba(255,77,77,0.3); border:1px solid #ff4d4d;">
-                <div style="font-size:48px; margin-bottom:10px;">👑</div>
-                <h3 style="color:#ff4d4d; margin-bottom:15px;">Вход в админ-панель</h3>
-                <input type="password" id="adminPasswordInput" placeholder="Введите пароль" style="width:100%; padding:10px; margin-bottom:15px; border-radius:10px; background:#334155; color:white; border:1px solid #ff4d4d; text-align:center; font-size:16px;">
-                <button id="adminPasswordSubmit" style="background:#ff4d4d; padding:10px 20px; border:none; border-radius:10px; color:white; font-weight:bold; width:100%; cursor:pointer; font-size:16px;">ВОЙТИ</button>
-            </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-    
-    const submitBtn = document.getElementById('adminPasswordSubmit');
-    const passwordInput = document.getElementById('adminPasswordInput');
-    
-    const checkPassword = () => {
-        if (passwordInput.value === ADMIN_SECRET_KEY) {
-            adminAccessGranted = true;
-            localStorage.setItem('gt7_admin_access', 'true');
-            document.getElementById('adminPasswordModal').remove();
-            alert('✅ Админ-доступ активирован!');
-            location.reload();
-        } else {
-            alert('❌ Неверный пароль!');
-            passwordInput.value = '';
-            passwordInput.focus();
-        }
-    };
-    
-    submitBtn.onclick = checkPassword;
-    passwordInput.onkeypress = (e) => {
-        if (e.key === 'Enter') checkPassword();
-    };
-    
-    passwordInput.focus();
-}
-
-// Основная функция проверки доступа
-function checkAdminAccess() {
-    // Проверяем URL параметры (для браузера)
-    const urlParams = new URLSearchParams(window.location.search);
-    const secretKey = urlParams.get('admin');
-    
-    if (secretKey === ADMIN_SECRET_KEY) {
-        adminAccessGranted = true;
-        localStorage.setItem('gt7_admin_access', 'true');
-        window.history.replaceState({}, document.title, window.location.pathname);
-        alert('✅ Админ-доступ активирован!');
-        return true;
-    }
-    
-    // Проверяем сохранённый доступ
-    if (localStorage.getItem('gt7_admin_access') === 'true') {
-        adminAccessGranted = true;
-        return true;
-    }
-    
-    // Проверяем, открыто ли приложение как PWA (с рабочего стола)
-    const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-    
-    // Если нет доступа и это PWA - показываем модальное окно
-    if (isPWA) {
-        setTimeout(() => showPasswordModal(), 100);
-    }
-    
-    return false;
-}
-
-// Вызываем проверку при загрузке
-checkAdminAccess();
-
-// Функция для выхода из админ-режима
-function logoutAdmin() {
-    localStorage.removeItem('gt7_admin_access');
-    adminAccessGranted = false;
-    alert('🔴 Админ-доступ отключён. Страница будет перезагружена.');
-    location.reload();
-}
-
-// Добавляем кнопку выхода в DOM (если админ-доступ есть)
-if (adminAccessGranted) {
-    const adminBanner = document.querySelector('.admin-banner');
-    if (adminBanner) {
-        const logoutBtn = document.createElement('button');
-        logoutBtn.innerHTML = '🚪 ВЫЙТИ';
-        logoutBtn.style.cssText = `
-            background: #ef4444;
-            border: none;
-            border-radius: 20px;
-            padding: 4px 12px;
-            margin-left: 10px;
-            font-size: 11px;
-            cursor: pointer;
-            color: white;
-        `;
-        logoutBtn.onclick = logoutAdmin;
-        adminBanner.appendChild(logoutBtn);
-    }
-}
-
-// Также добавим возможность открыть модалку по команде (если нужно перелогиниться)
-window.requestAdminLogin = showPasswordModal;
-    
-    
-    
-    
+    // КОНСТАНТЫ И НАСТРОЙКИ
+    // ============================================
     const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxCyhSh42wr97fCsrS69lYXzDuJ3waxrmKzm3uBKnL0ZMCP2DGlCLy7soE86KlvapqATA/exec';
-const GOOGLE_SHEETS_ID = '1YAJUPE73Nxwe1oEF1xZBHkGj_zg_uGdW7VkTyHtEOOE';
-
-// Состояние блокировок
-const locks = {
-    car: false,
-    track: false,
-    weather: false,
-    time: false,
-    tires: false,
-    fuel: false,
-    category: false
-};
-
-let currentRefCar = null;
-let currentTrackData = null;
-
-// ============================================
-// ⚠️ СЮДА ВСТАВЬТЕ ВАШ МАССИВ carsDatabase ИЗ index.html
-// ============================================
-const carsDatabase = [
+    const GOOGLE_SHEETS_ID = '1YAJUPE73Nxwe1oEF1xZBHkGj_zg_uGdW7VkTyHtEOOE';
+    const ADMIN_SECRET_KEY = '939030312';
+    
+    // Максимальная скорость по классам (км/ч)
+    const CLASS_MAX_SPEED = {
+        'Gr.1': 320,
+        'Gr.2': 295,
+        'Gr.3': 280,
+        'Gr.4': 249
+    };
+    
+    // Состояние блокировок
+    const locks = { car: false, track: false, weather: false, time: false, tires: false, fuel: false, category: false };
+    
+    let currentRefCar = null;
+    let shownCars = [];
+    let shownTracks = [];
+    let adminAccessGranted = false;
+    
+    // ============================================
+    // МАССИВЫ ДАННЫХ (без списков машин и трасс)
+    // ============================================
+    const carsDatabase = [
      { name: "Abarth 500 '09", rating: 415.44, category: "", powerToWeight: 0.13, hp: 135, torque: 180.2, weight: 1035, icon: "car_icons/car1973.png" },
     { name: "Abarth 595 SS '70", rating: 175.22, category: "", powerToWeight: 0.06, hp: 30, torque: 44, weight: 470, icon: "car_icons/car3438.png" },
     { name: "Abarth 1500 Biposto Bertone B.A.T 1 '52", rating: 262.24, category: "", powerToWeight: 0.08, hp: 75, torque: 99.8, weight: 870, icon: "car_icons/car1932.png" },
@@ -1282,10 +892,9 @@ const carsDatabase = [
     { name: "ŠKODA VGT", rating: 851.04, category: "", powerToWeight: 0.82, hp: 1087, torque: "-", weight: 1300, icon: "car_icons/car3542.png" }
 ];
 
-// ============================================
-// ⚠️ СЮДА ВСТАВЬТЕ ВАШ МАССИВ tracksData ИЗ index.html
-// ============================================
-const tracksData = [
+
+    
+    const tracksData = [
      { name: "Франция Alsace - Деревня", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 5.423 },
     { name: "Франция Alsace - Деревня (обратн.)", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 5.423 },
     { name: "Франция Alsace - тестовая трасса", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 2.118 },
@@ -1375,209 +984,224 @@ const tracksData = [
     { name: "США WeatherTech Raceway Laguna Seca", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки"], length: 3.602 },
     { name: "ОАЭ Yas Marina Circuit", weather: ["dry"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"], length: 5.281 }
 ];
-
     
-    // Функция для проверки и исправления времён у трасс
-function fixTracksTimes() {
-    const allTimes = ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"];
+    const categories = [
+        { name: "Gr.1", icon: "⚡", description: "Гоночные прототипы", maxSpeed: 320 },
+        { name: "Gr.2", icon: "⚡", description: "Гоночные автомобили GT", maxSpeed: 295 },
+        { name: "Gr.3", icon: "⚡", description: "Гоночные автомобили GT3", maxSpeed: 280 },
+        { name: "Gr.4", icon: "⚡", description: "Гоночные автомобили GT4", maxSpeed: 249 }
+    ];
     
-    for (let track of tracksData) {
-        if (!track.times || track.times.length === 0) {
-            track.times = [...allTimes];
-            console.log(`✅ Добавлены все времена для трассы: ${track.name}`);
-        }
-    }
-}
-
-// Вызовите функцию
-fixTracksTimes();
-
-// ============================================
-// МАССИВЫ ПОГОДЫ, ВРЕМЕНИ И КАТЕГОРИЙ
-// ============================================
-const categories = [
-    { name: "Gr.1", icon: "⚡", description: "Гоночные прототипы" },
-    { name: "Gr.2", icon: "⚡", description: "Гоночные автомобили GT" },
-    { name: "Gr.3", icon: "⚡", description: "Гоночные автомобили GT3" },
-    { name: "Gr.4", icon: "⚡", description: "Гоночные автомобили GT4" }
-];
-
-const weathers = [
-    { name: "S01 (Ясно, безоблачно)", icon: "☀️" },
-    { name: "S02 (Ясно, малооблачно)", icon: "🌤️" },
-    { name: "S03 (Ясно, переменная облачность)", icon: "⛅" },
-    { name: "S04 (Ясно, легкая дымка)", icon: "🌤️" },
-    { name: "S05 (Солнечно, местами облачно)", icon: "⛅" },
-    { name: "S06 (Солнечно, высокая влажность)", icon: "🌤️" },
-    { name: "S07 (Солнечно, легкий туман)", icon: "🌫️" },
-    { name: "S08 (Солнечно, густая облачность)", icon: "☁️" },
-    { name: "S09 (Солнечно, высокая облачность)", icon: "☁️" },
-    { name: "S10 (Солнечно, дымка от тумана)", icon: "🌫️" },
-    { name: "S11 (Солнечно, горный туман)", icon: "🌫️" },
-    { name: "S12 (Солнечно, муссонные облака)", icon: "☁️" },
-    { name: "S13 (Солнечно, редкие муссонные облака)", icon: "⛅" },
-    { name: "S14 (Солнечно, плотные муссонные облака)", icon: "☁️" },
-    { name: "S15 (Солнечно, легкая дымка)", icon: "🌤️" },
-    { name: "S16 (Солнечно, дымка и облака)", icon: "⛅" },
-    { name: "S17 (Солнечно, высокая облачность)", icon: "☁️" },
-    { name: "S18 (Солнечно, плотная высокая облачность)", icon: "☁️" },
-    { name: "C01 (Пасмурно, но ярко)", icon: "☁️" },
-    { name: "C02 (Пасмурно, тепло)", icon: "☁️" },
-    { name: "C03 (Пасмурно, темно)", icon: "☁️" },
-    { name: "C04 (Пасмурно, прохладно)", icon: "☁️" },
-    { name: "C05 (Пасмурно, плотные облака)", icon: "☁️" },
-    { name: "C06 (Пасмурно, тяжелые облака)", icon: "☁️" },
-    { name: "R01 (Мелкий дождь, морось)", icon: "🌦️" },
-    { name: "R02 (Умеренный дождь)", icon: "🌧️" },
-    { name: "R03 (Сильный дождь, ливень)", icon: "🌧️💧" },
-    { name: "R04 (Проливной дождь, гроза)", icon: "⛈️" },
-    { name: "R05 (Штормовой дождь, сильный ветер)", icon: "🌊🌧️" },
-    { name: "R06 (Тропический ливень)", icon: "🌧️💧💧" },
-    { name: "R07 (Шквалистый дождь)", icon: "💨🌧️" },
-    { name: "R08 (Экстремальный ливень, нулевая видимость)", icon: "🌊💧🌧️" }
-];
-
-const times = [
-    { name: "Заря", icon: "🌅" },
-    { name: "Рассвет", icon: "🌅" },
-    { name: "Восход", icon: "🌄" },
-    { name: "Раннее утро", icon: "🌤️" },
-    { name: "Позднее утро", icon: "☀️" },
-    { name: "День", icon: "🔆" },
-    { name: "Вечер", icon: "🌆" },
-    { name: "Закат", icon: "🌇" },
-    { name: "Сумерки", icon: "🌙" },
-    { name: "Ночь", icon: "🌚" },
-    { name: "Полночь", icon: "🌕" }
-];
-
+    const weathers = [
+        { name: "S01 (Ясно, безоблачно)", icon: "☀️" },
+        { name: "S02 (Ясно, малооблачно)", icon: "🌤️" },
+        { name: "S03 (Ясно, переменная облачность)", icon: "⛅" },
+        { name: "S04 (Ясно, легкая дымка)", icon: "🌤️" },
+        { name: "S05 (Солнечно, местами облачно)", icon: "⛅" },
+        { name: "S06 (Солнечно, высокая влажность)", icon: "🌤️" },
+        { name: "S07 (Солнечно, легкий туман)", icon: "🌫️" },
+        { name: "S08 (Солнечно, густая облачность)", icon: "☁️" },
+        { name: "S09 (Солнечно, высокая облачность)", icon: "☁️" },
+        { name: "S10 (Солнечно, дымка от тумана)", icon: "🌫️" },
+        { name: "S11 (Солнечно, горный туман)", icon: "🌫️" },
+        { name: "S12 (Солнечно, муссонные облака)", icon: "☁️" },
+        { name: "S13 (Солнечно, редкие муссонные облака)", icon: "⛅" },
+        { name: "S14 (Солнечно, плотные муссонные облака)", icon: "☁️" },
+        { name: "S15 (Солнечно, легкая дымка)", icon: "🌤️" },
+        { name: "S16 (Солнечно, дымка и облака)", icon: "⛅" },
+        { name: "S17 (Солнечно, высокая облачность)", icon: "☁️" },
+        { name: "S18 (Солнечно, плотная высокая облачность)", icon: "☁️" },
+        { name: "C01 (Пасмурно, но ярко)", icon: "☁️" },
+        { name: "C02 (Пасмурно, тепло)", icon: "☁️" },
+        { name: "C03 (Пасмурно, темно)", icon: "☁️" },
+        { name: "C04 (Пасмурно, прохладно)", icon: "☁️" },
+        { name: "C05 (Пасмурно, плотные облака)", icon: "☁️" },
+        { name: "C06 (Пасмурно, тяжелые облака)", icon: "☁️" },
+        { name: "R01 (Мелкий дождь, морось)", icon: "🌦️" },
+        { name: "R02 (Умеренный дождь)", icon: "🌧️" },
+        { name: "R03 (Сильный дождь, ливень)", icon: "🌧️💧" },
+        { name: "R04 (Проливной дождь, гроза)", icon: "⛈️" },
+        { name: "R05 (Штормовой дождь, сильный ветер)", icon: "🌊🌧️" },
+        { name: "R06 (Тропический ливень)", icon: "🌧️💧💧" },
+        { name: "R07 (Шквалистый дождь)", icon: "💨🌧️" },
+        { name: "R08 (Экстремальный ливень, нулевая видимость)", icon: "🌊💧🌧️" }
+    ];
+    
+    const times = [
+        { name: "Заря", icon: "🌅" },
+        { name: "Рассвет", icon: "🌅" },
+        { name: "Восход", icon: "🌄" },
+        { name: "Раннее утро", icon: "🌤️" },
+        { name: "Позднее утро", icon: "☀️" },
+        { name: "День", icon: "🔆" },
+        { name: "Вечер", icon: "🌆" },
+        { name: "Закат", icon: "🌇" },
+        { name: "Сумерки", icon: "🌙" },
+        { name: "Ночь", icon: "🌚" },
+        { name: "Полночь", icon: "🌕" }
+    ];
     
     // ============================================
-// ФУНКЦИЯ ПРОВЕРКИ СОВМЕСТИМОСТИ ПОГОДЫ
-// ============================================
-function isWeatherCompatibleForTrack(weatherName, trackName) {
-    const track = tracksData.find(t => t.name === trackName);
-    if (!track || !track.weather) return true;
+    // НОВАЯ ФУНКЦИЯ: РАСЧЁТ ОПТИМАЛЬНЫХ КРУГОВ
+    // ============================================
+    function calculateOptimalLaps(trackLengthKm, categoryName) {
+        if (!trackLengthKm || trackLengthKm <= 0) return 5;
+        
+        const maxSpeed = CLASS_MAX_SPEED[categoryName] || 250;
+        const avgSpeedKmh = maxSpeed * 0.85;
+        const lapTimeHours = trackLengthKm / avgSpeedKmh;
+        const lapTimeMinutes = lapTimeHours * 60;
+        
+        let targetRaceMinutes = 30;
+        if (categoryName === 'Gr.1') targetRaceMinutes = 45;
+        else if (categoryName === 'Gr.2') targetRaceMinutes = 40;
+        else if (categoryName === 'Gr.3') targetRaceMinutes = 35;
+        else targetRaceMinutes = 30;
+        
+        let optimalLaps = Math.floor(targetRaceMinutes / lapTimeMinutes);
+        optimalLaps = Math.max(3, Math.min(optimalLaps, 25));
+        
+        const randomFactor = 0.85 + Math.random() * 0.3;
+        optimalLaps = Math.floor(optimalLaps * randomFactor);
+        optimalLaps = Math.max(3, Math.min(optimalLaps, 25));
+        
+        return optimalLaps;
+    }
     
-    const isDry = weatherName.startsWith('S') || weatherName.startsWith('C');
-    const isWet = weatherName.startsWith('R');
+    // ============================================
+    // АДМИН-ДОСТУП
+    // ============================================
+    function showPasswordModal() {
+        if (document.getElementById('adminPasswordModal')) return;
+        const modalHtml = `
+            <div id="adminPasswordModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:10000; display:flex; align-items:center; justify-content:center;">
+                <div style="background:#1e293b; padding:25px; border-radius:20px; text-align:center; width:280px; box-shadow:0 0 20px rgba(255,77,77,0.3); border:1px solid #ff4d4d;">
+                    <div style="font-size:48px; margin-bottom:10px;">👑</div>
+                    <h3 style="color:#ff4d4d; margin-bottom:15px;">Вход в админ-панель</h3>
+                    <input type="password" id="adminPasswordInput" placeholder="Введите пароль" style="width:100%; padding:10px; margin-bottom:15px; border-radius:10px; background:#334155; color:white; border:1px solid #ff4d4d; text-align:center; font-size:16px;">
+                    <button id="adminPasswordSubmit" style="background:#ff4d4d; padding:10px 20px; border:none; border-radius:10px; color:white; font-weight:bold; width:100%; cursor:pointer; font-size:16px;">ВОЙТИ</button>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        const submitBtn = document.getElementById('adminPasswordSubmit');
+        const passwordInput = document.getElementById('adminPasswordInput');
+        const checkPassword = () => {
+            if (passwordInput.value === ADMIN_SECRET_KEY) {
+                adminAccessGranted = true;
+                localStorage.setItem('gt7_admin_access', 'true');
+                document.getElementById('adminPasswordModal').remove();
+                alert('✅ Админ-доступ активирован!');
+                location.reload();
+            } else {
+                alert('❌ Неверный пароль!');
+                passwordInput.value = '';
+                passwordInput.focus();
+            }
+        };
+        submitBtn.onclick = checkPassword;
+        passwordInput.onkeypress = (e) => { if (e.key === 'Enter') checkPassword(); };
+        passwordInput.focus();
+    }
     
-    if (track.weather.includes('both')) return true;
-    if (track.weather.includes('dry') && isDry) return true;
-    if ((track.weather.includes('wet') || track.weather.includes('rain')) && isWet) return true;
+    function checkAdminAccess() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('admin') === ADMIN_SECRET_KEY) {
+            adminAccessGranted = true;
+            localStorage.setItem('gt7_admin_access', 'true');
+            return true;
+        }
+        if (localStorage.getItem('gt7_admin_access') === 'true') {
+            adminAccessGranted = true;
+            return true;
+        }
+        const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+        if (isPWA) setTimeout(() => showPasswordModal(), 100);
+        return false;
+    }
     
-    return false;
-}
-
-// ============================================
-// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-// ============================================
-function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-function getRandomXValue() { return `X${Math.floor(Math.random() * 20) + 1}`; }
-
-function getTrackIcon(trackName) {
-    // Скопируйте полную функцию из index.html
-    if (trackName.includes("Alsace")) return "track_icons/bbe708-D-n15MKA.png";
-    if (trackName.includes("Lago Maggiore")) return "track_icons/39f155-Dg_fFdVS.png";
-    if (trackName.includes("Monza")) return "track_icons/f8bd64-VsJVPuq0.png";
-    if (trackName.includes("Interlagos")) return "track_icons/fe330b-CkMt1pQe.png";
-    if (trackName.includes("Autopolis")) return "track_icons/8d9953-CpR-SgHS.png";
-    if (trackName.includes("Blue Moon")) return "track_icons/971481-BdMNGGxX.png";
-    if (trackName.includes("Brands Hatch")) return "track_icons/f3d2aa-Bznbpc1M.png";
-    if (trackName.includes("Circuit Gilles")) return "track_icons/4b2a08-Ba_IZ90g.png";
-    if (trackName.includes("Barcelona")) return "track_icons/083de2-BAGcmPUI.png";
-    if (trackName.includes("Sainte-Croix")) return "track_icons/a768c9-D5wwglAF.png";
-    if (trackName.includes("Spa")) return "track_icons/000971-B75flT8v.png";
-    if (trackName.includes("Daytona")) return "track_icons/d1f17e-BDsRccUh.png";
-    if (trackName.includes("Deep Forest")) return "track_icons/c81494-mSWpEt3H.png";
-    if (trackName.includes("Dragon Trail")) return "track_icons/08df62-C045_y3b.png";
-    if (trackName.includes("Eiger")) return "track_icons/678583-Clq7km73.png";
-    if (trackName.includes("Fuji")) return "track_icons/664e17-DkicWsJ5.png";
-    if (trackName.includes("Grand Valley")) return "track_icons/df54ec-BTV8E4Ol.png";
-    if (trackName.includes("Le Mans") || trackName.includes("Heures")) return "track_icons/1d5980-BtTwZ0Sf.png";
-    if (trackName.includes("High Speed Ring")) return "track_icons/9a42fb-ctw1_rUB.png";
-    if (trackName.includes("Kyoto")) return "track_icons/16ccbf-HZopm0Jc.png";
-    if (trackName.includes("Road Atlanta")) return "track_icons/051834-BK1vS4TT.png";
-    if (trackName.includes("Mount Panorama")) return "track_icons/28b64f-DwW557Cx.png";
-    if (trackName.includes("Nürburgring")) return "track_icons/246f6d-B2a8UX0a.png";
-    if (trackName.includes("Red Bull Ring")) return "track_icons/f99788-CkF30Q0q.png";
-    if (trackName.includes("Sardegna")) return "track_icons/748156-BVeffrVD.png";
-    if (trackName.includes("Suzuka")) return "track_icons/fd167d-J52xhRm4.png";
-    if (trackName.includes("Tokyo Expressway")) return "track_icons/e9dd33-B7sGBTmw.png";
-    if (trackName.includes("Trial Mountain")) return "track_icons/e60841-DkNFRL37.png";
-    if (trackName.includes("Tsukuba")) return "track_icons/c5de8a-DX9dzSPz.png";
-    if (trackName.includes("Watkins Glen")) return "track_icons/e6ef89-CkruxU9Z.png";
-    if (trackName.includes("Laguna Seca")) return "track_icons/c75e61-DBxJ7RQM.png";
-    if (trackName.includes("Yas Marina")) return "track_icons/27adb9-DCBqBoAB.png";
-    return "track_icons/placeholder.png";
-}
-
-function calculateSimilarity(car1, car2) {
-    const maxRating = 1500, maxHp = 2000, maxTorque = 2000, maxWeight = 3000, maxPtw = 2.5;
-    const ratingDiff = Math.abs(car1.rating - car2.rating) / maxRating;
-    const hpDiff = Math.abs(car1.hp - car2.hp) / maxHp;
-    let torque1 = typeof car1.torque === 'number' ? car1.torque : 0;
-    let torque2 = typeof car2.torque === 'number' ? car2.torque : 0;
-    const torqueDiff = Math.abs(torque1 - torque2) / maxTorque;
-    const weightDiff = Math.abs(car1.weight - car2.weight) / maxWeight;
-    const ptwDiff = Math.abs(car1.powerToWeight - car2.powerToWeight) / maxPtw;
-    const totalDiff = ratingDiff * 0.25 + hpDiff * 0.20 + torqueDiff * 0.15 + weightDiff * 0.20 + ptwDiff * 0.20;
-    return Math.max(0, Math.min(100, (1 - totalDiff) * 100));
-}
-
-function findSimilarCars(referenceCar, count = 5, randomize = true) {
-    let carsWithSimilarity = carsDatabase.filter(car => car.name !== referenceCar.name).map(car => ({ 
-        ...car, 
-        similarity: calculateSimilarity(referenceCar, car) 
-    })).sort((a, b) => b.similarity - a.similarity);
+    function logoutAdmin() {
+        localStorage.removeItem('gt7_admin_access');
+        adminAccessGranted = false;
+        alert('🔴 Админ-доступ отключён. Страница будет перезагружена.');
+        location.reload();
+    }
     
-    const topSimilar = carsWithSimilarity.slice(0, 15);
+    checkAdminAccess();
+    if (adminAccessGranted) {
+        const adminBanner = document.querySelector('.admin-banner');
+        if (adminBanner) {
+            const logoutBtn = document.createElement('button');
+            logoutBtn.innerHTML = '🚪 ВЫЙТИ';
+            logoutBtn.style.cssText = `background: #ef4444; border: none; border-radius: 20px; padding: 4px 12px; margin-left: 10px; font-size: 11px; cursor: pointer; color: white;`;
+            logoutBtn.onclick = logoutAdmin;
+            adminBanner.appendChild(logoutBtn);
+        }
+    }
     
-    if (randomize && topSimilar.length > count) {
-        for (let i = topSimilar.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [topSimilar[i], topSimilar[j]] = [topSimilar[j], topSimilar[i]];
+    // ============================================
+    // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+    // ============================================
+    function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+    function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function getRandomXValue() { return `X${Math.floor(Math.random() * 20) + 1}`; }
+    function getRandomLaps() { return Math.floor(Math.random() * 23) + 3; }
+    
+    function getTrackIcon(trackName) {
+        if (trackName.includes("Alsace")) return "track_icons/bbe708-D-n15MKA.png";
+        if (trackName.includes("Lago Maggiore")) return "track_icons/39f155-Dg_fFdVS.png";
+        if (trackName.includes("Monza")) return "track_icons/f8bd64-VsJVPuq0.png";
+        if (trackName.includes("Nürburgring")) return "track_icons/246f6d-B2a8UX0a.png";
+        if (trackName.includes("Spa")) return "track_icons/000971-B75flT8v.png";
+        if (trackName.includes("Le Mans")) return "track_icons/1d5980-BtTwZ0Sf.png";
+        if (trackName.includes("Suzuka")) return "track_icons/fd167d-J52xhRm4.png";
+        return "track_icons/placeholder.png";
+    }
+    
+    function calculateSimilarity(car1, car2) {
+        const maxRating = 1500, maxHp = 2000, maxTorque = 2000, maxWeight = 3000, maxPtw = 2.5;
+        const ratingDiff = Math.abs(car1.rating - car2.rating) / maxRating;
+        const hpDiff = Math.abs(car1.hp - car2.hp) / maxHp;
+        let torque1 = typeof car1.torque === 'number' ? car1.torque : 0;
+        let torque2 = typeof car2.torque === 'number' ? car2.torque : 0;
+        const torqueDiff = Math.abs(torque1 - torque2) / maxTorque;
+        const weightDiff = Math.abs(car1.weight - car2.weight) / maxWeight;
+        const ptwDiff = Math.abs(car1.powerToWeight - car2.powerToWeight) / maxPtw;
+        const totalDiff = ratingDiff * 0.25 + hpDiff * 0.20 + torqueDiff * 0.15 + weightDiff * 0.20 + ptwDiff * 0.20;
+        return Math.max(0, Math.min(100, (1 - totalDiff) * 100));
+    }
+    
+    function findSimilarCars(referenceCar, count = 5, randomize = true) {
+        let carsWithSimilarity = carsDatabase.filter(car => car.name !== referenceCar.name).map(car => ({ 
+            ...car, similarity: calculateSimilarity(referenceCar, car) 
+        })).sort((a, b) => b.similarity - a.similarity);
+        
+        const uniqueCars = [];
+        const seenNames = new Set();
+        for (const car of carsWithSimilarity) {
+            if (!seenNames.has(car.name)) {
+                seenNames.add(car.name);
+                uniqueCars.push(car);
+            }
+        }
+        
+        const topSimilar = uniqueCars.slice(0, 15);
+        if (randomize && topSimilar.length > count) {
+            for (let i = topSimilar.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [topSimilar[i], topSimilar[j]] = [topSimilar[j], topSimilar[i]];
+            }
+            return topSimilar.slice(0, count);
         }
         return topSimilar.slice(0, count);
     }
-    return topSimilar.slice(0, count);
-}
-
-function displaySimilarCars(referenceCar) {
-    if (!referenceCar) return;
-    currentRefCar = referenceCar;
-    const similarCars = findSimilarCars(referenceCar, 5, false);
-    document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${referenceCar.name}</strong><br>⭐ Рейтинг: ${referenceCar.rating.toFixed(0)} | 🔧 ${referenceCar.hp} л.с. | ⚙️ ${typeof referenceCar.torque === 'number' ? referenceCar.torque : '?'} Н·м | ⚖️ ${referenceCar.weight} кг | ⚡ ${(referenceCar.powerToWeight * 1000).toFixed(1)} л.с./т`;
-    document.getElementById('similarList').innerHTML = similarCars.map((car, index) => `
-        <li onclick="selectCar('${car.name.replace(/'/g, "\\'")}')">
-            <span class="car-name">${index + 1}. ${car.name}</span>
-            <div class="car-stats">
-                <span>⭐ ${car.rating.toFixed(0)}</span>
-                <span>🔧 ${car.hp} л.с.</span>
-                <span>⚙️ ${typeof car.torque === 'number' ? car.torque : '?'}</span>
-                <span>⚖️ ${car.weight} кг</span>
-                <span>⚡ ${(car.powerToWeight * 1000).toFixed(1)}</span>
-            </div>
-            <span class="similarity-badge">${car.similarity.toFixed(1)}%</span>
-        </li>
-    `).join('');
-}
-
-function selectCar(carName) {
-    const car = carsDatabase.find(c => c.name === carName);
-    if (car) {
-        displaySimilarCars(car);
-        document.getElementById('carValue').textContent = car.name;
-        document.getElementById('carIcon').src = car.icon;
-        document.getElementById('carIcon').style.display = "block";
-    }
-}
-
-function refreshSimilarCars() {
-    if (currentRefCar) {
-        const randomSimilarCars = findSimilarCars(currentRefCar, 5, true);
-        document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${currentRefCar.name}</strong><br>⭐ Рейтинг: ${currentRefCar.rating.toFixed(0)} | 🔧 ${currentRefCar.hp} л.с. | ⚙️ ${typeof currentRefCar.torque === 'number' ? currentRefCar.torque : '?'} Н·м | ⚖️ ${currentRefCar.weight} кг | ⚡ ${(currentRefCar.powerToWeight * 1000).toFixed(1)} л.с./т`;
-        document.getElementById('similarList').innerHTML = randomSimilarCars.map((car, index) => `
+    
+    function displaySimilarCars(referenceCar) {
+        if (!referenceCar) return;
+        currentRefCar = referenceCar;
+        const similarCars = findSimilarCars(referenceCar, 5, false);
+        document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${referenceCar.name}</strong><br>⭐ Рейтинг: ${referenceCar.rating.toFixed(0)} | 🔧 ${referenceCar.hp} л.с. | ⚙️ ${typeof referenceCar.torque === 'number' ? referenceCar.torque : '?'} Н·м | ⚖️ ${referenceCar.weight} кг | ⚡ ${(referenceCar.powerToWeight * 1000).toFixed(1)} л.с./т`;
+        document.getElementById('similarList').innerHTML = similarCars.map((car, index) => `
             <li onclick="selectCar('${car.name.replace(/'/g, "\\'")}')">
                 <span class="car-name">${index + 1}. ${car.name}</span>
                 <div class="car-stats">
@@ -1590,493 +1214,364 @@ function refreshSimilarCars() {
                 <span class="similarity-badge">${car.similarity.toFixed(1)}%</span>
             </li>
         `).join('');
-    } else {
-        const randomCar = getRandomItem(carsDatabase);
-        displaySimilarCars(randomCar);
     }
-}
-
-// ========== ИСТОРИЯ ДЛЯ ИСКЛЮЧЕНИЯ ПОВТОРОВ ==========
-let shownCars = [];
-let shownTracks = [];
-
-function getRandomCarWithoutRepeat() {
-    let availableCars = carsDatabase.filter(car => !shownCars.includes(car.name));
-    if (availableCars.length === 0) {
-        shownCars = [];
-        availableCars = carsDatabase;
+    
+    function selectCar(carName) {
+        const car = carsDatabase.find(c => c.name === carName);
+        if (car) displaySimilarCars(car);
     }
-    const randomCar = getRandomItem(availableCars);
-    shownCars.push(randomCar.name);
-    if (shownCars.length > 50) shownCars.shift();
-    return randomCar;
-}
-
-function getRandomTrackWithoutRepeat() {
-    let availableTracks = tracksData.filter(track => !shownTracks.includes(track.name));
-    if (availableTracks.length === 0) {
-        shownTracks = [];
-        availableTracks = tracksData;
-    }
-    const randomTrack = getRandomItem(availableTracks);
-    shownTracks.push(randomTrack.name);
-    if (shownTracks.length > 30) shownTracks.shift();
-    return randomTrack;
-}
-
-// ========== ЗАГРУЗКА ТЕКУЩЕЙ КОМБИНАЦИИ ИЗ ТАБЛИЦЫ ==========
-async function loadCurrentCombo() {
-    try {
-        const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?tqx=out:json`;
-        const response = await fetch(url);
-        const text = await response.text();
-        const jsonStart = text.indexOf('(');
-        const jsonEnd = text.lastIndexOf(')');
-        const jsonStr = text.substring(jsonStart + 1, jsonEnd);
-        const data = JSON.parse(jsonStr);
-        
-        const tableData = {};
-        for (let i = 0; i < data.table.rows.length; i++) {
-            const row = data.table.rows[i];
-            const key = row.c[0]?.v;
-            const value = row.c[1]?.v;
-            if (key && value !== undefined && value !== null) {
-                tableData[key] = value;
-            }
+    
+    function refreshSimilarCars() {
+        if (currentRefCar) {
+            const randomSimilarCars = findSimilarCars(currentRefCar, 5, true);
+            document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${currentRefCar.name}</strong><br>⭐ Рейтинг: ${currentRefCar.rating.toFixed(0)} | 🔧 ${currentRefCar.hp} л.с. | ⚙️ ${typeof currentRefCar.torque === 'number' ? currentRefCar.torque : '?'} Н·м | ⚖️ ${currentRefCar.weight} кг | ⚡ ${(currentRefCar.powerToWeight * 1000).toFixed(1)} л.с./т`;
+            document.getElementById('similarList').innerHTML = randomSimilarCars.map((car, index) => `
+                <li onclick="selectCar('${car.name.replace(/'/g, "\\'")}')">
+                    <span class="car-name">${index + 1}. ${car.name}</span>
+                    <div class="car-stats">
+                        <span>⭐ ${car.rating.toFixed(0)}</span>
+                        <span>🔧 ${car.hp} л.с.</span>
+                        <span>⚙️ ${typeof car.torque === 'number' ? car.torque : '?'}</span>
+                        <span>⚖️ ${car.weight} кг</span>
+                        <span>⚡ ${(car.powerToWeight * 1000).toFixed(1)}</span>
+                    </div>
+                    <span class="similarity-badge">${car.similarity.toFixed(1)}%</span>
+                </li>
+            `).join('');
+        } else {
+            const randomCar = getRandomItem(carsDatabase);
+            displaySimilarCars(randomCar);
         }
-        
-        if (tableData.active === 'TRUE') {
-            // Машина
-            const car = carsDatabase.find(c => c.name === tableData.car_name);
-            if (car) {
-                document.getElementById('carValue').textContent = car.name;
-                document.getElementById('carIcon').src = car.icon;
-                document.getElementById('carIcon').style.display = "block";
-                displaySimilarCars(car);
+    }
+    
+    function getRandomCarWithoutRepeat() {
+        let availableCars = carsDatabase.filter(car => !shownCars.includes(car.name));
+        if (availableCars.length === 0) { shownCars = []; availableCars = carsDatabase; }
+        const randomCar = getRandomItem(availableCars);
+        shownCars.push(randomCar.name);
+        if (shownCars.length > 50) shownCars.shift();
+        return randomCar;
+    }
+    
+    function getRandomTrackWithoutRepeat() {
+        let availableTracks = tracksData.filter(track => !shownTracks.includes(track.name));
+        if (availableTracks.length === 0) { shownTracks = []; availableTracks = tracksData; }
+        const randomTrack = getRandomItem(availableTracks);
+        shownTracks.push(randomTrack.name);
+        if (shownTracks.length > 30) shownTracks.shift();
+        return randomTrack;
+    }
+    
+    function isWeatherCompatibleForTrack(weatherName, trackName) {
+        const track = tracksData.find(t => t.name === trackName);
+        if (!track || !track.weather) return true;
+        const isDry = weatherName.startsWith('S') || weatherName.startsWith('C');
+        const isWet = weatherName.startsWith('R');
+        if (track.weather.includes('both')) return true;
+        if (track.weather.includes('dry') && isDry) return true;
+        if ((track.weather.includes('wet') || track.weather.includes('rain')) && isWet) return true;
+        return false;
+    }
+    
+    // ============================================
+    // ПРОГРЕСС-БАР
+    // ============================================
+    function showProgress() {
+        const container = document.getElementById('progressContainer');
+        const statusDiv = document.getElementById('status');
+        if (container) container.style.display = 'block';
+        if (statusDiv) statusDiv.style.display = 'none';
+        updateProgressBar(0, 'Начинаем генерацию...');
+    }
+    
+    function hideProgress() {
+        const container = document.getElementById('progressContainer');
+        const statusDiv = document.getElementById('status');
+        if (container) setTimeout(() => container.style.display = 'none', 500);
+        if (statusDiv) statusDiv.style.display = 'block';
+    }
+    
+    function updateProgressBar(percent, stepText) {
+        const progressBar = document.getElementById('progressBar');
+        const progressPercent = document.getElementById('progressPercent');
+        const progressStep = document.getElementById('progressStep');
+        if (progressBar) progressBar.style.width = Math.min(100, percent) + '%';
+        if (progressPercent) progressPercent.innerHTML = Math.min(100, percent) + '%';
+        if (progressStep && stepText) progressStep.innerHTML = stepText;
+    }
+    
+    // ============================================
+    // ЗАГРУЗКА ТЕКУЩЕЙ КОМБИНАЦИИ
+    // ============================================
+    async function loadCurrentCombo() {
+        try {
+            const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?tqx=out:json`;
+            const response = await fetch(url);
+            const text = await response.text();
+            const jsonStart = text.indexOf('(');
+            const jsonEnd = text.lastIndexOf(')');
+            const jsonStr = text.substring(jsonStart + 1, jsonEnd);
+            const data = JSON.parse(jsonStr);
+            
+            const tableData = {};
+            for (let i = 0; i < data.table.rows.length; i++) {
+                const row = data.table.rows[i];
+                const key = row.c[0]?.v;
+                const value = row.c[1]?.v;
+                if (key && value !== undefined && value !== null) tableData[key] = value;
             }
             
-            // Трасса
-            const track = tracksData.find(t => t.name === tableData.track_name);
-            if (track) {
-                document.getElementById('trackValue').textContent = track.name;
-                const iconUrl = getTrackIcon(track.name);
-                if (iconUrl) {
-                    document.getElementById('trackIcon').src = iconUrl;
-                    document.getElementById('trackIcon').style.display = "block";
+            if (tableData.active === 'TRUE') {
+                const car = carsDatabase.find(c => c.name === tableData.car_name);
+                if (car) {
+                    document.getElementById('carValue').textContent = car.name;
+                    document.getElementById('carIcon').src = car.icon;
+                    document.getElementById('carIcon').style.display = "block";
+                    displaySimilarCars(car);
                 }
-            }
-            
-            // Категория
-            // Категория
-const category = categories.find(c => c.name === tableData.category_name);
-if (category) {
-    document.getElementById('categoryText').innerHTML = `${category.icon} ${category.name} (${category.description})`;
-}
-
-// Погода с эмодзи и проверкой на совместимость с трассой
-if (tableData.weather_name) {
-    let weatherObj = weathers.find(w => w.name === tableData.weather_name);
-    
-    // Проверяем, подходит ли погода для текущей трассы
-    if (weatherObj && tableData.track_name) {
-        const track = tracksData.find(t => t.name === tableData.track_name);
-        if (track && track.weather && track.weather.length > 0) {
-            const isDry = weatherObj.name.startsWith('S') || weatherObj.name.startsWith('C');
-            const isWet = weatherObj.name.startsWith('R');
-            
-            let isCompatible = false;
-            if (track.weather.includes('both')) {
-                isCompatible = true;
-            } else if (track.weather.includes('dry') && isDry) {
-                isCompatible = true;
-            } else if ((track.weather.includes('wet') || track.weather.includes('rain')) && isWet) {
-                isCompatible = true;
-            }
-            
-            // Если погода не подходит - заменяем на подходящую
-            if (!isCompatible) {
-                console.warn(`⚠️ Погода "${tableData.weather_name}" не подходит для трассы "${track.name}"`);
                 
-                let availableWeathers = weathers;
-                if (track.weather.includes('dry')) {
-                    availableWeathers = weathers.filter(w => w.name.startsWith('S') || w.name.startsWith('C'));
-                } else if (track.weather.includes('both')) {
-                    availableWeathers = weathers;
+                const track = tracksData.find(t => t.name === tableData.track_name);
+                if (track) {
+                    // Отображаем трассу с количеством кругов в красном кружке
+                    const laps = tableData.laps || calculateOptimalLaps(track.length, tableData.category_name) || getRandomLaps();
+                    document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
+                    const iconUrl = getTrackIcon(track.name);
+                    if (iconUrl) {
+                        document.getElementById('trackIcon').src = iconUrl;
+                        document.getElementById('trackIcon').style.display = "block";
+                    }
                 }
                 
-                const fallbackWeather = getRandomItem(availableWeathers);
-                weatherObj = fallbackWeather;
-                console.log(`✅ Заменено на "${fallbackWeather.name}"`);
+                const category = categories.find(c => c.name === tableData.category_name);
+                if (category) document.getElementById('categoryText').innerHTML = `${category.icon} ${category.name} (${category.description})`;
+                
+                let weatherObj = weathers.find(w => w.name === tableData.weather_name);
+                if (weatherObj) document.getElementById('weatherValue').innerHTML = `${weatherObj.icon} ${weatherObj.name}`;
+                else document.getElementById('weatherValue').innerHTML = tableData.weather_name;
+                
+                const timeObj = times.find(t => t.name === tableData.time_name);
+                if (timeObj) document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name} <span class="time-x-badge">${tableData.time_multiplier || 'X1'}</span>`;
+                else document.getElementById('timeValue').innerHTML = `${tableData.time_name} <span class="time-x-badge">${tableData.time_multiplier || 'X1'}</span>`;
+                
+                if (tableData.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${tableData.tires_value}</span>`;
+                if (tableData.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${tableData.fuel_value}</span>`;
             }
+        } catch(e) {
+            console.error('Ошибка загрузки комбинации:', e);
         }
     }
     
-    if (weatherObj) {
-        document.getElementById('weatherValue').innerHTML = `${weatherObj.icon} ${weatherObj.name}`;
-    } else {
-        document.getElementById('weatherValue').innerHTML = tableData.weather_name;
-    }
-}
-
-// Время с эмодзи и множителем в красном кружке
-// Время с эмодзи и множителем в красном кружке
-// Время с эмодзи и множителем в красном кружке
-if (tableData.time_name) {
-    let timeObj = times.find(t => t.name === tableData.time_name);
-    const timeMultiplier = tableData.time_multiplier || 'X1';
-    
-    // Если время не найдено в списке — используем доступное для трассы
-    if (!timeObj) {
-        console.warn(`⚠️ Время "${tableData.time_name}" не найдено в списке`);
-        // Получаем доступные времена для текущей трассы
-        const track = tracksData.find(t => t.name === tableData.track_name);
-        if (track && track.times && track.times.length > 0) {
-            const fallbackTime = times.find(t => track.times.includes(t.name));
-            if (fallbackTime) {
-                timeObj = fallbackTime;
-                console.log(`✅ Используем "${timeObj.name}" как запасной вариант`);
+    function toggleLock(param) {
+        locks[param] = !locks[param];
+        const btns = document.querySelectorAll(`.lock-btn[data-param="${param}"], .settings-lock-btn[data-param="${param}"]`);
+        btns.forEach(btn => {
+            if (locks[param]) {
+                btn.classList.remove('unlocked');
+                btn.classList.add('locked');
+                btn.innerHTML = '🔒';
+            } else {
+                btn.classList.remove('locked');
+                btn.classList.add('unlocked');
+                btn.innerHTML = '🔓';
             }
-        }
-        if (!timeObj) {
-            timeObj = times.find(t => t.name === "День") || times[5];
-        }
+        });
     }
     
-    if (window.innerWidth <= 480) {
-        document.getElementById('timeValue').innerHTML = `
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-                <div style="display: flex; align-items: center; gap: 4px;">
-                    <span class="result-icon">${timeObj.icon}</span>
-                    <span>${timeObj.name}</span>
-                </div>
-                <span class="time-x-badge" style="font-size: 14px;">${timeMultiplier}</span>
-            </div>
-        `;
-    } else {
-        document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name} <span class="time-x-badge">${timeMultiplier}</span>`;
-    }
-}
-
-// Шины и топливо с красными кружками
-if (tableData.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${tableData.tires_value}</span>`;
-if (tableData.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${tableData.fuel_value}</span>`;
+    // ============================================
+    // ГЕНЕРАЦИЯ И СОХРАНЕНИЕ
+    // ============================================
+    async function generateAndSave() {
+        if (!adminAccessGranted) {
+            document.getElementById('status').innerHTML = '⛔ Доступ запрещён! Только для администратора.';
+            document.getElementById('status').className = 'status error';
+            return;
         }
-    } catch(e) {
-        console.error('Ошибка загрузки комбинации:', e);
-    }
-}
-
-// ========== ГЕНЕРАЦИЯ И СОХРАНЕНИЕ ==========
-async function generateAndSave() {
-    // ПРОВЕРКА АДМИН-ДОСТУПА
-    if (!adminAccessGranted) {
-        document.getElementById('status').innerHTML = '⛔ Доступ запрещён! Только для администратора.';
-        document.getElementById('status').className = 'status error';
-        return;
-    }
-    
-    // ПОКАЗЫВАЕМ ПРОГРЕСС-БАР
-    showProgress();
-    
-    try {
-        let newCombo = {};
         
-        // Шаг 1: Машина (0% -> 15%)
-        updateProgressBar(5, '🚗 Генерация машины...');
-        await sleep(150);
-        if (!locks.car) {
-            const car = getRandomCarWithoutRepeat();
-            newCombo.car_name = car.name;
-            updateProgressBar(15, '🚗 Машина выбрана');
+        showProgress();
+        
+        try {
+            let newCombo = {};
+            
+            if (!locks.car) {
+                const car = getRandomCarWithoutRepeat();
+                newCombo.car_name = car.name;
+                updateProgressBar(15, '🚗 Машина выбрана');
+                await sleep(200);
+                
+                const similar = findSimilarCars(car, 5, true);
+                for (let i = 0; i < similar.length; i++) {
+                    newCombo[`similar_car_${i+1}`] = similar[i].name;
+                    updateProgressBar(22 + Math.round((i + 1) * 3.6), `🔍 Похожие авто: ${i+1}/5`);
+                    await sleep(150);
+                }
+                updateProgressBar(40, '🔍 Похожие авто найдены');
+            } else {
+                updateProgressBar(40, '🔒 Машина заблокирована');
+            }
             await sleep(200);
             
-            // Шаг 2: Похожие авто (15% -> 40%)
-            updateProgressBar(22, '🔍 Подбор похожих автомобилей...');
-            const similar = findSimilarCars(car, 5, true);
-            for (let i = 0; i < similar.length; i++) {
-                newCombo[`similar_car_${i+1}`] = similar[i].name;
-                // Обновляем прогресс для каждого похожего авто
-                const progress = 22 + Math.round((i + 1) * 3.6);
-                updateProgressBar(progress, `🔍 Похожие авто: ${i+1}/5`);
+            let selectedCategory = null;
+            let selectedTrack = null;
+            
+            if (!locks.category) {
+                selectedCategory = getRandomItem(categories);
+                newCombo.category_name = selectedCategory.name;
+            } else {
+                const currentCategoryText = document.getElementById('categoryText').innerText;
+                selectedCategory = categories.find(c => currentCategoryText.includes(c.name));
+                if (selectedCategory) newCombo.category_name = selectedCategory.name;
+            }
+            updateProgressBar(45, '🏆 Класс определён');
+            await sleep(200);
+            
+            if (!locks.track) {
+                selectedTrack = getRandomTrackWithoutRepeat();
+                newCombo.track_name = selectedTrack.name;
+                
+                // РАСЧЁТ ОПТИМАЛЬНЫХ КРУГОВ
+                const optimalLaps = calculateOptimalLaps(selectedTrack.length, newCombo.category_name);
+                newCombo.laps = optimalLaps;
+                
+                updateProgressBar(58, `🛣️ Трасса: ${selectedTrack.name}, ${optimalLaps} кругов`);
                 await sleep(150);
+                updateProgressBar(60, '🛣️ Готово');
+            } else {
+                updateProgressBar(60, '🔒 Трасса заблокирована');
+                const trackName = document.getElementById('trackValue').textContent;
+                selectedTrack = tracksData.find(t => trackName.includes(t.name));
+                if (selectedTrack) newCombo.track_name = selectedTrack.name;
             }
-            updateProgressBar(40, '🔍 Похожие авто найдены');
-        } else {
-            updateProgressBar(40, '🔒 Машина заблокирована');
-        }
-        await sleep(200);
-        
-        // Шаг 3: Трасса (40% -> 60%)
-        updateProgressBar(48, '🛣️ Выбор трассы...');
-        await sleep(200);
-        if (!locks.track) {
-            const trackData = getRandomTrackWithoutRepeat();
-            newCombo.track_name = trackData.name;
-            updateProgressBar(58, '🛣️ Трасса выбрана');
+            await sleep(200);
+            
+            if (!locks.weather) {
+                let currentTrack = selectedTrack || tracksData.find(t => t.name === newCombo.track_name);
+                let availableWeathers = weathers;
+                if (currentTrack && currentTrack.weather && currentTrack.weather.length > 0) {
+                    if (currentTrack.weather.includes('dry') && !currentTrack.weather.includes('both')) {
+                        availableWeathers = weathers.filter(w => w.name.startsWith('S') || w.name.startsWith('C'));
+                    } else if (currentTrack.weather.includes('both')) {
+                        availableWeathers = weathers;
+                    } else if (currentTrack.weather.includes('wet') || currentTrack.weather.includes('rain')) {
+                        availableWeathers = weathers.filter(w => w.name.startsWith('R'));
+                    }
+                }
+                const weather = getRandomItem(availableWeathers);
+                newCombo.weather_name = weather.name;
+                updateProgressBar(68, `🌤️ Погода: ${weather.name.substring(0, 30)}`);
+                await sleep(150);
+                updateProgressBar(70, '🌤️ Готово');
+            } else {
+                updateProgressBar(70, '🔒 Погода заблокирована');
+            }
+            await sleep(200);
+            
+            if (!locks.time) {
+                let currentTrack = selectedTrack || tracksData.find(t => t.name === newCombo.track_name);
+                let availableTimes = times;
+                if (currentTrack && currentTrack.times && currentTrack.times.length > 0) {
+                    availableTimes = times.filter(t => currentTrack.times.includes(t.name));
+                }
+                const time = getRandomItem(availableTimes);
+                newCombo.time_name = time.name;
+                newCombo.time_multiplier = getRandomXValue();
+                updateProgressBar(78, '⏰ Время настроено');
+                await sleep(150);
+                updateProgressBar(80, '⏰ Готово');
+            } else {
+                updateProgressBar(80, '🔒 Время заблокировано');
+            }
+            await sleep(200);
+            
+            if (!locks.tires) newCombo.tires_value = getRandomXValue();
+            updateProgressBar(86, '🛞 Износ шин рассчитан');
             await sleep(150);
-            updateProgressBar(60, '🛣️ Готово');
-        } else {
-            updateProgressBar(60, '🔒 Трасса заблокирована');
-        }
-        await sleep(200);
-        
-        // Шаг 4: Погода (60% -> 70%)
-updateProgressBar(63, '🌤️ Настройка погоды...');
-await sleep(200);
-if (!locks.weather) {
-    // Получаем текущую трассу
-    let currentTrack = null;
-    if (!locks.track && newCombo.track_name) {
-        currentTrack = tracksData.find(t => t.name === newCombo.track_name);
-    } else {
-        const trackName = document.getElementById('trackValue').textContent;
-        if (trackName && trackName !== '—') {
-            currentTrack = tracksData.find(t => t.name === trackName);
-        }
-    }
-    
-    // Определяем доступные типы погоды для этой трассы
-    let availableWeathers = weathers; // по умолчанию все
-    
-    if (currentTrack && currentTrack.weather && currentTrack.weather.length > 0) {
-        const weatherTypes = currentTrack.weather;
-        
-        // Фильтруем погоду в зависимости от типа
-        if (weatherTypes.includes('dry') && !weatherTypes.includes('both')) {
-            // Только сухая погода (S* и C*)
-            availableWeathers = weathers.filter(w => w.name.startsWith('S') || w.name.startsWith('C'));
-            console.log(`🌤️ Доступна только сухая погода для ${currentTrack.name}`);
-        } 
-        else if (weatherTypes.includes('both')) {
-            // Сухая и дождливая (все)
-            availableWeathers = weathers;
-            console.log(`🌧️ Доступна любая погода для ${currentTrack.name}`);
-        }
-        else if (weatherTypes.includes('wet') || weatherTypes.includes('rain')) {
-            // Только дождливая (R*)
-            availableWeathers = weathers.filter(w => w.name.startsWith('R'));
-            console.log(`🌧️ Доступна только дождливая погода для ${currentTrack.name}`);
-        }
-    }
-    
-    const weather = getRandomItem(availableWeathers);
-    newCombo.weather_name = weather.name;
-    updateProgressBar(68, `🌤️ Погода: ${weather.name.substring(0, 30)}`);
-    await sleep(150);
-    updateProgressBar(70, '🌤️ Готово');
-} else {
-    updateProgressBar(70, '🔒 Погода заблокирована');
-}
-        await sleep(200);
-        
-        // Шаг 5: Время (70% -> 80%)
-        // Шаг 5: Время (70% -> 80%)
-updateProgressBar(73, '⏰ Настройка времени...');
-await sleep(200);
-if (!locks.time) {
-    // Получаем текущую трассу
-    let currentTrack = null;
-    if (!locks.track && newCombo.track_name) {
-        currentTrack = tracksData.find(t => t.name === newCombo.track_name);
-    } else {
-        // Если трек заблокирован или ещё не выбран, берём из отображаемого
-        const trackName = document.getElementById('trackValue').textContent;
-        if (trackName && trackName !== '—') {
-            currentTrack = tracksData.find(t => t.name === trackName);
-        }
-    }
-    
-    // Получаем доступные времена для этой трассы
-    let availableTimes = times; // по умолчанию все времена
-    if (currentTrack && currentTrack.times && currentTrack.times.length > 0) {
-        availableTimes = times.filter(t => currentTrack.times.includes(t.name));
-        console.log(`📅 Доступные времена для ${currentTrack.name}:`, availableTimes.map(t => t.name));
-    }
-    
-    // Выбираем случайное время из доступных
-    const time = getRandomItem(availableTimes);
-    newCombo.time_name = time.name;
-    newCombo.time_multiplier = getRandomXValue();
-    updateProgressBar(78, '⏰ Время настроено');
-    await sleep(150);
-    updateProgressBar(80, '⏰ Готово');
-} else {
-    updateProgressBar(80, '🔒 Время заблокировано');
-}
-        await sleep(200);
-        
-        // Шаг 6: Шины (80% -> 88%)
-        updateProgressBar(83, '🛞 Расчёт износа шин...');
-        await sleep(200);
-        if (!locks.tires) newCombo.tires_value = getRandomXValue();
-        updateProgressBar(86, '🛞 Износ шин рассчитан');
-        await sleep(150);
-        updateProgressBar(88, '🛞 Готово');
-        await sleep(200);
-        
-        // Шаг 7: Топливо (88% -> 94%)
-        updateProgressBar(90, '⛽ Расчёт расхода топлива...');
-        await sleep(200);
-        if (!locks.fuel) newCombo.fuel_value = getRandomXValue();
-        updateProgressBar(93, '⛽ Расход топлива рассчитан');
-        await sleep(150);
-        updateProgressBar(94, '⛽ Готово');
-        await sleep(200);
-        
-        // Шаг 8: Класс (94% -> 98%)
-        updateProgressBar(95, '🏆 Определение класса...');
-        await sleep(200);
-        if (!locks.category) {
-            const category = getRandomItem(categories);
-            newCombo.category_name = category.name;
-        } else {
-            const currentCategoryText = document.getElementById('categoryText').innerText;
-            const currentCategory = categories.find(c => currentCategoryText.includes(c.name));
-            if (currentCategory) {
-                newCombo.category_name = currentCategory.name;
-            }
-        }
-        updateProgressBar(97, '🏆 Класс определён');
-        await sleep(150);
-        updateProgressBar(98, '🏆 Готово');
-        await sleep(200);
-        
-        // Отображаем превью
-        document.getElementById('carValue').textContent = newCombo.car_name || '—';
-        document.getElementById('trackValue').textContent = newCombo.track_name || '—';
-        
-        const cat = categories.find(c => c.name === newCombo.category_name);
-        if (cat) {
-            document.getElementById('categoryText').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
-        }
-        
-        if (newCombo.weather_name) {
+            updateProgressBar(88, '🛞 Готово');
+            await sleep(200);
+            
+            if (!locks.fuel) newCombo.fuel_value = getRandomXValue();
+            updateProgressBar(93, '⛽ Расход топлива рассчитан');
+            await sleep(150);
+            updateProgressBar(94, '⛽ Готово');
+            await sleep(200);
+            
+            updateProgressBar(97, '🏆 Финальная подготовка');
+            await sleep(150);
+            updateProgressBar(98, '🏆 Готово');
+            await sleep(200);
+            
+            document.getElementById('carValue').textContent = newCombo.car_name || '—';
+            
+            // Отображение трассы с количеством кругов
+            const lapsToShow = newCombo.laps || calculateOptimalLaps(selectedTrack?.length, newCombo.category_name) || getRandomLaps();
+            document.getElementById('trackValue').innerHTML = `${newCombo.track_name} <span class="time-x-badge">${lapsToShow} кругов</span>`;
+            
+            const cat = categories.find(c => c.name === newCombo.category_name);
+            if (cat) document.getElementById('categoryText').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
+            
             const weatherObj = weathers.find(w => w.name === newCombo.weather_name);
-            if (weatherObj) {
-                document.getElementById('weatherValue').innerHTML = `${weatherObj.icon} ${weatherObj.name}`;
-            } else {
-                document.getElementById('weatherValue').innerHTML = newCombo.weather_name;
-            }
-        }
-        
-        if (newCombo.time_name) {
+            if (weatherObj) document.getElementById('weatherValue').innerHTML = `${weatherObj.icon} ${weatherObj.name}`;
+            
             const timeObj = times.find(t => t.name === newCombo.time_name);
-            if (timeObj) {
-                document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name} <span class="time-x-badge">${newCombo.time_multiplier || 'X1'}</span>`;
-            } else {
-                document.getElementById('timeValue').innerHTML = `${newCombo.time_name} <span class="time-x-badge">${newCombo.time_multiplier || 'X1'}</span>`;
-            }
+            if (timeObj) document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name} <span class="time-x-badge">${newCombo.time_multiplier || 'X1'}</span>`;
+            
+            if (newCombo.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${newCombo.tires_value}</span>`;
+            if (newCombo.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${newCombo.fuel_value}</span>`;
+            
+            updateProgressBar(99, '📤 Сохранение комбинации...');
+            await sleep(150);
+            
+            await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newCombo)
+            });
+            
+            updateProgressBar(100, '✅ Готово!');
+            await sleep(200);
+            setTimeout(() => loadCurrentCombo(), 500);
+            
+        } catch(e) {
+            updateProgressBar(100, '❌ Ошибка генерации!');
+            document.getElementById('status').innerHTML = `❌ Ошибка: ${e.message}`;
+            document.getElementById('status').className = 'status error';
+            console.error(e);
         }
         
-        if (newCombo.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${newCombo.tires_value}</span>`;
-        if (newCombo.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${newCombo.fuel_value}</span>`;
-        
-        updateProgressBar(99, '📤 Сохранение комбинации...');
-        await sleep(150);
-        
-        await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newCombo)
-        });
-        
-        updateProgressBar(100, '✅ Готово!');
-        await sleep(200);
-        
-        setTimeout(() => loadCurrentCombo(), 500);
-        
-    } catch(e) {
-        updateProgressBar(100, '❌ Ошибка генерации!');
-        document.getElementById('status').innerHTML = `❌ Ошибка: ${e.message}`;
-        document.getElementById('status').className = 'status error';
-        console.error(e);
+        setTimeout(() => {
+            hideProgress();
+            document.getElementById('status').innerHTML = '✅ Новая комбинация сохранена! Все пользователи увидят её в течение 1-2 минут.';
+            document.getElementById('status').className = 'status success';
+        }, 1000);
     }
     
-    setTimeout(() => {
-        hideProgress();
-        document.getElementById('status').innerHTML = '✅ Новая комбинация сохранена! Все пользователи увидят её в течение 1-2 минут.';
-        document.getElementById('status').className = 'status success';
-    }, 1000);
-}
-
-function toggleLock(param) {
-    locks[param] = !locks[param];
-    const btns = document.querySelectorAll(`.lock-btn[data-param="${param}"], .settings-lock-btn[data-param="${param}"]`);
-    btns.forEach(btn => {
-        if (locks[param]) {
-            btn.classList.remove('unlocked');
-            btn.classList.add('locked');
-            btn.innerHTML = '🔒';
-        } else {
-            btn.classList.remove('locked');
-            btn.classList.add('unlocked');
-            btn.innerHTML = '🔓';
-        }
-    });
-}
-
-// ========== РАСКРЫТИЕ БЛОКОВ ==========
-let carsTrackExpanded = true;
-let categoryExpanded = true;
-let settingsExpanded = true;
-let similarExpanded = true;
-
-function toggleCarsTrack() {
-    carsTrackExpanded = !carsTrackExpanded;
-    const content = document.getElementById('carsTrackContent');
-    const icon = document.getElementById('carsTrackToggleIcon');
-    content.classList.toggle('collapsed', !carsTrackExpanded);
-    icon.innerHTML = carsTrackExpanded ? '▼' : '▶';
-}
-
-function toggleCategory() {
-    categoryExpanded = !categoryExpanded;
-    const content = document.getElementById('categoryContent');
-    const icon = document.getElementById('categoryToggleIcon');
-    content.classList.toggle('collapsed', !categoryExpanded);
-    icon.innerHTML = categoryExpanded ? '▼' : '▶';
-}
-
-function toggleSettings() {
-    settingsExpanded = !settingsExpanded;
-    const content = document.getElementById('settingsContent');
-    const icon = document.getElementById('settingsToggleIcon');
-    content.classList.toggle('collapsed', !settingsExpanded);
-    icon.innerHTML = settingsExpanded ? '▼' : '▶';
-}
-
-function toggleSimilar() {
-    similarExpanded = !similarExpanded;
-    const content = document.getElementById('similarContent');
-    const icon = document.getElementById('similarToggleIcon');
-    content.classList.toggle('collapsed', !similarExpanded);
-    icon.innerHTML = similarExpanded ? '▼' : '▶';
-}
-
-// ========== ИНИЦИАЛИЗАЦИЯ ==========
-document.getElementById('generateBtn').addEventListener('click', generateAndSave);
-document.getElementById('refreshBtn').addEventListener('click', loadCurrentCombo);
-document.getElementById('carsTrackHeader').addEventListener('click', toggleCarsTrack);
-document.getElementById('categoryHeader').addEventListener('click', toggleCategory);
-document.getElementById('settingsHeader').addEventListener('click', toggleSettings);
-document.getElementById('similarHeader').addEventListener('click', toggleSimilar);
-document.getElementById('refreshSimilarBtn').addEventListener('click', refreshSimilarCars);
-document.getElementById('resetCarsBtn').addEventListener('click', () => {
-    shownCars = [];
-    alert('✅ История машин сброшена!');
-});
-
-document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        toggleLock(btn.getAttribute('data-param'));
-    });
-});
-
-window.selectCar = selectCar;
-loadCurrentCombo();
+    // ============================================
+    // РАСКРЫТИЕ БЛОКОВ
+    // ============================================
+    let carsTrackExpanded = true, categoryExpanded = true, settingsExpanded = true, similarExpanded = true;
+    function toggleCarsTrack() { carsTrackExpanded = !carsTrackExpanded; document.getElementById('carsTrackContent').classList.toggle('collapsed', !carsTrackExpanded); document.getElementById('carsTrackToggleIcon').innerHTML = carsTrackExpanded ? '▼' : '▶'; }
+    function toggleCategory() { categoryExpanded = !categoryExpanded; document.getElementById('categoryContent').classList.toggle('collapsed', !categoryExpanded); document.getElementById('categoryToggleIcon').innerHTML = categoryExpanded ? '▼' : '▶'; }
+    function toggleSettings() { settingsExpanded = !settingsExpanded; document.getElementById('settingsContent').classList.toggle('collapsed', !settingsExpanded); document.getElementById('settingsToggleIcon').innerHTML = settingsExpanded ? '▼' : '▶'; }
+    function toggleSimilar() { similarExpanded = !similarExpanded; document.getElementById('similarContent').classList.toggle('collapsed', !similarExpanded); document.getElementById('similarToggleIcon').innerHTML = similarExpanded ? '▼' : '▶'; }
     
+    // ============================================
+    // ИНИЦИАЛИЗАЦИЯ
+    // ============================================
+    document.getElementById('generateBtn').addEventListener('click', generateAndSave);
+    document.getElementById('refreshBtn').addEventListener('click', loadCurrentCombo);
+    document.getElementById('carsTrackHeader').addEventListener('click', toggleCarsTrack);
+    document.getElementById('categoryHeader').addEventListener('click', toggleCategory);
+    document.getElementById('settingsHeader').addEventListener('click', toggleSettings);
+    document.getElementById('similarHeader').addEventListener('click', toggleSimilar);
+    document.getElementById('refreshSimilarBtn').addEventListener('click', refreshSimilarCars);
+    document.getElementById('resetCarsBtn').addEventListener('click', () => { shownCars = []; alert('✅ История машин сброшена!'); });
+    
+    document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => { e.stopPropagation(); toggleLock(btn.getAttribute('data-param')); });
+    });
+    
+    window.selectCar = selectCar;
+    loadCurrentCombo();
 </script>
 </body>
 </html>
