@@ -30,24 +30,24 @@
             border: 1px solid #ff4d4d; border-radius: 12px; padding: 8px 12px;
             margin-bottom: 15px; text-align: center; font-size: 12px; color: #ff9999;
         }
-        .cars-track-container, .category-container, .settings-container, .similar-cars-container {
+        .cars-track-container, .category-container, .settings-container, .similar-cars-container, .mode-container {
             background: rgba(0, 0, 0, 0.4); border-radius: 16px; margin: 12px 0;
             border: 1px solid #ff4d4d; overflow: hidden;
         }
-        .cars-track-header-clickable, .category-header-clickable, .settings-header-clickable, .similar-header-clickable {
+        .cars-track-header-clickable, .category-header-clickable, .settings-header-clickable, .similar-header-clickable, .mode-header-clickable {
             display: flex; align-items: center; justify-content: space-between; padding: 12px; cursor: pointer;
         }
-        .cars-track-title, .category-title, .settings-title, .similar-title {
+        .cars-track-title, .category-title, .settings-title, .similar-title, .mode-title {
             color: #ff4d4d; font-size: 14px; font-weight: bold; display: flex; align-items: center;
             justify-content: center; gap: 4px; flex: 1;
         }
-        .cars-track-toggle-icon, .category-toggle-icon, .toggle-icon, .similar-toggle-icon {
+        .cars-track-toggle-icon, .category-toggle-icon, .toggle-icon, .similar-toggle-icon, .mode-toggle-icon {
             color: #ff4d4d; font-size: 20px; font-weight: bold; transition: transform 0.3s ease;
         }
-        .cars-track-content, .category-content, .settings-content, .similar-content {
+        .cars-track-content, .category-content, .settings-content, .similar-content, .mode-content {
             padding: 0 12px 12px 12px;
         }
-        .cars-track-content.collapsed, .category-content.collapsed, .settings-content.collapsed, .similar-content.collapsed {
+        .cars-track-content.collapsed, .category-content.collapsed, .settings-content.collapsed, .similar-content.collapsed, .mode-content.collapsed {
             display: none;
         }
         .params-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; min-height: 200px; }
@@ -123,12 +123,30 @@
         .status.error { background: rgba(239,68,68,0.2); border-left: 3px solid #ef4444; }
         .button-group { display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; margin: 15px 0; }
         
+        .mode-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            transition: transform 0.2s;
+        }
+        .mode-btn.active {
+            box-shadow: 0 0 15px currentColor;
+            transform: scale(1.05);
+        }
+        .mode-btn:active {
+            transform: scale(0.95);
+        }
+        
         @media (max-width: 480px) and (orientation: portrait) {
             body { padding: 4px; }
             .container { padding: 8px 6px; border-radius: 16px; max-width: 100%; min-height: 85vh; }
             .params-grid { gap: 6px; grid-template-columns: 1fr !important; }
             .param-label { font-size: 10px; padding: 5px 10px; }
             .time-x-badge { font-size: 11px; padding: 2px 6px; }
+            .mode-btn { padding: 6px 12px; font-size: 12px; }
             .car-icon, .track-icon { max-height: 60px; }
         }
         
@@ -163,6 +181,24 @@
 <div class="container">
     <div class="admin-banner">
         👑 АДМИН-ПАНЕЛЬ: Вы управляете общей комбинацией 👑
+    </div>
+    
+    <!-- НОВЫЙ БЛОК: РЕЖИМ ОТОБРАЖЕНИЯ МАШИН -->
+    <div class="mode-container" id="modeContainer">
+        <div class="mode-header-clickable" id="modeHeader">
+            <div style="width: 30px;"></div>
+            <div class="mode-title">🎮 РЕЖИМ ОТОБРАЖЕНИЯ МАШИН 🎮</div>
+            <div class="mode-toggle-icon" id="modeToggleIcon">▼</div>
+        </div>
+        <div class="mode-content" id="modeContent">
+            <div style="display: flex; gap: 15px; justify-content: center; padding: 15px; flex-wrap: wrap;">
+                <button id="modeAllBtn" class="mode-btn" style="background: #3b82f6;">🚗 ВСЕ РАНДОМНЫЕ МАШИНЫ</button>
+                <button id="modeGroupOnlyBtn" class="mode-btn" style="background: #8b5cf6;">🏁 ТОЛЬКО ГРУППОВЫЕ</button>
+            </div>
+            <div id="currentModeDisplay" style="text-align: center; padding: 10px; background: #ff4d4d20; border-radius: 12px; margin-top: 10px;">
+                Текущий режим: <strong id="currentModeText">ВСЕ РАНДОМНЫЕ МАШИНЫ</strong>
+            </div>
+        </div>
     </div>
     
     <div class="cars-track-container" id="carsTrackContainer">
@@ -319,7 +355,7 @@
     // КОНСТАНТЫ И НАСТРОЙКИ
     // ============================================
     const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyOspWCMXKSQFp0zc22JnZhDFknUOcv-Bam_9m5ba3n5ppJgSqL9bKc-gs6N4LTUzTi4Q/exec';
-    const GOOGLE_SHEETS_ID = 'AKfycbyOspWCMXKSQFp0zc22JnZhDFknUOcv-Bam_9m5ba3n5ppJgSqL9bKc-gs6N4LTUzTi4Q';
+    const GOOGLE_SHEETS_ID = '1YAJUPE73Nxwe1oEF1xZBHkGj_zg_uGdW7VkTyHtEOOE';
     const ADMIN_SECRET_KEY = '939030312';
     
     // Максимальная скорость по классам (км/ч)
@@ -337,6 +373,8 @@
     let shownCars = [];
     let shownTracks = [];
     let adminAccessGranted = false;
+    let displayMode = 'all'; // 'all' или 'group_only'
+    let modeExpanded = true;
     
     // ============================================
     // МАССИВЫ ДАННЫХ
@@ -905,7 +943,7 @@
     { name: "Zagato IsoRivolta VGT", rating: 676.87, category: "", powerToWeight: 0.49, hp: 567, torque: 579.9, weight: 1150, icon: "car_icons/car2122.png" },
     { name: "ŠKODA VGT", rating: 851.04, category: "", powerToWeight: 0.82, hp: 1087, torque: "-", weight: 1300, icon: "car_icons/car3542.png" }
     ];
-
+    
     const tracksData = [
     { name: "Франция Alsace - Деревня", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 5.423 },
     { name: "Франция Alsace - Деревня (обратн.)", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 5.423 },
@@ -1008,43 +1046,16 @@
         { name: "S01 (Ясно, безоблачно)", icon: "☀️" },
         { name: "S02 (Ясно, малооблачно)", icon: "🌤️" },
         { name: "S03 (Ясно, переменная облачность)", icon: "⛅" },
-        { name: "S04 (Ясно, легкая дымка)", icon: "🌤️" },
-        { name: "S05 (Солнечно, местами облачно)", icon: "⛅" },
-        { name: "S06 (Солнечно, высокая влажность)", icon: "🌤️" },
-        { name: "S07 (Солнечно, легкий туман)", icon: "🌫️" },
-        { name: "S08 (Солнечно, густая облачность)", icon: "☁️" },
-        { name: "S09 (Солнечно, высокая облачность)", icon: "☁️" },
-        { name: "S10 (Солнечно, дымка от тумана)", icon: "🌫️" },
-        { name: "S11 (Солнечно, горный туман)", icon: "🌫️" },
-        { name: "S12 (Солнечно, муссонные облака)", icon: "☁️" },
-        { name: "S13 (Солнечно, редкие муссонные облака)", icon: "⛅" },
-        { name: "S14 (Солнечно, плотные муссонные облака)", icon: "☁️" },
-        { name: "S15 (Солнечно, легкая дымка)", icon: "🌤️" },
-        { name: "S16 (Солнечно, дымка и облака)", icon: "⛅" },
-        { name: "S17 (Солнечно, высокая облачность)", icon: "☁️" },
-        { name: "S18 (Солнечно, плотная высокая облачность)", icon: "☁️" },
-        { name: "C01 (Пасмурно, но ярко)", icon: "☁️" },
-        { name: "C02 (Пасмурно, тепло)", icon: "☁️" },
-        { name: "C03 (Пасмурно, темно)", icon: "☁️" },
-        { name: "C04 (Пасмурно, прохладно)", icon: "☁️" },
-        { name: "C05 (Пасмурно, плотные облака)", icon: "☁️" },
-        { name: "C06 (Пасмурно, тяжелые облака)", icon: "☁️" },
         { name: "R01 (Мелкий дождь, морось)", icon: "🌦️" },
         { name: "R02 (Умеренный дождь)", icon: "🌧️" },
         { name: "R03 (Сильный дождь, ливень)", icon: "🌧️💧" },
-        { name: "R04 (Проливной дождь, гроза)", icon: "⛈️" },
-        { name: "R05 (Штормовой дождь, сильный ветер)", icon: "🌊🌧️" },
-        { name: "R06 (Тропический ливень)", icon: "🌧️💧💧" },
-        { name: "R07 (Шквалистый дождь)", icon: "💨🌧️" },
-        { name: "R08 (Экстремальный ливень, нулевая видимость)", icon: "🌊💧🌧️" }
+        { name: "R04 (Проливной дождь, гроза)", icon: "⛈️" }
     ];
     
     const times = [
         { name: "Заря", icon: "🌅" },
         { name: "Рассвет", icon: "🌅" },
         { name: "Восход", icon: "🌄" },
-        { name: "Раннее утро", icon: "🌤️" },
-        { name: "Позднее утро", icon: "☀️" },
         { name: "День", icon: "🔆" },
         { name: "Вечер", icon: "🌆" },
         { name: "Закат", icon: "🌇" },
@@ -1054,7 +1065,7 @@
     ];
     
     // ============================================
-    // ФУНКЦИЯ ДЛЯ ПОЛУЧЕНИЯ ИКОНКИ ТРАССЫ
+    // ФУНКЦИИ
     // ============================================
     function getTrackIcon(trackName) {
         if (trackName.includes("Alsace")) return "track_icons/bbe708-D-n15MKA.png";
@@ -1090,59 +1101,28 @@
         if (trackName.includes("Laguna Seca")) return "track_icons/c75e61-DBxJ7RQM.png";
         if (trackName.includes("Yas Marina")) return "track_icons/27adb9-DCBqBoAB.png";
         return null;
+        
     }
     
-    // Функция для отображения иконки машины
-    function displayCarIcon(carIconPath) {
-        const carIcon = document.getElementById('carIcon');
-        const carIconFallback = document.getElementById('carIconFallback');
-        if (carIconPath && carIconPath !== "") {
-            carIcon.src = carIconPath;
-            carIcon.style.display = "block";
-            carIconFallback.style.display = "none";
-        } else {
-            carIcon.style.display = "none";
-            carIconFallback.style.display = "flex";
+    function declensionLaps(count) {
+        const lastDigit = count % 10;
+        const lastTwoDigits = count % 100;
+        
+        if (lastTwoDigits >= 11 && lastTwoDigits <= 19) {
+            return `${count} кругов`;
         }
-    }
-    
-    // Функция для отображения иконки трассы
-    function displayTrackIcon(trackIconPath) {
-        const trackIcon = document.getElementById('trackIcon');
-        const trackIconFallback = document.getElementById('trackIconFallback');
-        if (trackIconPath) {
-            trackIcon.src = trackIconPath;
-            trackIcon.style.display = "block";
-            trackIconFallback.style.display = "none";
-        } else {
-            trackIcon.style.display = "none";
-            trackIconFallback.style.display = "flex";
+        
+        if (lastDigit === 1) {
+            return `${count} круг`;
         }
-    }
-    
-    // Функция для правильного склонения слова "круг"
-function declensionLaps(count) {
-    const lastDigit = count % 10;
-    const lastTwoDigits = count % 100;
-    
-    if (lastTwoDigits >= 11 && lastTwoDigits <= 19) {
+        
+        if (lastDigit >= 2 && lastDigit <= 4) {
+            return `${count} круга`;
+        }
+        
         return `${count} кругов`;
     }
     
-    if (lastDigit === 1) {
-        return `${count} круг`;
-    }
-    
-    if (lastDigit >= 2 && lastDigit <= 4) {
-        return `${count} круга`;
-    }
-    
-    return `${count} кругов`;
-}
-    
-    // ============================================
-    // НОВАЯ ФУНКЦИЯ: РАСЧЁТ ОПТИМАЛЬНЫХ КРУГОВ
-    // ============================================
     function calculateOptimalLaps(trackLengthKm, categoryName) {
         if (!trackLengthKm || trackLengthKm <= 0) return 5;
         
@@ -1165,6 +1145,171 @@ function declensionLaps(count) {
         optimalLaps = Math.max(3, Math.min(optimalLaps, 25));
         
         return optimalLaps;
+    }
+    
+    function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+    function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function getRandomXValue() { return `X${Math.floor(Math.random() * 20) + 1}`; }
+    function getRandomLaps() { return Math.floor(Math.random() * 23) + 3; }
+    
+    function getRandomCarWithoutRepeat() {
+        let availableCars = carsDatabase.filter(car => !shownCars.includes(car.name));
+        if (availableCars.length === 0) { shownCars = []; availableCars = carsDatabase; }
+        const randomCar = getRandomItem(availableCars);
+        shownCars.push(randomCar.name);
+        if (shownCars.length > 50) shownCars.shift();
+        return randomCar;
+    }
+    
+    function getRandomTrackWithoutRepeat() {
+        let availableTracks = tracksData.filter(track => !shownTracks.includes(track.name));
+        if (availableTracks.length === 0) { shownTracks = []; availableTracks = tracksData; }
+        const randomTrack = getRandomItem(availableTracks);
+        shownTracks.push(randomTrack.name);
+        if (shownTracks.length > 30) shownTracks.shift();
+        return randomTrack;
+    }
+    
+    function calculateSimilarity(car1, car2) {
+        const maxRating = 1500, maxHp = 2000, maxTorque = 2000, maxWeight = 3000, maxPtw = 2.5;
+        const ratingDiff = Math.abs(car1.rating - car2.rating) / maxRating;
+        const hpDiff = Math.abs(car1.hp - car2.hp) / maxHp;
+        let torque1 = typeof car1.torque === 'number' ? car1.torque : 0;
+        let torque2 = typeof car2.torque === 'number' ? car2.torque : 0;
+        const torqueDiff = Math.abs(torque1 - torque2) / maxTorque;
+        const weightDiff = Math.abs(car1.weight - car2.weight) / maxWeight;
+        const ptwDiff = Math.abs(car1.powerToWeight - car2.powerToWeight) / maxPtw;
+        const totalDiff = ratingDiff * 0.25 + hpDiff * 0.20 + torqueDiff * 0.15 + weightDiff * 0.20 + ptwDiff * 0.20;
+        return Math.max(0, Math.min(100, (1 - totalDiff) * 100));
+    }
+    
+    function findSimilarCars(referenceCar, count = 5, randomize = true) {
+        let carsWithSimilarity = carsDatabase.filter(car => car.name !== referenceCar.name).map(car => ({ 
+            ...car, similarity: calculateSimilarity(referenceCar, car) 
+        })).sort((a, b) => b.similarity - a.similarity);
+        
+        const uniqueCars = [];
+        const seenNames = new Set();
+        for (const car of carsWithSimilarity) {
+            if (!seenNames.has(car.name)) {
+                seenNames.add(car.name);
+                uniqueCars.push(car);
+            }
+        }
+        
+        const topSimilar = uniqueCars.slice(0, 15);
+        if (randomize && topSimilar.length > count) {
+            for (let i = topSimilar.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [topSimilar[i], topSimilar[j]] = [topSimilar[j], topSimilar[i]];
+            }
+            return topSimilar.slice(0, count);
+        }
+        return topSimilar.slice(0, count);
+    }
+    
+    function displaySimilarCars(referenceCar) {
+        if (!referenceCar) return;
+        currentRefCar = referenceCar;
+        const similarCars = findSimilarCars(referenceCar, 5, false);
+        document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${referenceCar.name}</strong><br>⭐ Рейтинг: ${referenceCar.rating.toFixed(0)} | 🔧 ${referenceCar.hp} л.с. | ⚙️ ${typeof referenceCar.torque === 'number' ? referenceCar.torque : '?'} Н·м | ⚖️ ${referenceCar.weight} кг | ⚡ ${(referenceCar.powerToWeight * 1000).toFixed(1)} л.с./т`;
+        document.getElementById('similarList').innerHTML = similarCars.map((car, index) => `
+            <li onclick="selectCar('${car.name.replace(/'/g, "\\'")}')">
+                <span class="car-name">${index + 1}. ${car.name}</span>
+                <div class="car-stats">
+                    <span>⭐ ${car.rating.toFixed(0)}</span>
+                    <span>🔧 ${car.hp} л.с.</span>
+                    <span>⚙️ ${typeof car.torque === 'number' ? car.torque : '?'}</span>
+                    <span>⚖️ ${car.weight} кг</span>
+                    <span>⚡ ${(car.powerToWeight * 1000).toFixed(1)}</span>
+                </div>
+                <span class="similarity-badge">${car.similarity.toFixed(1)}%</span>
+            </li>
+        `).join('');
+    }
+    
+    function selectCar(carName) {
+        const car = carsDatabase.find(c => c.name === carName);
+        if (car) displaySimilarCars(car);
+    }
+    
+    function refreshSimilarCars() {
+        if (currentRefCar) {
+            const randomSimilarCars = findSimilarCars(currentRefCar, 5, true);
+            document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${currentRefCar.name}</strong><br>⭐ Рейтинг: ${currentRefCar.rating.toFixed(0)} | 🔧 ${currentRefCar.hp} л.с. | ⚙️ ${typeof currentRefCar.torque === 'number' ? currentRefCar.torque : '?'} Н·м | ⚖️ ${currentRefCar.weight} кг | ⚡ ${(currentRefCar.powerToWeight * 1000).toFixed(1)} л.с./т`;
+            document.getElementById('similarList').innerHTML = randomSimilarCars.map((car, index) => `
+                <li onclick="selectCar('${car.name.replace(/'/g, "\\'")}')">
+                    <span class="car-name">${index + 1}. ${car.name}</span>
+                    <div class="car-stats">
+                        <span>⭐ ${car.rating.toFixed(0)}</span>
+                        <span>🔧 ${car.hp} л.с.</span>
+                        <span>⚙️ ${typeof car.torque === 'number' ? car.torque : '?'}</span>
+                        <span>⚖️ ${car.weight} кг</span>
+                        <span>⚡ ${(car.powerToWeight * 1000).toFixed(1)}</span>
+                    </div>
+                    <span class="similarity-badge">${car.similarity.toFixed(1)}%</span>
+                </li>
+            `).join('');
+        } else {
+            const randomCar = getRandomItem(carsDatabase);
+            displaySimilarCars(randomCar);
+        }
+    }
+    
+    function displayCarIcon(carIconPath) {
+        const carIcon = document.getElementById('carIcon');
+        const carIconFallback = document.getElementById('carIconFallback');
+        if (carIconPath && carIconPath !== "") {
+            carIcon.src = carIconPath;
+            carIcon.style.display = "block";
+            carIconFallback.style.display = "none";
+        } else {
+            carIcon.style.display = "none";
+            carIconFallback.style.display = "flex";
+        }
+    }
+    
+    function displayTrackIcon(trackIconPath) {
+        const trackIcon = document.getElementById('trackIcon');
+        const trackIconFallback = document.getElementById('trackIconFallback');
+        if (trackIconPath) {
+            trackIcon.src = trackIconPath;
+            trackIcon.style.display = "block";
+            trackIconFallback.style.display = "none";
+        } else {
+            trackIcon.style.display = "none";
+            trackIconFallback.style.display = "flex";
+        }
+    }
+    
+    // ============================================
+    // РЕЖИМ ОТОБРАЖЕНИЯ МАШИН
+    // ============================================
+    function toggleMode() {
+        modeExpanded = !modeExpanded;
+        const content = document.getElementById('modeContent');
+        const icon = document.getElementById('modeToggleIcon');
+        content.classList.toggle('collapsed', !modeExpanded);
+        icon.innerHTML = modeExpanded ? '▼' : '▶';
+    }
+    
+    function setDisplayMode(mode) {
+        displayMode = mode;
+        const allBtn = document.getElementById('modeAllBtn');
+        const groupOnlyBtn = document.getElementById('modeGroupOnlyBtn');
+        const modeText = document.getElementById('currentModeText');
+        
+        if (mode === 'all') {
+            allBtn.classList.add('active');
+            groupOnlyBtn.classList.remove('active');
+            modeText.innerHTML = 'ВСЕ РАНДОМНЫЕ МАШИНЫ 🚗';
+            modeText.style.color = '#3b82f6';
+        } else {
+            groupOnlyBtn.classList.add('active');
+            allBtn.classList.remove('active');
+            modeText.innerHTML = 'ТОЛЬКО ГРУППОВЫЕ 🏁';
+            modeText.style.color = '#8b5cf6';
+        }
     }
     
     // ============================================
@@ -1239,129 +1384,6 @@ function declensionLaps(count) {
     }
     
     // ============================================
-    // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-    // ============================================
-    function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
-    function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-    function getRandomXValue() { return `X${Math.floor(Math.random() * 20) + 1}`; }
-    function getRandomLaps() { return Math.floor(Math.random() * 23) + 3; }
-    
-    function calculateSimilarity(car1, car2) {
-        const maxRating = 1500, maxHp = 2000, maxTorque = 2000, maxWeight = 3000, maxPtw = 2.5;
-        const ratingDiff = Math.abs(car1.rating - car2.rating) / maxRating;
-        const hpDiff = Math.abs(car1.hp - car2.hp) / maxHp;
-        let torque1 = typeof car1.torque === 'number' ? car1.torque : 0;
-        let torque2 = typeof car2.torque === 'number' ? car2.torque : 0;
-        const torqueDiff = Math.abs(torque1 - torque2) / maxTorque;
-        const weightDiff = Math.abs(car1.weight - car2.weight) / maxWeight;
-        const ptwDiff = Math.abs(car1.powerToWeight - car2.powerToWeight) / maxPtw;
-        const totalDiff = ratingDiff * 0.25 + hpDiff * 0.20 + torqueDiff * 0.15 + weightDiff * 0.20 + ptwDiff * 0.20;
-        return Math.max(0, Math.min(100, (1 - totalDiff) * 100));
-    }
-    
-    function findSimilarCars(referenceCar, count = 5, randomize = true) {
-        let carsWithSimilarity = carsDatabase.filter(car => car.name !== referenceCar.name).map(car => ({ 
-            ...car, similarity: calculateSimilarity(referenceCar, car) 
-        })).sort((a, b) => b.similarity - a.similarity);
-        
-        const uniqueCars = [];
-        const seenNames = new Set();
-        for (const car of carsWithSimilarity) {
-            if (!seenNames.has(car.name)) {
-                seenNames.add(car.name);
-                uniqueCars.push(car);
-            }
-        }
-        
-        const topSimilar = uniqueCars.slice(0, 15);
-        if (randomize && topSimilar.length > count) {
-            for (let i = topSimilar.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [topSimilar[i], topSimilar[j]] = [topSimilar[j], topSimilar[i]];
-            }
-            return topSimilar.slice(0, count);
-        }
-        return topSimilar.slice(0, count);
-    }
-    
- function displaySimilarCars(referenceCar) {
-    if (!referenceCar) return;
-    currentRefCar = referenceCar;  // Эта строка должна быть
-    const similarCars = findSimilarCars(referenceCar, 5, false);
-    document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${referenceCar.name}</strong><br>⭐ Рейтинг: ${referenceCar.rating.toFixed(0)} | 🔧 ${referenceCar.hp} л.с. | ⚙️ ${typeof referenceCar.torque === 'number' ? referenceCar.torque : '?'} Н·м | ⚖️ ${referenceCar.weight} кг | ⚡ ${(referenceCar.powerToWeight * 1000).toFixed(1)} л.с./т`;
-    document.getElementById('similarList').innerHTML = similarCars.map((car, index) => `
-        <li onclick="selectCar('${car.name.replace(/'/g, "\\'")}')">
-            <span class="car-name">${index + 1}. ${car.name}</span>
-            <div class="car-stats">
-                <span>⭐ ${car.rating.toFixed(0)}</span>
-                <span>🔧 ${car.hp} л.с.</span>
-                <span>⚙️ ${typeof car.torque === 'number' ? car.torque : '?'}</span>
-                <span>⚖️ ${car.weight} кг</span>
-                <span>⚡ ${(car.powerToWeight * 1000).toFixed(1)}</span>
-            </div>
-            <span class="similarity-badge">${car.similarity.toFixed(1)}%</span>
-        </li>
-    `).join('');
-}
-    
-    function selectCar(carName) {
-        const car = carsDatabase.find(c => c.name === carName);
-        if (car) displaySimilarCars(car);
-    }
-    
-    function refreshSimilarCars() {
-        if (currentRefCar) {
-            const randomSimilarCars = findSimilarCars(currentRefCar, 5, true);
-            document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${currentRefCar.name}</strong><br>⭐ Рейтинг: ${currentRefCar.rating.toFixed(0)} | 🔧 ${currentRefCar.hp} л.с. | ⚙️ ${typeof currentRefCar.torque === 'number' ? currentRefCar.torque : '?'} Н·м | ⚖️ ${currentRefCar.weight} кг | ⚡ ${(currentRefCar.powerToWeight * 1000).toFixed(1)} л.с./т`;
-            document.getElementById('similarList').innerHTML = randomSimilarCars.map((car, index) => `
-                <li onclick="selectCar('${car.name.replace(/'/g, "\\'")}')">
-                    <span class="car-name">${index + 1}. ${car.name}</span>
-                    <div class="car-stats">
-                        <span>⭐ ${car.rating.toFixed(0)}</span>
-                        <span>🔧 ${car.hp} л.с.</span>
-                        <span>⚙️ ${typeof car.torque === 'number' ? car.torque : '?'}</span>
-                        <span>⚖️ ${car.weight} кг</span>
-                        <span>⚡ ${(car.powerToWeight * 1000).toFixed(1)}</span>
-                    </div>
-                    <span class="similarity-badge">${car.similarity.toFixed(1)}%</span>
-                </li>
-            `).join('');
-        } else {
-            const randomCar = getRandomItem(carsDatabase);
-            displaySimilarCars(randomCar);
-        }
-    }
-    
-    function getRandomCarWithoutRepeat() {
-        let availableCars = carsDatabase.filter(car => !shownCars.includes(car.name));
-        if (availableCars.length === 0) { shownCars = []; availableCars = carsDatabase; }
-        const randomCar = getRandomItem(availableCars);
-        shownCars.push(randomCar.name);
-        if (shownCars.length > 50) shownCars.shift();
-        return randomCar;
-    }
-    
-    function getRandomTrackWithoutRepeat() {
-        let availableTracks = tracksData.filter(track => !shownTracks.includes(track.name));
-        if (availableTracks.length === 0) { shownTracks = []; availableTracks = tracksData; }
-        const randomTrack = getRandomItem(availableTracks);
-        shownTracks.push(randomTrack.name);
-        if (shownTracks.length > 30) shownTracks.shift();
-        return randomTrack;
-    }
-    
-    function isWeatherCompatibleForTrack(weatherName, trackName) {
-        const track = tracksData.find(t => t.name === trackName);
-        if (!track || !track.weather) return true;
-        const isDry = weatherName.startsWith('S') || weatherName.startsWith('C');
-        const isWet = weatherName.startsWith('R');
-        if (track.weather.includes('both')) return true;
-        if (track.weather.includes('dry') && isDry) return true;
-        if ((track.weather.includes('wet') || track.weather.includes('rain')) && isWet) return true;
-        return false;
-    }
-    
-    // ============================================
     // ПРОГРЕСС-БАР
     // ============================================
     function showProgress() {
@@ -1389,61 +1411,65 @@ function declensionLaps(count) {
     }
     
     // ============================================
-// ЗАГРУЗКА ТЕКУЩЕЙ КОМБИНАЦИИ (ИСПРАВЛЕНО - СОХРАНЯЕТ РЕФЕРЕНСНУЮ МАШИНУ)
-// ============================================
-async function loadCurrentCombo() {
-    try {
-        const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?tqx=out:json`;
-        const response = await fetch(url);
-        const text = await response.text();
-        const jsonStart = text.indexOf('(');
-        const jsonEnd = text.lastIndexOf(')');
-        const jsonStr = text.substring(jsonStart + 1, jsonEnd);
-        const data = JSON.parse(jsonStr);
-        
-        const tableData = {};
-        for (let i = 0; i < data.table.rows.length; i++) {
-            const row = data.table.rows[i];
-            const key = row.c[0]?.v;
-            const value = row.c[1]?.v;
-            if (key && value !== undefined && value !== null) tableData[key] = value;
-        }
-        
-        if (tableData.active === 'TRUE') {
-            const car = carsDatabase.find(c => c.name === tableData.car_name);
-            if (car) {
-                document.getElementById('carValue').textContent = car.name;
-                displayCarIcon(car.icon);
-                // ВАЖНО: Сохраняем референсную машину и отображаем похожие авто
-                displaySimilarCars(car);
+    // ЗАГРУЗКА ТЕКУЩЕЙ КОМБИНАЦИИ
+    // ============================================
+    async function loadCurrentCombo() {
+        try {
+            const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?tqx=out:json`;
+            const response = await fetch(url);
+            const text = await response.text();
+            const jsonStart = text.indexOf('(');
+            const jsonEnd = text.lastIndexOf(')');
+            const jsonStr = text.substring(jsonStart + 1, jsonEnd);
+            const data = JSON.parse(jsonStr);
+            
+            const tableData = {};
+            for (let i = 0; i < data.table.rows.length; i++) {
+                const row = data.table.rows[i];
+                const key = row.c[0]?.v;
+                const value = row.c[1]?.v;
+                if (key && value !== undefined && value !== null) tableData[key] = value;
             }
             
-            const track = tracksData.find(t => t.name === tableData.track_name);
-            if (track) {
-                const laps = tableData.laps || calculateOptimalLaps(track.length, tableData.category_name) || getRandomLaps();
-               document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${declensionLaps(laps)}</span>`;
-                const iconUrl = getTrackIcon(track.name);
-                displayTrackIcon(iconUrl);
+            if (tableData.active === 'TRUE') {
+                // Загружаем режим отображения
+                if (tableData.display_mode) {
+                    setDisplayMode(tableData.display_mode);
+                }
+                
+                const car = carsDatabase.find(c => c.name === tableData.car_name);
+                if (car) {
+                    document.getElementById('carValue').textContent = car.name;
+                    displayCarIcon(car.icon);
+                    displaySimilarCars(car);
+                }
+                
+                const track = tracksData.find(t => t.name === tableData.track_name);
+                if (track) {
+                    const laps = tableData.laps || calculateOptimalLaps(track.length, tableData.category_name) || getRandomLaps();
+                    document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${declensionLaps(laps)}</span>`;
+                    const iconUrl = getTrackIcon(track.name);
+                    displayTrackIcon(iconUrl);
+                }
+                
+                const category = categories.find(c => c.name === tableData.category_name);
+                if (category) document.getElementById('categoryText').innerHTML = `${category.icon} ${category.name} (${category.description})`;
+                
+                let weatherObj = weathers.find(w => w.name === tableData.weather_name);
+                if (weatherObj) document.getElementById('weatherValue').innerHTML = `${weatherObj.icon} ${weatherObj.name}`;
+                else document.getElementById('weatherValue').innerHTML = tableData.weather_name;
+                
+                const timeObj = times.find(t => t.name === tableData.time_name);
+                if (timeObj) document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name} <span class="time-x-badge">${tableData.time_multiplier || 'X1'}</span>`;
+                else document.getElementById('timeValue').innerHTML = `${tableData.time_name} <span class="time-x-badge">${tableData.time_multiplier || 'X1'}</span>`;
+                
+                if (tableData.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${tableData.tires_value}</span>`;
+                if (tableData.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${tableData.fuel_value}</span>`;
             }
-            
-            const category = categories.find(c => c.name === tableData.category_name);
-            if (category) document.getElementById('categoryText').innerHTML = `${category.icon} ${category.name} (${category.description})`;
-            
-            let weatherObj = weathers.find(w => w.name === tableData.weather_name);
-            if (weatherObj) document.getElementById('weatherValue').innerHTML = `${weatherObj.icon} ${weatherObj.name}`;
-            else document.getElementById('weatherValue').innerHTML = tableData.weather_name;
-            
-            const timeObj = times.find(t => t.name === tableData.time_name);
-            if (timeObj) document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name} <span class="time-x-badge">${tableData.time_multiplier || 'X1'}</span>`;
-            else document.getElementById('timeValue').innerHTML = `${tableData.time_name} <span class="time-x-badge">${tableData.time_multiplier || 'X1'}</span>`;
-            
-            if (tableData.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${tableData.tires_value}</span>`;
-            if (tableData.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${tableData.fuel_value}</span>`;
+        } catch(e) {
+            console.error('Ошибка загрузки комбинации:', e);
         }
-    } catch(e) {
-        console.error('Ошибка загрузки комбинации:', e);
     }
-}
     
     function toggleLock(param) {
         locks[param] = !locks[param];
@@ -1476,33 +1502,32 @@ async function loadCurrentCombo() {
         try {
             let newCombo = {};
             
+            // Сохраняем режим отображения
+            newCombo.display_mode = displayMode;
+            
             if (!locks.car) {
-    const car = getRandomCarWithoutRepeat();
-    newCombo.car_name = car.name;
-    updateProgressBar(15, '🚗 Машина выбрана');
-    await sleep(200);
-    
-    // Сохраняем референсную машину и находим похожие
-    currentRefCar = car;
-    const similar = findSimilarCars(car, 5, true);
-    for (let i = 0; i < similar.length; i++) {
-        newCombo[`similar_car_${i+1}`] = similar[i].name;
-        updateProgressBar(22 + Math.round((i + 1) * 3.6), `🔍 Похожие авто: ${i+1}/5`);
-        await sleep(150);
-    }
-    updateProgressBar(40, '🔍 Похожие авто найдены');
-    
-    // Отображаем референсную машину и список похожих
-    displaySimilarCars(car);
-} else {
-    updateProgressBar(40, '🔒 Машина заблокирована');
-    // Если машина заблокирована, берем текущую из интерфейса
-    const currentCarName = document.getElementById('carValue').textContent;
-    const currentCar = carsDatabase.find(c => c.name === currentCarName);
-    if (currentCar && currentCar !== currentRefCar) {
-        displaySimilarCars(currentCar);
-    }
-}
+                const car = getRandomCarWithoutRepeat();
+                newCombo.car_name = car.name;
+                updateProgressBar(15, '🚗 Машина выбрана');
+                await sleep(200);
+                
+                currentRefCar = car;
+                const similar = findSimilarCars(car, 5, true);
+                for (let i = 0; i < similar.length; i++) {
+                    newCombo[`similar_car_${i+1}`] = similar[i].name;
+                    updateProgressBar(22 + Math.round((i + 1) * 3.6), `🔍 Похожие авто: ${i+1}/5`);
+                    await sleep(150);
+                }
+                updateProgressBar(40, '🔍 Похожие авто найдены');
+                displaySimilarCars(car);
+            } else {
+                updateProgressBar(40, '🔒 Машина заблокирована');
+                const currentCarName = document.getElementById('carValue').textContent;
+                const currentCar = carsDatabase.find(c => c.name === currentCarName);
+                if (currentCar && currentCar !== currentRefCar) {
+                    displaySimilarCars(currentCar);
+                }
+            }
             
             let selectedCategory = null;
             let selectedTrack = null;
@@ -1661,6 +1686,9 @@ async function loadCurrentCombo() {
     document.getElementById('categoryHeader').addEventListener('click', toggleCategory);
     document.getElementById('settingsHeader').addEventListener('click', toggleSettings);
     document.getElementById('similarHeader').addEventListener('click', toggleSimilar);
+    document.getElementById('modeHeader').addEventListener('click', toggleMode);
+    document.getElementById('modeAllBtn').addEventListener('click', () => setDisplayMode('all'));
+    document.getElementById('modeGroupOnlyBtn').addEventListener('click', () => setDisplayMode('group_only'));
     document.getElementById('refreshSimilarBtn').addEventListener('click', refreshSimilarCars);
     document.getElementById('resetCarsBtn').addEventListener('click', () => { shownCars = []; alert('✅ История машин сброшена!'); });
     
