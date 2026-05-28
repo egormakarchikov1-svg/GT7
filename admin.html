@@ -66,8 +66,8 @@
         .lock-btn.locked, .settings-lock-btn.locked { background: #ef4444; color: white; }
         .lock-btn.unlocked, .settings-lock-btn.unlocked { background: #22c55e; color: white; }
         .header-icon { width: 30px; height: 30px; object-fit: contain; }
-        .icon-container { min-height: 90px; margin-bottom: 8px; }
-        .car-icon, .track-icon { max-width: 100%; max-height: 150px; width: auto; height: auto; object-fit: contain; }
+        .icon-container { min-height: 90px; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; }
+        .car-icon, .track-icon { max-width: 100%; max-height: 80px; width: auto; height: auto; object-fit: contain; }
         .param-value, .category-value {
             font-size: 16px; font-weight: 600; color: #f1f5f9; background: #0f172a80;
             padding: 8px 10px; border-radius: 16px; margin-top: 6px; width: 100%; text-align: center;
@@ -129,6 +129,7 @@
             .params-grid { gap: 6px; grid-template-columns: 1fr !important; }
             .param-label { font-size: 10px; padding: 5px 10px; }
             .time-x-badge { font-size: 11px; padding: 2px 6px; }
+            .car-icon, .track-icon { max-height: 60px; }
         }
         
         #progressBar {
@@ -149,6 +150,11 @@
         @keyframes shimmer {
             0% { transform: translateX(-100%); }
             100% { transform: translateX(100%); }
+        }
+        
+        .icon-error {
+            font-size: 48px;
+            opacity: 0.7;
         }
     </style>
 </head>
@@ -171,13 +177,15 @@
                     <div class="param-header">
                         <button class="lock-btn unlocked" data-param="car">🔓</button>
                         <div class="param-label">
-                            <img src="car-icon.png" class="header-icon" alt="car">
+                            <img src="car-icon.png" class="header-icon" alt="car" onerror="this.style.display='none'; this.nextSibling.style.display='inline';">
+                            <span style="display:none;">🚗</span>
                             <span>МАШИНА</span>
                         </div>
                         <div style="width: 48px;"></div>
                     </div>
                     <div class="icon-container">
-                        <img class="car-icon" id="carIcon" src="" alt="Иконка" style="display: none;">
+                        <img class="car-icon" id="carIcon" src="" alt="Иконка" style="display: none;" onerror="this.style.display='none'; document.getElementById('carIconFallback').style.display='flex';">
+                        <div id="carIconFallback" class="car-icon icon-error" style="display: none; align-items: center; justify-content: center;">🏎️</div>
                     </div>
                     <div class="param-value" id="carValue">—</div>
                 </div>
@@ -186,13 +194,15 @@
                     <div class="param-header">
                         <button class="lock-btn unlocked" data-param="track">🔓</button>
                         <div class="param-label">
-                            <img src="track-icon.png" class="header-icon" alt="track">
+                            <img src="track-icon.png" class="header-icon" alt="track" onerror="this.style.display='none'; this.nextSibling.style.display='inline';">
+                            <span style="display:none;">🏁</span>
                             <span>ТРАССА</span>
                         </div>
                         <div style="width: 48px;"></div>
                     </div>
                     <div class="icon-container">
-                        <img class="track-icon" id="trackIcon" src="" alt="Иконка" style="display: none;">
+                        <img class="track-icon" id="trackIcon" src="" alt="Иконка" style="display: none;" onerror="this.style.display='none'; document.getElementById('trackIconFallback').style.display='flex';">
+                        <div id="trackIconFallback" class="track-icon icon-error" style="display: none; align-items: center; justify-content: center;">🛣️</div>
                     </div>
                     <div class="param-value" id="trackValue">—</div>
                 </div>
@@ -225,7 +235,8 @@
                 <div class="settings-item" data-param="weather">
                     <div class="settings-header">
                         <div class="settings-label">
-                            <img src="https://images.icon-icons.com/1603/PNG/96/weather-forcast-storm-rain-thunder-day_108615.png" class="settings-icon">
+                            <img src="https://images.icon-icons.com/1603/PNG/96/weather-forcast-storm-rain-thunder-day_108615.png" class="settings-icon" onerror="this.style.display='none'; this.nextSibling.style.display='inline';">
+                            <span style="display:none;">🌤️</span>
                             <span>ПОГОДА</span>
                         </div>
                         <button class="settings-lock-btn unlocked" data-param="weather">🔓</button>
@@ -236,7 +247,8 @@
                 <div class="settings-item" data-param="time">
                     <div class="settings-header">
                         <div class="settings-label">
-                            <img src="https://images.icon-icons.com/3780/PNG/96/clock_timer_calendar_alarm_date_schedule_hour_watch_stopwatch_time_icon_231897.png" class="settings-icon">
+                            <img src="https://images.icon-icons.com/3780/PNG/96/clock_timer_calendar_alarm_date_schedule_hour_watch_stopwatch_time_icon_231897.png" class="settings-icon" onerror="this.style.display='none'; this.nextSibling.style.display='inline';">
+                            <span style="display:none;">⏰</span>
                             <span>ВРЕМЯ</span>
                         </div>
                         <button class="settings-lock-btn unlocked" data-param="time">🔓</button>
@@ -246,7 +258,8 @@
                 <div class="settings-item" data-param="tires">
                     <div class="settings-header">
                         <div class="settings-label">
-                            <img src="https://images.icon-icons.com/577/PNG/96/Wheel_icon-icons.com_54891.png" class="settings-icon">
+                            <img src="https://images.icon-icons.com/577/PNG/96/Wheel_icon-icons.com_54891.png" class="settings-icon" onerror="this.style.display='none'; this.nextSibling.style.display='inline';">
+                            <span style="display:none;">🛞</span>
                             <span>ИЗНОС ШИН</span>
                         </div>
                         <button class="settings-lock-btn unlocked" data-param="tires">🔓</button>
@@ -256,7 +269,8 @@
                 <div class="settings-item" data-param="fuel">
                     <div class="settings-header">
                         <div class="settings-label">
-                            <img src="https://images.icon-icons.com/1448/PNG/96/42568fuelpump_98960.png" class="settings-icon">
+                            <img src="https://images.icon-icons.com/1448/PNG/96/42568fuelpump_98960.png" class="settings-icon" onerror="this.style.display='none'; this.nextSibling.style.display='inline';">
+                            <span style="display:none;">⛽</span>
                             <span>РАСХОД ТОПЛИВА</span>
                         </div>
                         <button class="settings-lock-btn unlocked" data-param="fuel">🔓</button>
@@ -325,7 +339,7 @@
     let adminAccessGranted = false;
     
     // ============================================
-    // МАССИВЫ ДАННЫХ (без списков машин и трасс)
+    // МАССИВЫ ДАННЫХ
     // ============================================
     const carsDatabase = [
     { name: "Abarth 500 '09", rating: 415.44, category: "", powerToWeight: 0.13, hp: 135, torque: 180.2, weight: 1035, icon: "car_icons/car1973.png" },
@@ -890,12 +904,10 @@
     { name: "Xiaomi SU7 Ultra '25", rating: 703.90, category: "", powerToWeight: 0.65, hp: 1548, torque: "-", weight: 2360, icon: "car_icons/car3599.png" },
     { name: "Zagato IsoRivolta VGT", rating: 676.87, category: "", powerToWeight: 0.49, hp: 567, torque: 579.9, weight: 1150, icon: "car_icons/car2122.png" },
     { name: "ŠKODA VGT", rating: 851.04, category: "", powerToWeight: 0.82, hp: 1087, torque: "-", weight: 1300, icon: "car_icons/car3542.png" }
-];
+    ];
 
-
-    
     const tracksData = [
-     { name: "Франция Alsace - Деревня", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 5.423 },
+    { name: "Франция Alsace - Деревня", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 5.423 },
     { name: "Франция Alsace - Деревня (обратн.)", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 5.423 },
     { name: "Франция Alsace - тестовая трасса", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 2.118 },
     { name: "Франция Alsace - тестовая трасса (обратн.)", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 2.118 },
@@ -983,7 +995,7 @@
     { name: "США Watkins Glen (короткая трасса)", weather: ["dry"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 3.942 },
     { name: "США WeatherTech Raceway Laguna Seca", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки"], length: 3.602 },
     { name: "ОАЭ Yas Marina Circuit", weather: ["dry"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"], length: 5.281 }
-];
+    ];
     
     const categories = [
         { name: "Gr.1", icon: "⚡", description: "Гоночные прототипы", maxSpeed: 320 },
@@ -1040,6 +1052,93 @@
         { name: "Ночь", icon: "🌚" },
         { name: "Полночь", icon: "🌕" }
     ];
+    
+    // ============================================
+    // ФУНКЦИЯ ДЛЯ ПОЛУЧЕНИЯ ИКОНКИ ТРАССЫ
+    // ============================================
+    function getTrackIcon(trackName) {
+        if (trackName.includes("Alsace")) return "track_icons/bbe708-D-n15MKA.png";
+        if (trackName.includes("Lago Maggiore")) return "track_icons/39f155-Dg_fFdVS.png";
+        if (trackName.includes("Monza")) return "track_icons/f8bd64-VsJVPuq0.png";
+        if (trackName.includes("Interlagos")) return "track_icons/fe330b-CkMt1pQe.png";
+        if (trackName.includes("Autopolis")) return "track_icons/8d9953-CpR-SgHS.png";
+        if (trackName.includes("Blue Moon")) return "track_icons/971481-BdMNGGxX.png";
+        if (trackName.includes("Brands Hatch")) return "track_icons/f3d2aa-Bznbpc1M.png";
+        if (trackName.includes("Circuit Gilles")) return "track_icons/4b2a08-Ba_IZ90g.png";
+        if (trackName.includes("Barcelona")) return "track_icons/083de2-BAGcmPUI.png";
+        if (trackName.includes("Sainte-Croix")) return "track_icons/a768c9-D5wwglAF.png";
+        if (trackName.includes("Spa")) return "track_icons/000971-B75flT8v.png";
+        if (trackName.includes("Daytona")) return "track_icons/d1f17e-BDsRccUh.png";
+        if (trackName.includes("Deep Forest")) return "track_icons/c81494-mSWpEt3H.png";
+        if (trackName.includes("Dragon Trail")) return "track_icons/08df62-C045_y3b.png";
+        if (trackName.includes("Eiger")) return "track_icons/678583-Clq7km73.png";
+        if (trackName.includes("Fuji")) return "track_icons/664e17-DkicWsJ5.png";
+        if (trackName.includes("Grand Valley")) return "track_icons/df54ec-BTV8E4Ol.png";
+        if (trackName.includes("Le Mans") || trackName.includes("Heures")) return "track_icons/1d5980-BtTwZ0Sf.png";
+        if (trackName.includes("High Speed Ring")) return "track_icons/9a42fb-ctw1_rUB.png";
+        if (trackName.includes("Kyoto")) return "track_icons/16ccbf-HZopm0Jc.png";
+        if (trackName.includes("Road Atlanta")) return "track_icons/051834-BK1vS4TT.png";
+        if (trackName.includes("Mount Panorama")) return "track_icons/28b64f-DwW557Cx.png";
+        if (trackName.includes("Nürburgring")) return "track_icons/246f6d-B2a8UX0a.png";
+        if (trackName.includes("Red Bull Ring")) return "track_icons/f99788-CkF30Q0q.png";
+        if (trackName.includes("Sardegna")) return "track_icons/748156-BVeffrVD.png";
+        if (trackName.includes("Suzuka")) return "track_icons/fd167d-J52xhRm4.png";
+        if (trackName.includes("Tokyo Expressway")) return "track_icons/e9dd33-B7sGBTmw.png";
+        if (trackName.includes("Trial Mountain")) return "track_icons/e60841-DkNFRL37.png";
+        if (trackName.includes("Tsukuba")) return "track_icons/c5de8a-DX9dzSPz.png";
+        if (trackName.includes("Watkins Glen")) return "track_icons/e6ef89-CkruxU9Z.png";
+        if (trackName.includes("Laguna Seca")) return "track_icons/c75e61-DBxJ7RQM.png";
+        if (trackName.includes("Yas Marina")) return "track_icons/27adb9-DCBqBoAB.png";
+        return null;
+    }
+    
+    // Функция для отображения иконки машины
+    function displayCarIcon(carIconPath) {
+        const carIcon = document.getElementById('carIcon');
+        const carIconFallback = document.getElementById('carIconFallback');
+        if (carIconPath && carIconPath !== "") {
+            carIcon.src = carIconPath;
+            carIcon.style.display = "block";
+            carIconFallback.style.display = "none";
+        } else {
+            carIcon.style.display = "none";
+            carIconFallback.style.display = "flex";
+        }
+    }
+    
+    // Функция для отображения иконки трассы
+    function displayTrackIcon(trackIconPath) {
+        const trackIcon = document.getElementById('trackIcon');
+        const trackIconFallback = document.getElementById('trackIconFallback');
+        if (trackIconPath) {
+            trackIcon.src = trackIconPath;
+            trackIcon.style.display = "block";
+            trackIconFallback.style.display = "none";
+        } else {
+            trackIcon.style.display = "none";
+            trackIconFallback.style.display = "flex";
+        }
+    }
+    
+    // Функция для получения emoji автомобиля (запасной вариант)
+    function getCarEmoji(carName) {
+        const name = carName.toLowerCase();
+        if (name.includes('ferrari')) return '🐎🏎️';
+        if (name.includes('lamborghini')) return '🐂🏎️';
+        if (name.includes('porsche')) return '🐎🏎️';
+        if (name.includes('bmw')) return '💨🏎️';
+        if (name.includes('mercedes') || name.includes('amg')) return '⭐🏎️';
+        if (name.includes('audi')) return '🔵🏎️';
+        if (name.includes('ford') || name.includes('mustang')) return '🐎🏎️';
+        if (name.includes('chevrolet') || name.includes('corvette')) return '🏁🏎️';
+        if (name.includes('nissan') || name.includes('gtr')) return '🇯🇵🏎️';
+        if (name.includes('toyota') || name.includes('supra')) return '🇯🇵🏎️';
+        if (name.includes('honda') || name.includes('nsx')) return '🇯🇵🏎️';
+        if (name.includes('mazda')) return '🇯🇵🏎️';
+        if (name.includes('subaru')) return '🇯🇵🏎️';
+        if (name.includes('mitsubishi')) return '🇯🇵🏎️';
+        return '🏎️';
+    }
     
     // ============================================
     // НОВАЯ ФУНКЦИЯ: РАСЧЁТ ОПТИМАЛЬНЫХ КРУГОВ
@@ -1146,43 +1245,6 @@
     function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
     function getRandomXValue() { return `X${Math.floor(Math.random() * 20) + 1}`; }
     function getRandomLaps() { return Math.floor(Math.random() * 23) + 3; }
-    
-    function getTrackIcon(trackName) {
-    // Скопируйте полную функцию из index.html
-    if (trackName.includes("Alsace")) return "track_icons/bbe708-D-n15MKA.png";
-    if (trackName.includes("Lago Maggiore")) return "track_icons/39f155-Dg_fFdVS.png";
-    if (trackName.includes("Monza")) return "track_icons/f8bd64-VsJVPuq0.png";
-    if (trackName.includes("Interlagos")) return "track_icons/fe330b-CkMt1pQe.png";
-    if (trackName.includes("Autopolis")) return "track_icons/8d9953-CpR-SgHS.png";
-    if (trackName.includes("Blue Moon")) return "track_icons/971481-BdMNGGxX.png";
-    if (trackName.includes("Brands Hatch")) return "track_icons/f3d2aa-Bznbpc1M.png";
-    if (trackName.includes("Circuit Gilles")) return "track_icons/4b2a08-Ba_IZ90g.png";
-    if (trackName.includes("Barcelona")) return "track_icons/083de2-BAGcmPUI.png";
-    if (trackName.includes("Sainte-Croix")) return "track_icons/a768c9-D5wwglAF.png";
-    if (trackName.includes("Spa")) return "track_icons/000971-B75flT8v.png";
-    if (trackName.includes("Daytona")) return "track_icons/d1f17e-BDsRccUh.png";
-    if (trackName.includes("Deep Forest")) return "track_icons/c81494-mSWpEt3H.png";
-    if (trackName.includes("Dragon Trail")) return "track_icons/08df62-C045_y3b.png";
-    if (trackName.includes("Eiger")) return "track_icons/678583-Clq7km73.png";
-    if (trackName.includes("Fuji")) return "track_icons/664e17-DkicWsJ5.png";
-    if (trackName.includes("Grand Valley")) return "track_icons/df54ec-BTV8E4Ol.png";
-    if (trackName.includes("Le Mans") || trackName.includes("Heures")) return "track_icons/1d5980-BtTwZ0Sf.png";
-    if (trackName.includes("High Speed Ring")) return "track_icons/9a42fb-ctw1_rUB.png";
-    if (trackName.includes("Kyoto")) return "track_icons/16ccbf-HZopm0Jc.png";
-    if (trackName.includes("Road Atlanta")) return "track_icons/051834-BK1vS4TT.png";
-    if (trackName.includes("Mount Panorama")) return "track_icons/28b64f-DwW557Cx.png";
-    if (trackName.includes("Nürburgring")) return "track_icons/246f6d-B2a8UX0a.png";
-    if (trackName.includes("Red Bull Ring")) return "track_icons/f99788-CkF30Q0q.png";
-    if (trackName.includes("Sardegna")) return "track_icons/748156-BVeffrVD.png";
-    if (trackName.includes("Suzuka")) return "track_icons/fd167d-J52xhRm4.png";
-    if (trackName.includes("Tokyo Expressway")) return "track_icons/e9dd33-B7sGBTmw.png";
-    if (trackName.includes("Trial Mountain")) return "track_icons/e60841-DkNFRL37.png";
-    if (trackName.includes("Tsukuba")) return "track_icons/c5de8a-DX9dzSPz.png";
-    if (trackName.includes("Watkins Glen")) return "track_icons/e6ef89-CkruxU9Z.png";
-    if (trackName.includes("Laguna Seca")) return "track_icons/c75e61-DBxJ7RQM.png";
-    if (trackName.includes("Yas Marina")) return "track_icons/27adb9-DCBqBoAB.png";
-    return "track_icons/placeholder.png";
-}
     
     function calculateSimilarity(car1, car2) {
         const maxRating = 1500, maxHp = 2000, maxTorque = 2000, maxWeight = 3000, maxPtw = 2.5;
@@ -1351,21 +1413,16 @@
                 const car = carsDatabase.find(c => c.name === tableData.car_name);
                 if (car) {
                     document.getElementById('carValue').textContent = car.name;
-                    document.getElementById('carIcon').src = car.icon;
-                    document.getElementById('carIcon').style.display = "block";
+                    displayCarIcon(car.icon);
                     displaySimilarCars(car);
                 }
                 
                 const track = tracksData.find(t => t.name === tableData.track_name);
                 if (track) {
-                    // Отображаем трассу с количеством кругов в красном кружке
                     const laps = tableData.laps || calculateOptimalLaps(track.length, tableData.category_name) || getRandomLaps();
                     document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
                     const iconUrl = getTrackIcon(track.name);
-                    if (iconUrl) {
-                        document.getElementById('trackIcon').src = iconUrl;
-                        document.getElementById('trackIcon').style.display = "block";
-                    }
+                    displayTrackIcon(iconUrl);
                 }
                 
                 const category = categories.find(c => c.name === tableData.category_name);
@@ -1454,7 +1511,6 @@
                 selectedTrack = getRandomTrackWithoutRepeat();
                 newCombo.track_name = selectedTrack.name;
                 
-                // РАСЧЁТ ОПТИМАЛЬНЫХ КРУГОВ
                 const optimalLaps = calculateOptimalLaps(selectedTrack.length, newCombo.category_name);
                 newCombo.laps = optimalLaps;
                 
@@ -1525,11 +1581,16 @@
             updateProgressBar(98, '🏆 Готово');
             await sleep(200);
             
-            document.getElementById('carValue').textContent = newCombo.car_name || '—';
+            const selectedCar = carsDatabase.find(c => c.name === newCombo.car_name);
+            if (selectedCar) {
+                document.getElementById('carValue').textContent = selectedCar.name;
+                displayCarIcon(selectedCar.icon);
+            }
             
-            // Отображение трассы с количеством кругов
             const lapsToShow = newCombo.laps || calculateOptimalLaps(selectedTrack?.length, newCombo.category_name) || getRandomLaps();
             document.getElementById('trackValue').innerHTML = `${newCombo.track_name} <span class="time-x-badge">${lapsToShow} кругов</span>`;
+            const trackIconUrl = getTrackIcon(newCombo.track_name);
+            displayTrackIcon(trackIconUrl);
             
             const cat = categories.find(c => c.name === newCombo.category_name);
             if (cat) document.getElementById('categoryText').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
