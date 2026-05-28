@@ -1284,25 +1284,25 @@
         return topSimilar.slice(0, count);
     }
     
-    function displaySimilarCars(referenceCar) {
-        if (!referenceCar) return;
-        currentRefCar = referenceCar;
-        const similarCars = findSimilarCars(referenceCar, 5, false);
-        document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${referenceCar.name}</strong><br>⭐ Рейтинг: ${referenceCar.rating.toFixed(0)} | 🔧 ${referenceCar.hp} л.с. | ⚙️ ${typeof referenceCar.torque === 'number' ? referenceCar.torque : '?'} Н·м | ⚖️ ${referenceCar.weight} кг | ⚡ ${(referenceCar.powerToWeight * 1000).toFixed(1)} л.с./т`;
-        document.getElementById('similarList').innerHTML = similarCars.map((car, index) => `
-            <li onclick="selectCar('${car.name.replace(/'/g, "\\'")}')">
-                <span class="car-name">${index + 1}. ${car.name}</span>
-                <div class="car-stats">
-                    <span>⭐ ${car.rating.toFixed(0)}</span>
-                    <span>🔧 ${car.hp} л.с.</span>
-                    <span>⚙️ ${typeof car.torque === 'number' ? car.torque : '?'}</span>
-                    <span>⚖️ ${car.weight} кг</span>
-                    <span>⚡ ${(car.powerToWeight * 1000).toFixed(1)}</span>
-                </div>
-                <span class="similarity-badge">${car.similarity.toFixed(1)}%</span>
-            </li>
-        `).join('');
-    }
+ function displaySimilarCars(referenceCar) {
+    if (!referenceCar) return;
+    currentRefCar = referenceCar;  // Эта строка должна быть
+    const similarCars = findSimilarCars(referenceCar, 5, false);
+    document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${referenceCar.name}</strong><br>⭐ Рейтинг: ${referenceCar.rating.toFixed(0)} | 🔧 ${referenceCar.hp} л.с. | ⚙️ ${typeof referenceCar.torque === 'number' ? referenceCar.torque : '?'} Н·м | ⚖️ ${referenceCar.weight} кг | ⚡ ${(referenceCar.powerToWeight * 1000).toFixed(1)} л.с./т`;
+    document.getElementById('similarList').innerHTML = similarCars.map((car, index) => `
+        <li onclick="selectCar('${car.name.replace(/'/g, "\\'")}')">
+            <span class="car-name">${index + 1}. ${car.name}</span>
+            <div class="car-stats">
+                <span>⭐ ${car.rating.toFixed(0)}</span>
+                <span>🔧 ${car.hp} л.с.</span>
+                <span>⚙️ ${typeof car.torque === 'number' ? car.torque : '?'}</span>
+                <span>⚖️ ${car.weight} кг</span>
+                <span>⚡ ${(car.powerToWeight * 1000).toFixed(1)}</span>
+            </div>
+            <span class="similarity-badge">${car.similarity.toFixed(1)}%</span>
+        </li>
+    `).join('');
+}
     
     function selectCar(carName) {
         const car = carsDatabase.find(c => c.name === carName);
@@ -1389,60 +1389,61 @@
     }
     
     // ============================================
-    // ЗАГРУЗКА ТЕКУЩЕЙ КОМБИНАЦИИ
-    // ============================================
-    async function loadCurrentCombo() {
-        try {
-            const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?tqx=out:json`;
-            const response = await fetch(url);
-            const text = await response.text();
-            const jsonStart = text.indexOf('(');
-            const jsonEnd = text.lastIndexOf(')');
-            const jsonStr = text.substring(jsonStart + 1, jsonEnd);
-            const data = JSON.parse(jsonStr);
-            
-            const tableData = {};
-            for (let i = 0; i < data.table.rows.length; i++) {
-                const row = data.table.rows[i];
-                const key = row.c[0]?.v;
-                const value = row.c[1]?.v;
-                if (key && value !== undefined && value !== null) tableData[key] = value;
-            }
-            
-            if (tableData.active === 'TRUE') {
-                const car = carsDatabase.find(c => c.name === tableData.car_name);
-                if (car) {
-                    document.getElementById('carValue').textContent = car.name;
-                    displayCarIcon(car.icon);
-                    displaySimilarCars(car);
-                }
-                
-                const track = tracksData.find(t => t.name === tableData.track_name);
-                if (track) {
-                    const laps = tableData.laps || calculateOptimalLaps(track.length, tableData.category_name) || getRandomLaps();
-                    document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
-                    const iconUrl = getTrackIcon(track.name);
-                    displayTrackIcon(iconUrl);
-                }
-                
-                const category = categories.find(c => c.name === tableData.category_name);
-                if (category) document.getElementById('categoryText').innerHTML = `${category.icon} ${category.name} (${category.description})`;
-                
-                let weatherObj = weathers.find(w => w.name === tableData.weather_name);
-                if (weatherObj) document.getElementById('weatherValue').innerHTML = `${weatherObj.icon} ${weatherObj.name}`;
-                else document.getElementById('weatherValue').innerHTML = tableData.weather_name;
-                
-                const timeObj = times.find(t => t.name === tableData.time_name);
-                if (timeObj) document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name} <span class="time-x-badge">${tableData.time_multiplier || 'X1'}</span>`;
-                else document.getElementById('timeValue').innerHTML = `${tableData.time_name} <span class="time-x-badge">${tableData.time_multiplier || 'X1'}</span>`;
-                
-                if (tableData.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${tableData.tires_value}</span>`;
-                if (tableData.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${tableData.fuel_value}</span>`;
-            }
-        } catch(e) {
-            console.error('Ошибка загрузки комбинации:', e);
+// ЗАГРУЗКА ТЕКУЩЕЙ КОМБИНАЦИИ (ИСПРАВЛЕНО - СОХРАНЯЕТ РЕФЕРЕНСНУЮ МАШИНУ)
+// ============================================
+async function loadCurrentCombo() {
+    try {
+        const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?tqx=out:json`;
+        const response = await fetch(url);
+        const text = await response.text();
+        const jsonStart = text.indexOf('(');
+        const jsonEnd = text.lastIndexOf(')');
+        const jsonStr = text.substring(jsonStart + 1, jsonEnd);
+        const data = JSON.parse(jsonStr);
+        
+        const tableData = {};
+        for (let i = 0; i < data.table.rows.length; i++) {
+            const row = data.table.rows[i];
+            const key = row.c[0]?.v;
+            const value = row.c[1]?.v;
+            if (key && value !== undefined && value !== null) tableData[key] = value;
         }
+        
+        if (tableData.active === 'TRUE') {
+            const car = carsDatabase.find(c => c.name === tableData.car_name);
+            if (car) {
+                document.getElementById('carValue').textContent = car.name;
+                displayCarIcon(car.icon);
+                // ВАЖНО: Сохраняем референсную машину и отображаем похожие авто
+                displaySimilarCars(car);
+            }
+            
+            const track = tracksData.find(t => t.name === tableData.track_name);
+            if (track) {
+                const laps = tableData.laps || calculateOptimalLaps(track.length, tableData.category_name) || getRandomLaps();
+                document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
+                const iconUrl = getTrackIcon(track.name);
+                displayTrackIcon(iconUrl);
+            }
+            
+            const category = categories.find(c => c.name === tableData.category_name);
+            if (category) document.getElementById('categoryText').innerHTML = `${category.icon} ${category.name} (${category.description})`;
+            
+            let weatherObj = weathers.find(w => w.name === tableData.weather_name);
+            if (weatherObj) document.getElementById('weatherValue').innerHTML = `${weatherObj.icon} ${weatherObj.name}`;
+            else document.getElementById('weatherValue').innerHTML = tableData.weather_name;
+            
+            const timeObj = times.find(t => t.name === tableData.time_name);
+            if (timeObj) document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name} <span class="time-x-badge">${tableData.time_multiplier || 'X1'}</span>`;
+            else document.getElementById('timeValue').innerHTML = `${tableData.time_name} <span class="time-x-badge">${tableData.time_multiplier || 'X1'}</span>`;
+            
+            if (tableData.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${tableData.tires_value}</span>`;
+            if (tableData.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${tableData.fuel_value}</span>`;
+        }
+    } catch(e) {
+        console.error('Ошибка загрузки комбинации:', e);
     }
+}
     
     function toggleLock(param) {
         locks[param] = !locks[param];
