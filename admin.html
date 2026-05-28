@@ -1151,16 +1151,16 @@ function declensionLaps(count) {
         const lapTimeHours = trackLengthKm / avgSpeedKmh;
         const lapTimeMinutes = lapTimeHours * 60;
         
-        let targetRaceMinutes = 22;
-        if (categoryName === 'Gr.1') targetRaceMinutes = 30;
-        else if (categoryName === 'Gr.2') targetRaceMinutes = 28;
-        else if (categoryName === 'Gr.3') targetRaceMinutes = 25;
-        else targetRaceMinutes = 22;
+        let targetRaceMinutes = 18;
+        if (categoryName === 'Gr.1') targetRaceMinutes = 20;
+        else if (categoryName === 'Gr.2') targetRaceMinutes = 18;
+        else if (categoryName === 'Gr.3') targetRaceMinutes = 15;
+        else targetRaceMinutes = 18;
         
         let optimalLaps = Math.floor(targetRaceMinutes / lapTimeMinutes);
         optimalLaps = Math.max(3, Math.min(optimalLaps, 25));
         
-        const randomFactor = 0.85 + Math.random() * 0.3;
+        const randomFactor = 0.6 + Math.random() * 0.3;
         optimalLaps = Math.floor(optimalLaps * randomFactor);
         optimalLaps = Math.max(3, Math.min(optimalLaps, 25));
         
