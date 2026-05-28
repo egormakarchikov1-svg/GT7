@@ -1120,25 +1120,25 @@
         }
     }
     
-    // Функция для получения emoji автомобиля (запасной вариант)
-    function getCarEmoji(carName) {
-        const name = carName.toLowerCase();
-        if (name.includes('ferrari')) return '🐎🏎️';
-        if (name.includes('lamborghini')) return '🐂🏎️';
-        if (name.includes('porsche')) return '🐎🏎️';
-        if (name.includes('bmw')) return '💨🏎️';
-        if (name.includes('mercedes') || name.includes('amg')) return '⭐🏎️';
-        if (name.includes('audi')) return '🔵🏎️';
-        if (name.includes('ford') || name.includes('mustang')) return '🐎🏎️';
-        if (name.includes('chevrolet') || name.includes('corvette')) return '🏁🏎️';
-        if (name.includes('nissan') || name.includes('gtr')) return '🇯🇵🏎️';
-        if (name.includes('toyota') || name.includes('supra')) return '🇯🇵🏎️';
-        if (name.includes('honda') || name.includes('nsx')) return '🇯🇵🏎️';
-        if (name.includes('mazda')) return '🇯🇵🏎️';
-        if (name.includes('subaru')) return '🇯🇵🏎️';
-        if (name.includes('mitsubishi')) return '🇯🇵🏎️';
-        return '🏎️';
+    // Функция для правильного склонения слова "круг"
+function declensionLaps(count) {
+    const lastDigit = count % 10;
+    const lastTwoDigits = count % 100;
+    
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 19) {
+        return `${count} кругов`;
     }
+    
+    if (lastDigit === 1) {
+        return `${count} круг`;
+    }
+    
+    if (lastDigit >= 2 && lastDigit <= 4) {
+        return `${count} круга`;
+    }
+    
+    return `${count} кругов`;
+}
     
     // ============================================
     // НОВАЯ ФУНКЦИЯ: РАСЧЁТ ОПТИМАЛЬНЫХ КРУГОВ
@@ -1421,7 +1421,7 @@ async function loadCurrentCombo() {
             const track = tracksData.find(t => t.name === tableData.track_name);
             if (track) {
                 const laps = tableData.laps || calculateOptimalLaps(track.length, tableData.category_name) || getRandomLaps();
-                document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
+               document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${declensionLaps(laps)}</span>`;
                 const iconUrl = getTrackIcon(track.name);
                 displayTrackIcon(iconUrl);
             }
@@ -1525,7 +1525,7 @@ async function loadCurrentCombo() {
                 const optimalLaps = calculateOptimalLaps(selectedTrack.length, newCombo.category_name);
                 newCombo.laps = optimalLaps;
                 
-                updateProgressBar(58, `🛣️ Трасса: ${selectedTrack.name}, ${optimalLaps} кругов`);
+                updateProgressBar(58, `🛣️ Трасса: ${selectedTrack.name}, ${declensionLaps(optimalLaps)}`);
                 await sleep(150);
                 updateProgressBar(60, '🛣️ Готово');
             } else {
@@ -1599,7 +1599,7 @@ async function loadCurrentCombo() {
             }
             
             const lapsToShow = newCombo.laps || calculateOptimalLaps(selectedTrack?.length, newCombo.category_name) || getRandomLaps();
-            document.getElementById('trackValue').innerHTML = `${newCombo.track_name} <span class="time-x-badge">${lapsToShow} кругов</span>`;
+            document.getElementById('trackValue').innerHTML = `${newCombo.track_name} <span class="time-x-badge">${declensionLaps(lapsToShow)}</span>`;
             const trackIconUrl = getTrackIcon(newCombo.track_name);
             displayTrackIcon(trackIconUrl);
             
