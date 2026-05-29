@@ -2024,7 +2024,7 @@ async function loadSyncedCombo() {
             const val = row.c[1]?.v;
             if (key && val !== undefined) table[key] = val;
         }
-                if (table.active === 'TRUE') {
+        if (table.active === 'TRUE') {
             syncedModeActive = true;
             syncedComboData = table;
             const displayMode = table.display_mode || 'all';
@@ -2039,6 +2039,12 @@ async function loadSyncedCombo() {
             document.getElementById('adminModeBanner').style.display = 'none';
             return null;
         }
+    } catch(e) {
+        console.warn('Ошибка синхронизации:', e);
+        syncedModeActive = false;
+        document.getElementById('adminModeBanner').style.display = 'none';
+        return null;
+    }
 }
 
 function updateVisibilityByDisplayMode(displayMode) {
