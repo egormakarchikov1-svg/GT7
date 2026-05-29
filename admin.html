@@ -388,14 +388,6 @@
             <div id="progressStep" style="font-size: 10px; color: #aaa; margin-top: 5px; text-align: center;">Подготовка...</div>
         </div>
         
-        <!-- Секция для копирования ссылки -->
-        <div class="share-section">
-            <h4 style="color: #3b82f6; margin-bottom: 10px;">📋 ССЫЛКА ДЛЯ ПОЛЬЗОВАТЕЛЕЙ</h4>
-            <p style="font-size: 12px; margin-bottom: 8px;">Перешлите эту ссылку вашим друзьям:</p>
-            <code id="shareLink"></code>
-            <button id="copyLinkBtn" class="copy-btn">📋 КОПИРОВАТЬ</button>
-        </div>
-        
         <div id="status" class="status"></div>
     </div>
 </div>
@@ -1710,25 +1702,12 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
         document.getElementById('adminContent').style.display = 'block';
         document.getElementById('adminName').innerHTML = `👋 Здравствуйте, ${result.name}!`;
         
-        const baseUrl = window.location.href.replace('admin.html', 'index.html').split('?')[0];
-        const userUrl = `${baseUrl}?admin=${adminId}`;
-        document.getElementById('shareLink').innerHTML = userUrl;
-        
         loginStatus.style.display = 'none';
         loadCurrentCombo();
     } else {
         loginStatus.textContent = '❌ Неверный ID или пароль!';
         loginStatus.className = 'status error';
     }
-});
-
-document.getElementById('copyLinkBtn').addEventListener('click', () => {
-    const link = document.getElementById('shareLink').innerText;
-    navigator.clipboard.writeText(link);
-    const btn = document.getElementById('copyLinkBtn');
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '✅ СКОПИРОВАНО!';
-    setTimeout(() => { btn.innerHTML = originalText; }, 2000);
 });
 
 // ============================================
