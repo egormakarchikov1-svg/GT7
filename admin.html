@@ -206,13 +206,15 @@
     <h1>🏁 GT7 Random - Админ панель 🏁</h1>
     
     <!-- Форма входа -->
-    <div id="loginSection" class="login-form">
-        <h3 style="color: #ff4d4d; margin-bottom: 15px;">👑 Вход для администратора</h3>
-        <input type="text" id="adminId" placeholder="ID администратора" autocomplete="off">
-        <input type="password" id="adminPassword" placeholder="Пароль">
-        <button id="loginBtn" class="btn-main" style="background: #ff4d4d; min-width: auto;">ВОЙТИ</button>
-        <div id="loginStatus" class="status" style="display: none;"></div>
-    </div>
+  <div id="loginSection" class="login-form">
+    <h3 style="color: #ff4d4d; margin-bottom: 15px;">👑 Вход для администратора</h3>
+    <select id="adminSelect" style="padding: 12px; border-radius: 30px; width: 100%; max-width: 250px; margin-bottom: 10px; background: #1e293b; color: white; border: 1px solid #ff4d4d;">
+        <option value="">-- Выберите администратора --</option>
+    </select>
+    <input type="password" id="adminPassword" placeholder="Пароль">
+    <button id="loginBtn" class="btn-main" style="background: #ff4d4d; min-width: auto;">ВОЙТИ</button>
+    <div id="loginStatus" class="status" style="display: none;"></div>
+</div>
     
     <!-- Основной интерфейс админа (скрыт до входа) -->
     <div id="adminContent" style="display: none;">
@@ -1677,13 +1679,70 @@ async function checkAdmin(adminId, password) {
     });
 }
 
+    // ============================================
+// ЗАГРУЗКА СПИСКА АДМИНИСТРАТОРОВ
+// ============================================
+async function loadAdminsList() {
+    const select = document.getElementById('adminSelect');
+    if (!select) return;
+    
+    select.innerHTML = '<option value="">-- Выберите администратора --</option>';
+    
+    try {
+        const callbackName = 'jsonp_admins_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+        const url = `${APPS_SCRIPT_URL}?action=getAdmins&callback=${callbackName}&t=${Date.now()}`;
+        
+        const admins = await new Promise((resolve) => {
+            const timeout = setTimeout(() => {
+                if (window[callbackName]) delete window[callbackName];
+                resolve([]);
+            }, 10000);
+            
+            window[callbackName] = function(data) {
+                clearTimeout(timeout);
+                delete window[callbackName];
+                if (data && data.success && data.admins) {
+                    resolve(data.admins);
+                } else {
+                    resolve([]);
+                }
+            };
+            
+            const script = document.createElement('script');
+            script.src = url;
+            script.onerror = () => {
+                clearTimeout(timeout);
+                resolve([]);
+            };
+            document.body.appendChild(script);
+        });
+        
+        if (admins.length > 0) {
+            admins.forEach(admin => {
+                select.innerHTML += `<option value="${admin.id}">${admin.name}</option>`;
+            });
+        } else {
+            select.innerHTML += '<option value="admin1">admin1</option>';
+            select.innerHTML += '<option value="admin2">admin2</option>';
+            select.innerHTML += '<option value="admin3">admin3</option>';
+            select.innerHTML += '<option value="admin4">admin4</option>';
+        }
+    } catch(e) {
+        console.error('Ошибка загрузки админов:', e);
+        select.innerHTML += '<option value="admin1">admin1</option>';
+        select.innerHTML += '<option value="admin2">admin2</option>';
+        select.innerHTML += '<option value="admin3">admin3</option>';
+        select.innerHTML += '<option value="admin4">admin4</option>';
+    }
+}
+
 document.getElementById('loginBtn').addEventListener('click', async () => {
-    const adminId = document.getElementById('adminId').value.trim();
+    const adminId = document.getElementById('adminSelect').value.trim();
     const password = document.getElementById('adminPassword').value;
     const loginStatus = document.getElementById('loginStatus');
     
     if (!adminId || !password) {
-        loginStatus.textContent = '❌ Введите ID и пароль!';
+        loginStatus.textContent = '❌ Выберите админа и введите пароль!';
         loginStatus.className = 'status error';
         loginStatus.style.display = 'block';
         return;
@@ -1738,6 +1797,8 @@ document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
 });
 
 window.selectCar = selectCar;
+    // Загружаем список админов при загрузке страницы
+loadAdminsList();
 </script>
 </body>
 </html>
