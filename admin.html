@@ -404,7 +404,7 @@
 // ============================================
 // КОНСТАНТЫ И ПЕРЕМЕННЫЕ
 // ============================================
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxv45Ma_EYHKDIjVhPjAdAaVqKe9UQ4PYhiz3Hwb6O48K6nI33bh8yk9oEt4rp-aME1YQ/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxWQniQlhSEPTwiSb1fbxhGnQrtra6E_yBfLbxUEPvCq9qD4iDh9pzYC0KH3Ed-GGaU4Q/exec';
 const GOOGLE_SHEETS_ID = '1YAJUPE73Nxwe1oEF1xZBHkGj_zg_uGdW7VkTyHtEOOE';
 const ADMIN_SECRET_KEY = '939030312';
 
@@ -1581,11 +1581,8 @@ async function generateAndSave() {
         updateProgressBar(99, '📤 Сохранение комбинации...');
         await sleep(150);
         
-        await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newCombo)
-        });
+        // ✅ JSONP для POST запроса
+        await saveComboViaJSONP(newCombo);
         
         updateProgressBar(100, '✅ Готово!');
         await sleep(200);
@@ -1603,6 +1600,47 @@ async function generateAndSave() {
         document.getElementById('status').innerHTML = '✅ Новая комбинация сохранена! Все пользователи увидят её в течение 1-2 минут.';
         document.getElementById('status').className = 'status success';
     }, 1000);
+}
+
+// ✅ НОВАЯ ФУНКЦИЯ ДЛЯ СОХРАНЕНИЯ ЧЕРЕЗ JSONP
+function saveComboViaJSONP(data) {
+    return new Promise((resolve, reject) => {
+        const callbackName = 'jsonp_save_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+        const jsonData = encodeURIComponent(JSON.stringify(data));
+        const url = `${APPS_SCRIPT_URL}?action=saveCombo&data=${jsonData}&callback=${callbackName}&t=${Date.now()}`;
+        
+        const timeout = setTimeout(() => {
+            if (window[callbackName]) {
+                delete window[callbackName];
+                if (script && script.parentNode) document.body.removeChild(script);
+                reject(new Error('Таймаут сохранения'));
+            }
+        }, 10000);
+        
+        window[callbackName] = function(response) {
+            clearTimeout(timeout);
+            delete window[callbackName];
+            if (script && script.parentNode) document.body.removeChild(script);
+            
+            if (response && response.success) {
+                resolve(response);
+            } else {
+                reject(new Error(response?.error || 'Ошибка сохранения'));
+            }
+        };
+        
+        const script = document.createElement('script');
+        script.src = url;
+        script.onerror = function() {
+            clearTimeout(timeout);
+            if (window[callbackName]) {
+                delete window[callbackName];
+                if (script && script.parentNode) document.body.removeChild(script);
+            }
+            reject(new Error('Ошибка соединения при сохранении'));
+        };
+        document.body.appendChild(script);
+    });
 }
 
 // ============================================
