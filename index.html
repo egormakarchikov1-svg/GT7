@@ -2009,55 +2009,67 @@ async function loadSyncedCombo() {
     if (!userSyncEnabled || !currentAdminId) {
         console.log('❌ Синхронизация выключена или админ не выбран');
         syncedModeActive = false;
+        const banner = document.getElementById('adminModeBanner');
+        if (banner) banner.style.display = 'none';
         return null;
     }
     
-    try {
-        const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(currentAdminId)}`;
-        console.log('📡 Запрос:', url);
+    return new Promise((resolve) => {
+        const callbackName = 'jsonp_combo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+        const url = `${APPS_SCRIPT_URL}?action=getCurrentCombo&adminId=${encodeURIComponent(currentAdminId)}&callback=${callbackName}`;
+        console.log('📡 JSONP Запрос:', url);
         
-        const resp = await fetch(url);
-        const text = await resp.text();
-        
-        const jsonMatch = text.match(/google\.visualization\.Query\.setResponse\((.+)\)/);
-        if (!jsonMatch) {
-            console.error('❌ Не удалось распарсить ответ');
-            return null;
-        }
-        
-        const data = JSON.parse(jsonMatch[1]);
-        const table = {};
-        
-        if (data.table && data.table.rows) {
-            for (let i = 0; i < data.table.rows.length; i++) {
-                const row = data.table.rows[i];
-                const key = row.c[0]?.v;
-                const val = row.c[1]?.v;
-                if (key && val !== undefined && val !== '') {
-                    table[key] = val;
-                }
+        const timeout = setTimeout(() => {
+            if (window[callbackName]) {
+                delete window[callbackName];
+                document.body.removeChild(script);
+                console.log('❌ Таймаут JSONP запроса');
+                syncedModeActive = false;
+                resolve(null);
             }
-        }
+        }, 10000);
         
-        console.log('📊 Данные получены, active =', table.active);
+        window[callbackName] = function(data) {
+            clearTimeout(timeout);
+            delete window[callbackName];
+            document.body.removeChild(script);
+            
+            console.log('📊 Данные получены, active =', data?.active);
+            
+            if (data && (data.active === 'TRUE' || data.active === true)) {
+                console.log('✅ Админская комбинация АКТИВНА!');
+                syncedModeActive = true;
+                syncedComboData = data;
+                const banner = document.getElementById('adminModeBanner');
+                if (banner) {
+                    banner.style.display = 'block';
+                    banner.innerHTML = `👑 АКТИВНА КОМБИНАЦИЯ ОТ ${currentAdminId} 👑`;
+                }
+                resolve(data);
+            } else {
+                console.log('❌ active !== TRUE, комбинация не активна');
+                syncedModeActive = false;
+                syncedComboData = null;
+                const banner = document.getElementById('adminModeBanner');
+                if (banner) banner.style.display = 'none';
+                resolve(null);
+            }
+        };
         
-        if (table.active === 'TRUE') {
-            console.log('✅ Админская комбинация АКТИВНА!');
-            syncedModeActive = true;
-            syncedComboData = table;
-            return table;
-        }
-        
-        console.log('❌ active !== TRUE, комбинация не активна');
-        syncedModeActive = false;
-        syncedComboData = null;
-        return null;
-        
-    } catch(e) {
-        console.error('❌ Ошибка:', e);
-        syncedModeActive = false;
-        return null;
-    }
+        const script = document.createElement('script');
+        script.src = url;
+        script.onerror = function() {
+            clearTimeout(timeout);
+            if (window[callbackName]) {
+                delete window[callbackName];
+                document.body.removeChild(script);
+            }
+            console.error('❌ Ошибка JSONP запроса');
+            syncedModeActive = false;
+            resolve(null);
+        };
+        document.body.appendChild(script);
+    });
 }
 
 function applySyncedCombo(data) {
