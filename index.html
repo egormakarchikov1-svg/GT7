@@ -1890,8 +1890,24 @@ function selectCar(name) {
 }
 
 function refreshSimilarCars() {
-    if (currentRefCar) displaySimilarCars(currentRefCar);
-    else selectCar(carsDatabase[0].name);
+    if (currentRefCar) {
+        const randomSimilarCars = findSimilarCars(currentRefCar, 5, true);
+        document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${currentRefCar.name}</strong><br>⭐ Рейтинг: ${currentRefCar.rating.toFixed(0)} | 🔧 ${currentRefCar.hp} л.с. | ⚖️ ${currentRefCar.weight} кг`;
+        document.getElementById('similarList').innerHTML = randomSimilarCars.map((car, index) => `
+            <li onclick="selectCar('${car.name.replace(/'/g, "\\'")}')">
+                <span class="car-name">${index + 1}. ${car.name}</span>
+                <div class="car-stats">
+                    <span>⭐ ${car.rating.toFixed(0)}</span>
+                    <span>🔧 ${car.hp} л.с.</span>
+                    <span>⚖️ ${car.weight} кг</span>
+                </div>
+                <span class="similarity-badge">${car.similarity.toFixed(1)}%</span>
+            </li>
+        `).join('');
+    } else {
+        const randomCar = getRandomItem(carsDatabase);
+        displaySimilarCars(randomCar);
+    }
 }
 
 // ============================================
