@@ -1590,15 +1590,28 @@ async function loadAdmins() {
         const response = await fetch(url);
         const data = await response.json();
         
-        if (data.success && data.admins) {
-            const select = document.getElementById('adminSelect');
+        const select = document.getElementById('adminSelect');
+        
+        if (data.success && data.admins && data.admins.length > 0) {
+            // Если API вернул список — используем его
             select.innerHTML = '<option value="">-- Выберите администратора --</option>';
             data.admins.forEach(admin => {
                 select.innerHTML += `<option value="${admin.id}">${admin.name}</option>`;
             });
+        } else {
+            // Если API не вернул список — используем резервный (хардкод)
+            console.warn('API не вернул админов, использую резервный список');
+            select.innerHTML = '<option value="">-- Выберите администратора --</option>';
+            select.innerHTML += '<option value="admin1">Админ 1</option>';
+            select.innerHTML += '<option value="admin2">Админ 2</option>';
         }
     } catch(e) {
         console.error('Ошибка загрузки администраторов:', e);
+        // При ошибке сети — тоже хардкод
+        const select = document.getElementById('adminSelect');
+        select.innerHTML = '<option value="">-- Выберите администратора --</option>';
+        select.innerHTML += '<option value="admin1">Админ 1</option>';
+        select.innerHTML += '<option value="admin2">Админ 2</option>';
     }
 }
 
