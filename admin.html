@@ -404,7 +404,7 @@
 // ============================================
 // КОНСТАНТЫ И ПЕРЕМЕННЫЕ
 // ============================================
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyHo00oc87E9MZQ8glbspM3fDQbFne8gWN68RMytI92T84s1aP6miurotPL-749iGCg8A/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxv45Ma_EYHKDIjVhPjAdAaVqKe9UQ4PYhiz3Hwb6O48K6nI33bh8yk9oEt4rp-aME1YQ/exec';
 const GOOGLE_SHEETS_ID = '1YAJUPE73Nxwe1oEF1xZBHkGj_zg_uGdW7VkTyHtEOOE';
 const ADMIN_SECRET_KEY = '939030312';
 
@@ -1609,20 +1609,42 @@ async function generateAndSave() {
 // АДМИН-ВХОД
 // ============================================
 async function checkAdmin(adminId, password) {
-    try {
-        const url = `${APPS_SCRIPT_URL}?action=checkAdmin&adminId=${encodeURIComponent(adminId)}&password=${encodeURIComponent(password)}&t=${Date.now()}`;
-        const response = await fetch(url);
-        const text = await response.text();
-        const data = JSON.parse(text);
+    return new Promise((resolve) => {
+        const callbackName = 'jsonp_callback_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+        const url = `${APPS_SCRIPT_URL}?action=checkAdmin&adminId=${encodeURIComponent(adminId)}&password=${encodeURIComponent(password)}&callback=${callbackName}`;
         
-        if (data.success === true) {
-            return { success: true, admin_id: data.admin_id, name: data.name };
-        }
-        return { success: false, error: data.error || 'Неверный ID или пароль' };
-    } catch(e) {
-        console.error('Ошибка:', e);
-        return { success: false, error: 'Ошибка соединения' };
-    }
+        // Таймаут на случай ошибки
+        const timeout = setTimeout(() => {
+            if (window[callbackName]) {
+                delete window[callbackName];
+                document.body.removeChild(script);
+                resolve({ success: false, error: 'Превышено время ожидания' });
+            }
+        }, 10000);
+        
+        window[callbackName] = function(data) {
+            clearTimeout(timeout);
+            delete window[callbackName];
+            document.body.removeChild(script);
+            if (data.success === true) {
+                resolve({ success: true, admin_id: data.admin_id, name: data.name });
+            } else {
+                resolve({ success: false, error: data.error || 'Неверный ID или пароль' });
+            }
+        };
+        
+        const script = document.createElement('script');
+        script.src = url;
+        script.onerror = function() {
+            clearTimeout(timeout);
+            if (window[callbackName]) {
+                delete window[callbackName];
+                document.body.removeChild(script);
+                resolve({ success: false, error: 'Ошибка соединения' });
+            }
+        };
+        document.body.appendChild(script);
+    });
 }
 
 document.getElementById('loginBtn').addEventListener('click', async () => {
