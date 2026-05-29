@@ -1866,20 +1866,45 @@ function calculateSimilarity(car1, car2) {
     return Math.min(100, Math.max(0, similarity));
 }
 
-function findSimilarCars(ref, count = 5) {
-    return carsDatabase.filter(c => c.name !== ref.name).map(c => ({ ...c, similarity: calculateSimilarity(ref, c) })).sort((a,b) => b.similarity - a.similarity).slice(0, count);
+function findSimilarCars(referenceCar, count = 5, randomize = true) {
+    let carsWithSimilarity = carsDatabase.filter(car => car.name !== referenceCar.name).map(car => ({ 
+        ...car, similarity: calculateSimilarity(referenceCar, car) 
+    })).sort((a, b) => b.similarity - a.similarity);
+    
+    const uniqueCars = [];
+    const seenNames = new Set();
+    for (const car of carsWithSimilarity) {
+        if (!seenNames.has(car.name)) {
+            seenNames.add(car.name);
+            uniqueCars.push(car);
+        }
+    }
+    
+    const topSimilar = uniqueCars.slice(0, 15);
+    if (randomize && topSimilar.length > count) {
+        for (let i = topSimilar.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [topSimilar[i], topSimilar[j]] = [topSimilar[j], topSimilar[i]];
+        }
+        return topSimilar.slice(0, count);
+    }
+    return topSimilar.slice(0, count);
 }
 
-function displaySimilarCars(car) {
-    if (!car) return;
-    currentRefCar = car;
-    const similar = findSimilarCars(car);
-    document.getElementById('refCarInfo').innerHTML = `🎯 ${car.name}<br>⭐ ${car.rating} | 🔧 ${car.hp} л.с. | ⚖️ ${car.weight} кг`;
-    document.getElementById('similarList').innerHTML = similar.map((c,i) => `
-        <li onclick="selectCar('${c.name.replace(/'/g, "\\'")}')">
-            <span class="car-name">${i+1}. ${c.name}</span>
-            <div class="car-stats"><span>⭐ ${c.rating}</span><span>🔧 ${c.hp}</span></div>
-            <span class="similarity-badge">${c.similarity.toFixed(1)}%</span>
+function displaySimilarCars(referenceCar) {
+    if (!referenceCar) return;
+    currentRefCar = referenceCar;
+    const similarCars = findSimilarCars(referenceCar, 5, false);
+    document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${referenceCar.name}</strong><br>⭐ Рейтинг: ${referenceCar.rating.toFixed(0)} | 🔧 ${referenceCar.hp} л.с. | ⚖️ ${referenceCar.weight} кг`;
+    document.getElementById('similarList').innerHTML = similarCars.map((car, index) => `
+        <li onclick="selectCar('${car.name.replace(/'/g, "\\'")}')">
+            <span class="car-name">${index + 1}. ${car.name}</span>
+            <div class="car-stats">
+                <span>⭐ ${car.rating.toFixed(0)}</span>
+                <span>🔧 ${car.hp} л.с.</span>
+                <span>⚖️ ${car.weight} кг</span>
+            </div>
+            <span class="similarity-badge">${car.similarity.toFixed(1)}%</span>
         </li>
     `).join('');
 }
