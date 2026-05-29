@@ -889,6 +889,52 @@
         #shareBtn:hover {
             background: #2563eb;
         }
+
+        /* Стили для блока выбора администратора */
+.admin-select {
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 24px;
+    padding: 18px 15px;
+    margin: 12px 0;
+    text-align: center;
+    border: 1px solid rgba(255, 77, 77, 0.3);
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+}
+
+.admin-select select {
+    width: 100%;
+    max-width: 280px;
+    padding: 12px 20px;
+    border-radius: 40px;
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    color: white;
+    border: 1px solid #ff4d4d;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.admin-select select:hover {
+    border-color: #ff9a3c;
+    box-shadow: 0 0 12px rgba(255, 77, 77, 0.4);
+    transform: scale(1.01);
+}
+
+.admin-select select:focus {
+    outline: none;
+    border-color: #ff4d4d;
+    box-shadow: 0 0 12px rgba(255, 77, 77, 0.5);
+}
+
+.admin-select option {
+    background: #1e293b;
+    color: white;
+}
+    
     </style>
 </head>
 <body>
@@ -896,11 +942,16 @@
     <div id="adminModeBanner" style="display: none;"></div>
     
     <div class="admin-select" id="adminSelectBlock">
-        <label>👑 ВЫБЕРИТЕ АДМИНИСТРАТОРА 👑</label><br>
-        <select id="adminSelect">
-            <option value="">-- Выберите администратора --</option>
-        </select>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 8px;">
+        <span style="font-size: 20px;">👑</span>
+        <label style="font-size: 15px; font-weight: bold; background: linear-gradient(135deg, #ff4d4d, #ff9a3c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">ВЫБЕРИТЕ АДМИНИСТРАТОРА</label>
+        <span style="font-size: 20px;">👑</span>
     </div>
+    <select id="adminSelect" style="width: 100%; max-width: 280px; padding: 12px 20px; border-radius: 40px; background: linear-gradient(135deg, #1e293b, #0f172a); color: white; border: 1px solid #ff4d4d; font-size: 15px; font-weight: 600; cursor: pointer; text-align: center; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+        <option value="">-- Выберите администратора --</option>
+    </select>
+    <div style="height: 2px; width: 60px; background: linear-gradient(90deg, transparent, #ff4d4d, transparent); margin: 12px auto 0;"></div>
+</div>
     
     <div class="cars-track-container" id="carsTrackContainer">
         <div class="cars-track-header-clickable" id="carsTrackHeader">
