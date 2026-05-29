@@ -983,6 +983,24 @@
     </select>
     <div style="height: 2px; width: 60px; background: linear-gradient(90deg, transparent, #ff4d4d, transparent); margin: 12px auto 0;"></div>
 </div>
+
+    <!-- Блок РЕЖИМ ОТОБРАЖЕНИЯ МАШИН -->
+<div class="cars-track-container" style="border-color: #8b5cf6;">
+    <div class="cars-track-header-clickable" style="cursor: default;">
+        <div style="width: 30px;"></div>
+        <div class="cars-track-title" style="color: #8b5cf6;">🎮 РЕЖИМ ОТОБРАЖЕНИЯ 🎮</div>
+        <div style="width: 30px;"></div>
+    </div>
+    <div class="cars-track-content">
+        <div style="display: flex; gap: 15px; justify-content: center; padding: 15px; flex-wrap: wrap;">
+            <button id="modeAllBtn" class="mode-btn" style="background: #3b82f6;">🚗 ВСЕ РАНДОМНЫЕ МАШИНЫ</button>
+            <button id="modeGroupOnlyBtn" class="mode-btn" style="background: #8b5cf6;">🏁 ТОЛЬКО ГРУППОВЫЕ</button>
+        </div>
+        <div id="currentModeDisplay" style="text-align: center; padding: 10px; background: #ff4d4d20; border-radius: 12px;">
+            Текущий режим: <strong id="currentModeText">ВСЕ РАНДОМНЫЕ МАШИНЫ</strong>
+        </div>
+    </div>
+</div>
     
     <div class="cars-track-container" id="carsTrackContainer">
         <div class="cars-track-header-clickable" id="carsTrackHeader">
@@ -1115,6 +1133,7 @@ let currentAdminId = null;
 let userSyncEnabled = localStorage.getItem('gt7_sync_enabled') !== 'false';
 let syncedModeActive = false;
 let syncedComboData = null;
+let displayMode = localStorage.getItem('gt7_display_mode') || 'all';
 
 // ============================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
@@ -1974,7 +1993,20 @@ function saveShownCars() { localStorage.setItem('gt7_shown_cars', JSON.stringify
 function addToShownCars(name) { if (!shownCars.includes(name)) { shownCars.push(name); if (shownCars.length > 50) shownCars.shift(); saveShownCars(); } }
 function getRandomCarWithoutRepeat() {
     let avail = carsDatabase.filter(c => !shownCars.includes(c.name));
-    if (!avail.length) { shownCars = []; saveShownCars(); avail = carsDatabase; }
+    
+    // ✅ ДОБАВЬ ФИЛЬТРАЦИЮ ПО РЕЖИМУ
+    if (displayMode === 'group_only') {
+        avail = avail.filter(car => car.category && car.category !== '');
+    }
+    
+    if (!avail.length) { 
+        shownCars = []; 
+        saveShownCars(); 
+        avail = carsDatabase;
+        if (displayMode === 'group_only') {
+            avail = avail.filter(car => car.category && car.category !== '');
+        }
+    }
     const car = getRandomItem(avail);
     addToShownCars(car.name);
     return car;
@@ -1997,7 +2029,7 @@ function updateFuel() { if (!locks.fuel) document.getElementById('fuelValue').in
 function updateCategory() { if (!locks.category) { const c = getRandomItem(categories); document.getElementById('categoryValue').innerHTML = `${c.icon} ${c.name} (${c.description})`; } }
 
 function generateLocalRace() {
-    updateCar(); updateTrack(); updateWeather(); updateTime(); updateTires(); updateFuel(); updateCategory();
+    updateVisibilityByDisplayMode(displayMode); updateCar(); updateTrack(); updateWeather(); updateTime(); updateTires(); updateFuel(); updateCategory();
 }
 
 // ============================================
@@ -2320,6 +2352,33 @@ function updateVisibilityByDisplayMode(displayMode) {
     }
 }
 
+    function setDisplayMode(mode) {
+    displayMode = mode;
+    localStorage.setItem('gt7_display_mode', mode);
+    
+    const allBtn = document.getElementById('modeAllBtn');
+    const groupOnlyBtn = document.getElementById('modeGroupOnlyBtn');
+    const modeText = document.getElementById('currentModeText');
+    
+    if (mode === 'all') {
+        if (allBtn) allBtn.classList.add('active');
+        if (groupOnlyBtn) groupOnlyBtn.classList.remove('active');
+        if (modeText) {
+            modeText.innerHTML = 'ВСЕ РАНДОМНЫЕ МАШИНЫ 🚗';
+            modeText.style.color = '#3b82f6';
+        }
+        updateVisibilityByDisplayMode('all');
+    } else {
+        if (groupOnlyBtn) groupOnlyBtn.classList.add('active');
+        if (allBtn) allBtn.classList.remove('active');
+        if (modeText) {
+            modeText.innerHTML = 'ТОЛЬКО ГРУППОВЫЕ 🏁';
+            modeText.style.color = '#8b5cf6';
+        }
+        updateVisibilityByDisplayMode('group_only');
+    }
+}
+
 // ============================================
 // ИНИЦИАЛИЗАЦИЯ
 // ============================================
@@ -2341,6 +2400,8 @@ function init() {
     document.getElementById('resetCarsBtn').addEventListener('click', resetCarsHistory);
     document.getElementById('shareBtn').addEventListener('click', shareResult);
     document.getElementById('syncToggleBtn').addEventListener('click', toggleSyncMode);
+    document.getElementById('modeAllBtn').addEventListener('click', () => setDisplayMode('all'));
+    document.getElementById('modeGroupOnlyBtn').addEventListener('click', () => setDisplayMode('group_only'));
     document.getElementById('adminSelect').addEventListener('change', (e) => { 
         currentAdminId = e.target.value; 
         console.log('👑 Выбран админ:', currentAdminId);
@@ -2350,6 +2411,7 @@ function init() {
     window.selectCar = selectCar;
     updateSyncBtn();
     loadAdmins();
+    setDisplayMode(displayMode);
     loadRace();
 }
 
