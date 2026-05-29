@@ -1609,12 +1609,18 @@ async function generateAndSave() {
 // ============================================
 async function checkAdmin(adminId, password) {
     try {
-        const url = `${APPS_SCRIPT_URL}?action=checkAdmin&adminId=${encodeURIComponent(adminId)}&password=${encodeURIComponent(password)}`;
+        const url = `${APPS_SCRIPT_URL}?action=checkAdmin&adminId=${encodeURIComponent(adminId)}&password=${encodeURIComponent(password)}&t=${Date.now()}`;
         const response = await fetch(url);
-        const data = await response.json();
-        return data;
+        const text = await response.text();
+        const data = JSON.parse(text);
+        
+        if (data.success === true) {
+            return { success: true, admin_id: data.admin_id, name: data.name };
+        }
+        return { success: false, error: data.error || 'Неверный ID или пароль' };
     } catch(e) {
-        return { success: false, error: e.message };
+        console.error('Ошибка:', e);
+        return { success: false, error: 'Ошибка соединения' };
     }
 }
 
