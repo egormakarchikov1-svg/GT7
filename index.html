@@ -934,6 +934,37 @@
     background: #1e293b;
     color: white;
 }
+
+        /* Стили для группового режима */
+.hidden-block {
+    display: none !important;
+}
+
+.track-centered {
+    grid-column: 1 / -1 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+.group-mode-message {
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+    border-radius: 16px;
+    padding: 15px;
+    margin: 12px 0;
+    text-align: center;
+    border: 1px solid #a78bfa;
+}
+
+.group-mode-message h3 {
+    color: white;
+    margin-bottom: 8px;
+    font-size: 16px;
+}
+
+.group-mode-message p {
+    color: #e0e7ff;
+    font-size: 13px;
+}
     
     </style>
 </head>
@@ -1993,22 +2024,21 @@ async function loadSyncedCombo() {
             const val = row.c[1]?.v;
             if (key && val !== undefined) table[key] = val;
         }
-        if (table.active === 'TRUE') {
+                if (table.active === 'TRUE') {
             syncedModeActive = true;
             syncedComboData = table;
+            const displayMode = table.display_mode || 'all';
+            updateVisibilityByDisplayMode(displayMode);
             document.getElementById('adminModeBanner').style.display = 'block';
             document.getElementById('adminModeBanner').innerHTML = '👑 АКТИВНА КОМБИНАЦИЯ ОТ АДМИНИСТРАТОРА 👑';
             return table;
+        } else {
+            syncedModeActive = false;
+            syncedComboData = null;
+            updateVisibilityByDisplayMode('all');
+            document.getElementById('adminModeBanner').style.display = 'none';
+            return null;
         }
-        syncedModeActive = false;
-        document.getElementById('adminModeBanner').style.display = 'none';
-        return null;
-    } catch(e) {
-        console.warn('Ошибка синхронизации:', e);
-        syncedModeActive = false;
-        document.getElementById('adminModeBanner').style.display = 'none';
-        return null;
-    }
 }
 
 function updateVisibilityByDisplayMode(displayMode) {
@@ -2070,7 +2100,6 @@ async function loadRace() {
         if (synced.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${synced.fuel_value}</span>`;
         return;
     }
-    generateLocalRace();
 }
 
 // ============================================
@@ -2147,7 +2176,7 @@ function init() {
     window.selectCar = selectCar;
     updateSyncBtn();
     loadAdmins();
-    generateLocalRace();
+    loadRace();
 }
 init();
 </script>
