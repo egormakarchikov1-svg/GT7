@@ -1654,21 +1654,29 @@ window.generateRandomRace = async function() {
                     }
                 }
             }
-        } else {
-            document.getElementById('carValue').textContent = 'ГРУППОВОЙ ЗАЕЗД';
-            document.getElementById('carIcon').style.display = 'none';
-        }
+    } else {
+    document.getElementById('carValue').textContent = 'ГРУППОВОЙ ЗАЕЗД';
+    document.getElementById('carIcon').style.display = 'none';
+}
         
         if (!locks.track && synced.track_name) {
-            const trackData = findTrackByName(synced.track_name);
-            if (trackData) {
-                currentTrack = trackData.name;
-                currentTrackData = trackData;
-                document.getElementById('trackValue').textContent = trackData.name;
-                const iconUrl = getTrackIcon(trackData.name);
-                if (iconUrl) document.getElementById('trackIcon').src = iconUrl;
-            }
+    const trackData = findTrackByName(synced.track_name);
+    if (trackData) {
+        currentTrack = trackData.name;
+        currentTrackData = trackData;
+        // ИСПРАВЛЕНО: используем innerHTML с отображением кругов
+        const laps = synced.laps || '?';
+        document.getElementById('trackValue').innerHTML = `${trackData.name} <span class="time-x-badge">${laps} кругов</span>`;
+        const iconUrl = getTrackIcon(trackData.name);
+        const trackIcon = document.getElementById('trackIcon');
+        if (iconUrl) {
+            trackIcon.src = iconUrl;
+            trackIcon.style.display = 'block';
+        } else {
+            trackIcon.style.display = 'none';
         }
+    }
+}
         
         if (!locks.weather && synced.weather_name) {
             const weather = findWeatherByName(synced.weather_name);
