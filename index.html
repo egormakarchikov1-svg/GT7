@@ -1111,10 +1111,10 @@ let shownCars = [];
 let shownTracks = [];
 let currentAdminId = null;
 
-// Флаги синхронизации
 let userSyncEnabled = localStorage.getItem('gt7_sync_enabled') !== 'false';
 let syncedModeActive = false;
 let syncedComboData = null;
+let currentAdminId = null;
 
 // ============================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
@@ -2005,117 +2005,172 @@ function generateLocalRace() {
 // ============================================
 // СИНХРОНИЗАЦИЯ С GOOGLE SHEETS
 // ============================================
+// ============================================
+// СИНХРОНИЗАЦИЯ С GOOGLE SHEETS - ИСПРАВЛЕНО
+// ============================================
+
 async function loadSyncedCombo() {
     if (!userSyncEnabled || !currentAdminId) {
         syncedModeActive = false;
-        document.getElementById('adminModeBanner').style.display = 'none';
+        const banner = document.getElementById('adminModeBanner');
+        if (banner) banner.style.display = 'none';
         return null;
     }
+    
     try {
-        // Загружаем данные из листа с именем = currentAdminId
-        const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?sheet=${currentAdminId}&tqx=out:json`;
+        // ПРАВИЛЬНЫЙ URL для получения данных
+        const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(currentAdminId)}`;
+        
         const resp = await fetch(url);
         const text = await resp.text();
-        const jsonStart = text.indexOf('(');
-        const jsonEnd = text.lastIndexOf(')');
-        const jsonStr = text.substring(jsonStart + 1, jsonEnd);
-        const data = JSON.parse(jsonStr);
         
+        // Парсим JSONP ответ от Google
+        const jsonMatch = text.match(/google\.visualization\.Query\.setResponse\((.+)\)/);
+        if (!jsonMatch) {
+            console.error('Не удалось распарсить ответ');
+            return null;
+        }
+        
+        const data = JSON.parse(jsonMatch[1]);
         const table = {};
-        for (let i = 0; i < data.table.rows.length; i++) {
-            const row = data.table.rows[i];
-            const key = row.c[0]?.v;
-            const val = row.c[1]?.v;
-            if (key && val !== undefined && val !== '') {
-                table[key] = val;
+        
+        if (data.table && data.table.rows) {
+            for (let i = 0; i < data.table.rows.length; i++) {
+                const row = data.table.rows[i];
+                const key = row.c[0]?.v;
+                const val = row.c[1]?.v;
+                if (key && val !== undefined && val !== '') {
+                    table[key] = val;
+                }
             }
         }
         
-        if (table.active === 'TRUE') {
+        // Проверяем активна ли комбинация
+        if (table.active === 'TRUE' || table.active === true) {
             syncedModeActive = true;
             syncedComboData = table;
-            const displayMode = table.display_mode || 'all';
-            updateVisibilityByDisplayMode(displayMode);
-            document.getElementById('adminModeBanner').style.display = 'block';
-            document.getElementById('adminModeBanner').innerHTML = `👑 АКТИВНА КОМБИНАЦИЯ ОТ АДМИНИСТРАТОРА ${currentAdminId} 👑`;
+            
+            const banner = document.getElementById('adminModeBanner');
+            if (banner) {
+                banner.style.display = 'block';
+                banner.innerHTML = `👑 АКТИВНА КОМБИНАЦИЯ ОТ ${currentAdminId} 👑`;
+            }
+            
             return table;
         }
         
+        // Если комбинация не активна
         syncedModeActive = false;
         syncedComboData = null;
-        updateVisibilityByDisplayMode('all');
-        document.getElementById('adminModeBanner').style.display = 'none';
+        const banner = document.getElementById('adminModeBanner');
+        if (banner) banner.style.display = 'none';
         return null;
+        
     } catch(e) {
-        console.warn('Ошибка синхронизации:', e);
+        console.error('Ошибка синхронизации:', e);
         syncedModeActive = false;
-        document.getElementById('adminModeBanner').style.display = 'none';
+        const banner = document.getElementById('adminModeBanner');
+        if (banner) banner.style.display = 'none';
         return null;
     }
 }
 
-function updateVisibilityByDisplayMode(displayMode) {
-    const carBlock = document.getElementById('carBlock');
-    const similarBlock = document.getElementById('similarContainer');
-    const groupMsg = document.getElementById('groupModeMessage');
-    const trackBlock = document.getElementById('trackBlock');
-    const paramsGrid = document.querySelector('.params-grid');
-    if (displayMode === 'group_only') {
-        if (carBlock) carBlock.classList.add('hidden-block');
-        if (similarBlock) similarBlock.classList.add('hidden-block');
-        if (groupMsg) groupMsg.style.display = 'block';
-        if (trackBlock) trackBlock.classList.add('track-centered');
-        if (paramsGrid) { paramsGrid.style.display = 'flex'; paramsGrid.style.justifyContent = 'center'; }
-    } else {
-        if (carBlock) carBlock.classList.remove('hidden-block');
-        if (similarBlock) similarBlock.classList.remove('hidden-block');
-        if (groupMsg) groupMsg.style.display = 'none';
-        if (trackBlock) trackBlock.classList.remove('track-centered');
-        if (paramsGrid) { paramsGrid.style.display = 'grid'; paramsGrid.style.justifyContent = 'normal'; }
+function applySyncedCombo(data) {
+    if (!data) return;
+    
+    // Применяем машину
+    if (data.car_name) {
+        const car = findCarByName(data.car_name);
+        if (car) {
+            document.getElementById('carValue').innerText = car.name;
+            const carIcon = document.getElementById('carIcon');
+            if (carIcon && car.icon) {
+                carIcon.src = car.icon;
+                carIcon.style.display = 'block';
+            }
+            if (typeof displaySimilarCars === 'function') displaySimilarCars(car);
+        } else {
+            document.getElementById('carValue').innerText = data.car_name;
+        }
+    }
+    
+    // Применяем трассу
+    if (data.track_name) {
+        const track = findTrackByName(data.track_name);
+        const laps = data.laps || '5';
+        if (track) {
+            document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
+            const trackIcon = document.getElementById('trackIcon');
+            if (trackIcon && typeof getTrackIcon === 'function') {
+                trackIcon.src = getTrackIcon(track.name);
+                trackIcon.style.display = 'block';
+            }
+        } else {
+            document.getElementById('trackValue').innerHTML = `${data.track_name} <span class="time-x-badge">${laps} кругов</span>`;
+        }
+    }
+    
+    // Применяем категорию
+    if (data.category_name) {
+        const cat = categories.find(c => c.name === data.category_name);
+        if (cat) {
+            document.getElementById('categoryValue').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
+        } else {
+            document.getElementById('categoryValue').innerHTML = data.category_name;
+        }
+    }
+    
+    // Применяем погоду
+    if (data.weather_name) {
+        const w = findWeatherByName(data.weather_name);
+        if (w) {
+            document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`;
+        } else {
+            document.getElementById('weatherValue').innerHTML = data.weather_name;
+        }
+    }
+    
+    // Применяем время
+    if (data.time_name) {
+        const tm = findTimeByName(data.time_name);
+        const multiplier = data.time_multiplier || 'X1';
+        if (tm) {
+            document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${multiplier}</span>`;
+        } else {
+            document.getElementById('timeValue').innerHTML = `${data.time_name} <span class="time-x-badge">${multiplier}</span>`;
+        }
+    }
+    
+    // Применяем износ шин
+    if (data.tires_value) {
+        document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${data.tires_value}</span>`;
+    }
+    
+    // Применяем расход топлива
+    if (data.fuel_value) {
+        document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${data.fuel_value}</span>`;
     }
 }
 
 async function loadRace() {
     const synced = await loadSyncedCombo();
+    
     if (syncedModeActive && synced) {
+        // Показываем данные от админа
+        applySyncedCombo(synced);
+        
+        // Обновляем режим отображения если есть
         const displayMode = synced.display_mode || 'all';
-        updateVisibilityByDisplayMode(displayMode);
-        
-        const car = findCarByName(synced.car_name);
-        if (car && displayMode !== 'group_only') {
-            document.getElementById('carValue').innerText = car.name;
-            document.getElementById('carIcon').src = car.icon;
-            document.getElementById('carIcon').style.display = 'block';
-            displaySimilarCars(car);
-        } else if (displayMode === 'group_only') {
-            document.getElementById('carValue').innerText = 'ГРУППОВОЙ ЗАЕЗД';
-            document.getElementById('carIcon').style.display = 'none';
+        if (typeof updateVisibilityByDisplayMode === 'function') {
+            updateVisibilityByDisplayMode(displayMode);
         }
-        
-        const track = findTrackByName(synced.track_name);
-        if (track) {
-            const laps = synced.laps || 5;
-            document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
-            document.getElementById('trackIcon').src = getTrackIcon(track.name);
-            document.getElementById('trackIcon').style.display = 'block';
-        }
-        
-        const cat = categories.find(c => c.name === synced.category_name);
-        if (cat) document.getElementById('categoryValue').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
-        
-        const w = findWeatherByName(synced.weather_name);
-        if (w) document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`;
-        
-        const tm = findTimeByName(synced.time_name);
-        if (tm) document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${synced.time_multiplier || 'X1'}</span>`;
-        
-        if (synced.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${synced.tires_value}</span>`;
-        if (synced.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${synced.fuel_value}</span>`;
         return;
     }
     
-    updateVisibilityByDisplayMode('all');
-    generateLocalRace();
+    // Иначе локальная генерация
+    if (typeof generateLocalRace === 'function') {
+        generateLocalRace();
+    }
 }
 
 // ============================================
