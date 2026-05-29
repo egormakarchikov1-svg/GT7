@@ -368,6 +368,25 @@
             .time-x-badge { font-size: 14px; }
             .car-icon, .track-icon { max-height: 60px; }
         }
+
+        /* Для группового режима - центрирование блока трассы */
+.track-centered {
+    grid-column: 1 / -1 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+.track-centered .param-label {
+    justify-content: center;
+}
+
+.track-centered .icon-container {
+    min-height: 90px;
+}
+
+.track-centered .param-value {
+    text-align: center;
+}
     </style>
 </head>
 <body>
@@ -1529,16 +1548,42 @@ function findTimeByName(timeName) {
 function updateVisibilityByDisplayMode(displayMode) {
     const carBlock = document.getElementById('carBlock');
     const similarContainer = document.getElementById('similarContainer');
+    const trackBlock = document.getElementById('trackBlock');
     const groupModeMessage = document.getElementById('groupModeMessage');
+    const paramsGrid = document.querySelector('.params-grid');
     
     if (displayMode === 'group_only') {
+        // Скрываем блоки машин
         if (carBlock) carBlock.classList.add('hidden-block');
         if (similarContainer) similarContainer.classList.add('hidden-block');
         if (groupModeMessage) groupModeMessage.style.display = 'block';
+        
+        // ДОБАВЛЯЕМ класс для центрирования трассы
+        if (trackBlock) {
+            trackBlock.classList.add('track-centered');
+        }
+        
+        // Меняем сетку на flex для центрирования
+        if (paramsGrid) {
+            paramsGrid.style.display = 'flex';
+            paramsGrid.style.justifyContent = 'center';
+        }
     } else {
+        // Показываем блоки машин
         if (carBlock) carBlock.classList.remove('hidden-block');
         if (similarContainer) similarContainer.classList.remove('hidden-block');
         if (groupModeMessage) groupModeMessage.style.display = 'none';
+        
+        // УБИРАЕМ класс центрирования трассы
+        if (trackBlock) {
+            trackBlock.classList.remove('track-centered');
+        }
+        
+        // Возвращаем сетку в обычное состояние
+        if (paramsGrid) {
+            paramsGrid.style.display = 'grid';
+            paramsGrid.style.justifyContent = 'normal';
+        }
     }
 }
 
