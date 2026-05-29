@@ -1099,7 +1099,7 @@
 // ============================================
 // КОНФИГУРАЦИЯ
 // ============================================
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyrMP550N69VqlL3KL1jmX2Em4j37xOJcO84AMK7utj9wgrlR42YEvJLNozY1zIbADaDA/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzaAnWZvxGJKDGi97JCu11WIO9APOKYIjHX2MlSpOrxhV-EZMcHGJWlrEs5VUGEpgAyxA/exec';
 const GOOGLE_SHEETS_ID = '1YAJUPE73Nxwe1oEF1xZBHkGj_zg_uGdW7VkTyHtEOOE';
 
 // Состояние блокировок
@@ -2003,42 +2003,49 @@ function generateLocalRace() {
 // ============================================
 // СИНХРОНИЗАЦИЯ С GOOGLE SHEETS
 // ============================================
+// СИНХРОНИЗАЦИЯ С GOOGLE SHEETS
+// ============================================
 async function loadSyncedCombo() {
-    if (!userSyncEnabled) {
+    if (!userSyncEnabled || !currentAdminId) {
         syncedModeActive = false;
         document.getElementById('adminModeBanner').style.display = 'none';
         return null;
     }
     try {
-        const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?tqx=out:json`;
+        // Загружаем данные из листа с именем = currentAdminId
+        const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?sheet=${currentAdminId}&tqx=out:json`;
         const resp = await fetch(url);
         const text = await resp.text();
         const jsonStart = text.indexOf('(');
         const jsonEnd = text.lastIndexOf(')');
         const jsonStr = text.substring(jsonStart + 1, jsonEnd);
         const data = JSON.parse(jsonStr);
+        
         const table = {};
         for (let i = 0; i < data.table.rows.length; i++) {
             const row = data.table.rows[i];
             const key = row.c[0]?.v;
             const val = row.c[1]?.v;
-            if (key && val !== undefined) table[key] = val;
+            if (key && val !== undefined && val !== '') {
+                table[key] = val;
+            }
         }
+        
         if (table.active === 'TRUE') {
             syncedModeActive = true;
             syncedComboData = table;
             const displayMode = table.display_mode || 'all';
             updateVisibilityByDisplayMode(displayMode);
             document.getElementById('adminModeBanner').style.display = 'block';
-            document.getElementById('adminModeBanner').innerHTML = '👑 АКТИВНА КОМБИНАЦИЯ ОТ АДМИНИСТРАТОРА 👑';
+            document.getElementById('adminModeBanner').innerHTML = `👑 АКТИВНА КОМБИНАЦИЯ ОТ АДМИНИСТРАТОРА ${currentAdminId} 👑`;
             return table;
-        } else {
-            syncedModeActive = false;
-            syncedComboData = null;
-            updateVisibilityByDisplayMode('all');
-            document.getElementById('adminModeBanner').style.display = 'none';
-            return null;
         }
+        
+        syncedModeActive = false;
+        syncedComboData = null;
+        updateVisibilityByDisplayMode('all');
+        document.getElementById('adminModeBanner').style.display = 'none';
+        return null;
     } catch(e) {
         console.warn('Ошибка синхронизации:', e);
         syncedModeActive = false;
