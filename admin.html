@@ -1347,6 +1347,37 @@ function setDisplayMode(mode) {
         modeText.innerHTML = 'ТОЛЬКО ГРУППОВЫЕ 🏁';
         modeText.style.color = '#8b5cf6';
     }
+    
+    updateVisibilityByDisplayMode(mode);  // ← вызываем здесь
+}
+
+// ✅ ДОБАВЬ ЭТУ ФУНКЦИЮ СЮДА
+function updateVisibilityByDisplayMode(displayMode) {
+    const carBlock = document.getElementById('carBlock');
+    const similarBlock = document.getElementById('similarContainer');
+    const groupMsg = document.getElementById('groupModeMessage');
+    const trackBlock = document.getElementById('trackBlock');
+    const paramsGrid = document.querySelector('.params-grid');
+    
+    if (displayMode === 'group_only') {
+        if (carBlock) carBlock.classList.add('hidden-block');
+        if (similarBlock) similarBlock.classList.add('hidden-block');
+        if (groupMsg) groupMsg.style.display = 'block';
+        if (trackBlock) trackBlock.classList.add('track-centered');
+        if (paramsGrid) { 
+            paramsGrid.style.display = 'flex'; 
+            paramsGrid.style.justifyContent = 'center'; 
+        }
+    } else {
+        if (carBlock) carBlock.classList.remove('hidden-block');
+        if (similarBlock) similarBlock.classList.remove('hidden-block');
+        if (groupMsg) groupMsg.style.display = 'none';
+        if (trackBlock) trackBlock.classList.remove('track-centered');
+        if (paramsGrid) { 
+            paramsGrid.style.display = 'grid'; 
+            paramsGrid.style.justifyContent = 'normal'; 
+        }
+    }
 }
 
 function toggleLock(param) {
@@ -1444,6 +1475,9 @@ async function loadCurrentCombo() {
             
             if (tableData.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${tableData.tires_value}</span>`;
             if (tableData.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${tableData.fuel_value}</span>`;
+        
+            const displayMode = tableData.display_mode || 'all';
+            updateVisibilityByDisplayMode(displayMode);
         }
     } catch(e) {
         console.error('Ошибка загрузки комбинации:', e);
