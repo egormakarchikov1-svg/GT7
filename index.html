@@ -360,6 +360,31 @@
             display: none !important;
         }
         
+        .admin-select {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 16px;
+            padding: 15px;
+            margin: 12px 0;
+            text-align: center;
+        }
+        
+        .admin-select select {
+            padding: 10px 15px;
+            border-radius: 30px;
+            background: #1e293b;
+            color: white;
+            border: 1px solid #ff4d4d;
+            font-size: 14px;
+            margin-top: 8px;
+            width: 100%;
+            max-width: 250px;
+        }
+        
+        .admin-select label {
+            font-size: 14px;
+            color: #ff4d4d;
+        }
+        
         .result-icon { font-size: 24px; }
         
         @media (max-width: 480px) {
@@ -368,31 +393,20 @@
             .time-x-badge { font-size: 14px; }
             .car-icon, .track-icon { max-height: 60px; }
         }
-
-        /* Для группового режима - центрирование блока трассы */
-.track-centered {
-    grid-column: 1 / -1 !important;
-    max-width: 100% !important;
-    width: 100% !important;
-}
-
-.track-centered .param-label {
-    justify-content: center;
-}
-
-.track-centered .icon-container {
-    min-height: 90px;
-}
-
-.track-centered .param-value {
-    text-align: center;
-}
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="adminModeBanner" style="display: none;"></div>
+    
+    <!-- Блок выбора администратора -->
+    <div class="admin-select" id="adminSelectBlock">
+        <label>👑 ВЫБЕРИТЕ АДМИНИСТРАТОРА 👑</label><br>
+        <select id="adminSelect">
+            <option value="">-- Выберите администратора --</option>
+        </select>
+    </div>
     
     <!-- Блок МАШИНА и ТРАССА -->
     <div class="cars-track-container" id="carsTrackContainer">
@@ -532,13 +546,13 @@
         <button id="shareBtn" class="btn-main" style="background: #3b82f6;">📤 ПОДЕЛИТЬСЯ РЕЗУЛЬТАТОМ</button>
     </div>
 
-    <!-- Переключатель синхронизации -->
+    <!-- Переключатель синхронизации (отключён в мульти-админ режиме) -->
     <div class="sync-toggle-container" id="syncToggleContainer" style="margin-top: 12px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
         <div style="display: flex; align-items: center; gap: 8px;">
             <span>👑</span>
-            <span style="font-size: 12px; font-weight: 600;">РЕЖИМ СИНХРОНИЗАЦИИ</span>
+            <span style="font-size: 12px; font-weight: 600;">МУЛЬТИ-АДМИН РЕЖИМ</span>
         </div>
-        <button id="syncToggleBtn" style="background: #22c55e; padding: 6px 12px; font-size: 11px; margin: 0; min-width: auto;">🔒 ВКЛ</button>
+        <div style="background: #22c55e; padding: 4px 10px; border-radius: 20px; font-size: 10px;">АКТИВЕН</div>
     </div>
 </div>
 
@@ -546,7 +560,7 @@
 // ============================================
 // КОНСТАНТЫ И ПЕРЕМЕННЫЕ
 // ============================================
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/ВАШ_ID_СКРИПТА/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxUyN2-rf54B0dhDsMjo0hT5DdRFJUQT32RIWEMvRftbrYWFBRtIdp9H5MvSuZWbcZFvg/exec';
 const GOOGLE_SHEETS_ID = '1YAJUPE73Nxwe1oEF1xZBHkGj_zg_uGdW7VkTyHtEOOE';
 
 // Состояние блокировок
@@ -557,9 +571,7 @@ let currentTrack = null;
 let currentTrackData = null;
 let shownCars = [];
 let shownTracks = [];
-let syncedModeActive = false;
-let syncedComboData = null;
-let userSyncEnabled = localStorage.getItem('gt7_sync_enabled') !== 'false';
+let currentAdminId = null;
 
 // ============================================
 // МАССИВЫ ДАННЫХ (ВСТАВЬТЕ ВАШИ ПОЛНЫЕ СПИСКИ)
@@ -1128,104 +1140,100 @@ const carsDatabase = [
     { name: "Xiaomi SU7 Ultra '25", rating: 703.90, category: "", powerToWeight: 0.65, hp: 1548, torque: "-", weight: 2360, icon: "car_icons/car3599.png" },
     { name: "Zagato IsoRivolta VGT", rating: 676.87, category: "", powerToWeight: 0.49, hp: 567, torque: 579.9, weight: 1150, icon: "car_icons/car2122.png" },
     { name: "ŠKODA VGT", rating: 851.04, category: "", powerToWeight: 0.82, hp: 1087, torque: "-", weight: 1300, icon: "car_icons/car3542.png" }
-    // ... здесь должен быть весь ваш остальной список машин
-];
+    ];
 
+
+    
 const tracksData = [
-    { name: "Франция Alsace - Деревня", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Франция Alsace - Деревня (обратн.)", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Франция Alsace - тестовая трасса", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Франция Alsace - тестовая трасса (обратн.)", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Италия Autodrome Lago Maggiore - Восток", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Сумерки"] },
-    { name: "Италия Autodrome Lago Maggiore - Восток (обратн.)", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Сумерки"] },
-    { name: "Италия Autodrome Lago Maggiore - Запад", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Сумерки"] },
-    { name: "Италия Autodrome Lago Maggiore - Запад (обратн.)", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Сумерки"] },
-    { name: "Италия Autodrome Lago Maggiore - Центр", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Сумерки"] },
-    { name: "Италия Autodrome Lago Maggiore - Центр (обратн.)", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Сумерки"] },
-    { name: "Италия Autodrome Lago Maggiore - восточная часть", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Сумерки"] },
-    { name: "Италия Autodrome Lago Maggiore - восточная часть (обратн.)", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Сумерки"] },
-    { name: "Италия Autodrome Lago Maggiore - западная часть", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Сумерки"] },
-    { name: "Италия Autodrome Lago Maggiore - западная часть (обратн.)", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Сумерки"] },
-    { name: "Италия Autodrome Lago Maggiore - полная трасса", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Сумерки"] },
-    { name: "Италия Autodrome Lago Maggiore - полная трасса (обратн.)", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Сумерки"] },
-    { name: "Италия Autodromo Nazionale Monza", weather: ["dry"], times: ["День","Вечер","Закат"] },
-    { name: "Италия Autodromo Nazionale Monza (без шиканы)", weather: ["dry"], times: ["День","Вечер","Закат"] },
-    { name: "Бразилия Autódromo de Interlagos", weather: ["dry"], times: ["Заря","Рассвет","Восход","День","Вечер","Закат","Сумерки"] },
-    { name: "Япония Autopolis International Racing Course", weather: ["dry"], times: ["Рассвет","Восход","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Япония Autopolis International Racing Course - укороченная трасса", weather: ["dry"], times: ["Рассвет","Восход","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "США Blue Moon Bay Speedway - внутренняя A", weather: ["dry"], times: ["Рассвет","Восход","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "США Blue Moon Bay Speedway - внутренняя A (обратн.)", weather: ["dry"], times: ["Рассвет","Восход","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Великобритания Brands Hatch - Grand Prix Circuit", weather: ["dry"], times: ["День","Вечер","Закат"] },
-    { name: "Великобритания Brands Hatch - Indy Circuit", weather: ["dry"], times: ["День","Вечер","Закат"] },
-    { name: "Канада Circuit Gilles-Villeneuve", weather: ["both"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки"] },
-    { name: "Испания Circuit de Barcelona-Catalunya, вариант GP", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Испания Circuit de Barcelona-Catalunya, вариант GP без шиканы", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Испания Circuit de Barcelona-Catalunya, вариант национальных гонок", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Франция Circuit de Sainte-Croix - A", weather: ["dry"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Франция Circuit de Sainte-Croix - A (обратн.)", weather: ["dry"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Франция Circuit de Sainte-Croix - B", weather: ["dry"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Франция Circuit de Sainte-Croix - B (обратн.)", weather: ["dry"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Франция Circuit de Sainte-Croix - C", weather: ["dry"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Франция Circuit de Sainte-Croix - C (обратн.)", weather: ["dry"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Бельгия Spa (24 часа)", weather: ["both"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
-    { name: "США Daytona - дорожная", weather: ["dry"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
-    { name: "Швейцария Deep Forest Raceway", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Швейцария Deep Forest Raceway (обратн.)", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Хорватия Dragon Trail - Побережье (обратн.)", weather: ["dry"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Хорватия Dragon Trail - Побережье", weather: ["dry"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Хорватия Dragon Trail - Сады", weather: ["both"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Хорватия Dragon Trail - Сады (обратн.)", weather: ["both"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Швейцария Eiger Nordwand", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Швейцария Eiger Nordwand (обратн.)", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Япония Fuji International Speedway", weather: ["both"], times: ["День","Вечер","Закат"] },
-    { name: "Япония Fuji International Speedway - короткая трасса", weather: ["both"], times: ["День","Вечер","Закат"] },
-    { name: "США Grand Valley - шоссе №1", weather: ["dry"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "США Grand Valley - шоссе №1 (обратн.)", weather: ["dry"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "США Grand Valley - юг", weather: ["dry"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "США Grand Valley - юг (обратн.)", weather: ["dry"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Франция Heures du Mans (24 часа)", weather: ["dry"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
-    { name: "Франция Heures du Mans (24 часа) (без шиканы)", weather: ["both"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
-    { name: "Япония High Speed Ring", weather: ["both"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки"] },
-    { name: "Япония High Speed Ring (обратн.)", weather: ["both"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки"] },
-    { name: "Япония Kyoto Driving Park - Yamagiwa", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Япония Kyoto Driving Park - Yamagiwa (обратн.)", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Япония Kyoto Driving Park - Yamagiwa + Miyabi", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Япония Kyoto Driving Park - Yamagiwa + Miyabi (обратн.)", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "США Michelin Raceway Road Atlanta", weather: ["dry"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
-    { name: "Австралия Mount Panorama Motor Racing Circuit", weather: ["dry"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
-    { name: "Германия Nürburgring Nordschleife", weather: ["both"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки"] },
-    { name: "Германия Nürburgring (24 часа)", weather: ["both"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
-    { name: "Германия Nürburgring (гонка на выносливость)", weather: ["both"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки"] },
-    { name: "Германия Nürburgring (спринт)", weather: ["both"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат"] },
-    { name: "Германия Nürburgring GP", weather: ["both"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат"] },
-    { name: "Австрия Red Bull Ring (полная)", weather: ["both"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Италия Sardegna - Road Track - A", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат"] },
-    { name: "Италия Sardegna - Road Track - A (обратн.)", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат"] },
-    { name: "Италия Sardegna - Road Track - B", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат"] },
-    { name: "Италия Sardegna - Road Track - B (обратн.)", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат"] },
-    { name: "Италия Sardegna - Road Track - C", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат"] },
-    { name: "Италия Sardegna - Road Track - C (обратн.)", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат"] },
-    { name: "Япония Suzuka Circuit", weather: ["both"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Япония Suzuka Circuit - восточная трасса", weather: ["both"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Япония Tokyo Expressway - Восток (по часовой)", weather: ["both"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
-    { name: "Япония Tokyo Expressway - Восток (против часовой)", weather: ["both"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
-    { name: "Япония Tokyo Expressway - Центр (по часовой)", weather: ["both"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
-    { name: "Япония Tokyo Expressway - Центр (против часовой)", weather: ["both"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
-    { name: "Япония Tokyo Expressway - Юг (по часовой)", weather: ["dry"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
-    { name: "Япония Tokyo Expressway - Юг (против часовой)", weather: ["dry"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] },
-    { name: "США Trial Mountain - обратн.", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "США Trial Mountain Circuit", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "Япония Tsukuba Circuit", weather: ["both"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "США Watkins Glen (длинная трасса)", weather: ["dry"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "США Watkins Glen (короткая трасса)", weather: ["dry"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "США WeatherTech Raceway Laguna Seca", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки"] },
-    { name: "США Willow Springs International Raceway: Big Willow", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "США Willow Springs International Raceway: Horse Thief Mile", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "США Willow Springs International Raceway: Horse Thief Mile (обратн.)", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "США Willow Springs International Raceway: Streets of Willow Springs", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "США Willow Springs International Raceway: Streets of Willow Springs (обратн.)", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"] },
-    { name: "ОАЭ Yas Marina Circuit", weather: ["dry"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"] }
-];
+    { name: "Франция Alsace - Деревня", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 5.423 },
+    { name: "Франция Alsace - Деревня (обратн.)", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 5.423 },
+    { name: "Франция Alsace - тестовая трасса", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 2.118 },
+    { name: "Франция Alsace - тестовая трасса (обратн.)", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 2.118 },
+    { name: "Италия Autodrome Lago Maggiore - Восток", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Сумерки"], length: 3.643 },
+    { name: "Италия Autodrome Lago Maggiore - Восток (обратн.)", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Сумерки"], length: 3.643 },
+    { name: "Италия Autodrome Lago Maggiore - Запад", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Сумерки"], length: 4.168 },
+    { name: "Италия Autodrome Lago Maggiore - Запад (обратн.)", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Сумерки"], length: 4.168 },
+    { name: "Италия Autodrome Lago Maggiore - Центр", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Сумерки"], length: 1.706 },
+    { name: "Италия Autodrome Lago Maggiore - Центр (обратн.)", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Сумерки"], length: 1.706 },
+    { name: "Италия Autodrome Lago Maggiore - восточная часть", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Сумерки"], length: 2.010 },
+    { name: "Италия Autodrome Lago Maggiore - восточная часть (обратн.)", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Сумерки"], length: 2.010 },
+    { name: "Италия Autodrome Lago Maggiore - западная часть", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Сумерки"], length: 2.444 },
+    { name: "Италия Autodrome Lago Maggiore - западная часть (обратн.)", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Сумерки"], length: 2.444 },
+    { name: "Италия Autodrome Lago Maggiore - полная трасса", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Сумерки"], length: 5.809 },
+    { name: "Италия Autodrome Lago Maggiore - полная трасса (обратн.)", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Сумерки"], length: 5.809 },
+    { name: "Италия Autodromo Nazionale Monza", weather: ["dry"], times: ["День","Вечер","Закат"], length: 5.793 },
+    { name: "Италия Autodromo Nazionale Monza (без шиканы)", weather: ["dry"], times: ["День","Вечер","Закат"], length: 5.755 },
+    { name: "Бразилия Autódromo de Interlagos", weather: ["dry"], times: ["Заря","Рассвет","Восход","День","Вечер","Закат","Сумерки"], length: 4.903 },
+    { name: "Япония Autopolis International Racing Course", weather: ["dry"], times: ["Рассвет","Восход","День","Вечер","Закат","Сумерки","Ночь"], length: 4.674 },
+    { name: "Япония Autopolis International Racing Course - укороченная трасса", weather: ["dry"], times: ["Рассвет","Восход","День","Вечер","Закат","Сумерки","Ночь"], length: 3.022 },
+    { name: "США Blue Moon Bay Speedway - внутренняя A", weather: ["dry"], times: ["Рассвет","Восход","День","Вечер","Закат","Сумерки","Ночь"], length: 3.350 },
+    { name: "США Blue Moon Bay Speedway - внутренняя A (обратн.)", weather: ["dry"], times: ["Рассвет","Восход","День","Вечер","Закат","Сумерки","Ночь"], length: 3.350 },
+    { name: "Великобритания Brands Hatch - Grand Prix Circuit", weather: ["dry"], times: ["День","Вечер","Закат"], length: 3.946 },
+    { name: "Великобритания Brands Hatch - Indy Circuit", weather: ["dry"], times: ["День","Вечер","Закат"], length: 1.944 },
+    { name: "Канада Circuit Gilles-Villeneuve", weather: ["both"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки"], length: 4.361 },
+    { name: "Испания Circuit de Barcelona-Catalunya, вариант GP", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 4.655 },
+    { name: "Испания Circuit de Barcelona-Catalunya, вариант GP без шиканы", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 4.730 },
+    { name: "Испания Circuit de Barcelona-Catalunya, вариант национальных гонок", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 2.977 },
+    { name: "Франция Circuit de Sainte-Croix - A", weather: ["dry"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 9.477 },
+    { name: "Франция Circuit de Sainte-Croix - A (обратн.)", weather: ["dry"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 9.477 },
+    { name: "Франция Circuit de Sainte-Croix - B", weather: ["dry"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 7.062 },
+    { name: "Франция Circuit de Sainte-Croix - B (обратн.)", weather: ["dry"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 7.062 },
+    { name: "Франция Circuit de Sainte-Croix - C", weather: ["dry"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 10.825 },
+    { name: "Франция Circuit de Sainte-Croix - C (обратн.)", weather: ["dry"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 10.825 },
+    { name: "Бельгия Spa (24 часа)", weather: ["both"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"], length: 7.004 },
+    { name: "США Daytona - дорожная", weather: ["dry"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"], length: 5.729 },
+    { name: "Швейцария Deep Forest Raceway", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 4.253 },
+    { name: "Швейцария Deep Forest Raceway (обратн.)", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 4.253 },
+    { name: "Хорватия Dragon Trail - Побережье (обратн.)", weather: ["dry"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 5.209 },
+    { name: "Хорватия Dragon Trail - Побережье", weather: ["dry"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 5.209 },
+    { name: "Хорватия Dragon Trail - Сады", weather: ["both"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 4.352 },
+    { name: "Хорватия Dragon Trail - Сады (обратн.)", weather: ["both"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 4.352 },
+    { name: "Швейцария Eiger Nordwand", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 2.436 },
+    { name: "Швейцария Eiger Nordwand (обратн.)", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 2.436 },
+    { name: "Япония Fuji International Speedway", weather: ["both"], times: ["День","Вечер","Закат"], length: 4.563 },
+    { name: "Япония Fuji International Speedway - короткая трасса", weather: ["both"], times: ["День","Вечер","Закат"], length: 4.526 },
+    { name: "США Grand Valley - шоссе №1", weather: ["dry"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 5.099 },
+    { name: "США Grand Valley - шоссе №1 (обратн.)", weather: ["dry"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 5.099 },
+    { name: "США Grand Valley - юг", weather: ["dry"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 3.076 },
+    { name: "США Grand Valley - юг (обратн.)", weather: ["dry"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 3.076 },
+    { name: "Франция Heures du Mans (24 часа)", weather: ["dry"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"], length: 13.629 },
+    { name: "Франция Heures du Mans (24 часа) (без шиканы)", weather: ["both"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"], length: 13.567 },
+    { name: "Япония High Speed Ring", weather: ["both"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки"], length: 4.345 },
+    { name: "Япония High Speed Ring (обратн.)", weather: ["both"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки"], length: 4.345 },
+    { name: "Япония Kyoto Driving Park - Yamagiwa", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 4.912 },
+    { name: "Япония Kyoto Driving Park - Yamagiwa (обратн.)", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 4.912 },
+    { name: "Япония Kyoto Driving Park - Yamagiwa + Miyabi", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 6.846 },
+    { name: "Япония Kyoto Driving Park - Yamagiwa + Miyabi (обратн.)", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 6.846 },
+    { name: "США Michelin Raceway Road Atlanta", weather: ["dry"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"], length: 4.088 },
+    { name: "Австралия Mount Panorama Motor Racing Circuit", weather: ["dry"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"], length: 6.213 },
+    { name: "Германия Nürburgring Nordschleife", weather: ["both"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки"], length: 20.832 },
+    { name: "Германия Nürburgring (24 часа)", weather: ["both"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"], length: 25.378 },
+    { name: "Германия Nürburgring (гонка на выносливость)", weather: ["both"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки"], length: 23.864 },
+    { name: "Германия Nürburgring (спринт)", weather: ["both"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат"], length: 3.629 },
+    { name: "Германия Nürburgring GP", weather: ["both"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат"], length: 5.148 },
+    { name: "Австрия Red Bull Ring (полная)", weather: ["both"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 4.318 },
+    { name: "Италия Sardegna - Road Track - A", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат"], length: 5.113 },
+    { name: "Италия Sardegna - Road Track - A (обратн.)", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат"], length: 5.113 },
+    { name: "Италия Sardegna - Road Track - B", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат"], length: 3.893 },
+    { name: "Италия Sardegna - Road Track - B (обратн.)", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат"], length: 3.893 },
+    { name: "Италия Sardegna - Road Track - C", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат"], length: 2.661 },
+    { name: "Италия Sardegna - Road Track - C (обратн.)", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат"], length: 2.661 },
+    { name: "Япония Suzuka Circuit", weather: ["both"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 5.807 },
+    { name: "Япония Suzuka Circuit - восточная трасса", weather: ["both"], times: ["Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 2.243 },
+    { name: "Япония Tokyo Expressway - Восток (по часовой)", weather: ["both"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"], length: 7.301 },
+    { name: "Япония Tokyo Expressway - Восток (против часовой)", weather: ["both"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"], length: 7.192 },
+    { name: "Япония Tokyo Expressway - Центр (по часовой)", weather: ["both"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"], length: 4.405 },
+    { name: "Япония Tokyo Expressway - Центр (против часовой)", weather: ["both"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"], length: 4.369 },
+    { name: "Япония Tokyo Expressway - Юг (по часовой)", weather: ["dry"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"], length: 5.201 },
+    { name: "Япония Tokyo Expressway - Юг (против часовой)", weather: ["dry"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"], length: 6.560 },
+    { name: "США Trial Mountain - обратн.", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 5.434 },
+    { name: "США Trial Mountain Circuit", weather: ["dry"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 5.434 },
+    { name: "Япония Tsukuba Circuit", weather: ["both"], times: ["Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 2.045 },
+    { name: "США Watkins Glen (длинная трасса)", weather: ["dry"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 5.423 },
+    { name: "США Watkins Glen (короткая трасса)", weather: ["dry"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь"], length: 3.942 },
+    { name: "США WeatherTech Raceway Laguna Seca", weather: ["dry"], times: ["Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки"], length: 3.602 },
+    { name: "ОАЭ Yas Marina Circuit", weather: ["dry"], times: ["Заря","Рассвет","Восход","Раннее утро","Позднее утро","День","Вечер","Закат","Сумерки","Ночь","Полночь"], length: 5.281 }
+    ];
 
 const categories = [
     { name: "Gr.1", icon: "⚡", description: "Гоночные прототипы" },
@@ -1553,33 +1561,19 @@ function updateVisibilityByDisplayMode(displayMode) {
     const paramsGrid = document.querySelector('.params-grid');
     
     if (displayMode === 'group_only') {
-        // Скрываем блоки машин
         if (carBlock) carBlock.classList.add('hidden-block');
         if (similarContainer) similarContainer.classList.add('hidden-block');
         if (groupModeMessage) groupModeMessage.style.display = 'block';
-        
-        // ДОБАВЛЯЕМ класс для центрирования трассы
-        if (trackBlock) {
-            trackBlock.classList.add('track-centered');
-        }
-        
-        // Меняем сетку на flex для центрирования
+        if (trackBlock) trackBlock.classList.add('track-centered');
         if (paramsGrid) {
             paramsGrid.style.display = 'flex';
             paramsGrid.style.justifyContent = 'center';
         }
     } else {
-        // Показываем блоки машин
         if (carBlock) carBlock.classList.remove('hidden-block');
         if (similarContainer) similarContainer.classList.remove('hidden-block');
         if (groupModeMessage) groupModeMessage.style.display = 'none';
-        
-        // УБИРАЕМ класс центрирования трассы
-        if (trackBlock) {
-            trackBlock.classList.remove('track-centered');
-        }
-        
-        // Возвращаем сетку в обычное состояние
+        if (trackBlock) trackBlock.classList.remove('track-centered');
         if (paramsGrid) {
             paramsGrid.style.display = 'grid';
             paramsGrid.style.justifyContent = 'normal';
@@ -1588,21 +1582,51 @@ function updateVisibilityByDisplayMode(displayMode) {
 }
 
 // ============================================
-// ЗАГРУЗКА СИНХРОНИЗАЦИИ
+// ЗАГРУЗКА СПИСКА АДМИНИСТРАТОРОВ
 // ============================================
-async function loadSyncedCombo() {
-    if (!userSyncEnabled) {
-        syncedModeActive = false;
-        syncedComboData = null;
-        updateVisibilityByDisplayMode('all');
-        return null;
+async function loadAdmins() {
+    try {
+        const url = `${APPS_SCRIPT_URL}?action=getAdmins`;
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.success && data.admins) {
+            const select = document.getElementById('adminSelect');
+            select.innerHTML = '<option value="">-- Выберите администратора --</option>';
+            data.admins.forEach(admin => {
+                select.innerHTML += `<option value="${admin.id}">${admin.name}</option>`;
+            });
+        }
+    } catch(e) {
+        console.error('Ошибка загрузки администраторов:', e);
+    }
+}
+
+// ============================================
+// ЗАГРУЗКА ГОНКИ
+// ============================================
+async function loadRace() {
+    if (!currentAdminId) {
+        const select = document.getElementById('adminSelect');
+        if (select.value) {
+            currentAdminId = select.value;
+        } else {
+            document.getElementById('carValue').textContent = '—';
+            document.getElementById('trackValue').textContent = '—';
+            document.getElementById('categoryValue').innerHTML = '—';
+            document.getElementById('weatherValue').innerHTML = '—';
+            document.getElementById('timeValue').innerHTML = '—';
+            document.getElementById('tiresValue').innerHTML = '<span class="time-x-badge">X1</span>';
+            document.getElementById('fuelValue').innerHTML = '<span class="time-x-badge">X1</span>';
+            document.getElementById('similarList').innerHTML = '<li>Выберите администратора сверху</li>';
+            return;
+        }
     }
     
     try {
         const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?tqx=out:json`;
         const response = await fetch(url);
         const text = await response.text();
-        
         const jsonStart = text.indexOf('(');
         const jsonEnd = text.lastIndexOf(')');
         const jsonStr = text.substring(jsonStart + 1, jsonEnd);
@@ -1613,207 +1637,65 @@ async function loadSyncedCombo() {
             const row = data.table.rows[i];
             const key = row.c[0]?.v;
             const value = row.c[1]?.v;
-            if (key && value !== undefined && value !== null) {
-                tableData[key] = value;
-            }
+            if (key && value !== undefined && value !== null) tableData[key] = value;
         }
         
         if (tableData.active === 'TRUE') {
-            if (tableData.expires) {
-                const expiresDate = new Date(tableData.expires);
-                const now = new Date();
-                if (expiresDate > now) {
-                    syncedModeActive = true;
-                    syncedComboData = tableData;
-                    const displayMode = tableData.display_mode || 'all';
-                    updateVisibilityByDisplayMode(displayMode);
-                    return tableData;
-                }
+            const displayMode = tableData.display_mode || 'all';
+            updateVisibilityByDisplayMode(displayMode);
+            
+            const car = findCarByName(tableData.car_name);
+            if (car) {
+                document.getElementById('carValue').textContent = car.name;
+                document.getElementById('carIcon').src = car.icon;
+                document.getElementById('carIcon').style.display = "block";
+                displaySimilarCars(car);
             } else {
-                syncedModeActive = true;
-                syncedComboData = tableData;
-                const displayMode = tableData.display_mode || 'all';
-                updateVisibilityByDisplayMode(displayMode);
-                return tableData;
+                document.getElementById('carValue').textContent = tableData.car_name || '—';
             }
-        }
-        
-        syncedModeActive = false;
-        syncedComboData = null;
-        updateVisibilityByDisplayMode('all');
-        return null;
-    } catch(e) {
-        console.error('Ошибка загрузки синхронизации:', e);
-        syncedModeActive = false;
-        syncedComboData = null;
-        updateVisibilityByDisplayMode('all');
-        return null;
-    }
-}
-
-// ============================================
-// ГЛАВНАЯ ФУНКЦИЯ ГЕНЕРАЦИИ
-// ============================================
-window.generateRandomRace = async function() {
-    const synced = await loadSyncedCombo();
-    
-    if (syncedModeActive && synced) {
-        const displayMode = synced.display_mode || 'all';
-        
-        if (displayMode !== 'group_only') {
-            if (!locks.car && synced.car_name) {
-                const car = findCarByName(synced.car_name);
-                if (car) {
-                    document.getElementById('carValue').textContent = car.name;
-                    document.getElementById('carIcon').src = car.icon;
-                    document.getElementById('carIcon').style.display = "block";
-                    
-                    const similarCarsList = [];
-                    for (let i = 1; i <= 5; i++) {
-                        const similarCarName = synced[`similar_car_${i}`];
-                        if (similarCarName) {
-                            const similarCar = findCarByName(similarCarName);
-                            if (similarCar) {
-                                const similarity = calculateSimilarity(car, similarCar);
-                                similarCarsList.push({ ...similarCar, similarity });
-                            }
-                        }
-                    }
-                    
-                    if (similarCarsList.length === 5) {
-                        currentRefCar = car;
-                        document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${car.name}</strong><br>⭐ Рейтинг: ${car.rating.toFixed(0)} | 🔧 ${car.hp} л.с. | ⚖️ ${car.weight} кг`;
-                        document.getElementById('similarList').innerHTML = similarCarsList.map((similarCar, index) => `
-                            <li onclick="selectCar('${similarCar.name.replace(/'/g, "\\'")}')">
-                                <span class="car-name">${index + 1}. ${similarCar.name}</span>
-                                <div class="car-stats">
-                                    <span>⭐ ${similarCar.rating.toFixed(0)}</span>
-                                    <span>🔧 ${similarCar.hp} л.с.</span>
-                                    <span>⚖️ ${similarCar.weight} кг</span>
-                                </div>
-                                <span class="similarity-badge">${similarCar.similarity.toFixed(1)}%</span>
-                            </li>
-                        `).join('');
-                    } else {
-                        if (currentRefCar !== car) displaySimilarCars(car);
-                    }
-                }
+            
+            const trackData = findTrackByName(tableData.track_name);
+            if (trackData) {
+                const laps = tableData.laps || '?';
+                document.getElementById('trackValue').innerHTML = `${trackData.name} <span class="time-x-badge">${laps} кругов</span>`;
+                const iconUrl = getTrackIcon(trackData.name);
+                if (iconUrl) document.getElementById('trackIcon').src = iconUrl;
+            } else {
+                document.getElementById('trackValue').textContent = tableData.track_name || '—';
             }
-    } else {
-    document.getElementById('carValue').textContent = 'ГРУППОВОЙ ЗАЕЗД';
-    document.getElementById('carIcon').style.display = 'none';
-}
-        
-        if (!locks.track && synced.track_name) {
-    const trackData = findTrackByName(synced.track_name);
-    if (trackData) {
-        currentTrack = trackData.name;
-        currentTrackData = trackData;
-        // ИСПРАВЛЕНО: используем innerHTML с отображением кругов
-        const laps = synced.laps || '?';
-        document.getElementById('trackValue').innerHTML = `${trackData.name} <span class="time-x-badge">${laps} кругов</span>`;
-        const iconUrl = getTrackIcon(trackData.name);
-        const trackIcon = document.getElementById('trackIcon');
-        if (iconUrl) {
-            trackIcon.src = iconUrl;
-            trackIcon.style.display = 'block';
-        } else {
-            trackIcon.style.display = 'none';
-        }
-    }
-}
-        
-        if (!locks.weather && synced.weather_name) {
-            const weather = findWeatherByName(synced.weather_name);
-            if (weather) document.getElementById('weatherValue').innerHTML = `${weather.icon} ${weather.name}`;
-        }
-        
-        if (!locks.time && synced.time_name && synced.time_multiplier) {
-            const time = findTimeByName(synced.time_name);
-            if (time) document.getElementById('timeValue').innerHTML = `${time.icon} ${time.name} <span class="time-x-badge">${synced.time_multiplier}</span>`;
-        }
-        
-        if (!locks.tires && synced.tires_value) {
-            document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${synced.tires_value}</span>`;
-        }
-        
-        if (!locks.fuel && synced.fuel_value) {
-            document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${synced.fuel_value}</span>`;
-        }
-        
-        if (!locks.category && synced.category_name) {
-            const category = categories.find(c => c.name === synced.category_name);
+            
+            const category = categories.find(c => c.name === tableData.category_name);
             if (category) document.getElementById('categoryValue').innerHTML = `${category.icon} ${category.name} (${category.description})`;
-        }
-        
-        let adminBanner = document.getElementById('adminModeBanner');
-        if (!adminBanner) {
-            adminBanner = document.createElement('div');
-            adminBanner.id = 'adminModeBanner';
-            adminBanner.style.cssText = `background: linear-gradient(135deg, #ff4d4d20, #ff4d4d05); border: 1px solid #ff4d4d; border-radius: 12px; padding: 8px 12px; margin: 10px 0; text-align: center; font-size: 12px; color: #ff9999; backdrop-filter: blur(4px);`;
-            adminBanner.innerHTML = '👑 СПЕЦИАЛЬНАЯ КОМБИНАЦИЯ ОТ АДМИНИСТРАТОРА 👑';
-            const container = document.querySelector('.container');
-            container.insertBefore(adminBanner, container.firstChild);
-        }
-        return;
-    }
-    
-    const adminBanner = document.getElementById('adminModeBanner');
-    if (adminBanner) adminBanner.remove();
-    
-    updateVisibilityByDisplayMode('all');
-    
-    if (!locks.car) updateCarAndSync();
-    if (!locks.track) updateTrack();
-    if (!locks.weather) updateWeather();
-    if (!locks.time) updateTime();
-    if (!locks.tires) updateTires();
-    if (!locks.fuel) updateFuel();
-    updateCategory();
-};
-
-// ============================================
-// БЛОКИРОВКИ И ПЕРЕКЛЮЧЕНИЯ
-// ============================================
-function toggleLock(param) {
-    locks[param] = !locks[param];
-    document.querySelectorAll(`.lock-btn[data-param="${param}"], .settings-lock-btn[data-param="${param}"]`).forEach(btn => {
-        if (locks[param]) {
-            btn.innerHTML = '🔒';
-            btn.setAttribute('data-state', 'locked');
+            
+            const weather = findWeatherByName(tableData.weather_name);
+            if (weather) document.getElementById('weatherValue').innerHTML = `${weather.icon} ${weather.name}`;
+            
+            const time = findTimeByName(tableData.time_name);
+            if (time) document.getElementById('timeValue').innerHTML = `${time.icon} ${time.name} <span class="time-x-badge">${tableData.time_multiplier || 'X1'}</span>`;
+            
+            if (tableData.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${tableData.tires_value}</span>`;
+            if (tableData.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${tableData.fuel_value}</span>`;
         } else {
-            btn.innerHTML = '🔓';
-            btn.setAttribute('data-state', 'unlocked');
+            updateVisibilityByDisplayMode('all');
+            document.getElementById('carValue').textContent = '—';
+            document.getElementById('trackValue').textContent = '—';
+            document.getElementById('categoryValue').innerHTML = '—';
+            document.getElementById('weatherValue').innerHTML = '—';
+            document.getElementById('timeValue').innerHTML = '—';
+            document.getElementById('tiresValue').innerHTML = '<span class="time-x-badge">X1</span>';
+            document.getElementById('fuelValue').innerHTML = '<span class="time-x-badge">X1</span>';
+            document.getElementById('similarList').innerHTML = '<li>Нет активной гонки</li>';
         }
-    });
-}
-
-function toggleSyncMode() {
-    userSyncEnabled = !userSyncEnabled;
-    const syncBtn = document.getElementById('syncToggleBtn');
-    localStorage.setItem('gt7_sync_enabled', userSyncEnabled);
-    if (userSyncEnabled) {
-        syncBtn.innerHTML = '🔒 ВКЛ';
-        syncBtn.style.background = '#22c55e';
-    } else {
-        syncBtn.innerHTML = '🔓 ВЫКЛ';
-        syncBtn.style.background = '#ef4444';
-    }
-    setTimeout(() => window.generateRandomRace(), 100);
-}
-
-function updateSyncButtonAppearance() {
-    const syncBtn = document.getElementById('syncToggleBtn');
-    if (!syncBtn) return;
-    if (userSyncEnabled) {
-        syncBtn.innerHTML = '🔒 ВКЛ';
-        syncBtn.style.background = '#22c55e';
-    } else {
-        syncBtn.innerHTML = '🔓 ВЫКЛ';
-        syncBtn.style.background = '#ef4444';
+    } catch(e) {
+        console.error('Ошибка загрузки гонки:', e);
+        document.getElementById('carValue').textContent = 'Ошибка';
+        document.getElementById('trackValue').textContent = 'Ошибка';
     }
 }
 
+// ============================================
+// ПОДЕЛИТЬСЯ РЕЗУЛЬТАТОМ
+// ============================================
 function shareResult() {
     const car = document.getElementById('carValue')?.innerText || '—';
     const track = document.getElementById('trackValue')?.innerText || '—';
@@ -1831,6 +1713,22 @@ function shareResult() {
         shareBtn.innerHTML = '✅ СКОПИРОВАНО!';
         setTimeout(() => { shareBtn.innerHTML = originalText; }, 2000);
     }).catch(() => alert('Не удалось скопировать текст'));
+}
+
+// ============================================
+// БЛОКИРОВКИ И ПЕРЕКЛЮЧЕНИЯ
+// ============================================
+function toggleLock(param) {
+    locks[param] = !locks[param];
+    document.querySelectorAll(`.lock-btn[data-param="${param}"], .settings-lock-btn[data-param="${param}"]`).forEach(btn => {
+        if (locks[param]) {
+            btn.innerHTML = '🔒';
+            btn.setAttribute('data-state', 'locked');
+        } else {
+            btn.innerHTML = '🔓';
+            btn.setAttribute('data-state', 'unlocked');
+        }
+    });
 }
 
 // ============================================
@@ -1877,35 +1775,48 @@ function init() {
     document.getElementById('similarHeader').addEventListener('click', toggleSimilar);
     document.getElementById('carsTrackHeader').addEventListener('click', toggleCarsTrack);
     document.getElementById('categoryHeader').addEventListener('click', toggleCategory);
-    document.getElementById('randomBtn').addEventListener('click', () => window.generateRandomRace());
+    document.getElementById('randomBtn').addEventListener('click', () => {
+        if (currentAdminId) loadRace();
+        else alert('👑 Сначала выберите администратора!');
+    });
     document.getElementById('refreshSimilarBtn').addEventListener('click', refreshSimilarCars);
-    document.getElementById('syncToggleBtn').addEventListener('click', toggleSyncMode);
     document.getElementById('resetCarsBtn').addEventListener('click', resetCarsHistory);
     document.getElementById('shareBtn').addEventListener('click', shareResult);
+    document.getElementById('adminSelect').addEventListener('change', () => {
+        currentAdminId = document.getElementById('adminSelect').value;
+        if (currentAdminId) loadRace();
+    });
     
-    updateSyncButtonAppearance();
     window.selectCar = selectCar;
     
-    const randomCar = getRandomCarWithoutRepeat();
-    document.getElementById('carValue').textContent = randomCar.name;
-    document.getElementById('carIcon').src = randomCar.icon;
-    document.getElementById('carIcon').style.display = "block";
-    displaySimilarCars(randomCar);
-    
-    const firstTrackData = getRandomTrackWithoutRepeat();
-    currentTrack = firstTrackData.name;
-    currentTrackData = firstTrackData;
-    document.getElementById('trackValue').textContent = firstTrackData.name;
-    const iconUrl = getTrackIcon(firstTrackData.name);
-    if (iconUrl) document.getElementById('trackIcon').src = iconUrl;
-    
-    updateWeatherByTrack(firstTrackData);
-    updateTimeByTrack(firstTrackData);
-    updateTires();
-    updateFuel();
-    updateCategory();
-    
-    setTimeout(() => window.generateRandomRace(), 100);
+    // Проверяем URL на наличие параметра admin
+    const urlParams = new URLSearchParams(window.location.search);
+    const adminId = urlParams.get('admin');
+    if (adminId) {
+        document.getElementById('adminSelectBlock').style.display = 'none';
+        currentAdminId = adminId;
+        loadRace();
+    } else {
+        loadAdmins();
+        const randomCar = getRandomCarWithoutRepeat();
+        document.getElementById('carValue').textContent = randomCar.name;
+        document.getElementById('carIcon').src = randomCar.icon;
+        document.getElementById('carIcon').style.display = "block";
+        displaySimilarCars(randomCar);
+        
+        const firstTrackData = getRandomTrackWithoutRepeat();
+        currentTrack = firstTrackData.name;
+        currentTrackData = firstTrackData;
+        document.getElementById('trackValue').textContent = firstTrackData.name;
+        const iconUrl = getTrackIcon(firstTrackData.name);
+        if (iconUrl) document.getElementById('trackIcon').src = iconUrl;
+        
+        updateWeatherByTrack(firstTrackData);
+        updateTimeByTrack(firstTrackData);
+        updateTires();
+        updateFuel();
+        updateCategory();
+    }
 }
 
 init();
