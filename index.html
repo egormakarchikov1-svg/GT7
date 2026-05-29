@@ -2016,13 +2016,14 @@ async function loadSyncedCombo() {
     
     return new Promise((resolve) => {
         const callbackName = 'jsonp_combo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=getCurrentCombo&adminId=${encodeURIComponent(currentAdminId)}&callback=${callbackName}`;
+        // ✅ ДОБАВЛЕН &t=${Date.now()} ДЛЯ ОБНОВЛЕНИЯ КЭША
+        const url = `${APPS_SCRIPT_URL}?action=getCurrentCombo&adminId=${encodeURIComponent(currentAdminId)}&callback=${callbackName}&t=${Date.now()}`;
         console.log('📡 JSONP Запрос:', url);
         
         const timeout = setTimeout(() => {
             if (window[callbackName]) {
                 delete window[callbackName];
-                document.body.removeChild(script);
+                if (script && script.parentNode) document.body.removeChild(script);
                 console.log('❌ Таймаут JSONP запроса');
                 syncedModeActive = false;
                 resolve(null);
@@ -2032,7 +2033,7 @@ async function loadSyncedCombo() {
         window[callbackName] = function(data) {
             clearTimeout(timeout);
             delete window[callbackName];
-            document.body.removeChild(script);
+            if (script && script.parentNode) document.body.removeChild(script);
             
             console.log('📊 Данные получены, active =', data?.active);
             
@@ -2062,7 +2063,7 @@ async function loadSyncedCombo() {
             clearTimeout(timeout);
             if (window[callbackName]) {
                 delete window[callbackName];
-                document.body.removeChild(script);
+                if (script && script.parentNode) document.body.removeChild(script);
             }
             console.error('❌ Ошибка JSONP запроса');
             syncedModeActive = false;
