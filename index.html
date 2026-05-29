@@ -1236,72 +1236,93 @@ const tracksData = [
     ];
 
 const categories = [
-    { name: "Gr.1", icon: "⚡", description: "Гоночные прототипы" },
-    { name: "Gr.2", icon: "⚡", description: "Гоночные автомобили GT" },
-    { name: "Gr.3", icon: "⚡", description: "Гоночные автомобили GT3" },
-    { name: "Gr.4", icon: "⚡", description: "Гоночные автомобили GT4" }
+        { name: "Gr.1", icon: "⚡", description: "Гоночные прототипы", maxSpeed: 320 },
+        { name: "Gr.2", icon: "⚡", description: "Гоночные автомобили GT", maxSpeed: 295 },
+        { name: "Gr.3", icon: "⚡", description: "Гоночные автомобили GT3", maxSpeed: 280 },
+        { name: "Gr.4", icon: "⚡", description: "Гоночные автомобили GT4", maxSpeed: 249 }
+    ];
+    
+    { name: "S01 (Ясно, безоблачно)", code: "S01", icon: "☀️" },
+    { name: "S02 (Ясно, малооблачно)", code: "S02", icon: "🌤️" },
+    { name: "S03 (Ясно, переменная облачность)", code: "S03", icon: "⛅" },
+    { name: "S04 (Ясно, легкая дымка)", code: "S04", icon: "🌤️" },
+    { name: "S05 (Солнечно, местами облачно)", code: "S05", icon: "⛅" },
+    { name: "S06 (Солнечно, высокая влажность)", code: "S06", icon: "🌤️" },
+    { name: "S07 (Солнечно, легкий туман)", code: "S07", icon: "🌫️" },
+    { name: "S08 (Солнечно, густая облачность)", code: "S08", icon: "☁️" },
+    { name: "S09 (Солнечно, высокая облачность)", code: "S09", icon: "☁️" },
+    { name: "S10 (Солнечно, дымка от тумана)", code: "S10", icon: "🌫️" },
+    { name: "S11 (Солнечно, горный туман)", code: "S11", icon: "🌫️" },
+    { name: "S12 (Солнечно, муссонные облака)", code: "S12", icon: "☁️" },
+    { name: "S13 (Солнечно, редкие муссонные облака)", code: "S13", icon: "⛅" },
+    { name: "S14 (Солнечно, плотные муссонные облака)", code: "S14", icon: "☁️" },
+    { name: "S15 (Солнечно, легкая дымка)", code: "S15", icon: "🌤️" },
+    { name: "S16 (Солнечно, дымка и облака)", code: "S16", icon: "⛅" },
+    { name: "S17 (Солнечно, высокая облачность)", code: "S17", icon: "☁️" },
+    { name: "S18 (Солнечно, плотная высокая облачность)", code: "S18", icon: "☁️" },
+    { name: "C01 (Пасмурно, но ярко)", code: "C01", icon: "☁️" },
+    { name: "C02 (Пасмурно, тепло)", code: "C02", icon: "☁️" },
+    { name: "C03 (Пасмурно, темно)", code: "C03", icon: "☁️" },
+    { name: "C04 (Пасмурно, прохладно)", code: "C04", icon: "☁️" },
+    { name: "C05 (Пасмурно, плотные облака)", code: "C05", icon: "☁️" },
+    { name: "C06 (Пасмурно, тяжелые облака)", code: "C06", icon: "☁️" },
+    { name: "R01 (Мелкий дождь, морось)", code: "R01", icon: "🌦️" },
+    { name: "R02 (Умеренный дождь)", code: "R02", icon: "🌧️" },
+    { name: "R03 (Сильный дождь, ливень)", code: "R03", icon: "🌧️💧" },
+    { name: "R04 (Проливной дождь, гроза)", code: "R04", icon: "⛈️" },
+    { name: "R05 (Штормовой дождь, сильный ветер)", code: "R05", icon: "🌊🌧️" },
+    { name: "R06 (Тропический ливень)", code: "R06", icon: "🌧️💧💧" },
+    { name: "R07 (Шквалистый дождь)", code: "R07", icon: "💨🌧️" },
+    { name: "R08 (Экстремальный ливень, нулевая видимость)", code: "R08", icon: "🌊💧🌧️" }
 ];
-
-const weathers = [
-    { name: "S01 (Ясно, безоблачно)", icon: "☀️" },
-    { name: "S02 (Ясно, малооблачно)", icon: "🌤️" },
-    { name: "S03 (Ясно, переменная облачность)", icon: "⛅" },
-    { name: "C01 (Пасмурно, но ярко)", icon: "☁️" },
-    { name: "R01 (Мелкий дождь, морось)", icon: "🌦️" },
-    { name: "R02 (Умеренный дождь)", icon: "🌧️" },
-    { name: "R03 (Сильный дождь, ливень)", icon: "🌧️💧" },
-    { name: "R04 (Проливной дождь, гроза)", icon: "⛈️" }
-];
-
-const times = [
+    ];
+    
+    const times = [
     { name: "Заря", icon: "🌅" }, { name: "Рассвет", icon: "🌅" }, { name: "Восход", icon: "🌄" },
     { name: "Раннее утро", icon: "🌤️" }, { name: "Позднее утро", icon: "☀️" }, { name: "День", icon: "🔆" },
     { name: "Вечер", icon: "🌆" }, { name: "Закат", icon: "🌇" }, { name: "Сумерки", icon: "🌙" },
     { name: "Ночь", icon: "🌚" }, { name: "Полночь", icon: "🌕" }
 ];
-
-// ============================================
-// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-// ============================================
-function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-function getRandomXValue() { return `X${Math.floor(Math.random() * 20) + 1}`; }
-
-function getTrackIcon(trackName) {
-    if (trackName.includes("Alsace")) return "track_icons/bbe708-D-n15MKA.png";
-    if (trackName.includes("Lago Maggiore")) return "track_icons/39f155-Dg_fFdVS.png";
-    if (trackName.includes("Monza")) return "track_icons/f8bd64-VsJVPuq0.png";
-    if (trackName.includes("Interlagos")) return "track_icons/fe330b-CkMt1pQe.png";
-    if (trackName.includes("Autopolis")) return "track_icons/8d9953-CpR-SgHS.png";
-    if (trackName.includes("Blue Moon")) return "track_icons/971481-BdMNGGxX.png";
-    if (trackName.includes("Brands Hatch")) return "track_icons/f3d2aa-Bznbpc1M.png";
-    if (trackName.includes("Circuit Gilles")) return "track_icons/4b2a08-Ba_IZ90g.png";
-    if (trackName.includes("Barcelona")) return "track_icons/083de2-BAGcmPUI.png";
-    if (trackName.includes("Sainte-Croix")) return "track_icons/a768c9-D5wwglAF.png";
-    if (trackName.includes("Spa")) return "track_icons/000971-B75flT8v.png";
-    if (trackName.includes("Daytona")) return "track_icons/d1f17e-BDsRccUh.png";
-    if (trackName.includes("Deep Forest")) return "track_icons/c81494-mSWpEt3H.png";
-    if (trackName.includes("Dragon Trail")) return "track_icons/08df62-C045_y3b.png";
-    if (trackName.includes("Eiger")) return "track_icons/678583-Clq7km73.png";
-    if (trackName.includes("Fuji")) return "track_icons/664e17-DkicWsJ5.png";
-    if (trackName.includes("Grand Valley")) return "track_icons/df54ec-BTV8E4Ol.png";
-    if (trackName.includes("Le Mans") || trackName.includes("Heures")) return "track_icons/1d5980-BtTwZ0Sf.png";
-    if (trackName.includes("High Speed Ring")) return "track_icons/9a42fb-ctw1_rUB.png";
-    if (trackName.includes("Kyoto")) return "track_icons/16ccbf-HZopm0Jc.png";
-    if (trackName.includes("Road Atlanta")) return "track_icons/051834-BK1vS4TT.png";
-    if (trackName.includes("Mount Panorama")) return "track_icons/28b64f-DwW557Cx.png";
-    if (trackName.includes("Nürburgring")) return "track_icons/246f6d-B2a8UX0a.png";
-    if (trackName.includes("Red Bull Ring")) return "track_icons/f99788-CkF30Q0q.png";
-    if (trackName.includes("Sardegna")) return "track_icons/748156-BVeffrVD.png";
-    if (trackName.includes("Suzuka")) return "track_icons/fd167d-J52xhRm4.png";
-    if (trackName.includes("Tokyo Expressway")) return "track_icons/e9dd33-B7sGBTmw.png";
-    if (trackName.includes("Trial Mountain")) return "track_icons/e60841-DkNFRL37.png";
-    if (trackName.includes("Tsukuba")) return "track_icons/c5de8a-DX9dzSPz.png";
-    if (trackName.includes("Watkins Glen")) return "track_icons/e6ef89-CkruxU9Z.png";
-    if (trackName.includes("Laguna Seca")) return "track_icons/c75e61-DBxJ7RQM.png";
-    if (trackName.includes("Willow Springs")) return "track_icons/fb6d1f-DDZuZmtt.png";
-    if (trackName.includes("Yas Marina")) return "track_icons/27adb9-DCBqBoAB.png";
-    return "track_icons/placeholder.png";
-}
+    
+    // ============================================
+    // ФУНКЦИИ
+    // ============================================
+    function getTrackIcon(trackName) {
+        if (trackName.includes("Alsace")) return "track_icons/bbe708-D-n15MKA.png";
+        if (trackName.includes("Lago Maggiore")) return "track_icons/39f155-Dg_fFdVS.png";
+        if (trackName.includes("Monza")) return "track_icons/f8bd64-VsJVPuq0.png";
+        if (trackName.includes("Interlagos")) return "track_icons/fe330b-CkMt1pQe.png";
+        if (trackName.includes("Autopolis")) return "track_icons/8d9953-CpR-SgHS.png";
+        if (trackName.includes("Blue Moon")) return "track_icons/971481-BdMNGGxX.png";
+        if (trackName.includes("Brands Hatch")) return "track_icons/f3d2aa-Bznbpc1M.png";
+        if (trackName.includes("Circuit Gilles")) return "track_icons/4b2a08-Ba_IZ90g.png";
+        if (trackName.includes("Barcelona")) return "track_icons/083de2-BAGcmPUI.png";
+        if (trackName.includes("Sainte-Croix")) return "track_icons/a768c9-D5wwglAF.png";
+        if (trackName.includes("Spa")) return "track_icons/000971-B75flT8v.png";
+        if (trackName.includes("Daytona")) return "track_icons/d1f17e-BDsRccUh.png";
+        if (trackName.includes("Deep Forest")) return "track_icons/c81494-mSWpEt3H.png";
+        if (trackName.includes("Dragon Trail")) return "track_icons/08df62-C045_y3b.png";
+        if (trackName.includes("Eiger")) return "track_icons/678583-Clq7km73.png";
+        if (trackName.includes("Fuji")) return "track_icons/664e17-DkicWsJ5.png";
+        if (trackName.includes("Grand Valley")) return "track_icons/df54ec-BTV8E4Ol.png";
+        if (trackName.includes("Le Mans") || trackName.includes("Heures")) return "track_icons/1d5980-BtTwZ0Sf.png";
+        if (trackName.includes("High Speed Ring")) return "track_icons/9a42fb-ctw1_rUB.png";
+        if (trackName.includes("Kyoto")) return "track_icons/16ccbf-HZopm0Jc.png";
+        if (trackName.includes("Road Atlanta")) return "track_icons/051834-BK1vS4TT.png";
+        if (trackName.includes("Mount Panorama")) return "track_icons/28b64f-DwW557Cx.png";
+        if (trackName.includes("Nürburgring")) return "track_icons/246f6d-B2a8UX0a.png";
+        if (trackName.includes("Red Bull Ring")) return "track_icons/f99788-CkF30Q0q.png";
+        if (trackName.includes("Sardegna")) return "track_icons/748156-BVeffrVD.png";
+        if (trackName.includes("Suzuka")) return "track_icons/fd167d-J52xhRm4.png";
+        if (trackName.includes("Tokyo Expressway")) return "track_icons/e9dd33-B7sGBTmw.png";
+        if (trackName.includes("Trial Mountain")) return "track_icons/e60841-DkNFRL37.png";
+        if (trackName.includes("Tsukuba")) return "track_icons/c5de8a-DX9dzSPz.png";
+        if (trackName.includes("Watkins Glen")) return "track_icons/e6ef89-CkruxU9Z.png";
+        if (trackName.includes("Laguna Seca")) return "track_icons/c75e61-DBxJ7RQM.png";
+        if (trackName.includes("Yas Marina")) return "track_icons/27adb9-DCBqBoAB.png";
+        return null;
+        
+    }
 
 function calculateSimilarity(car1, car2) {
     const maxRating = 1500, maxHp = 2000, maxTorque = 2000, maxWeight = 3000, maxPtw = 2.5;
