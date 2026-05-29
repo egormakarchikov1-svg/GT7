@@ -1859,210 +1859,522 @@ function findTimeByName(name) { return times.find(t => t.name === name) || null;
 // СХОЖИЕ АВТО
 // ============================================
 function calculateSimilarity(car1, car2) {
-    const ratingDiff = Math.abs(car1.rating - car2.rating) / 1000;
-    const hpDiff = Math.abs(car1.hp - car2.hp) / 1000;
-    const weightDiff = Math.abs(car1.weight - car2.weight) / 2000;
-    const similarity = (1 - (ratingDiff * 0.4 + hpDiff * 0.3 + weightDiff * 0.3)) * 100;
-    return Math.min(100, Math.max(0, similarity));
+    const maxRating = 1500, maxHp = 2000, maxTorque = 2000, maxWeight = 3000, maxPtw = 2.5;
+    const ratingDiff = Math.abs(car1.rating - car2.rating) / maxRating;
+    const hpDiff = Math.abs(car1.hp - car2.hp) / maxHp;
+    let torque1 = typeof car1.torque === 'number' ? car1.torque : 0;
+    let torque2 = typeof car2.torque === 'number' ? car2.torque : 0;
+    const torqueDiff = Math.abs(torque1 - torque2) / maxTorque;
+    const weightDiff = Math.abs(car1.weight - car2.weight) / maxWeight;
+    const ptwDiff = Math.abs(car1.powerToWeight - car2.powerToWeight) / maxPtw;
+    const totalDiff = ratingDiff * 0.25 + hpDiff * 0.20 + torqueDiff * 0.15 + weightDiff * 0.20 + ptwDiff * 0.20;
+    return Math.max(0, Math.min(100, (1 - totalDiff) * 100));
 }
 
-function findSimilarCars(ref, count = 5) {
-    return carsDatabase.filter(c => c.name !== ref.name).map(c => ({ ...c, similarity: calculateSimilarity(ref, c) })).sort((a,b) => b.similarity - a.similarity).slice(0, count);
+function findSimilarCars(referenceCar, count = 5, randomize = true) {
+    let carsWithSimilarity = carsDatabase.filter(car => car.name !== referenceCar.name).map(car => ({ 
+        ...car, similarity: calculateSimilarity(referenceCar, car) 
+    })).sort((a, b) => b.similarity - a.similarity);
+    
+    const uniqueCars = [];
+    const seenNames = new Set();
+    for (const car of carsWithSimilarity) {
+        if (!seenNames.has(car.name)) {
+            seenNames.add(car.name);
+            uniqueCars.push(car);
+        }
+    }
+    
+    const topSimilar = uniqueCars.slice(0, 15);
+    if (randomize && topSimilar.length > count) {
+        for (let i = topSimilar.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [topSimilar[i], topSimilar[j]] = [topSimilar[j], topSimilar[i]];
+        }
+        return topSimilar.slice(0, count);
+    }
+    return topSimilar.slice(0, count);
 }
 
-function displaySimilarCars(car) {
-    if (!car) return;
-    currentRefCar = car;
-    const similar = findSimilarCars(car);
-    document.getElementById('refCarInfo').innerHTML = `🎯 ${car.name}<br>⭐ ${car.rating} | 🔧 ${car.hp} л.с. | ⚖️ ${car.weight} кг`;
-    document.getElementById('similarList').innerHTML = similar.map((c,i) => `
-        <li onclick="selectCar('${c.name.replace(/'/g, "\\'")}')">
-            <span class="car-name">${i+1}. ${c.name}</span>
-            <div class="car-stats"><span>⭐ ${c.rating}</span><span>🔧 ${c.hp}</span></div>
-            <span class="similarity-badge">${c.similarity.toFixed(1)}%</span>
+function displaySimilarCars(referenceCar) {
+    if (!referenceCar) return;
+    currentRefCar = referenceCar;
+    const similarCars = findSimilarCars(referenceCar, 5, false);
+    document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${referenceCar.name}</strong><br>⭐ Рейтинг: ${referenceCar.rating.toFixed(0)} | 🔧 ${referenceCar.hp} л.с. | ⚖️ ${referenceCar.weight} кг`;
+    document.getElementById('similarList').innerHTML = similarCars.map((car, index) => `
+        <li onclick="selectCar('${car.name.replace(/'/g, "\\'")}')">
+            <span class="car-name">${index + 1}. ${car.name}</span>
+            <div class="car-stats">
+                <span>⭐ ${car.rating.toFixed(0)}</span>
+                <span>🔧 ${car.hp} л.с.</span>
+                <span>⚖️ ${car.weight} кг</span>
+            </div>
+            <span class="similarity-badge">${car.similarity.toFixed(1)}%</span>
         </li>
     `).join('');
 }
 
-function selectCar(name) {
-    const car = carsDatabase.find(c => c.name === name);
+function selectCar(carName) {
+    const car = carsDatabase.find(c => c.name === carName);
     if (car) displaySimilarCars(car);
 }
 
 function refreshSimilarCars() {
-    if (currentRefCar) displaySimilarCars(currentRefCar);
-    else selectCar(carsDatabase[0].name);
+    if (currentRefCar) {
+        const randomSimilarCars = findSimilarCars(currentRefCar, 5, true);
+        document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${currentRefCar.name}</strong><br>⭐ Рейтинг: ${currentRefCar.rating.toFixed(0)} | 🔧 ${currentRefCar.hp} л.с. | ⚖️ ${currentRefCar.weight} кг`;
+        document.getElementById('similarList').innerHTML = randomSimilarCars.map((car, index) => `
+            <li onclick="selectCar('${car.name.replace(/'/g, "\\'")}')">
+                <span class="car-name">${index + 1}. ${car.name}</span>
+                <div class="car-stats">
+                    <span>⭐ ${car.rating.toFixed(0)}</span>
+                    <span>🔧 ${car.hp} л.с.</span>
+                    <span>⚖️ ${car.weight} кг</span>
+                </div>
+                <span class="similarity-badge">${car.similarity.toFixed(1)}%</span>
+            </li>
+        `).join('');
+    } else {
+        const randomCar = getRandomItem(carsDatabase);
+        displaySimilarCars(randomCar);
+    }
 }
 
 // ============================================
-// ИСТОРИЯ МАШИН
+// ФУНКЦИИ ДЛЯ ИСТОРИИ
 // ============================================
-function loadShownCars() { const s = localStorage.getItem('gt7_shown_cars'); shownCars = s ? JSON.parse(s) : []; }
-function saveShownCars() { localStorage.setItem('gt7_shown_cars', JSON.stringify(shownCars)); }
-function addToShownCars(name) { if (!shownCars.includes(name)) { shownCars.push(name); if (shownCars.length > 50) shownCars.shift(); saveShownCars(); } }
+function loadShownCars() {
+    const saved = localStorage.getItem('gt7_shown_cars');
+    shownCars = saved ? JSON.parse(saved) : [];
+}
+
+function saveShownCars() {
+    localStorage.setItem('gt7_shown_cars', JSON.stringify(shownCars));
+}
+
+function addToShownCars(carName) {
+    if (!shownCars.includes(carName)) {
+        shownCars.push(carName);
+        if (shownCars.length > 50) shownCars.shift();
+        saveShownCars();
+    }
+}
+
 function getRandomCarWithoutRepeat() {
-    let avail = carsDatabase.filter(c => !shownCars.includes(c.name));
-    if (!avail.length) { shownCars = []; saveShownCars(); avail = carsDatabase; }
-    const car = getRandomItem(avail);
-    addToShownCars(car.name);
-    return car;
-}
-function resetCarsHistory() { shownCars = []; saveShownCars(); alert('✅ История машин сброшена!'); }
-
-// ============================================
-// ЛОКАЛЬНАЯ ГЕНЕРАЦИЯ
-// ============================================
-function getRandomLaps(trackLength) { return Math.floor(Math.random() * 15) + 5; }
-
-function updateCar() { if (!locks.car) { const c = getRandomCarWithoutRepeat(); document.getElementById('carValue').innerText = c.name; document.getElementById('carIcon').src = c.icon; document.getElementById('carIcon').style.display = 'block'; displaySimilarCars(c); } }
-function updateTrack() { if (!locks.track) { const t = getRandomItem(tracksData); currentTrack = t.name; document.getElementById('trackValue').innerHTML = `${t.name} <span class="time-x-badge">${getRandomLaps(t.length)} кругов</span>`; document.getElementById('trackIcon').src = getTrackIcon(t.name); document.getElementById('trackIcon').style.display = 'block'; if (!locks.weather) updateWeatherByTrack(t); if (!locks.time) updateTimeByTrack(t); } }
-function updateWeatherByTrack(track) { if (locks.weather) return; let avail = weathers; if (track.weather && track.weather[0] === 'dry') avail = weathers.filter(w => !w.name.includes('дождь') && !w.name.includes('Дождь')); const w = getRandomItem(avail); document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`; }
-function updateTimeByTrack(track) { if (locks.time) return; let avail = times; if (track.times && track.times.length) avail = times.filter(t => track.times.includes(t.name)); const tm = getRandomItem(avail); document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${getRandomXValue()}</span>`; }
-function updateWeather() { if (!locks.weather) { const w = getRandomItem(weathers); document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`; } }
-function updateTime() { if (!locks.time) { const t = getRandomItem(times); document.getElementById('timeValue').innerHTML = `${t.icon} ${t.name} <span class="time-x-badge">${getRandomXValue()}</span>`; } }
-function updateTires() { if (!locks.tires) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${getRandomXValue()}</span>`; }
-function updateFuel() { if (!locks.fuel) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${getRandomXValue()}</span>`; }
-function updateCategory() { if (!locks.category) { const c = getRandomItem(categories); document.getElementById('categoryValue').innerHTML = `${c.icon} ${c.name} (${c.description})`; } }
-
-function generateLocalRace() {
-    updateCar(); updateTrack(); updateWeather(); updateTime(); updateTires(); updateFuel(); updateCategory();
+    let availableCars = carsDatabase.filter(car => !shownCars.includes(car.name));
+    if (availableCars.length === 0) {
+        shownCars = [];
+        saveShownCars();
+        availableCars = carsDatabase;
+    }
+    const randomCar = getRandomItem(availableCars);
+    addToShownCars(randomCar.name);
+    return randomCar;
 }
 
+function resetCarsHistory() {
+    shownCars = [];
+    saveShownCars();
+    alert('✅ История машин сброшена!');
+}
+
+function loadShownTracks() {
+    const saved = localStorage.getItem('gt7_shown_tracks');
+    shownTracks = saved ? JSON.parse(saved) : [];
+}
+
+function saveShownTracks() {
+    localStorage.setItem('gt7_shown_tracks', JSON.stringify(shownTracks));
+}
+
+function addToShownTracks(trackName) {
+    if (!shownTracks.includes(trackName)) {
+        shownTracks.push(trackName);
+        if (shownTracks.length > 30) shownTracks.shift();
+        saveShownTracks();
+    }
+}
+
+function getRandomTrackWithoutRepeat() {
+    let availableTracks = tracksData.filter(track => !shownTracks.includes(track.name));
+    if (availableTracks.length === 0) {
+        shownTracks = [];
+        saveShownTracks();
+        availableTracks = tracksData;
+    }
+    const randomTrack = getRandomItem(availableTracks);
+    addToShownTracks(randomTrack.name);
+    return randomTrack;
+}
+
 // ============================================
-// СИНХРОНИЗАЦИЯ С GOOGLE SHEETS
+// ФУНКЦИИ ОБНОВЛЕНИЯ
+// ============================================
+function updateCarAndSync() {
+    if (locks.car) return;
+    const car = getRandomCarWithoutRepeat();
+    document.getElementById('carValue').textContent = car.name;
+    document.getElementById('carIcon').src = car.icon;
+    document.getElementById('carIcon').style.display = "block";
+    displaySimilarCars(car);
+}
+
+function updateTrack() {
+    if (locks.track) return;
+    const trackData = getRandomTrackWithoutRepeat();
+    currentTrack = trackData.name;
+    currentTrackData = trackData;
+    document.getElementById('trackValue').textContent = trackData.name;
+    const iconUrl = getTrackIcon(trackData.name);
+    const trackIcon = document.getElementById('trackIcon');
+    if (iconUrl) {
+        trackIcon.src = iconUrl;
+        trackIcon.style.display = "block";
+    } else {
+        trackIcon.style.display = "none";
+    }
+    if (!locks.weather) updateWeatherByTrack(trackData);
+    if (!locks.time) updateTimeByTrack(trackData);
+}
+
+function updateWeatherByTrack(trackData) {
+    if (locks.weather) return;
+    let availableWeathers = weathers.filter(w => w.name.startsWith('S') || w.name.startsWith('C'));
+    if (trackData.weather.includes('both')) {
+        availableWeathers = weathers;
+    } else if (trackData.weather.includes('wet') || trackData.weather.includes('rain')) {
+        availableWeathers = weathers.filter(w => w.name.startsWith('R'));
+    }
+    const weather = getRandomItem(availableWeathers);
+    document.getElementById('weatherValue').innerHTML = `${weather.icon} ${weather.name}`;
+}
+
+function updateTimeByTrack(trackData) {
+    if (locks.time) return;
+    let availableTimes = times;
+    if (trackData.times && trackData.times.length > 0) {
+        availableTimes = times.filter(t => trackData.times.includes(t.name));
+    }
+    const time = getRandomItem(availableTimes);
+    const multiplier = getRandomXValue();
+    document.getElementById('timeValue').innerHTML = `${time.icon} ${time.name} <span class="time-x-badge">${multiplier}</span>`;
+}
+
+function updateWeather() {
+    if (locks.weather) return;
+    const weather = getRandomItem(weathers);
+    document.getElementById('weatherValue').innerHTML = `${weather.icon} ${weather.name}`;
+}
+
+function updateTime() {
+    if (locks.time) return;
+    const time = getRandomItem(times);
+    const multiplier = getRandomXValue();
+    document.getElementById('timeValue').innerHTML = `${time.icon} ${time.name} <span class="time-x-badge">${multiplier}</span>`;
+}
+
+function updateTires() {
+    if (!locks.tires) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${getRandomXValue()}</span>`;
+}
+
+function updateFuel() {
+    if (!locks.fuel) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${getRandomXValue()}</span>`;
+}
+
+function updateCategory() {
+    const category = getRandomItem(categories);
+    document.getElementById('categoryValue').innerHTML = `${category.icon} ${category.name} (${category.description})`;
+}
+
+// ============================================
+// ФУНКЦИИ ДЛЯ ПОИСКА ПО ИМЕНИ
+// ============================================
+function findCarByName(carName) {
+    return carsDatabase.find(car => car.name === carName) || null;
+}
+
+function findTrackByName(trackName) {
+    return tracksData.find(track => track.name === trackName) || null;
+}
+
+function findWeatherByName(weatherName) {
+    return weathers.find(w => w.name === weatherName) || null;
+}
+
+function findTimeByName(timeName) {
+    return times.find(t => t.name === timeName) || null;
+}
+
+// ============================================
+// УПРАВЛЕНИЕ ВИДИМОСТЬЮ БЛОКОВ
+// ============================================
+function updateVisibilityByDisplayMode(displayMode) {
+    const carBlock = document.getElementById('carBlock');
+    const similarContainer = document.getElementById('similarContainer');
+    const trackBlock = document.getElementById('trackBlock');
+    const groupModeMessage = document.getElementById('groupModeMessage');
+    const paramsGrid = document.querySelector('.params-grid');
+    
+    if (displayMode === 'group_only') {
+        // Скрываем блоки машин
+        if (carBlock) carBlock.classList.add('hidden-block');
+        if (similarContainer) similarContainer.classList.add('hidden-block');
+        if (groupModeMessage) groupModeMessage.style.display = 'block';
+        
+        // ДОБАВЛЯЕМ класс для центрирования трассы
+        if (trackBlock) {
+            trackBlock.classList.add('track-centered');
+        }
+        
+        // Меняем сетку на flex для центрирования
+        if (paramsGrid) {
+            paramsGrid.style.display = 'flex';
+            paramsGrid.style.justifyContent = 'center';
+        }
+    } else {
+        // Показываем блоки машин
+        if (carBlock) carBlock.classList.remove('hidden-block');
+        if (similarContainer) similarContainer.classList.remove('hidden-block');
+        if (groupModeMessage) groupModeMessage.style.display = 'none';
+        
+        // УБИРАЕМ класс центрирования трассы
+        if (trackBlock) {
+            trackBlock.classList.remove('track-centered');
+        }
+        
+        // Возвращаем сетку в обычное состояние
+        if (paramsGrid) {
+            paramsGrid.style.display = 'grid';
+            paramsGrid.style.justifyContent = 'normal';
+        }
+    }
+}
+
+// ============================================
+// ЗАГРУЗКА СИНХРОНИЗАЦИИ
 // ============================================
 async function loadSyncedCombo() {
     if (!userSyncEnabled) {
         syncedModeActive = false;
-        document.getElementById('adminModeBanner').style.display = 'none';
+        syncedComboData = null;
+        updateVisibilityByDisplayMode('all');
         return null;
     }
+    
     try {
         const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?tqx=out:json`;
-        const resp = await fetch(url);
-        const text = await resp.text();
+        const response = await fetch(url);
+        const text = await response.text();
+        
         const jsonStart = text.indexOf('(');
         const jsonEnd = text.lastIndexOf(')');
         const jsonStr = text.substring(jsonStart + 1, jsonEnd);
         const data = JSON.parse(jsonStr);
-        const table = {};
+        
+        const tableData = {};
         for (let i = 0; i < data.table.rows.length; i++) {
             const row = data.table.rows[i];
             const key = row.c[0]?.v;
-            const val = row.c[1]?.v;
-            if (key && val !== undefined) table[key] = val;
+            const value = row.c[1]?.v;
+            if (key && value !== undefined && value !== null) {
+                tableData[key] = value;
+            }
         }
-        if (table.active === 'TRUE') {
-            syncedModeActive = true;
-            syncedComboData = table;
-            document.getElementById('adminModeBanner').style.display = 'block';
-            document.getElementById('adminModeBanner').innerHTML = '👑 АКТИВНА КОМБИНАЦИЯ ОТ АДМИНИСТРАТОРА 👑';
-            return table;
+        
+        if (tableData.active === 'TRUE') {
+            if (tableData.expires) {
+                const expiresDate = new Date(tableData.expires);
+                const now = new Date();
+                if (expiresDate > now) {
+                    syncedModeActive = true;
+                    syncedComboData = tableData;
+                    const displayMode = tableData.display_mode || 'all';
+                    updateVisibilityByDisplayMode(displayMode);
+                    return tableData;
+                }
+            } else {
+                syncedModeActive = true;
+                syncedComboData = tableData;
+                const displayMode = tableData.display_mode || 'all';
+                updateVisibilityByDisplayMode(displayMode);
+                return tableData;
+            }
         }
+        
         syncedModeActive = false;
-        document.getElementById('adminModeBanner').style.display = 'none';
+        syncedComboData = null;
+        updateVisibilityByDisplayMode('all');
         return null;
     } catch(e) {
-        console.warn('Ошибка синхронизации:', e);
+        console.error('Ошибка загрузки синхронизации:', e);
         syncedModeActive = false;
-        document.getElementById('adminModeBanner').style.display = 'none';
+        syncedComboData = null;
+        updateVisibilityByDisplayMode('all');
         return null;
     }
-}
-
-function updateVisibilityByDisplayMode(displayMode) {
-    const carBlock = document.getElementById('carBlock');
-    const similarBlock = document.getElementById('similarContainer');
-    const groupMsg = document.getElementById('groupModeMessage');
-    const trackBlock = document.getElementById('trackBlock');
-    const paramsGrid = document.querySelector('.params-grid');
-    if (displayMode === 'group_only') {
-        if (carBlock) carBlock.classList.add('hidden-block');
-        if (similarBlock) similarBlock.classList.add('hidden-block');
-        if (groupMsg) groupMsg.style.display = 'block';
-        if (trackBlock) trackBlock.classList.add('track-centered');
-        if (paramsGrid) { paramsGrid.style.display = 'flex'; paramsGrid.style.justifyContent = 'center'; }
-    } else {
-        if (carBlock) carBlock.classList.remove('hidden-block');
-        if (similarBlock) similarBlock.classList.remove('hidden-block');
-        if (groupMsg) groupMsg.style.display = 'none';
-        if (trackBlock) trackBlock.classList.remove('track-centered');
-        if (paramsGrid) { paramsGrid.style.display = 'grid'; paramsGrid.style.justifyContent = 'normal'; }
-    }
-}
-
-async function loadRace() {
-    const synced = await loadSyncedCombo();
-    if (syncedModeActive && synced) {
-        const displayMode = synced.display_mode || 'all';
-        updateVisibilityByDisplayMode(displayMode);
-        
-        const car = findCarByName(synced.car_name);
-        if (car && displayMode !== 'group_only') {
-            document.getElementById('carValue').innerText = car.name;
-            document.getElementById('carIcon').src = car.icon;
-            document.getElementById('carIcon').style.display = 'block';
-            displaySimilarCars(car);
-        } else if (displayMode === 'group_only') {
-            document.getElementById('carValue').innerText = 'ГРУППОВОЙ ЗАЕЗД';
-            document.getElementById('carIcon').style.display = 'none';
-        }
-        
-        const track = findTrackByName(synced.track_name);
-        if (track) {
-            const laps = synced.laps || 5;
-            document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
-            document.getElementById('trackIcon').src = getTrackIcon(track.name);
-            document.getElementById('trackIcon').style.display = 'block';
-        }
-        
-        const cat = categories.find(c => c.name === synced.category_name);
-        if (cat) document.getElementById('categoryValue').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
-        
-        const w = findWeatherByName(synced.weather_name);
-        if (w) document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`;
-        
-        const tm = findTimeByName(synced.time_name);
-        if (tm) document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${synced.time_multiplier || 'X1'}</span>`;
-        
-        if (synced.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${synced.tires_value}</span>`;
-        if (synced.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${synced.fuel_value}</span>`;
-        return;
-    }
-    generateLocalRace();
 }
 
 // ============================================
-// УПРАВЛЕНИЕ
+// ГЛАВНАЯ ФУНКЦИЯ ГЕНЕРАЦИИ
+// ============================================
+window.generateRandomRace = async function() {
+    const synced = await loadSyncedCombo();
+    
+    if (syncedModeActive && synced) {
+        const displayMode = synced.display_mode || 'all';
+        
+        if (displayMode !== 'group_only') {
+            if (!locks.car && synced.car_name) {
+                const car = findCarByName(synced.car_name);
+                if (car) {
+                    document.getElementById('carValue').textContent = car.name;
+                    document.getElementById('carIcon').src = car.icon;
+                    document.getElementById('carIcon').style.display = "block";
+                    
+                    const similarCarsList = [];
+                    for (let i = 1; i <= 5; i++) {
+                        const similarCarName = synced[`similar_car_${i}`];
+                        if (similarCarName) {
+                            const similarCar = findCarByName(similarCarName);
+                            if (similarCar) {
+                                const similarity = calculateSimilarity(car, similarCar);
+                                similarCarsList.push({ ...similarCar, similarity });
+                            }
+                        }
+                    }
+                    
+                    if (similarCarsList.length === 5) {
+                        currentRefCar = car;
+                        document.getElementById('refCarInfo').innerHTML = `🎯 РЕФЕРЕНС: <strong>${car.name}</strong><br>⭐ Рейтинг: ${car.rating.toFixed(0)} | 🔧 ${car.hp} л.с. | ⚖️ ${car.weight} кг`;
+                        document.getElementById('similarList').innerHTML = similarCarsList.map((similarCar, index) => `
+                            <li onclick="selectCar('${similarCar.name.replace(/'/g, "\\'")}')">
+                                <span class="car-name">${index + 1}. ${similarCar.name}</span>
+                                <div class="car-stats">
+                                    <span>⭐ ${similarCar.rating.toFixed(0)}</span>
+                                    <span>🔧 ${similarCar.hp} л.с.</span>
+                                    <span>⚖️ ${similarCar.weight} кг</span>
+                                </div>
+                                <span class="similarity-badge">${similarCar.similarity.toFixed(1)}%</span>
+                            </li>
+                        `).join('');
+                    } else {
+                        if (currentRefCar !== car) displaySimilarCars(car);
+                    }
+                }
+            }
+    } else {
+    document.getElementById('carValue').textContent = 'ГРУППОВОЙ ЗАЕЗД';
+    document.getElementById('carIcon').style.display = 'none';
+}
+        
+        if (!locks.track && synced.track_name) {
+    const trackData = findTrackByName(synced.track_name);
+    if (trackData) {
+        currentTrack = trackData.name;
+        currentTrackData = trackData;
+        // ИСПРАВЛЕНО: используем innerHTML с отображением кругов
+        const laps = synced.laps || '?';
+        document.getElementById('trackValue').innerHTML = `${trackData.name} <span class="time-x-badge">${laps} кругов</span>`;
+        const iconUrl = getTrackIcon(trackData.name);
+        const trackIcon = document.getElementById('trackIcon');
+        if (iconUrl) {
+            trackIcon.src = iconUrl;
+            trackIcon.style.display = 'block';
+        } else {
+            trackIcon.style.display = 'none';
+        }
+    }
+}
+        
+        if (!locks.weather && synced.weather_name) {
+            const weather = findWeatherByName(synced.weather_name);
+            if (weather) document.getElementById('weatherValue').innerHTML = `${weather.icon} ${weather.name}`;
+        }
+        
+        if (!locks.time && synced.time_name && synced.time_multiplier) {
+            const time = findTimeByName(synced.time_name);
+            if (time) document.getElementById('timeValue').innerHTML = `${time.icon} ${time.name} <span class="time-x-badge">${synced.time_multiplier}</span>`;
+        }
+        
+        if (!locks.tires && synced.tires_value) {
+            document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${synced.tires_value}</span>`;
+        }
+        
+        if (!locks.fuel && synced.fuel_value) {
+            document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${synced.fuel_value}</span>`;
+        }
+        
+        if (!locks.category && synced.category_name) {
+            const category = categories.find(c => c.name === synced.category_name);
+            if (category) document.getElementById('categoryValue').innerHTML = `${category.icon} ${category.name} (${category.description})`;
+        }
+        
+        let adminBanner = document.getElementById('adminModeBanner');
+        if (!adminBanner) {
+            adminBanner = document.createElement('div');
+            adminBanner.id = 'adminModeBanner';
+            adminBanner.style.cssText = `background: linear-gradient(135deg, #ff4d4d20, #ff4d4d05); border: 1px solid #ff4d4d; border-radius: 12px; padding: 8px 12px; margin: 10px 0; text-align: center; font-size: 12px; color: #ff9999; backdrop-filter: blur(4px);`;
+            adminBanner.innerHTML = '👑 СПЕЦИАЛЬНАЯ КОМБИНАЦИЯ ОТ АДМИНИСТРАТОРА 👑';
+            const container = document.querySelector('.container');
+            container.insertBefore(adminBanner, container.firstChild);
+        }
+        return;
+    }
+    
+    const adminBanner = document.getElementById('adminModeBanner');
+    if (adminBanner) adminBanner.remove();
+    
+    updateVisibilityByDisplayMode('all');
+    
+    if (!locks.car) updateCarAndSync();
+    if (!locks.track) updateTrack();
+    if (!locks.weather) updateWeather();
+    if (!locks.time) updateTime();
+    if (!locks.tires) updateTires();
+    if (!locks.fuel) updateFuel();
+    updateCategory();
+};
+
+// ============================================
+// БЛОКИРОВКИ И ПЕРЕКЛЮЧЕНИЯ
 // ============================================
 function toggleLock(param) {
     locks[param] = !locks[param];
     document.querySelectorAll(`.lock-btn[data-param="${param}"], .settings-lock-btn[data-param="${param}"]`).forEach(btn => {
-        btn.innerText = locks[param] ? '🔒' : '🔓';
-        btn.setAttribute('data-state', locks[param] ? 'locked' : 'unlocked');
+        if (locks[param]) {
+            btn.innerHTML = '🔒';
+            btn.setAttribute('data-state', 'locked');
+        } else {
+            btn.innerHTML = '🔓';
+            btn.setAttribute('data-state', 'unlocked');
+        }
     });
 }
 
 function toggleSyncMode() {
     userSyncEnabled = !userSyncEnabled;
+    const syncBtn = document.getElementById('syncToggleBtn');
     localStorage.setItem('gt7_sync_enabled', userSyncEnabled);
-    const btn = document.getElementById('syncToggleBtn');
-    if (userSyncEnabled) { btn.innerText = '🔒 ВКЛ'; btn.style.background = '#22c55e'; }
-    else { btn.innerText = '🔓 ВЫКЛ'; btn.style.background = '#ef4444'; }
-    loadRace();
+    if (userSyncEnabled) {
+        syncBtn.innerHTML = '🔒 ВКЛ';
+        syncBtn.style.background = '#22c55e';
+    } else {
+        syncBtn.innerHTML = '🔓 ВЫКЛ';
+        syncBtn.style.background = '#ef4444';
+    }
+    setTimeout(() => window.generateRandomRace(), 100);
 }
 
-function updateSyncBtn() {
-    const btn = document.getElementById('syncToggleBtn');
-    if (userSyncEnabled) { btn.innerText = '🔒 ВКЛ'; btn.style.background = '#22c55e'; }
-    else { btn.innerText = '🔓 ВЫКЛ'; btn.style.background = '#ef4444'; }
-}
-
-async function loadAdmins() {
-    const select = document.getElementById('adminSelect');
-    select.innerHTML = '<option value="">-- Выберите администратора --</option>';
-    select.innerHTML += '<option value="admin1">Админ 1</option>';
-    select.innerHTML += '<option value="admin2">Админ 2</option>';
+function updateSyncButtonAppearance() {
+    const syncBtn = document.getElementById('syncToggleBtn');
+    if (!syncBtn) return;
+    if (userSyncEnabled) {
+        syncBtn.innerHTML = '🔒 ВКЛ';
+        syncBtn.style.background = '#22c55e';
+    } else {
+        syncBtn.innerHTML = '🔓 ВЫКЛ';
+        syncBtn.style.background = '#ef4444';
+    }
 }
 
 function shareResult() {
@@ -2073,41 +2385,92 @@ function shareResult() {
     const time = document.getElementById('timeValue')?.innerText || '—';
     const tires = document.getElementById('tiresValue')?.innerText || '—';
     const fuel = document.getElementById('fuelValue')?.innerText || '—';
-    const text = `🏁 GT7 RANDOM 🏁\n\n🚗 ${car}\n🛣️ ${track}\n🏆 ${category}\n🌤️ ${weather}\n⏰ ${time}\n🛞 ${tires}\n⛽ ${fuel}`;
-    navigator.clipboard.writeText(text).then(() => { const btn = document.getElementById('shareBtn'); const old = btn.innerHTML; btn.innerHTML = '✅ СКОПИРОВАНО!'; setTimeout(() => btn.innerHTML = old, 2000); }).catch(() => alert('Ошибка копирования'));
+    
+    const shareText = `🏁 GT7 RANDOM RACE 🏁\n\n🚗 Машина: ${car}\n🛣️ Трасса: ${track}\n🏆 Класс: ${category}\n🌤️ Погода: ${weather}\n⏰ Время: ${time}\n🛞 Износ шин: ${tires}\n⛽ Расход топлива: ${fuel}\n\n🎲 Сгенерировано в gt7-random.ru`;
+    
+    navigator.clipboard.writeText(shareText).then(() => {
+        const shareBtn = document.getElementById('shareBtn');
+        const originalText = shareBtn.innerHTML;
+        shareBtn.innerHTML = '✅ СКОПИРОВАНО!';
+        setTimeout(() => { shareBtn.innerHTML = originalText; }, 2000);
+    }).catch(() => alert('Не удалось скопировать текст'));
 }
 
 // ============================================
 // СВОРАЧИВАНИЕ БЛОКОВ
 // ============================================
 let carsTrackExpanded = true, categoryExpanded = true, settingsExpanded = true, similarExpanded = true;
-function toggleCarsTrack() { carsTrackExpanded = !carsTrackExpanded; document.getElementById('carsTrackContent').classList.toggle('collapsed', !carsTrackExpanded); document.getElementById('carsTrackToggleIcon').innerHTML = carsTrackExpanded ? '▼' : '▶'; }
-function toggleCategory() { categoryExpanded = !categoryExpanded; document.getElementById('categoryContent').classList.toggle('collapsed', !categoryExpanded); document.getElementById('categoryToggleIcon').innerHTML = categoryExpanded ? '▼' : '▶'; }
-function toggleSettings() { settingsExpanded = !settingsExpanded; document.getElementById('settingsContent').classList.toggle('collapsed', !settingsExpanded); document.getElementById('settingsToggleIcon').innerHTML = settingsExpanded ? '▼' : '▶'; }
-function toggleSimilar() { similarExpanded = !similarExpanded; document.getElementById('similarContent').classList.toggle('collapsed', !similarExpanded); document.getElementById('similarToggleIcon').innerHTML = similarExpanded ? '▼' : '▶'; }
+
+function toggleCarsTrack() {
+    carsTrackExpanded = !carsTrackExpanded;
+    document.getElementById('carsTrackContent').classList.toggle('collapsed', !carsTrackExpanded);
+    document.getElementById('carsTrackToggleIcon').innerHTML = carsTrackExpanded ? '▼' : '▶';
+}
+
+function toggleCategory() {
+    categoryExpanded = !categoryExpanded;
+    document.getElementById('categoryContent').classList.toggle('collapsed', !categoryExpanded);
+    document.getElementById('categoryToggleIcon').innerHTML = categoryExpanded ? '▼' : '▶';
+}
+
+function toggleSettings() {
+    settingsExpanded = !settingsExpanded;
+    document.getElementById('settingsContent').classList.toggle('collapsed', !settingsExpanded);
+    document.getElementById('settingsToggleIcon').innerHTML = settingsExpanded ? '▼' : '▶';
+}
+
+function toggleSimilar() {
+    similarExpanded = !similarExpanded;
+    document.getElementById('similarContent').classList.toggle('collapsed', !similarExpanded);
+    document.getElementById('similarToggleIcon').innerHTML = similarExpanded ? '▼' : '▶';
+}
 
 // ============================================
 // ИНИЦИАЛИЗАЦИЯ
 // ============================================
 function init() {
     loadShownCars();
-    document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); toggleLock(btn.getAttribute('data-param')); }));
+    loadShownTracks();
+    
+    document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => { e.stopPropagation(); toggleLock(btn.getAttribute('data-param')); });
+    });
+    
     document.getElementById('settingsHeader').addEventListener('click', toggleSettings);
     document.getElementById('similarHeader').addEventListener('click', toggleSimilar);
     document.getElementById('carsTrackHeader').addEventListener('click', toggleCarsTrack);
     document.getElementById('categoryHeader').addEventListener('click', toggleCategory);
-    document.getElementById('randomBtn').addEventListener('click', () => loadRace());
+    document.getElementById('randomBtn').addEventListener('click', () => window.generateRandomRace());
     document.getElementById('refreshSimilarBtn').addEventListener('click', refreshSimilarCars);
+    document.getElementById('syncToggleBtn').addEventListener('click', toggleSyncMode);
     document.getElementById('resetCarsBtn').addEventListener('click', resetCarsHistory);
     document.getElementById('shareBtn').addEventListener('click', shareResult);
-    document.getElementById('syncToggleBtn').addEventListener('click', toggleSyncMode);
-    document.getElementById('adminSelect').addEventListener('change', (e) => { currentAdminId = e.target.value; loadRace(); });
     
+    updateSyncButtonAppearance();
     window.selectCar = selectCar;
-    updateSyncBtn();
-    loadAdmins();
-    generateLocalRace();
+    
+    const randomCar = getRandomCarWithoutRepeat();
+    document.getElementById('carValue').textContent = randomCar.name;
+    document.getElementById('carIcon').src = randomCar.icon;
+    document.getElementById('carIcon').style.display = "block";
+    displaySimilarCars(randomCar);
+    
+    const firstTrackData = getRandomTrackWithoutRepeat();
+    currentTrack = firstTrackData.name;
+    currentTrackData = firstTrackData;
+    document.getElementById('trackValue').textContent = firstTrackData.name;
+    const iconUrl = getTrackIcon(firstTrackData.name);
+    if (iconUrl) document.getElementById('trackIcon').src = iconUrl;
+    
+    updateWeatherByTrack(firstTrackData);
+    updateTimeByTrack(firstTrackData);
+    updateTires();
+    updateFuel();
+    updateCategory();
+    
+    setTimeout(() => window.generateRandomRace(), 100);
 }
+
 init();
 </script>
 </body>
