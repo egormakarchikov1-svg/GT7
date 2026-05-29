@@ -1014,7 +1014,7 @@
         </div>
     </div>
 
-    <div class="category-container" id="categoryContainer">
+    <div class="category-container hidden-block" id="categoryContainer">
         <div class="category-header-clickable" id="categoryHeader">
             <div style="width: 30px;"></div>
             <div class="category-title">🏆 ГОНОЧНЫЙ КЛАСС 🏆</div>
@@ -2292,19 +2292,31 @@ function updateVisibilityByDisplayMode(displayMode) {
     const similarBlock = document.getElementById('similarContainer');
     const groupMsg = document.getElementById('groupModeMessage');
     const trackBlock = document.getElementById('trackBlock');
+    const categoryBlock = document.getElementById('categoryContainer'); // ← ДОБАВИТЬ
     const paramsGrid = document.querySelector('.params-grid');
+    
     if (displayMode === 'group_only') {
+        // ГРУППОВОЙ РЕЖИМ: скрываем машину и похожие авто, показываем категорию
         if (carBlock) carBlock.classList.add('hidden-block');
         if (similarBlock) similarBlock.classList.add('hidden-block');
+        if (categoryBlock) categoryBlock.classList.remove('hidden-block'); // ← ПОКАЗАТЬ
         if (groupMsg) groupMsg.style.display = 'block';
         if (trackBlock) trackBlock.classList.add('track-centered');
-        if (paramsGrid) { paramsGrid.style.display = 'flex'; paramsGrid.style.justifyContent = 'center'; }
+        if (paramsGrid) { 
+            paramsGrid.style.display = 'flex'; 
+            paramsGrid.style.justifyContent = 'center'; 
+        }
     } else {
+        // ОБЫЧНЫЙ РЕЖИМ: показываем всё, скрываем категорию
         if (carBlock) carBlock.classList.remove('hidden-block');
         if (similarBlock) similarBlock.classList.remove('hidden-block');
+        if (categoryBlock) categoryBlock.classList.add('hidden-block'); // ← СКРЫТЬ
         if (groupMsg) groupMsg.style.display = 'none';
         if (trackBlock) trackBlock.classList.remove('track-centered');
-        if (paramsGrid) { paramsGrid.style.display = 'grid'; paramsGrid.style.justifyContent = 'normal'; }
+        if (paramsGrid) { 
+            paramsGrid.style.display = 'grid'; 
+            paramsGrid.style.justifyContent = 'normal'; 
+        }
     }
 }
 
