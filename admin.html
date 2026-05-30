@@ -243,9 +243,10 @@
         <div id="loginStatus" class="status" style="display: none;"></div>
     </div>
     
-    <!-- Основной интерфейс админа (скрыт до входа) -->
+   <!-- Основной интерфейс админа (скрыт до входа) -->
     <div id="adminContent" style="display: none;">
         <div class="admin-name" id="adminName"></div>
+        <button id="logoutBtn" class="btn-main" style="background: #ef4444; min-width: auto; margin-top: 5px; font-size: 14px; padding: 5px 15px;">🚪 ВЫЙТИ</button>
         
         <!-- Блок РЕЖИМ ОТОБРАЖЕНИЯ МАШИН -->
         <div class="cars-track-container" style="border-color: #8b5cf6;">
@@ -1385,7 +1386,48 @@ function setDisplayMode(mode) {
     updateVisibilityByDisplayMode(mode);  // ← вызываем здесь
 }
 
-// ✅ ДОБАВЬ ЭТУ ФУНКЦИЮ СЮДА
+// ============================================
+// ЗАПОМИНАНИЕ ВХОДА
+// ============================================
+function saveLogin(adminId, adminName) {
+    localStorage.setItem('gt7_admin_logged_in', 'true');
+    localStorage.setItem('gt7_admin_id', adminId);
+    localStorage.setItem('gt7_admin_name', adminName);
+}
+
+function clearLogin() {
+    localStorage.removeItem('gt7_admin_logged_in');
+    localStorage.removeItem('gt7_admin_id');
+    localStorage.removeItem('gt7_admin_name');
+}
+
+function checkSavedLogin() {
+    const isLoggedIn = localStorage.getItem('gt7_admin_logged_in') === 'true';
+    const savedAdminId = localStorage.getItem('gt7_admin_id');
+    const savedAdminName = localStorage.getItem('gt7_admin_name');
+    
+    if (isLoggedIn && savedAdminId) {
+        currentAdmin = { id: savedAdminId, name: savedAdminName || savedAdminId };
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('adminContent').style.display = 'block';
+        document.getElementById('adminName').innerHTML = `👋 Здравствуйте, ${currentAdmin.name}!`;
+        loadCurrentCombo();
+        return true;
+    }
+    return false;
+}
+
+function logout() {
+    clearLogin();
+    document.getElementById('adminId').value = '';
+    document.getElementById('adminPassword').value = '';
+    document.getElementById('loginSection').style.display = 'block';
+    document.getElementById('adminContent').style.display = 'none';
+    currentAdmin = null;
+}
+    
+     
+    // ✅ ДОБАВЬ ЭТУ ФУНКЦИЮ СЮДА
 function updateVisibilityByDisplayMode(displayMode) {
     const carBlock = document.getElementById('carBlock');
     const similarBlock = document.getElementById('similarContainer');
@@ -1795,6 +1837,7 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
     
     if (result.success) {
         currentAdmin = { id: result.admin_id, name: result.name };
+        saveLogin(result.admin_id, result.name);
         
         document.getElementById('loginSection').style.display = 'none';
         document.getElementById('adminContent').style.display = 'block';
@@ -1835,6 +1878,17 @@ document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
 });
 
 window.selectCar = selectCar;
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+    logout();
+});
+
+    // ✅ ВСТАВЬ ПРОВЕРКУ СЮДА (ПЕРЕД ЗАКРЫВАЮЩИМ </script>)
+if (!checkSavedLogin()) {
+    document.getElementById('loginSection').style.display = 'block';
+    document.getElementById('adminContent').style.display = 'none';
+}
+    
 </script>
 </body>
 </html>
