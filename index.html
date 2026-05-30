@@ -1011,38 +1011,38 @@
             <div class="cars-track-content" id="carsTrackContent">
                 <div class="params-grid">
                     <div class="param-block" id="carBlock" data-param="car">
-                        <div class="param-header">
-                            <button class="lock-btn unlocked" data-param="car">🔓</button>
-                            <div class="param-label">
-                                <img src="car-icon.png" class="header-icon" alt="car" onerror="this.style.display='none'; this.nextSibling.style.display='inline';">
-                                <span style="display:none;">🚗</span>
-                                <span>МАШИНА</span>
-                            </div>
-                            <div style="width: 48px;"></div>
-                        </div>
-                        <div class="icon-container">
-                            <img class="car-icon" id="carIcon" src="" alt="Иконка" style="display: none;" onerror="this.style.display='none'; document.getElementById('carIconFallback').style.display='flex';">
-                            <div id="carIconFallback" class="car-icon icon-error" style="display: none; align-items: center; justify-content: center;">🏎️</div>
-                        </div>
-                        <div class="param-value" id="carValue">—</div>
-                    </div>
-                    
-                    <div class="param-block" id="trackBlock" data-param="track">
-                        <div class="param-header">
-                            <button class="lock-btn unlocked" data-param="track">🔓</button>
-                            <div class="param-label">
-                                <img src="track-icon.png" class="header-icon" alt="track" onerror="this.style.display='none'; this.nextSibling.style.display='inline';">
-                                <span style="display:none;">🏁</span>
-                                <span>ТРАССА</span>
-                            </div>
-                            <div style="width: 48px;"></div>
-                        </div>
-                        <div class="icon-container">
-                            <img class="track-icon" id="trackIcon" src="" alt="Иконка" style="display: none;" onerror="this.style.display='none'; document.getElementById('trackIconFallback').style.display='flex';">
-                            <div id="trackIconFallback" class="track-icon icon-error" style="display: none; align-items: center; justify-content: center;">🛣️</div>
-                        </div>
-                        <div class="param-value" id="trackValue">—</div>
-                    </div>
+    <div class="param-header">
+        <button class="lock-btn" data-param="car" data-state="unlocked">🔓</button>
+        <div class="param-label">
+            <img src="car-icon.png" class="header-icon" alt="car" onerror="this.style.display='none'; this.nextSibling.style.display='inline';">
+            <span style="display:none;">🚗</span>
+            <span>МАШИНА</span>
+        </div>
+        <div style="width: 48px;"></div>
+    </div>
+    <div class="icon-container">
+        <img class="car-icon" id="carIcon" src="" alt="Иконка" style="display: none;" onerror="this.style.display='none'; document.getElementById('carIconFallback').style.display='flex';">
+        <div id="carIconFallback" class="car-icon icon-error" style="display: none; align-items: center; justify-content: center;">🏎️</div>
+    </div>
+    <div class="param-value" id="carValue">—</div>
+</div>
+
+<div class="param-block" id="trackBlock" data-param="track">
+    <div class="param-header">
+        <button class="lock-btn" data-param="track" data-state="unlocked">🔓</button>
+        <div class="param-label">
+            <img src="track-icon.png" class="header-icon" alt="track" onerror="this.style.display='none'; this.nextSibling.style.display='inline';">
+            <span style="display:none;">🏁</span>
+            <span>ТРАССА</span>
+        </div>
+        <div style="width: 48px;"></div>
+    </div>
+    <div class="icon-container">
+        <img class="track-icon" id="trackIcon" src="" alt="Иконка" style="display: none;" onerror="this.style.display='none'; document.getElementById('trackIconFallback').style.display='flex';">
+        <div id="trackIconFallback" class="track-icon icon-error" style="display: none; align-items: center; justify-content: center;">🛣️</div>
+    </div>
+    <div class="param-value" id="trackValue">—</div>
+</div>
                 </div>
             </div>
         </div>
