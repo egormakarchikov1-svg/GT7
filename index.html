@@ -2066,20 +2066,28 @@ function showRefreshIndicator() {
     }
 }
 
-// Функция запуска автообновления
 function startAutoRefresh() {
     if (autoRefreshInterval) clearInterval(autoRefreshInterval);
     
     autoRefreshInterval = setInterval(async () => {
         if (userSyncEnabled && currentAdminId) {
             console.log('🔄 Автообновление данных...');
-            const synced = await loadSyncedCombo();
+            const synced = await loadSyncedCombo(true); // forceRefresh = true
             if (syncedModeActive && synced) {
-                applySyncedCombo(synced);
-                showRefreshIndicator();
+                // Проверяем, изменилась ли машина
+                const currentCar = document.getElementById('carValue')?.innerText;
+                const newCar = synced.car_name;
+                
+                if (currentCar !== newCar) {
+                    console.log('📢 Данные изменились! Обновляем интерфейс...');
+                    applySyncedCombo(synced);
+                    showRefreshIndicator();
+                } else {
+                    console.log('📢 Данные не изменились');
+                }
             }
         }
-    }, 10000); // Обновление каждые 10 секунд
+    }, 5000); // Обновление каждые 5 секунд (было 10)
 }
 
 // Функция остановки автообновления
@@ -2089,10 +2097,9 @@ function stopAutoRefresh() {
         autoRefreshInterval = null;
     }
 }
-
 // Основная функция загрузки синхронизированной комбинации
-async function loadSyncedCombo() {
-    console.log('🔍 loadSyncedCombo вызвана, currentAdminId =', currentAdminId);
+async function loadSyncedCombo(forceRefresh = false) {
+    console.log('🔍 loadSyncedCombo вызвана, currentAdminId =', currentAdminId, 'forceRefresh:', forceRefresh);
     
     if (!userSyncEnabled || !currentAdminId) {
         console.log('❌ Синхронизация выключена или админ не выбран');
@@ -2104,7 +2111,8 @@ async function loadSyncedCombo() {
     
     return new Promise((resolve) => {
         const callbackName = 'jsonp_combo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=getCurrentCombo&adminId=${encodeURIComponent(currentAdminId)}&callback=${callbackName}&t=${Date.now()}`;
+        const timestamp = Date.now();
+        const url = `${APPS_SCRIPT_URL}?action=getCurrentCombo&adminId=${encodeURIComponent(currentAdminId)}&callback=${callbackName}&_=${timestamp}&force=${forceRefresh ? '1' : '0'}`;
         console.log('📡 JSONP Запрос:', url);
         
         const timeout = setTimeout(() => {
@@ -2122,7 +2130,7 @@ async function loadSyncedCombo() {
             delete window[callbackName];
             if (script && script.parentNode) document.body.removeChild(script);
             
-            console.log('📊 Данные получены, active =', data?.active);
+            console.log('📊 Данные получены, active =', data?.active, 'timestamp:', data?.timestamp);
             
             if (data && (data.active === 'TRUE' || data.active === true)) {
                 console.log('✅ Админская комбинация АКТИВНА!');
@@ -2167,6 +2175,18 @@ function applySyncedCombo(data) {
     
     console.log('📝 Применяем админские данные:', data);
     
+    // Анимированное обновление - подсветка измененных полей
+    const highlightField = (elementId) => {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.style.transition = 'background 0.3s';
+            element.style.background = 'rgba(34, 197, 94, 0.3)';
+            setTimeout(() => {
+                element.style.background = '';
+            }, 500);
+        }
+    };
+    
     // Сохраняем текущие блокировки
     const currentLocks = { ...locks };
     
@@ -2183,8 +2203,10 @@ function applySyncedCombo(data) {
                 carIcon.style.display = 'block';
             }
             if (typeof displaySimilarCars === 'function') displaySimilarCars(car);
+            highlightField('carValue');
         } else {
             document.getElementById('carValue').innerText = data.car_name;
+            highlightField('carValue');
         }
     }
     
@@ -2198,8 +2220,10 @@ function applySyncedCombo(data) {
                 trackIcon.src = getTrackIcon(track.name);
                 trackIcon.style.display = 'block';
             }
+            highlightField('trackValue');
         } else {
             document.getElementById('trackValue').innerHTML = `${data.track_name} <span class="time-x-badge">${laps} кругов</span>`;
+            highlightField('trackValue');
         }
     }
     
@@ -2210,6 +2234,7 @@ function applySyncedCombo(data) {
         } else {
             document.getElementById('categoryValue').innerHTML = data.category_name;
         }
+        highlightField('categoryValue');
     }
     
     if (data.weather_name) {
@@ -2219,6 +2244,7 @@ function applySyncedCombo(data) {
         } else {
             document.getElementById('weatherValue').innerHTML = data.weather_name;
         }
+        highlightField('weatherValue');
     }
     
     if (data.time_name) {
@@ -2229,20 +2255,23 @@ function applySyncedCombo(data) {
         } else {
             document.getElementById('timeValue').innerHTML = `${data.time_name} <span class="time-x-badge">${multiplier}</span>`;
         }
+        highlightField('timeValue');
     }
     
     if (data.tires_value) {
         document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${data.tires_value}</span>`;
+        highlightField('tiresValue');
     }
     
     if (data.fuel_value) {
         document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${data.fuel_value}</span>`;
+        highlightField('fuelValue');
     }
     
     // Обновляем режим отображения
-    const displayMode = data.display_mode || 'all';
+    const newDisplayMode = data.display_mode || 'all';
     if (typeof updateVisibilityByDisplayMode === 'function') {
-        updateVisibilityByDisplayMode(displayMode);
+        updateVisibilityByDisplayMode(newDisplayMode);
     }
     
     // Восстанавливаем блокировки
@@ -2277,6 +2306,41 @@ async function loadRace() {
     const banner = document.getElementById('adminModeBanner');
     if (banner) banner.style.display = 'none';
     generateLocalRace();
+}
+
+// ============================================
+// ФУНКЦИЯ ПРИНУДИТЕЛЬНОГО ОБНОВЛЕНИЯ
+// ============================================
+async function forceRefreshCombo() {
+    console.log('🔄 ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ ДАННЫХ...');
+    const btn = document.getElementById('forceRefreshBtn');
+    if (btn) {
+        const oldText = btn.innerHTML;
+        btn.innerHTML = '⏳ ОБНОВЛЕНИЕ...';
+        btn.disabled = true;
+    }
+    
+    const synced = await loadSyncedCombo(true);
+    
+    if (syncedModeActive && synced) {
+        applySyncedCombo(synced);
+        showRefreshIndicator();
+        if (btn) {
+            btn.innerHTML = '✅ ГОТОВО!';
+            setTimeout(() => {
+                btn.innerHTML = oldText;
+                btn.disabled = false;
+            }, 1500);
+        }
+    } else {
+        if (btn) {
+            btn.innerHTML = '❌ НЕТ ДАННЫХ';
+            setTimeout(() => {
+                btn.innerHTML = oldText;
+                btn.disabled = false;
+            }, 1500);
+        }
+    }
 }
 // ============================================
 // УПРАВЛЕНИЕ
