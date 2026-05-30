@@ -246,7 +246,7 @@
    <!-- Основной интерфейс админа (скрыт до входа) -->
     <div id="adminContent" style="display: none;">
         <div class="admin-name" id="adminName"></div>
-        <button id="logoutBtn" class="btn-main" style="background: #ef4444; min-width: auto; margin-top: 5px; font-size: 14px; padding: 5px 15px;">🚪 ВЫЙТИ</button>
+        <button id="logoutBtn" class="btn-main" style="background: #ef4444; min-width: auto; margin-top: 5px; font-size: 14px; padding: 5px 15px;" onclick="logout()">🚪 ВЫЙТИ</button>
         
         <!-- Блок РЕЖИМ ОТОБРАЖЕНИЯ МАШИН -->
         <div class="cars-track-container" style="border-color: #8b5cf6;">
@@ -1775,6 +1775,15 @@ function logout() {
     const loginStatus = document.getElementById('loginStatus');
     loginStatus.style.display = 'none';
     loginStatus.textContent = '';
+    
+    // Очищаем отображаемые данные
+    document.getElementById('carValue').innerHTML = '—';
+    document.getElementById('trackValue').innerHTML = '—';
+    document.getElementById('categoryText').innerHTML = '—';
+    document.getElementById('weatherValue').innerHTML = '—';
+    document.getElementById('timeValue').innerHTML = '—';
+    document.getElementById('tiresValue').innerHTML = '<span class="time-x-badge">X1</span>';
+    document.getElementById('fuelValue').innerHTML = '<span class="time-x-badge">X1</span>';
 }
 
 function showAdminInterface() {
