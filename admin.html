@@ -1828,7 +1828,37 @@ async function checkAdmin(adminId, password) {
 // ============================================
 // ОБРАБОТЧИКИ СОБЫТИЙ
 // ============================================
-document.getElementById('loginBtn').addEventListener('click', async () => {
+// ============================================
+// РАСКРЫТИЕ БЛОКОВ
+// ============================================
+let carsTrackExpanded = true, categoryExpanded = true, settingsExpanded = true, similarExpanded = true;
+
+function toggleCarsTrack() { 
+    carsTrackExpanded = !carsTrackExpanded; 
+    document.getElementById('carsTrackContent').classList.toggle('collapsed', !carsTrackExpanded); 
+    document.getElementById('carsTrackToggleIcon').innerHTML = carsTrackExpanded ? '▼' : '▶'; 
+}
+
+function toggleCategory() { 
+    categoryExpanded = !categoryExpanded; 
+    document.getElementById('categoryContent').classList.toggle('collapsed', !categoryExpanded); 
+    document.getElementById('categoryToggleIcon').innerHTML = categoryExpanded ? '▼' : '▶'; 
+}
+
+function toggleSettings() { 
+    settingsExpanded = !settingsExpanded; 
+    document.getElementById('settingsContent').classList.toggle('collapsed', !settingsExpanded); 
+    document.getElementById('settingsToggleIcon').innerHTML = settingsExpanded ? '▼' : '▶'; 
+}
+
+function toggleSimilar() { 
+    similarExpanded = !similarExpanded; 
+    document.getElementById('similarContent').classList.toggle('collapsed', !similarExpanded); 
+    document.getElementById('similarToggleIcon').innerHTML = similarExpanded ? '▼' : '▶'; 
+}
+    
+    
+    document.getElementById('loginBtn').addEventListener('click', async () => {
     const adminId = document.getElementById('adminId').value.trim();
     const password = document.getElementById('adminPassword').value;
     const loginStatus = document.getElementById('loginStatus');
