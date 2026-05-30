@@ -1775,6 +1775,55 @@ function saveComboViaJSONP(data) {
     });
 }
 
+    // ФУНКЦИИ ДЛЯ РАБОТЫ С ЛОКАЛЬНЫМ ХРАНИЛИЩЕМ
+// ============================================
+function saveLogin(adminId, adminName) {
+    localStorage.setItem('gt7_admin_logged_in', 'true');
+    localStorage.setItem('gt7_admin_id', adminId);
+    localStorage.setItem('gt7_admin_name', adminName);
+}
+
+function clearLogin() {
+    localStorage.removeItem('gt7_admin_logged_in');
+    localStorage.removeItem('gt7_admin_id');
+    localStorage.removeItem('gt7_admin_name');
+}
+
+function checkSavedLogin() {
+    const isLoggedIn = localStorage.getItem('gt7_admin_logged_in') === 'true';
+    const savedAdminId = localStorage.getItem('gt7_admin_id');
+    const savedAdminName = localStorage.getItem('gt7_admin_name');
+    
+    if (isLoggedIn && savedAdminId) {
+        currentAdmin = { id: savedAdminId, name: savedAdminName || savedAdminId };
+        return true;
+    }
+    return false;
+}
+
+function logout() {
+    clearLogin();
+    document.getElementById('adminId').value = '';
+    document.getElementById('adminPassword').value = '';
+    currentAdmin = null;
+    
+    // Показываем форму входа, скрываем админку
+    document.getElementById('loginSection').style.display = 'block';
+    document.getElementById('adminContent').style.display = 'none';
+    
+    // Очищаем статус
+    const loginStatus = document.getElementById('loginStatus');
+    loginStatus.style.display = 'none';
+    loginStatus.textContent = '';
+}
+
+function showAdminInterface() {
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('adminContent').style.display = 'block';
+    document.getElementById('adminName').innerHTML = `👋 Здравствуйте, ${currentAdmin.name}!`;
+    loadCurrentCombo();
+}
+
 // ============================================
 // АДМИН-ВХОД
 // ============================================
@@ -1783,11 +1832,10 @@ async function checkAdmin(adminId, password) {
         const callbackName = 'jsonp_callback_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         const url = `${APPS_SCRIPT_URL}?action=checkAdmin&adminId=${encodeURIComponent(adminId)}&password=${encodeURIComponent(password)}&callback=${callbackName}`;
         
-        // Таймаут на случай ошибки
         const timeout = setTimeout(() => {
             if (window[callbackName]) {
                 delete window[callbackName];
-                document.body.removeChild(script);
+                if (script && script.parentNode) document.body.removeChild(script);
                 resolve({ success: false, error: 'Превышено время ожидания' });
             }
         }, 10000);
@@ -1795,7 +1843,7 @@ async function checkAdmin(adminId, password) {
         window[callbackName] = function(data) {
             clearTimeout(timeout);
             delete window[callbackName];
-            document.body.removeChild(script);
+            if (script && script.parentNode) document.body.removeChild(script);
             if (data.success === true) {
                 resolve({ success: true, admin_id: data.admin_id, name: data.name });
             } else {
@@ -1809,7 +1857,7 @@ async function checkAdmin(adminId, password) {
             clearTimeout(timeout);
             if (window[callbackName]) {
                 delete window[callbackName];
-                document.body.removeChild(script);
+                if (script && script.parentNode) document.body.removeChild(script);
                 resolve({ success: false, error: 'Ошибка соединения' });
             }
         };
@@ -1817,6 +1865,9 @@ async function checkAdmin(adminId, password) {
     });
 }
 
+// ============================================
+// ОБРАБОТЧИКИ СОБЫТИЙ
+// ============================================
 document.getElementById('loginBtn').addEventListener('click', async () => {
     const adminId = document.getElementById('adminId').value.trim();
     const password = document.getElementById('adminPassword').value;
@@ -1838,13 +1889,8 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
     if (result.success) {
         currentAdmin = { id: result.admin_id, name: result.name };
         saveLogin(result.admin_id, result.name);
-        
-        document.getElementById('loginSection').style.display = 'none';
-        document.getElementById('adminContent').style.display = 'block';
-        document.getElementById('adminName').innerHTML = `👋 Здравствуйте, ${result.name}!`;
-        
+        showAdminInterface();
         loginStatus.style.display = 'none';
-        loadCurrentCombo();
     } else {
         loginStatus.textContent = '❌ Неверный ID или пароль!';
         loginStatus.className = 'status error';
@@ -1852,17 +1898,19 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
 });
 
 // ============================================
-// РАСКРЫТИЕ БЛОКОВ
+// ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ
 // ============================================
-let carsTrackExpanded = true, categoryExpanded = true, settingsExpanded = true, similarExpanded = true;
-function toggleCarsTrack() { carsTrackExpanded = !carsTrackExpanded; document.getElementById('carsTrackContent').classList.toggle('collapsed', !carsTrackExpanded); document.getElementById('carsTrackToggleIcon').innerHTML = carsTrackExpanded ? '▼' : '▶'; }
-function toggleCategory() { categoryExpanded = !categoryExpanded; document.getElementById('categoryContent').classList.toggle('collapsed', !categoryExpanded); document.getElementById('categoryToggleIcon').innerHTML = categoryExpanded ? '▼' : '▶'; }
-function toggleSettings() { settingsExpanded = !settingsExpanded; document.getElementById('settingsContent').classList.toggle('collapsed', !settingsExpanded); document.getElementById('settingsToggleIcon').innerHTML = settingsExpanded ? '▼' : '▶'; }
-function toggleSimilar() { similarExpanded = !similarExpanded; document.getElementById('similarContent').classList.toggle('collapsed', !similarExpanded); document.getElementById('similarToggleIcon').innerHTML = similarExpanded ? '▼' : '▶'; }
+// Проверяем, есть ли сохранённый вход
+if (checkSavedLogin()) {
+    // Если есть - показываем админку
+    showAdminInterface();
+} else {
+    // Если нет - показываем форму входа, скрываем админку
+    document.getElementById('loginSection').style.display = 'block';
+    document.getElementById('adminContent').style.display = 'none';
+}
 
-// ============================================
-// ИНИЦИАЛИЗАЦИЯ
-// ============================================
+// Остальные инициализации (раскрытие блоков, кнопки и т.д.)
 document.getElementById('carsTrackHeader').addEventListener('click', toggleCarsTrack);
 document.getElementById('categoryHeader').addEventListener('click', toggleCategory);
 document.getElementById('settingsHeader').addEventListener('click', toggleSettings);
@@ -1878,16 +1926,6 @@ document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
 });
 
 window.selectCar = selectCar;
-
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-    logout();
-});
-
-    // ✅ ВСТАВЬ ПРОВЕРКУ СЮДА (ПЕРЕД ЗАКРЫВАЮЩИМ </script>)
-if (!checkSavedLogin()) {
-    document.getElementById('loginSection').style.display = 'block';
-    document.getElementById('adminContent').style.display = 'none';
-}
     
 </script>
 </body>
