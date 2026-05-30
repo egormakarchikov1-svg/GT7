@@ -1386,47 +1386,7 @@ function setDisplayMode(mode) {
     updateVisibilityByDisplayMode(mode);  // ← вызываем здесь
 }
 
-// ============================================
-// ЗАПОМИНАНИЕ ВХОДА
-// ============================================
-function saveLogin(adminId, adminName) {
-    localStorage.setItem('gt7_admin_logged_in', 'true');
-    localStorage.setItem('gt7_admin_id', adminId);
-    localStorage.setItem('gt7_admin_name', adminName);
-}
 
-function clearLogin() {
-    localStorage.removeItem('gt7_admin_logged_in');
-    localStorage.removeItem('gt7_admin_id');
-    localStorage.removeItem('gt7_admin_name');
-}
-
-function checkSavedLogin() {
-    const isLoggedIn = localStorage.getItem('gt7_admin_logged_in') === 'true';
-    const savedAdminId = localStorage.getItem('gt7_admin_id');
-    const savedAdminName = localStorage.getItem('gt7_admin_name');
-    
-    if (isLoggedIn && savedAdminId) {
-        currentAdmin = { id: savedAdminId, name: savedAdminName || savedAdminId };
-        document.getElementById('loginSection').style.display = 'none';
-        document.getElementById('adminContent').style.display = 'block';
-        document.getElementById('adminName').innerHTML = `👋 Здравствуйте, ${currentAdmin.name}!`;
-        loadCurrentCombo();
-        return true;
-    }
-    return false;
-}
-
-function logout() {
-    clearLogin();
-    document.getElementById('adminId').value = '';
-    document.getElementById('adminPassword').value = '';
-    document.getElementById('loginSection').style.display = 'block';
-    document.getElementById('adminContent').style.display = 'none';
-    currentAdmin = null;
-}
-    
-     
     // ✅ ДОБАВЬ ЭТУ ФУНКЦИЮ СЮДА
 function updateVisibilityByDisplayMode(displayMode) {
     const carBlock = document.getElementById('carBlock');
