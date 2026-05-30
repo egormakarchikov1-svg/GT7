@@ -2050,6 +2050,47 @@ function generateLocalRace() {
 // ============================================
 // СИНХРОНИЗАЦИЯ С GOOGLE SHEETS - ИСПРАВЛЕНА
 // ============================================
+
+// Переменная для интервала автообновления
+let autoRefreshInterval = null;
+
+// Функция для показа индикатора обновления
+function showRefreshIndicator() {
+    const banner = document.getElementById('adminModeBanner');
+    if (banner) {
+        banner.style.transition = 'background 0.3s';
+        banner.style.background = 'rgba(34, 197, 94, 0.3)';
+        setTimeout(() => {
+            banner.style.background = '';
+        }, 500);
+    }
+}
+
+// Функция запуска автообновления
+function startAutoRefresh() {
+    if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+    
+    autoRefreshInterval = setInterval(async () => {
+        if (userSyncEnabled && currentAdminId) {
+            console.log('🔄 Автообновление данных...');
+            const synced = await loadSyncedCombo();
+            if (syncedModeActive && synced) {
+                applySyncedCombo(synced);
+                showRefreshIndicator();
+            }
+        }
+    }, 10000); // Обновление каждые 10 секунд
+}
+
+// Функция остановки автообновления
+function stopAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+    }
+}
+
+// Основная функция загрузки синхронизированной комбинации
 async function loadSyncedCombo() {
     console.log('🔍 loadSyncedCombo вызвана, currentAdminId =', currentAdminId);
     
@@ -2063,7 +2104,6 @@ async function loadSyncedCombo() {
     
     return new Promise((resolve) => {
         const callbackName = 'jsonp_combo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        // ✅ ДОБАВЛЕН &t=${Date.now()} ДЛЯ ОБНОВЛЕНИЯ КЭША
         const url = `${APPS_SCRIPT_URL}?action=getCurrentCombo&adminId=${encodeURIComponent(currentAdminId)}&callback=${callbackName}&t=${Date.now()}`;
         console.log('📡 JSONP Запрос:', url);
         
@@ -2121,10 +2161,17 @@ async function loadSyncedCombo() {
     });
 }
 
+// Функция применения синхронизированных данных
 function applySyncedCombo(data) {
     if (!data) return;
     
     console.log('📝 Применяем админские данные:', data);
+    
+    // Сохраняем текущие блокировки
+    const currentLocks = { ...locks };
+    
+    // Временно отключаем блокировки для обновления
+    Object.keys(locks).forEach(key => { locks[key] = false; });
     
     if (data.car_name) {
         const car = findCarByName(data.car_name);
@@ -2192,14 +2239,25 @@ function applySyncedCombo(data) {
         document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${data.fuel_value}</span>`;
     }
     
-    // ✅ ДОБАВЬ ЭТО В КОНЕЦ ФУНКЦИИ (ПОСЛЕ ВСЕХ if)
     // Обновляем режим отображения
     const displayMode = data.display_mode || 'all';
     if (typeof updateVisibilityByDisplayMode === 'function') {
         updateVisibilityByDisplayMode(displayMode);
     }
+    
+    // Восстанавливаем блокировки
+    Object.keys(currentLocks).forEach(key => { locks[key] = currentLocks[key]; });
+    
+    // Обновляем отображение замков
+    Object.keys(locks).forEach(param => {
+        document.querySelectorAll(`.lock-btn[data-param="${param}"], .settings-lock-btn[data-param="${param}"]`).forEach(btn => {
+            btn.innerText = locks[param] ? '🔒' : '🔓';
+            btn.setAttribute('data-state', locks[param] ? 'locked' : 'unlocked');
+        });
+    });
 }
 
+// Функция загрузки гонки (основная)
 async function loadRace() {
     console.log('🏁 loadRace вызвана');
     const synced = await loadSyncedCombo();
@@ -2220,7 +2278,6 @@ async function loadRace() {
     if (banner) banner.style.display = 'none';
     generateLocalRace();
 }
-
 // ============================================
 // УПРАВЛЕНИЕ
 // ============================================
@@ -2415,15 +2472,30 @@ function init() {
     console.log('🚀 Инициализация приложения');
     loadShownCars();
     
-    document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => btn.addEventListener('click', (e) => { 
-        e.stopPropagation(); 
-        toggleLock(btn.getAttribute('data-param')); 
-    }));
+    // Настройка кнопок блокировки
+    document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
+        const param = btn.getAttribute('data-param');
+        // Устанавливаем начальное состояние data-state
+        if (locks[param] === false) {
+            btn.setAttribute('data-state', 'unlocked');
+            btn.innerText = '🔓';
+        } else {
+            btn.setAttribute('data-state', 'locked');
+            btn.innerText = '🔒';
+        }
+        btn.addEventListener('click', (e) => { 
+            e.stopPropagation(); 
+            toggleLock(btn.getAttribute('data-param')); 
+        });
+    });
     
+    // Обработчики сворачивания блоков
     document.getElementById('settingsHeader').addEventListener('click', toggleSettings);
     document.getElementById('similarHeader').addEventListener('click', toggleSimilar);
     document.getElementById('carsTrackHeader').addEventListener('click', toggleCarsTrack);
     document.getElementById('categoryHeader').addEventListener('click', toggleCategory);
+    
+    // Кнопки управления
     document.getElementById('randomBtn').addEventListener('click', () => loadRace());
     document.getElementById('refreshSimilarBtn').addEventListener('click', refreshSimilarCars);
     document.getElementById('resetCarsBtn').addEventListener('click', resetCarsHistory);
@@ -2431,20 +2503,44 @@ function init() {
     document.getElementById('syncToggleBtn').addEventListener('click', toggleSyncMode);
     document.getElementById('modeAllBtn').addEventListener('click', () => setDisplayMode('all'));
     document.getElementById('modeGroupOnlyBtn').addEventListener('click', () => setDisplayMode('group_only'));
+    
+    // Обработчик выбора администратора
     document.getElementById('adminSelect').addEventListener('change', (e) => { 
-        currentAdminId = e.target.value; 
+        const newAdminId = e.target.value;
+        const oldAdminId = currentAdminId;
+        currentAdminId = newAdminId; 
         console.log('👑 Выбран админ:', currentAdminId);
+        
+        // Перезапускаем автообновление при смене админа
+        if (oldAdminId !== newAdminId) {
+            stopAutoRefresh();
+            if (userSyncEnabled && currentAdminId) {
+                startAutoRefresh();
+            }
+        }
+        
         updateModeSelectorVisibility();
         loadRace(); 
     });
     
+    // Глобальные функции
     window.selectCar = selectCar;
+    
+    // Обновляем интерфейс
     updateSyncBtn();
     loadAdmins();
     setDisplayMode(displayMode);
     updateModeSelectorVisibility();
+    
+    // Запускаем автообновление если включена синхронизация и выбран админ
+    if (userSyncEnabled && currentAdminId) {
+        startAutoRefresh();
+    }
+    
+    // Загружаем гонку
     loadRace();
 }
 
+// Запуск приложения
 init();
 </script>
