@@ -2066,6 +2066,9 @@ function showRefreshIndicator() {
     }
 }
 
+// Добавьте переменную для хранения последних данных
+let lastSyncedData = null;
+
 function startAutoRefresh() {
     if (autoRefreshInterval) clearInterval(autoRefreshInterval);
     
@@ -2075,63 +2078,62 @@ function startAutoRefresh() {
             const synced = await loadSyncedCombo(true);
             
             if (syncedModeActive && synced) {
-                // ✅ ПОЛУЧАЕМ ТЕКУЩИЕ ЗНАЧЕНИЯ
-                const currentCar = document.getElementById('carValue')?.innerText;
-                const currentTrack = document.getElementById('trackValue')?.innerText?.split('<span')[0]?.trim();
-                const currentWeather = document.getElementById('weatherValue')?.innerText;
-                const currentTime = document.getElementById('timeValue')?.innerText;
-                const currentTires = document.getElementById('tiresValue')?.innerText;
-                const currentFuel = document.getElementById('fuelValue')?.innerText;
-                const currentCategory = document.getElementById('categoryValue')?.innerText;
+                // ✅ ПОЛУЧАЕМ ТЕКУЩИЕ ЗНАЧЕНИЯ (очищаем от лишнего)
+                let currentCar = (document.getElementById('carValue')?.innerText || '').trim();
+                
+                let currentTrack = (document.getElementById('trackValue')?.innerText || '').trim();
+                currentTrack = currentTrack.split('кругов')[0]?.trim() || currentTrack;
+                
+                let currentWeather = (document.getElementById('weatherValue')?.innerText || '').trim();
+                let currentTime = (document.getElementById('timeValue')?.innerText || '').trim();
+                // Убираем X1, X2 и т.д. из времени
+                currentTime = currentTime.replace(/\s*X\d+\s*/g, '').trim();
+                
+                let currentTires = (document.getElementById('tiresValue')?.innerText || '').trim();
+                let currentFuel = (document.getElementById('fuelValue')?.innerText || '').trim();
+                let currentCategory = (document.getElementById('categoryValue')?.innerText || '').trim();
+                // Убираем иконку из категории
+                currentCategory = currentCategory.replace(/[⚡🏆]/g, '').trim();
                 
                 // ✅ ПОЛУЧАЕМ НОВЫЕ ЗНАЧЕНИЯ
-                const newCar = synced.car_name;
-                const newTrack = synced.track_name;
-                const newWeather = synced.weather_name;
-                const newTime = synced.time_name;
-                const newTires = synced.tires_value;
-                const newFuel = synced.fuel_value;
-                const newCategory = synced.category_name;
+                const newCar = (synced.car_name || '').trim();
+                const newTrack = (synced.track_name || '').trim();
+                const newWeather = (synced.weather_name || '').trim();
+                const newTime = (synced.time_name || '').trim();
+                const newTires = (synced.tires_value || '').trim();
+                const newFuel = (synced.fuel_value || '').trim();
+                const newCategory = (synced.category_name || '').trim();
                 
-                // ✅ ПРОВЕРЯЕМ, ИЗМЕНИЛОСЬ ЛИ ЧТО-ТО (с учётом блокировок)
-                let hasChanges = false;
+                // ✅ СОЗДАЁМ КЛЮЧ ДЛЯ СРАВНЕНИЯ
+                const currentKey = JSON.stringify({
+                    car: currentCar,
+                    track: currentTrack,
+                    weather: currentWeather,
+                    time: currentTime,
+                    tires: currentTires,
+                    fuel: currentFuel,
+                    category: currentCategory
+                });
                 
-                if (!locks.car && currentCar !== newCar) {
-                    console.log('📢 Изменилась МАШИНА');
-                    hasChanges = true;
-                }
-                if (!locks.track && currentTrack !== newTrack) {
-                    console.log('📢 Изменилась ТРАССА');
-                    hasChanges = true;
-                }
-                if (!locks.category && currentCategory !== newCategory) {
-                    console.log('📢 Изменился КЛАСС');
-                    hasChanges = true;
-                }
-                if (!locks.weather && currentWeather !== newWeather) {
-                    console.log('📢 Изменилась ПОГОДА');
-                    hasChanges = true;
-                }
-                if (!locks.time && currentTime !== newTime) {
-                    console.log('📢 Изменилось ВРЕМЯ');
-                    hasChanges = true;
-                }
-                if (!locks.tires && currentTires !== newTires) {
-                    console.log('📢 ИЗМЕНИЛСЯ ИЗНОС ШИН');
-                    hasChanges = true;
-                }
-                if (!locks.fuel && currentFuel !== newFuel) {
-                    console.log('📢 ИЗМЕНИЛСЯ РАСХОД ТОПЛИВА');
-                    hasChanges = true;
-                }
+                const newKey = JSON.stringify({
+                    car: newCar,
+                    track: newTrack,
+                    weather: newWeather,
+                    time: newTime,
+                    tires: newTires,
+                    fuel: newFuel,
+                    category: newCategory
+                });
                 
-                // ✅ ЕСЛИ ЧТО-ТО ИЗМЕНИЛОСЬ - ОБНОВЛЯЕМ
-                if (hasChanges) {
-                    console.log('🔄 Обновляем интерфейс...');
+                // ✅ СРАВНИВАЕМ
+                if (currentKey !== newKey) {
+                    console.log('🔄 Данные изменились! Обновляем интерфейс...');
+                    console.log('   Было:', currentKey);
+                    console.log('   Стало:', newKey);
                     applySyncedCombo(synced);
                     showRefreshIndicator();
                 } else {
-                    console.log('📢 Ничего не изменилось');
+                    console.log('📢 Данные не изменились, пропускаем обновление');
                 }
             }
         }
