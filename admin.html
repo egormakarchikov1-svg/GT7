@@ -1576,7 +1576,7 @@ async function generateAndSave() {
         updateProgressBar(45, '🏆 Класс определён');
         await sleep(200);
         
-        if (!locks.track) {
+                if (!locks.track) {
             selectedTrack = getRandomTrackWithoutRepeat();
             newCombo.track_name = selectedTrack.name;
             
@@ -1588,6 +1588,23 @@ async function generateAndSave() {
             updateProgressBar(60, '🛣️ Готово');
         } else {
             updateProgressBar(60, '🔒 Трасса заблокирована');
+            // Если трасса заблокирована, берем текущую из отображения
+            const currentTrackText = document.getElementById('trackValue').innerHTML;
+            let currentTrackName = currentTrackText.split('<span')[0].trim();
+            if (currentTrackName && currentTrackName !== '—') {
+                selectedTrack = tracksData.find(t => t.name === currentTrackName);
+                if (selectedTrack) {
+                    newCombo.track_name = selectedTrack.name;
+                    // Сохраняем существующие круги или вычисляем новые
+                    const lapsMatch = currentTrackText.match(/<span[^>]*>([^<]+)<\/span>/);
+                    if (lapsMatch && lapsMatch[1]) {
+                        const lapsNumber = parseInt(lapsMatch[1].match(/\d+/)[0]);
+                        newCombo.laps = lapsNumber;
+                    } else {
+                        newCombo.laps = calculateOptimalLaps(selectedTrack.length, newCombo.category_name);
+                    }
+                }
+            }
         }
         await sleep(200);
         
@@ -1653,10 +1670,15 @@ async function generateAndSave() {
             displayCarIcon(selectedCar.icon);
         }
         
-        const lapsToShow = newCombo.laps || calculateOptimalLaps(selectedTrack?.length, newCombo.category_name) || getRandomLaps();
-        document.getElementById('trackValue').innerHTML = `${newCombo.track_name} <span class="time-x-badge">${declensionLaps(lapsToShow)}</span>`;
-        const trackIconUrl = getTrackIcon(newCombo.track_name);
-        displayTrackIcon(trackIconUrl);
+                // Исправлено: проверяем что track_name существует
+        if (newCombo.track_name && newCombo.track_name !== 'undefined') {
+            const lapsToShow = newCombo.laps || (selectedTrack?.length ? calculateOptimalLaps(selectedTrack.length, newCombo.category_name) : getRandomLaps());
+            document.getElementById('trackValue').innerHTML = `${newCombo.track_name} <span class="time-x-badge">${declensionLaps(lapsToShow)}</span>`;
+            const trackIconUrl = getTrackIcon(newCombo.track_name);
+            displayTrackIcon(trackIconUrl);
+        } else {
+            document.getElementById('trackValue').innerHTML = '—';
+        }
         
         const cat = categories.find(c => c.name === newCombo.category_name);
         if (cat) document.getElementById('categoryText').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
