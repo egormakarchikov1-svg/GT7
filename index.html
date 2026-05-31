@@ -2072,22 +2072,17 @@ function startAutoRefresh() {
     autoRefreshInterval = setInterval(async () => {
         if (userSyncEnabled && currentAdminId) {
             console.log('🔄 Автообновление данных...');
-            const synced = await loadSyncedCombo(true); // forceRefresh = true
+            const synced = await loadSyncedCombo(true);
+            
             if (syncedModeActive && synced) {
-                // Проверяем, изменилась ли машина
-                const currentCar = document.getElementById('carValue')?.innerText;
-                const newCar = synced.car_name;
-                
-                if (!locks.car && currentCar !== newCar) {
-                    console.log('📢 Данные изменились! Обновляем интерфейс...');
-                    applySyncedCombo(synced);
-                    showRefreshIndicator();
-                } else {
-                    console.log('📢 Данные не изменились');
-                }
+                // ✅ ПРОСТО ОБНОВЛЯЕМ ВСЕГДА
+                // applySyncedCombo() сама разберётся с блокировками
+                console.log('📢 Применяем данные из таблицы');
+                applySyncedCombo(synced);
+                showRefreshIndicator();
             }
         }
-    }, 5000); // Обновление каждые 5 секунд (было 10)
+    }, 5000);
 }
 
 // Функция остановки автообновления
