@@ -2072,22 +2072,70 @@ function startAutoRefresh() {
     autoRefreshInterval = setInterval(async () => {
         if (userSyncEnabled && currentAdminId) {
             console.log('🔄 Автообновление данных...');
-            const synced = await loadSyncedCombo(true); // forceRefresh = true
+            const synced = await loadSyncedCombo(true);
+            
             if (syncedModeActive && synced) {
-                // Проверяем, изменилась ли машина
+                // ✅ ПОЛУЧАЕМ ТЕКУЩИЕ ЗНАЧЕНИЯ
                 const currentCar = document.getElementById('carValue')?.innerText;
-                const newCar = synced.car_name;
+                const currentTrack = document.getElementById('trackValue')?.innerText?.split('<span')[0]?.trim();
+                const currentWeather = document.getElementById('weatherValue')?.innerText;
+                const currentTime = document.getElementById('timeValue')?.innerText;
+                const currentTires = document.getElementById('tiresValue')?.innerText;
+                const currentFuel = document.getElementById('fuelValue')?.innerText;
+                const currentCategory = document.getElementById('categoryValue')?.innerText;
                 
-                if (currentCar !== newCar) {
-                    console.log('📢 Данные изменились! Обновляем интерфейс...');
+                // ✅ ПОЛУЧАЕМ НОВЫЕ ЗНАЧЕНИЯ
+                const newCar = synced.car_name;
+                const newTrack = synced.track_name;
+                const newWeather = synced.weather_name;
+                const newTime = synced.time_name;
+                const newTires = synced.tires_value;
+                const newFuel = synced.fuel_value;
+                const newCategory = synced.category_name;
+                
+                // ✅ ПРОВЕРЯЕМ, ИЗМЕНИЛОСЬ ЛИ ЧТО-ТО (с учётом блокировок)
+                let hasChanges = false;
+                
+                if (!locks.car && currentCar !== newCar) {
+                    console.log('📢 Изменилась МАШИНА');
+                    hasChanges = true;
+                }
+                if (!locks.track && currentTrack !== newTrack) {
+                    console.log('📢 Изменилась ТРАССА');
+                    hasChanges = true;
+                }
+                if (!locks.category && currentCategory !== newCategory) {
+                    console.log('📢 Изменился КЛАСС');
+                    hasChanges = true;
+                }
+                if (!locks.weather && currentWeather !== newWeather) {
+                    console.log('📢 Изменилась ПОГОДА');
+                    hasChanges = true;
+                }
+                if (!locks.time && currentTime !== newTime) {
+                    console.log('📢 Изменилось ВРЕМЯ');
+                    hasChanges = true;
+                }
+                if (!locks.tires && currentTires !== newTires) {
+                    console.log('📢 ИЗМЕНИЛСЯ ИЗНОС ШИН');
+                    hasChanges = true;
+                }
+                if (!locks.fuel && currentFuel !== newFuel) {
+                    console.log('📢 ИЗМЕНИЛСЯ РАСХОД ТОПЛИВА');
+                    hasChanges = true;
+                }
+                
+                // ✅ ЕСЛИ ЧТО-ТО ИЗМЕНИЛОСЬ - ОБНОВЛЯЕМ
+                if (hasChanges) {
+                    console.log('🔄 Обновляем интерфейс...');
                     applySyncedCombo(synced);
                     showRefreshIndicator();
                 } else {
-                    console.log('📢 Данные не изменились');
+                    console.log('📢 Ничего не изменилось');
                 }
             }
         }
-    }, 5000); // Обновление каждые 5 секунд (было 10)
+    }, 5000);
 }
 
 // Функция остановки автообновления
