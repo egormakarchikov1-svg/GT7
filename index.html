@@ -2080,9 +2080,28 @@ function startAutoRefresh() {
             const synced = await loadSyncedCombo(true);
             
             if (syncedModeActive && synced) {
-                // Просто применяем данные - applySyncedCombo сама разберётся
-                // какие параметры обновлять, а какие нет (по блокировкам)
-                applySyncedCombo(synced);
+                // Создаём хеш данных
+                const currentHash = JSON.stringify({
+                    car: synced.car_name,
+                    track: synced.track_name,
+                    weather: synced.weather_name,
+                    time: synced.time_name,
+                    tires: synced.tires_value,
+                    fuel: synced.fuel_value,
+                    category: synced.category_name,
+                    laps: synced.laps,
+                    display_mode: synced.display_mode
+                });
+                
+                // Сравниваем с предыдущим хешем
+                if (currentHash !== lastSyncedData) {
+                    console.log('🔄 ДАННЫЕ РЕАЛЬНО ИЗМЕНИЛИСЬ! Обновляем...');
+                    lastSyncedData = currentHash;
+                    applySyncedCombo(synced);
+                    showRefreshIndicator();
+                } else {
+                    console.log('📢 Данные НЕ ИЗМЕНИЛИСЬ, подсветки НЕТ');
+                }
             }
         }
     }, 5000);
@@ -2171,6 +2190,8 @@ async function loadSyncedCombo(forceRefresh = false) {
 function applySyncedCombo(data) {
     if (!data) return;
     
+    console.log('📝 Применяем админские данные:', data);
+    
     // Анимированное обновление - подсветка измененных полей
     const highlightField = (elementId) => {
         const element = document.getElementById(elementId);
@@ -2183,99 +2204,82 @@ function applySyncedCombo(data) {
         }
     };
     
-    // ✅ ТОЛЬКО НЕЗАБЛОКИРОВАННЫЕ ПАРАМЕТРЫ ОБНОВЛЯЮТСЯ И ПОДСВЕЧИВАЮТСЯ
+    // ✅ БЕЗ ВРЕМЕННОГО ОТКЛЮЧЕНИЯ БЛОКИРОВОК!
+    // Просто проверяем каждое поле с учётом блокировки
     
-    // МАШИНА - только если не заблокирована
     if (!locks.car && data.car_name) {
-        const currentCar = document.getElementById('carValue')?.innerText;
-        if (currentCar !== data.car_name) {
-            const car = findCarByName(data.car_name);
-            if (car) {
-                document.getElementById('carValue').innerText = car.name;
-                const carIcon = document.getElementById('carIcon');
-                if (carIcon && car.icon) carIcon.src = car.icon;
-                if (typeof displaySimilarCars === 'function') displaySimilarCars(car);
-                highlightField('carValue');
+        const car = findCarByName(data.car_name);
+        if (car) {
+            document.getElementById('carValue').innerText = car.name;
+            const carIcon = document.getElementById('carIcon');
+            if (carIcon && car.icon) {
+                carIcon.src = car.icon;
+                carIcon.style.display = 'block';
             }
+            if (typeof displaySimilarCars === 'function') displaySimilarCars(car);
+            highlightField('carValue');
+        } else {
+            document.getElementById('carValue').innerText = data.car_name;
+            highlightField('carValue');
         }
     }
     
-    // ТРАССА - только если не заблокирована
     if (!locks.track && data.track_name) {
-        let currentTrack = document.getElementById('trackValue')?.innerText || '';
-        currentTrack = currentTrack.split('кругов')[0]?.trim();
-        if (currentTrack !== data.track_name) {
-            const track = findTrackByName(data.track_name);
-            const laps = data.laps || '5';
-            if (track) {
-                document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
-                const trackIcon = document.getElementById('trackIcon');
-                if (trackIcon) trackIcon.src = getTrackIcon(track.name);
-                highlightField('trackValue');
+        const track = findTrackByName(data.track_name);
+        const laps = data.laps || '5';
+        if (track) {
+            document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
+            const trackIcon = document.getElementById('trackIcon');
+            if (trackIcon && typeof getTrackIcon === 'function') {
+                trackIcon.src = getTrackIcon(track.name);
+                trackIcon.style.display = 'block';
             }
+            highlightField('trackValue');
+        } else {
+            document.getElementById('trackValue').innerHTML = `${data.track_name} <span class="time-x-badge">${laps} кругов</span>`;
+            highlightField('trackValue');
         }
     }
     
-    // КАТЕГОРИЯ - только если не заблокирована
     if (!locks.category && data.category_name) {
-        const currentCategory = document.getElementById('categoryValue')?.innerText || '';
-        if (currentCategory !== data.category_name && !currentCategory.includes(data.category_name)) {
-            const cat = categories.find(c => c.name === data.category_name);
-            if (cat) {
-                document.getElementById('categoryValue').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
-            } else {
-                document.getElementById('categoryValue').innerHTML = data.category_name;
-            }
-            highlightField('categoryValue');
+        const cat = categories.find(c => c.name === data.category_name);
+        if (cat) {
+            document.getElementById('categoryValue').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
+        } else {
+            document.getElementById('categoryValue').innerHTML = data.category_name;
         }
+        highlightField('categoryValue');
     }
     
-    // ПОГОДА - только если не заблокирована
     if (!locks.weather && data.weather_name) {
-        const currentWeather = document.getElementById('weatherValue')?.innerText || '';
-        if (currentWeather !== data.weather_name) {
-            const w = findWeatherByName(data.weather_name);
-            if (w) {
-                document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`;
-            } else {
-                document.getElementById('weatherValue').innerHTML = data.weather_name;
-            }
-            highlightField('weatherValue');
+        const w = findWeatherByName(data.weather_name);
+        if (w) {
+            document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`;
+        } else {
+            document.getElementById('weatherValue').innerHTML = data.weather_name;
         }
+        highlightField('weatherValue');
     }
     
-    // ВРЕМЯ - только если не заблокировано
     if (!locks.time && data.time_name) {
-        let currentTime = document.getElementById('timeValue')?.innerText || '';
-        currentTime = currentTime.split('X')[0]?.trim();
-        if (currentTime !== data.time_name) {
-            const tm = findTimeByName(data.time_name);
-            const multiplier = data.time_multiplier || 'X1';
-            if (tm) {
-                document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${multiplier}</span>`;
-            } else {
-                document.getElementById('timeValue').innerHTML = `${data.time_name} <span class="time-x-badge">${multiplier}</span>`;
-            }
-            highlightField('timeValue');
+        const tm = findTimeByName(data.time_name);
+        const multiplier = data.time_multiplier || 'X1';
+        if (tm) {
+            document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${multiplier}</span>`;
+        } else {
+            document.getElementById('timeValue').innerHTML = `${data.time_name} <span class="time-x-badge">${multiplier}</span>`;
         }
+        highlightField('timeValue');
     }
     
-    // ИЗНОС ШИН - только если не заблокирован
     if (!locks.tires && data.tires_value) {
-        const currentTires = document.getElementById('tiresValue')?.innerText || '';
-        if (currentTires !== data.tires_value) {
-            document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${data.tires_value}</span>`;
-            highlightField('tiresValue');
-        }
+        document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${data.tires_value}</span>`;
+        highlightField('tiresValue');
     }
     
-    // РАСХОД ТОПЛИВА - только если не заблокирован
     if (!locks.fuel && data.fuel_value) {
-        const currentFuel = document.getElementById('fuelValue')?.innerText || '';
-        if (currentFuel !== data.fuel_value) {
-            document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${data.fuel_value}</span>`;
-            highlightField('fuelValue');
-        }
+        document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${data.fuel_value}</span>`;
+        highlightField('fuelValue');
     }
     
     // Обновляем режим отображения
