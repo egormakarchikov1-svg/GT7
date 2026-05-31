@@ -1149,6 +1149,7 @@ let userSyncEnabled = localStorage.getItem('gt7_sync_enabled') !== 'false';
 let syncedModeActive = false;
 let syncedComboData = null;
 let displayMode = localStorage.getItem('gt7_display_mode') || 'all';
+let lastSyncedData = null;
 
 // ============================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
@@ -2071,23 +2072,35 @@ function startAutoRefresh() {
     
     autoRefreshInterval = setInterval(async () => {
         if (userSyncEnabled && currentAdminId) {
-            console.log('🔄 Автообновление данных...');
-            const synced = await loadSyncedCombo(true); // forceRefresh = true
+            console.log('🔄 Проверка обновлений...');
+            const synced = await loadSyncedCombo(true);
+            
             if (syncedModeActive && synced) {
-                // Проверяем, изменилась ли машина
-                const currentCar = document.getElementById('carValue')?.innerText;
-                const newCar = synced.car_name;
+                // Создаём хеш данных
+                const currentHash = JSON.stringify({
+                    car: synced.car_name,
+                    track: synced.track_name,
+                    weather: synced.weather_name,
+                    time: synced.time_name,
+                    tires: synced.tires_value,
+                    fuel: synced.fuel_value,
+                    category: synced.category_name,
+                    laps: synced.laps,
+                    display_mode: synced.display_mode
+                });
                 
-                if (currentCar !== newCar) {
-                    console.log('📢 Данные изменились! Обновляем интерфейс...');
+                // Сравниваем с предыдущим хешем
+                if (currentHash !== lastSyncedData) {
+                    console.log('🔄 ДАННЫЕ РЕАЛЬНО ИЗМЕНИЛИСЬ! Обновляем...');
+                    lastSyncedData = currentHash;
                     applySyncedCombo(synced);
                     showRefreshIndicator();
                 } else {
-                    console.log('📢 Данные не изменились');
+                    console.log('📢 Данные НЕ ИЗМЕНИЛИСЬ, подсветки НЕТ');
                 }
             }
         }
-    }, 5000); // Обновление каждые 5 секунд (было 10)
+    }, 5000);
 }
 
 // Функция остановки автообновления
