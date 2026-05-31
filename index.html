@@ -2205,13 +2205,12 @@ function applySyncedCombo(data) {
         }
     };
     
-    // Сохраняем текущие блокировки
-    const currentLocks = { ...locks };
+    // ✅ ДОБАВЛЯЕМ ПРОВЕРКИ НА БЛОКИРОВКИ (это самое важное!)
+    // И проверяем, что данные реально изменились
     
-    // Временно отключаем блокировки для обновления
-    Object.keys(locks).forEach(key => { locks[key] = false; });
-    
-    if (data.car_name) {
+    // МАШИНА
+    const currentCar = document.getElementById('carValue')?.innerText;
+    if (!locks.car && data.car_name && currentCar !== data.car_name) {
         const car = findCarByName(data.car_name);
         if (car) {
             document.getElementById('carValue').innerText = car.name;
@@ -2228,11 +2227,16 @@ function applySyncedCombo(data) {
         }
     }
     
-    if (data.track_name) {
+    // ТРАССА
+    const currentTrackElem = document.getElementById('trackValue');
+    let currentTrack = currentTrackElem?.innerText || '';
+    currentTrack = currentTrack.split('кругов')[0]?.trim() || currentTrack;
+    
+    if (!locks.track && data.track_name && currentTrack !== data.track_name) {
         const track = findTrackByName(data.track_name);
         const laps = data.laps || '5';
         if (track) {
-            document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
+            currentTrackElem.innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
             const trackIcon = document.getElementById('trackIcon');
             if (trackIcon && typeof getTrackIcon === 'function') {
                 trackIcon.src = getTrackIcon(track.name);
@@ -2240,12 +2244,14 @@ function applySyncedCombo(data) {
             }
             highlightField('trackValue');
         } else {
-            document.getElementById('trackValue').innerHTML = `${data.track_name} <span class="time-x-badge">${laps} кругов</span>`;
+            currentTrackElem.innerHTML = `${data.track_name} <span class="time-x-badge">${laps} кругов</span>`;
             highlightField('trackValue');
         }
     }
     
-    if (data.category_name) {
+    // КАТЕГОРИЯ
+    const currentCategory = document.getElementById('categoryValue')?.innerText || '';
+    if (!locks.category && data.category_name && currentCategory !== data.category_name && !currentCategory.includes(data.category_name)) {
         const cat = categories.find(c => c.name === data.category_name);
         if (cat) {
             document.getElementById('categoryValue').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
@@ -2255,7 +2261,9 @@ function applySyncedCombo(data) {
         highlightField('categoryValue');
     }
     
-    if (data.weather_name) {
+    // ПОГОДА
+    const currentWeather = document.getElementById('weatherValue')?.innerText || '';
+    if (!locks.weather && data.weather_name && currentWeather !== data.weather_name) {
         const w = findWeatherByName(data.weather_name);
         if (w) {
             document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`;
@@ -2265,7 +2273,10 @@ function applySyncedCombo(data) {
         highlightField('weatherValue');
     }
     
-    if (data.time_name) {
+    // ВРЕМЯ
+    let currentTime = document.getElementById('timeValue')?.innerText || '';
+    currentTime = currentTime.split('X')[0]?.trim() || currentTime;
+    if (!locks.time && data.time_name && currentTime !== data.time_name) {
         const tm = findTimeByName(data.time_name);
         const multiplier = data.time_multiplier || 'X1';
         if (tm) {
@@ -2276,12 +2287,18 @@ function applySyncedCombo(data) {
         highlightField('timeValue');
     }
     
-    if (data.tires_value) {
+    // ИЗНОС ШИН
+    const currentTires = document.getElementById('tiresValue')?.innerText || '';
+    const newTiresFormatted = data.tires_value ? `X${data.tires_value.replace('X', '')}` : '';
+    if (!locks.tires && data.tires_value && currentTires !== newTiresFormatted && currentTires !== data.tires_value) {
         document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${data.tires_value}</span>`;
         highlightField('tiresValue');
     }
     
-    if (data.fuel_value) {
+    // РАСХОД ТОПЛИВА
+    const currentFuel = document.getElementById('fuelValue')?.innerText || '';
+    const newFuelFormatted = data.fuel_value ? `X${data.fuel_value.replace('X', '')}` : '';
+    if (!locks.fuel && data.fuel_value && currentFuel !== newFuelFormatted && currentFuel !== data.fuel_value) {
         document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${data.fuel_value}</span>`;
         highlightField('fuelValue');
     }
@@ -2291,9 +2308,6 @@ function applySyncedCombo(data) {
     if (typeof updateVisibilityByDisplayMode === 'function') {
         updateVisibilityByDisplayMode(newDisplayMode);
     }
-    
-    // Восстанавливаем блокировки
-    Object.keys(currentLocks).forEach(key => { locks[key] = currentLocks[key]; });
     
     // Обновляем отображение замков
     Object.keys(locks).forEach(param => {
