@@ -1149,6 +1149,7 @@ let userSyncEnabled = localStorage.getItem('gt7_sync_enabled') !== 'false';
 let syncedModeActive = false;
 let syncedComboData = null;
 let displayMode = localStorage.getItem('gt7_display_mode') || 'all';
+let lastSyncedData = null;
 
 // ============================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
@@ -2066,20 +2067,42 @@ function showRefreshIndicator() {
     }
 }
 
+// Переменная для хранения последних полученных данных
+let lastSyncedData = null;
+
 function startAutoRefresh() {
     if (autoRefreshInterval) clearInterval(autoRefreshInterval);
     
     autoRefreshInterval = setInterval(async () => {
         if (userSyncEnabled && currentAdminId) {
-            console.log('🔄 Автообновление данных...');
+            console.log('🔄 Проверка обновлений...');
             const synced = await loadSyncedCombo(true);
             
             if (syncedModeActive && synced) {
-                // ✅ ПРОСТО ОБНОВЛЯЕМ ВСЕГДА
-                // applySyncedCombo() сама разберётся с блокировками
-                console.log('📢 Применяем данные из таблицы');
-                applySyncedCombo(synced);
-                showRefreshIndicator();
+                // Создаём строку для сравнения (только данные из таблицы)
+                const currentDataStr = JSON.stringify({
+                    car: synced.car_name,
+                    track: synced.track_name,
+                    weather: synced.weather_name,
+                    time: synced.time_name,
+                    tires: synced.tires_value,
+                    fuel: synced.fuel_value,
+                    category: synced.category_name,
+                    laps: synced.laps,
+                    display_mode: synced.display_mode
+                });
+                
+                const lastDataStr = lastSyncedData ? JSON.stringify(lastSyncedData) : '';
+                
+                // Сравниваем с предыдущими данными из таблицы
+                if (currentDataStr !== lastDataStr) {
+                    console.log('🔄 ДАННЫЕ В ТАБЛИЦЕ ИЗМЕНИЛИСЬ! Обновляем...');
+                    lastSyncedData = synced;
+                    applySyncedCombo(synced);
+                    showRefreshIndicator();
+                } else {
+                    console.log('📢 Данные в таблице НЕ ИЗМЕНИЛИСЬ');
+                }
             }
         }
     }, 5000);
