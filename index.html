@@ -2156,7 +2156,6 @@ async function loadSyncedCombo(forceRefresh = false) {
                 const banner = document.getElementById('adminModeBanner');
                 if (banner) {
                     banner.style.display = 'block';
-                    banner.innerHTML = `👑 АКТИВНА КОМБИНАЦИЯ ОТ ${currentAdminId} 👑`;
                 }
                 updateModeSelectorVisibility();
                 resolve(data);
@@ -2225,21 +2224,19 @@ function applySyncedCombo(data) {
     }
     
     if (!locks.track && data.track_name) {
+    let currentTrack = document.getElementById('trackValue')?.innerText || '';
+    currentTrack = currentTrack.split('кругов')[0]?.trim();  // ← .trim() убирает пробелы!
+    if (currentTrack !== data.track_name) {
         const track = findTrackByName(data.track_name);
         const laps = data.laps || '5';
         if (track) {
             document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
             const trackIcon = document.getElementById('trackIcon');
-            if (trackIcon && typeof getTrackIcon === 'function') {
-                trackIcon.src = getTrackIcon(track.name);
-                trackIcon.style.display = 'block';
-            }
-            highlightField('trackValue');
-        } else {
-            document.getElementById('trackValue').innerHTML = `${data.track_name} <span class="time-x-badge">${laps} кругов</span>`;
+            if (trackIcon) trackIcon.src = getTrackIcon(track.name);
             highlightField('trackValue');
         }
     }
+}
     
     if (!locks.category && data.category_name) {
         const cat = categories.find(c => c.name === data.category_name);
