@@ -984,11 +984,11 @@
     <div style="height: 2px; width: 60px; background: linear-gradient(90deg, transparent, #ff4d4d, transparent); margin: 12px auto 0;"></div>
 </div>
 
-<!-- Блок РЕЖИМ ОТОБРАЖЕНИЯ МАШИН -->
+<!-- Блок РЕЖИМ ЗАЕЗДА МАШИН -->
 <div class="cars-track-container" id="modeSelectorBlock" style="border-color: #8b5cf6;">
     <div class="cars-track-header-clickable" style="cursor: default;">
         <div style="width: 30px;"></div>
-        <div class="cars-track-title" style="color: #8b5cf6;">🎮 РЕЖИМ ОТОБРАЖЕНИЯ 🎮</div>
+        <div class="cars-track-title" style="color: #8b5cf6;">🎮 РЕЖИМ ЗАЕЗДА 🎮</div>
         <div style="width: 30px;"></div>
     </div>
     <div class="cars-track-content">
@@ -2314,7 +2314,7 @@ function applySyncedCombo(data) {
         highlightField('fuelValue');
     }
     
-    // Обновляем режим отображения
+    // Обновляем РЕЖИМ ЗАЕЗДА
     const newDisplayMode = data.display_mode || 'all';
     if (typeof updateVisibilityByDisplayMode === 'function') {
         updateVisibilityByDisplayMode(newDisplayMode);
