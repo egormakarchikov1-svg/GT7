@@ -965,6 +965,54 @@
     color: #e0e7ff;
     font-size: 13px;
 }
+
+        /* Стили для поиска машин */
+#carSearchResults {
+    scrollbar-width: thin;
+    scrollbar-color: #ff4d4d #1e293b;
+}
+
+#carSearchResults::-webkit-scrollbar {
+    width: 6px;
+}
+
+#carSearchResults::-webkit-scrollbar-track {
+    background: #1e293b;
+    border-radius: 10px;
+}
+
+#carSearchResults::-webkit-scrollbar-thumb {
+    background: #ff4d4d;
+    border-radius: 10px;
+}
+
+.search-result-item {
+    padding: 10px 12px;
+    border-bottom: 1px solid #334155;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.search-result-item:hover {
+    background: #1e293b;
+    transform: scale(1.01);
+}
+
+.search-result-name {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.search-result-rating {
+    color: #ff4d4d;
+    font-size: 11px;
+    background: rgba(255, 77, 77, 0.15);
+    padding: 2px 6px;
+    border-radius: 12px;
+}
     
     </style>
 </head>
@@ -1125,6 +1173,24 @@
         <button id="randomBtn" class="btn-main">🎲 СЛУЧАЙНАЯ ГОНКА</button>
         <button id="shareBtn" class="btn-main" style="background: #3b82f6;">📤 ПОДЕЛИТЬСЯ</button>
     </div>
+
+    <!-- Блок ручного выбора машины -->
+<div class="cars-track-container" style="border-color: #3b82f6; margin-top: 15px;">
+    <div class="cars-track-header-clickable" id="manualSelectHeader" style="cursor: pointer;">
+        <div style="width: 30px;"></div>
+        <div class="cars-track-title" style="color: #3b82f6;">🔍 РУЧНОЙ ВЫБОР МАШИНЫ</div>
+        <div class="cars-track-toggle-icon" id="manualSelectToggleIcon">▼</div>
+    </div>
+    <div class="cars-track-content" id="manualSelectContent">
+        <input type="text" id="carSearchInput" placeholder="🔍 Введите название машины..." 
+               style="width: 100%; padding: 12px; margin: 8px 0; border-radius: 30px; border: none; background: #1e293b; color: white; font-size: 14px;">
+        <div id="carSearchResults" style="max-height: 300px; overflow-y: auto; margin: 8px 0; border-radius: 12px; display: none; background: #0f172a;"></div>
+        <div id="selectedCarInfo" style="background: #22c55e20; border-left: 3px solid #22c55e; padding: 10px; border-radius: 8px; margin: 8px 0; font-size: 13px; display: none;">
+            ✅ Выбрана: <strong id="selectedCarName"></strong>
+        </div>
+        <button id="applySelectedCarBtn" class="btn-similar" style="background: #3b82f6; display: none;">✅ ПРИМЕНИТЬ ВЫБРАННУЮ МАШИНУ</button>
+    </div>
+</div>
 
     <div class="sync-toggle-container">
         <span>🔄 РЕЖИМ СИНХРОНИЗАЦИИ</span>
@@ -2621,25 +2687,171 @@ function init() {
         updateModeSelectorVisibility();
         loadRace(); 
     });
+
+    // ============================================
+// РУЧНОЙ ВЫБОР МАШИНЫ С ПОИСКОМ
+// ============================================
+
+let manualSelectExpanded = false;
+let selectedManualCar = null;
+
+// Сворачивание блока
+document.getElementById('manualSelectHeader').addEventListener('click', () => {
+    manualSelectExpanded = !manualSelectExpanded;
+    document.getElementById('manualSelectContent').classList.toggle('collapsed', !manualSelectExpanded);
+    document.getElementById('manualSelectToggleIcon').innerHTML = manualSelectExpanded ? '▼' : '▶';
+});
+
+// Поиск машин
+const searchInput = document.getElementById('carSearchInput');
+const resultsDiv = document.getElementById('carSearchResults');
+
+searchInput.addEventListener('input', function() {
+    const query = this.value.toLowerCase().trim();
     
-    // Глобальные функции
-    window.selectCar = selectCar;
-    
-    // Обновляем интерфейс
-    updateSyncBtn();
-    loadAdmins();
-    setDisplayMode(displayMode);
-    updateModeSelectorVisibility();
-    
-    // Запускаем автообновление если включена синхронизация и выбран админ
-    if (userSyncEnabled && currentAdminId) {
-        startAutoRefresh();
+    if (query.length < 2) {
+        resultsDiv.style.display = 'none';
+        return;
     }
     
-    // Загружаем гонку
-    loadRace();
+    // Ищем машины
+    const filtered = carsDatabase.filter(car => 
+        car.name.toLowerCase().includes(query)
+    ).slice(0, 15); // Показываем максимум 15 результатов
+    
+    if (filtered.length === 0) {
+        resultsDiv.innerHTML = '<div style="padding: 20px; text-align: center; color: #aaa;">❌ Машины не найдены</div>';
+        resultsDiv.style.display = 'block';
+        return;
+    }
+    
+    resultsDiv.innerHTML = filtered.map(car => `
+        <div class="search-result-item" onclick="selectManualCar('${car.name.replace(/'/g, "\\'")}', ${car.rating}, '${car.icon}')">
+            <div class="search-result-name">${car.name}</div>
+            <div class="search-result-rating">⭐ ${car.rating.toFixed(0)}</div>
+        </div>
+    `).join('');
+    
+    resultsDiv.style.display = 'block';
+});
+
+// Функция выбора машины
+window.selectManualCar = function(carName, rating, icon) {
+    selectedManualCar = { name: carName, rating: rating, icon: icon };
+    
+    document.getElementById('selectedCarName').innerText = carName;
+    document.getElementById('selectedCarInfo').style.display = 'block';
+    document.getElementById('applySelectedCarBtn').style.display = 'block';
+    resultsDiv.style.display = 'none';
+    searchInput.value = carName;
+};
+
+// Применение выбранной машины
+document.getElementById('applySelectedCarBtn').addEventListener('click', async () => {
+    if (!selectedManualCar) {
+        alert('Сначала выберите машину из списка!');
+        return;
+    }
+    
+    if (!currentAdminId) {
+        alert('Синхронизация не активна. Выберите администратора!');
+        return;
+    }
+    
+    // Находим полные данные машины
+    const fullCar = carsDatabase.find(c => c.name === selectedManualCar.name);
+    if (!fullCar) return;
+    
+    // Обновляем отображение
+    document.getElementById('carValue').innerText = fullCar.name;
+    displayCarIcon(fullCar.icon);
+    displaySimilarCars(fullCar);
+    
+    // Отправляем выбранную машину в админку
+    const comboData = {
+        admin_id: currentAdminId,
+        car_name: fullCar.name,
+        display_mode: displayMode,
+        car_locked: locks.car,
+        track_locked: locks.track,
+        weather_locked: locks.weather,
+        time_locked: locks.time,
+        tires_locked: locks.tires,
+        fuel_locked: locks.fuel,
+        category_locked: locks.category
+    };
+    
+    // Добавляем остальные текущие параметры
+    const currentTrackElem = document.getElementById('trackValue');
+    const currentTrackName = currentTrackElem?.innerText?.split('кругов')[0]?.trim();
+    if (currentTrackName) comboData.track_name = currentTrackName;
+    
+    const currentWeather = document.getElementById('weatherValue')?.innerText;
+    if (currentWeather) comboData.weather_name = currentWeather;
+    
+    const currentTime = document.getElementById('timeValue')?.innerText;
+    if (currentTime) comboData.time_name = currentTime;
+    
+    const currentTires = document.getElementById('tiresValue')?.innerText?.replace('X', '');
+    if (currentTires) comboData.tires_value = currentTires;
+    
+    const currentFuel = document.getElementById('fuelValue')?.innerText?.replace('X', '');
+    if (currentFuel) comboData.fuel_value = currentFuel;
+    
+    const currentCategory = document.getElementById('categoryValue')?.innerText;
+    if (currentCategory) {
+        const catMatch = currentCategory.match(/Gr\.\d/);
+        if (catMatch) comboData.category_name = catMatch[0];
+    }
+    
+        console.log('📤 Отправляем ручной выбор:', comboData);
+    
+    // Сохраняем через JSONP
+    try {
+        await saveComboViaJSONP(comboData);
+        
+        // Зелёная подсветка машины
+        const carElement = document.getElementById('carValue');
+        carElement.style.transition = 'background 0.3s';
+        carElement.style.background = 'rgba(34, 197, 94, 0.3)';
+        setTimeout(() => {
+            carElement.style.background = '';
+        }, 500);
+        
+        alert(`✅ Машина "${fullCar.name}" применена!\nЧерез 1-2 минуты она отобразится у всех пользователей.`);
+        
+        // Сбрасываем выбор
+        selectedManualCar = null;
+        document.getElementById('selectedCarInfo').style.display = 'none';
+        document.getElementById('applySelectedCarBtn').style.display = 'none';
+        searchInput.value = '';
+        
+    } catch(e) {
+        console.error('Ошибка сохранения:', e);
+        alert('❌ Ошибка при применении машины');
+    }
+});
+
+// Глобальные функции
+window.selectCar = selectCar;
+
+// Обновляем интерфейс
+updateSyncBtn();
+loadAdmins();
+setDisplayMode(displayMode);
+updateModeSelectorVisibility();
+
+// Запускаем автообновление если включена синхронизация и выбран админ
+if (userSyncEnabled && currentAdminId) {
+    startAutoRefresh();
 }
+
+// Загружаем гонку
+loadRace();
+}  // ← ЗАКРЫТИЕ ФУНКЦИИ init
 
 // Запуск приложения
 init();
 </script>
+</body>
+</html>
