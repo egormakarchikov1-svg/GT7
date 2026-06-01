@@ -2189,7 +2189,43 @@ async function loadSyncedCombo(forceRefresh = false) {
 function applySyncedCombo(data) {
     if (!data) return;
     
-    console.log('📝 Применяем админские данные:', data);
+    // ✅ ПРИМЕНЯЕМ БЛОКИРОВКИ ИЗ ДАННЫХ АДМИНА
+    if (data.track_locked !== undefined) {
+        locks.track = data.track_locked;
+        console.log('Применена блокировка трассы от админа:', locks.track);
+    }
+    if (data.car_locked !== undefined) {
+        locks.car = data.car_locked;
+        console.log('Применена блокировка машины от админа:', locks.car);
+    }
+    if (data.weather_locked !== undefined) {
+        locks.weather = data.weather_locked;
+        console.log('Применена блокировка погоды от админа:', locks.weather);
+    }
+    if (data.time_locked !== undefined) {
+        locks.time = data.time_locked;
+        console.log('Применена блокировка времени от админа:', locks.time);
+    }
+    if (data.tires_locked !== undefined) {
+        locks.tires = data.tires_locked;
+        console.log('Применена блокировка износа шин от админа:', locks.tires);
+    }
+    if (data.fuel_locked !== undefined) {
+        locks.fuel = data.fuel_locked;
+        console.log('Применена блокировка расхода топлива от админа:', locks.fuel);
+    }
+    if (data.category_locked !== undefined) {
+        locks.category = data.category_locked;
+        console.log('Применена блокировка категории от админа:', locks.category);
+    }
+    
+    // Обновляем отображение кнопок замков
+    Object.keys(locks).forEach(param => {
+        document.querySelectorAll(`.lock-btn[data-param="${param}"], .settings-lock-btn[data-param="${param}"]`).forEach(btn => {
+            btn.innerText = locks[param] ? '🔒' : '🔓';
+            btn.setAttribute('data-state', locks[param] ? 'locked' : 'unlocked');
+        });
+    });
     
     // Анимированное обновление - подсветка измененных полей
     const highlightField = (elementId) => {
@@ -2203,9 +2239,7 @@ function applySyncedCombo(data) {
         }
     };
     
-    // ✅ БЕЗ ВРЕМЕННОГО ОТКЛЮЧЕНИЯ БЛОКИРОВОК!
-    // Просто проверяем каждое поле с учётом блокировки
-    
+    // МАШИНА - только если не заблокирована
     if (!locks.car && data.car_name) {
         const car = findCarByName(data.car_name);
         if (car) {
@@ -2223,17 +2257,19 @@ function applySyncedCombo(data) {
         }
     }
     
+    // ТРАССА - только если не заблокирована
     if (!locks.track && data.track_name) {
-    const track = findTrackByName(data.track_name);
-    const laps = data.laps || '5';
-    if (track) {
-        document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
-        const trackIcon = document.getElementById('trackIcon');
-        if (trackIcon) trackIcon.src = getTrackIcon(track.name);
-        highlightField('trackValue');
+        const track = findTrackByName(data.track_name);
+        const laps = data.laps || '5';
+        if (track) {
+            document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
+            const trackIcon = document.getElementById('trackIcon');
+            if (trackIcon) trackIcon.src = getTrackIcon(track.name);
+            highlightField('trackValue');
+        }
     }
-}
     
+    // КАТЕГОРИЯ - только если не заблокирована
     if (!locks.category && data.category_name) {
         const cat = categories.find(c => c.name === data.category_name);
         if (cat) {
@@ -2244,6 +2280,7 @@ function applySyncedCombo(data) {
         highlightField('categoryValue');
     }
     
+    // ПОГОДА - только если не заблокирована
     if (!locks.weather && data.weather_name) {
         const w = findWeatherByName(data.weather_name);
         if (w) {
@@ -2254,6 +2291,7 @@ function applySyncedCombo(data) {
         highlightField('weatherValue');
     }
     
+    // ВРЕМЯ - только если не заблокировано
     if (!locks.time && data.time_name) {
         const tm = findTimeByName(data.time_name);
         const multiplier = data.time_multiplier || 'X1';
@@ -2265,11 +2303,13 @@ function applySyncedCombo(data) {
         highlightField('timeValue');
     }
     
+    // ИЗНОС ШИН - только если не заблокирован
     if (!locks.tires && data.tires_value) {
         document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${data.tires_value}</span>`;
         highlightField('tiresValue');
     }
     
+    // РАСХОД ТОПЛИВА - только если не заблокирован
     if (!locks.fuel && data.fuel_value) {
         document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${data.fuel_value}</span>`;
         highlightField('fuelValue');
@@ -2280,14 +2320,6 @@ function applySyncedCombo(data) {
     if (typeof updateVisibilityByDisplayMode === 'function') {
         updateVisibilityByDisplayMode(newDisplayMode);
     }
-    
-    // Обновляем отображение замков
-    Object.keys(locks).forEach(param => {
-        document.querySelectorAll(`.lock-btn[data-param="${param}"], .settings-lock-btn[data-param="${param}"]`).forEach(btn => {
-            btn.innerText = locks[param] ? '🔒' : '🔓';
-            btn.setAttribute('data-state', locks[param] ? 'locked' : 'unlocked');
-        });
-    });
 }
 
 // Функция загрузки гонки (основная)
