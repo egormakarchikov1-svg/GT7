@@ -258,7 +258,7 @@
             <div class="cars-track-content">
                 <div style="display: flex; gap: 15px; justify-content: center; padding: 15px; flex-wrap: wrap;">
                     <button id="modeAllBtn" class="mode-btn" style="background: #3b82f6;">🚗 ВЕСЬ СПИСОК МАШИН</button>
-                    <button id="modeGroupOnlyBtn" class="mode-btn" style="background: #8b5cf6;">🏁 ТОЛЬКО КЛАСС GR</button>
+                    <button id="modeGroupOnlyBtn" class="mode-btn" style="background: #8b5cf6;">🏁  МАШИНЫ ГОНОЧНОГО КЛАССА GR</button>
                 </div>
                 <div id="currentModeDisplay" style="text-align: center; padding: 10px; background: #ff4d4d20; border-radius: 12px;">
                     Текущий режим: <strong id="currentModeText">ВЕСЬ СПИСОК МАШИН</strong>
@@ -403,7 +403,7 @@
         <!-- Сообщение для группового режима -->
 <div id="groupModeMessage" class="group-mode-message" style="display: none;">
     <h3>🏁 ГРУППОВОЙ РЕЖИМ 🏁</h3>
-    <p>ТОЛЬКО КЛАСС GR</p>
+    <p>МАШИНЫ ГОНОЧНОГО КЛАССА GR</p>
 </div>
         
         <!-- Кнопки управления -->
@@ -1379,7 +1379,7 @@ function setDisplayMode(mode) {
     } else {
         groupOnlyBtn.classList.add('active');
         allBtn.classList.remove('active');
-        modeText.innerHTML = 'ТОЛЬКО КЛАСС GR 🏁';
+        modeText.innerHTML = ' МАШИНЫ ГОНОЧНОГО КЛАССА GR 🏁';
         modeText.style.color = '#8b5cf6';
     }
     
