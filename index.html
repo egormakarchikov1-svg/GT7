@@ -1143,7 +1143,7 @@
                         <div class="settings-header">
                             <div class="settings-label">
                                 <img src="Wheel.png" class="settings-icon" onerror="this.style.display='none'; this.nextSibling.style.display='inline';">
-                                <span style="display:none;">🛞</span>
+                                <span style="display:none;">🔘</span>
                                 <span>ИЗНОС ШИН</span>
                             </div>
                         <button class="settings-lock-btn" data-param="tires" data-state="unlocked">🔓</button>
@@ -2476,7 +2476,7 @@ function shareResult() {
     const time = document.getElementById('timeValue')?.innerText || '—';
     const tires = document.getElementById('tiresValue')?.innerText || '—';
     const fuel = document.getElementById('fuelValue')?.innerText || '—';
-    const text = `🏁 GT7 RANDOM 🏁\n\n🚗 ${car}\n🛣️ ${track}\n🏆 ${category}\n🌤️ ${weather}\n⏰ ${time}\n🛞 ${tires}\n⛽ ${fuel}`;
+    const text = `🏁 GT7 RANDOM 🏁\n\n🚗 ${car}\n🛣️ ${track}\n🏆 ${category}\n🌤️ ${weather}\n⏰ ${time}\n🔘 ${tires}\n⛽ ${fuel}`;
     navigator.clipboard.writeText(text).then(() => { 
         const btn = document.getElementById('shareBtn'); 
         const old = btn.innerHTML; 
@@ -2696,7 +2696,7 @@ async function displayUserRaces() {
                     <div>🏆 ${race.category_name || '—'}</div>
                     <div>🌤️ ${race.weather_name || '—'}</div>
                     <div>⏰ ${race.time_name || '—'}</div>
-                    <div>🛞 ${race.tires_value || 'X1'}</div>
+                    <div>🔘 ${race.tires_value || 'X1'}</div>
                     <div>⛽ ${race.fuel_value || 'X1'}</div>
                 </div>
                 <button class="apply-race-btn" onclick="applyRaceToGame('${race.id}')">🏁 ПРИМЕНИТЬ ГОНКУ</button>
