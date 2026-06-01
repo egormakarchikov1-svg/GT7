@@ -1948,9 +1948,6 @@ const weathers = [
         { name: "Полночь", icon: "🌕" }
     ];
 
-function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-function getRandomXValue() { return `X${Math.floor(Math.random() * 20) + 1}`; }
-
 function getTrackIcon(trackName) {
     if (trackName.includes("Alsace")) return "track_icons/bbe708-D-n15MKA.png";
     if (trackName.includes("Lago Maggiore")) return "track_icons/39f155-Dg_fFdVS.png";
@@ -2471,69 +2468,6 @@ function toggleSyncMode() {
     loadRace();
 }
 
-function updateSyncBtn() {
-    const btn = document.getElementById('syncToggleBtn');
-    if (userSyncEnabled) { 
-        btn.innerText = '🔒 ВКЛ'; 
-        btn.style.background = '#22c55e'; 
-    } else { 
-        btn.innerText = '🔓 ВЫКЛ'; 
-        btn.style.background = '#ef4444'; 
-    }
-}
-
-async function loadAdmins() {
-    const select = document.getElementById('adminSelect');
-    select.innerHTML = '<option value="">-- Выберите администратора --</option>';
-    
-    try {
-        const callbackName = 'jsonp_admins_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=getAdmins&callback=${callbackName}&t=${Date.now()}`;
-        
-        const admins = await new Promise((resolve) => {
-            const timeout = setTimeout(() => {
-                if (window[callbackName]) delete window[callbackName];
-                resolve([]);
-            }, 10000);
-            
-            window[callbackName] = function(data) {
-                clearTimeout(timeout);
-                delete window[callbackName];
-                if (data && data.success && data.admins) {
-                    resolve(data.admins);
-                } else {
-                    resolve([]);
-                }
-            };
-            
-            const script = document.createElement('script');
-            script.src = url;
-            script.onerror = () => {
-                clearTimeout(timeout);
-                resolve([]);
-            };
-            document.body.appendChild(script);
-        });
-        
-        if (admins.length > 0) {
-            admins.forEach(admin => {
-                select.innerHTML += `<option value="${admin.id}">${admin.name}</option>`;
-            });
-            console.log('✅ Загружены админы:', admins);
-        } else {
-            // fallback
-            select.innerHTML += '<option value="admin1">admin1</option>';
-            select.innerHTML += '<option value="admin2">admin2</option>';
-            select.innerHTML += '<option value="admin3">admin3</option>';
-        }
-    } catch(e) {
-        console.error('Ошибка загрузки админов:', e);
-        select.innerHTML += '<option value="admin1">admin1</option>';
-        select.innerHTML += '<option value="admin2">admin2</option>';
-        select.innerHTML += '<option value="admin3">admin3</option>';
-    }
-}
-
 function shareResult() {
     const car = document.getElementById('carValue')?.innerText || '—';
     const track = document.getElementById('trackValue')?.innerText || '—';
@@ -2620,44 +2554,6 @@ function updateVisibilityByDisplayMode(displayMode) {
     }
 }
 
-    function updateModeSelectorVisibility() {
-    const modeSelectorBlock = document.getElementById('modeSelectorBlock');
-    if (!modeSelectorBlock) return;
-    
-    // Если синхронизация включена И выбран админ - скрываем блок выбора режима
-    if (userSyncEnabled && currentAdminId) {
-        modeSelectorBlock.style.display = 'none';
-    } else {
-        modeSelectorBlock.style.display = 'block';
-    }
-}
-
-// ============================================
-// УПРАВЛЕНИЕ
-// ============================================
-function toggleLock(param) {
-    locks[param] = !locks[param];
-    document.querySelectorAll(`.lock-btn[data-param="${param}"], .settings-lock-btn[data-param="${param}"]`).forEach(btn => {
-        btn.innerText = locks[param] ? '🔒' : '🔓';
-        btn.setAttribute('data-state', locks[param] ? 'locked' : 'unlocked');
-    });
-}
-
-function toggleSyncMode() {
-    userSyncEnabled = !userSyncEnabled;
-    localStorage.setItem('gt7_sync_enabled', userSyncEnabled);
-    const btn = document.getElementById('syncToggleBtn');
-    if (userSyncEnabled) { 
-        btn.innerText = '🔒 ВКЛ'; 
-        btn.style.background = '#22c55e'; 
-    } else { 
-        btn.innerText = '🔓 ВЫКЛ'; 
-        btn.style.background = '#ef4444'; 
-    }
-    updateModeSelectorVisibility();
-    loadRace();
-}
-
 function updateSyncBtn() {
     const btn = document.getElementById('syncToggleBtn');
     if (userSyncEnabled) { 
@@ -2717,90 +2613,6 @@ async function loadAdmins() {
         select.innerHTML += '<option value="admin1">admin1</option>';
         select.innerHTML += '<option value="admin2">admin2</option>';
         select.innerHTML += '<option value="admin3">admin3</option>';
-    }
-}
-
-function shareResult() {
-    const car = document.getElementById('carValue')?.innerText || '—';
-    const track = document.getElementById('trackValue')?.innerText || '—';
-    const category = document.getElementById('categoryValue')?.innerText || '—';
-    const weather = document.getElementById('weatherValue')?.innerText || '—';
-    const time = document.getElementById('timeValue')?.innerText || '—';
-    const tires = document.getElementById('tiresValue')?.innerText || '—';
-    const fuel = document.getElementById('fuelValue')?.innerText || '—';
-    const text = `🏁 GT7 RANDOM 🏁\n\n🚗 ${car}\n🛣️ ${track}\n🏆 ${category}\n🌤️ ${weather}\n⏰ ${time}\n🛞 ${tires}\n⛽ ${fuel}`;
-    navigator.clipboard.writeText(text).then(() => { 
-        const btn = document.getElementById('shareBtn'); 
-        const old = btn.innerHTML; 
-        btn.innerHTML = '✅ СКОПИРОВАНО!'; 
-        setTimeout(() => btn.innerHTML = old, 2000); 
-    }).catch(() => alert('Ошибка копирования'));
-}
-
-// ============================================
-// СВОРАЧИВАНИЕ БЛОКОВ
-// ============================================
-let carsTrackExpanded = true, categoryExpanded = true, settingsExpanded = true, similarExpanded = true;
-function toggleCarsTrack() { carsTrackExpanded = !carsTrackExpanded; document.getElementById('carsTrackContent').classList.toggle('collapsed', !carsTrackExpanded); document.getElementById('carsTrackToggleIcon').innerHTML = carsTrackExpanded ? '▼' : '▶'; }
-function toggleCategory() { categoryExpanded = !categoryExpanded; document.getElementById('categoryContent').classList.toggle('collapsed', !categoryExpanded); document.getElementById('categoryToggleIcon').innerHTML = categoryExpanded ? '▼' : '▶'; }
-function toggleSettings() { settingsExpanded = !settingsExpanded; document.getElementById('settingsContent').classList.toggle('collapsed', !settingsExpanded); document.getElementById('settingsToggleIcon').innerHTML = settingsExpanded ? '▼' : '▶'; }
-function toggleSimilar() { similarExpanded = !similarExpanded; document.getElementById('similarContent').classList.toggle('collapsed', !similarExpanded); document.getElementById('similarToggleIcon').innerHTML = similarExpanded ? '▼' : '▶'; }
-
-function updateVisibilityByDisplayMode(displayMode) {
-    const carBlock = document.getElementById('carBlock');
-    const similarBlock = document.getElementById('similarContainer');
-    const groupMsg = document.getElementById('groupModeMessage');
-    const trackBlock = document.getElementById('trackBlock');
-    const categoryBlock = document.getElementById('categoryContainer');
-    const paramsGrid = document.querySelector('.params-grid');
-    
-    if (displayMode === 'group_only') {
-        if (carBlock) carBlock.classList.add('hidden-block');
-        if (similarBlock) similarBlock.classList.add('hidden-block');
-        if (categoryBlock) categoryBlock.classList.remove('hidden-block');
-        if (groupMsg) groupMsg.style.display = 'block';
-        if (trackBlock) trackBlock.classList.add('track-centered');
-        if (paramsGrid) { 
-            paramsGrid.style.display = 'flex'; 
-            paramsGrid.style.justifyContent = 'center'; 
-        }
-    } else {
-        if (carBlock) carBlock.classList.remove('hidden-block');
-        if (similarBlock) similarBlock.classList.remove('hidden-block');
-        if (categoryBlock) categoryBlock.classList.add('hidden-block');
-        if (groupMsg) groupMsg.style.display = 'none';
-        if (trackBlock) trackBlock.classList.remove('track-centered');
-        if (paramsGrid) { 
-            paramsGrid.style.display = 'grid'; 
-            paramsGrid.style.justifyContent = 'normal'; 
-        }
-    }
-}
-
-function setDisplayMode(mode) {
-    displayMode = mode;
-    localStorage.setItem('gt7_display_mode', mode);
-    
-    const allBtn = document.getElementById('modeAllBtn');
-    const groupOnlyBtn = document.getElementById('modeGroupOnlyBtn');
-    const modeText = document.getElementById('currentModeText');
-    
-    if (mode === 'all') {
-        if (allBtn) allBtn.classList.add('active');
-        if (groupOnlyBtn) groupOnlyBtn.classList.remove('active');
-        if (modeText) {
-            modeText.innerHTML = 'ВЕСЬ СПИСОК МАШИН 🚗';
-            modeText.style.color = '#3b82f6';
-        }
-        updateVisibilityByDisplayMode('all');
-    } else {
-        if (groupOnlyBtn) groupOnlyBtn.classList.add('active');
-        if (allBtn) allBtn.classList.remove('active');
-        if (modeText) {
-            modeText.innerHTML = ' МАШИНЫ ГОНОЧНОГО КЛАССА GR 🏁';
-            modeText.style.color = '#8b5cf6';
-        }
-        updateVisibilityByDisplayMode('group_only');
     }
 }
 
