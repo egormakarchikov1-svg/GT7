@@ -2369,6 +2369,7 @@ function showStatus(message, type) {
     }
 }
 // Назначение новой гонки
+// Назначение новой гонки
 async function scheduleRace() {
     if (!currentAdmin) {
         showStatus('⛔ Сначала войдите в систему!', 'error');
@@ -2399,13 +2400,18 @@ async function scheduleRace() {
     
     try {
         const callbackName = 'jsonp_schedule_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const raceData = {
-            action: 'scheduleRace',
-            adminId: currentAdmin.id,
-            datetime: datetime,
-            title: title || null,
-            combo: currentCombo
-        };
+        
+        // ✅ ИСПРАВЛЕНО: правильно формируем URL параметры
+        const params = new URLSearchParams();
+        params.append('action', 'scheduleRace');
+        params.append('adminId', currentAdmin.id);
+        params.append('datetime', datetime);
+        params.append('title', title || '');
+        params.append('combo', JSON.stringify(currentCombo));
+        params.append('callback', callbackName);
+        params.append('t', Date.now());
+        
+        const url = `${APPS_SCRIPT_URL}?${params.toString()}`;
         
         const result = await new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
@@ -2422,8 +2428,12 @@ async function scheduleRace() {
             };
             
             const script = document.createElement('script');
-            script.src = `${APPS_SCRIPT_URL}?${new URLSearchParams(raceData).toString()}&callback=${callbackName}&t=${Date.now()}`;
-            script.onerror = () => reject(new Error('Ошибка соединения'));
+            script.src = url;
+            script.onerror = () => {
+                clearTimeout(timeout);
+                if (window[callbackName]) delete window[callbackName];
+                reject(new Error('Ошибка соединения'));
+            };
             document.body.appendChild(script);
         });
         
@@ -2437,7 +2447,7 @@ async function scheduleRace() {
             showStatus('❌ Ошибка: ' + (result.error || 'Неизвестная ошибка'), 'error');
         }
     } catch(e) {
-        showStatus('❌ Ошибка при назначении гонки', 'error');
+        showStatus('❌ Ошибка при назначении гонки: ' + e.message, 'error');
         console.error(e);
     }
 }
