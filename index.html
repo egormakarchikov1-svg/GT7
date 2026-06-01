@@ -993,11 +993,11 @@
     </div>
     <div class="cars-track-content">
         <div style="display: flex; gap: 15px; justify-content: center; padding: 15px; flex-wrap: wrap;">
-            <button id="modeAllBtn" class="mode-btn" style="background: #3b82f6;">🚗 ВСЕ РАНДОМНЫЕ МАШИНЫ</button>
+            <button id="modeAllBtn" class="mode-btn" style="background: #3b82f6;">🚗 ВЕСЬ СПИСОК МАШИН</button>
             <button id="modeGroupOnlyBtn" class="mode-btn" style="background: #8b5cf6;">🏁 ТОЛЬКО КЛАСС GR</button>
         </div>
         <div id="currentModeDisplay" style="text-align: center; padding: 10px; background: #ff4d4d20; border-radius: 12px;">
-            Текущий режим: <strong id="currentModeText">ВСЕ РАНДОМНЫЕ МАШИНЫ</strong>
+            Текущий режим: <strong id="currentModeText">ВЕСЬ СПИСОК МАШИН</strong>
         </div>
     </div>
 </div>
@@ -2536,7 +2536,7 @@ function updateVisibilityByDisplayMode(displayMode) {
         if (allBtn) allBtn.classList.add('active');
         if (groupOnlyBtn) groupOnlyBtn.classList.remove('active');
         if (modeText) {
-            modeText.innerHTML = 'ВСЕ РАНДОМНЫЕ МАШИНЫ 🚗';
+            modeText.innerHTML = 'ВЕСЬ СПИСОК МАШИН 🚗';
             modeText.style.color = '#3b82f6';
         }
         updateVisibilityByDisplayMode('all');
