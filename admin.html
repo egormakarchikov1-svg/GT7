@@ -1608,6 +1608,7 @@ async function generateAndSave() {
         }
         await sleep(200);
         
+        
         if (!locks.weather) {
             let currentTrack = selectedTrack || tracksData.find(t => t.name === newCombo.track_name);
             let availableWeathers = weathers;
@@ -1691,6 +1692,14 @@ async function generateAndSave() {
         
         if (newCombo.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${newCombo.tires_value}</span>`;
         if (newCombo.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${newCombo.fuel_value}</span>`;
+
+        newCombo.car_locked = locks.car;
+        newCombo.track_locked = locks.track;
+        newCombo.weather_locked = locks.weather;
+        newCombo.time_locked = locks.time;
+        newCombo.tires_locked = locks.tires;
+        newCombo.fuel_locked = locks.fuel;
+        newCombo.category_locked = locks.category;
         
         updateProgressBar(99, '📤 Сохранение комбинации...');
         await sleep(150);
