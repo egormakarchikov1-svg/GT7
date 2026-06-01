@@ -994,7 +994,7 @@
     <div class="cars-track-content">
         <div style="display: flex; gap: 15px; justify-content: center; padding: 15px; flex-wrap: wrap;">
             <button id="modeAllBtn" class="mode-btn" style="background: #3b82f6;">🚗 ВЕСЬ СПИСОК МАШИН</button>
-            <button id="modeGroupOnlyBtn" class="mode-btn" style="background: #8b5cf6;">🏁 ТОЛЬКО КЛАСС GR</button>
+            <button id="modeGroupOnlyBtn" class="mode-btn" style="background: #8b5cf6;">🏁  МАШИНЫ ГОНОЧНОГО КЛАССА GR</button>
         </div>
         <div id="currentModeDisplay" style="text-align: center; padding: 10px; background: #ff4d4d20; border-radius: 12px;">
             Текущий режим: <strong id="currentModeText">ВЕСЬ СПИСОК МАШИН</strong>
@@ -2544,7 +2544,7 @@ function updateVisibilityByDisplayMode(displayMode) {
         if (groupOnlyBtn) groupOnlyBtn.classList.add('active');
         if (allBtn) allBtn.classList.remove('active');
         if (modeText) {
-            modeText.innerHTML = 'ТОЛЬКО КЛАСС GR 🏁';
+            modeText.innerHTML = ' МАШИНЫ ГОНОЧНОГО КЛАССА GR 🏁';
             modeText.style.color = '#8b5cf6';
         }
         updateVisibilityByDisplayMode('group_only');
