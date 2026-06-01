@@ -2224,17 +2224,13 @@ function applySyncedCombo(data) {
     }
     
     if (!locks.track && data.track_name) {
-    let currentTrack = document.getElementById('trackValue')?.innerText || '';
-    currentTrack = currentTrack.split('кругов')[0]?.trim();  // ← .trim() убирает пробелы!
-    if (currentTrack !== data.track_name) {
-        const track = findTrackByName(data.track_name);
-        const laps = data.laps || '5';
-        if (track) {
-            document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
-            const trackIcon = document.getElementById('trackIcon');
-            if (trackIcon) trackIcon.src = getTrackIcon(track.name);
-            highlightField('trackValue');
-        }
+    const track = findTrackByName(data.track_name);
+    const laps = data.laps || '5';
+    if (track) {
+        document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
+        const trackIcon = document.getElementById('trackIcon');
+        if (trackIcon) trackIcon.src = getTrackIcon(track.name);
+        highlightField('trackValue');
     }
 }
     
