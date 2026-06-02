@@ -2086,10 +2086,20 @@ let scheduledRaces = [];
 let calendarExpanded = true;
 let raceFilter = 'all'; // 'all', 'active', 'inactive'
 
-function toggleCalendar() { 
-    calendarExpanded = !calendarExpanded; 
-    document.getElementById('calendarContent').classList.toggle('collapsed', !calendarExpanded); 
-    document.getElementById('calendarToggleIcon').innerHTML = calendarExpanded ? '▼' : '▶'; 
+function toggleCalendar() {
+    const calendarContent = document.getElementById('calendarContent');
+    const calendarToggleIcon = document.getElementById('calendarToggleIcon');
+    
+    if (calendarContent) {
+        const isCollapsed = calendarContent.classList.contains('collapsed');
+        if (isCollapsed) {
+            calendarContent.classList.remove('collapsed');
+            if (calendarToggleIcon) calendarToggleIcon.innerHTML = '▼';
+        } else {
+            calendarContent.classList.add('collapsed');
+            if (calendarToggleIcon) calendarToggleIcon.innerHTML = '▶';
+        }
+    }
 }
 
 // Загрузка запланированных гонок
