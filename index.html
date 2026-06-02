@@ -1163,17 +1163,19 @@
             </div>
         </div>
     </div>
-    <!-- Блок КАЛЕНДАРЬ ГОНОК ДЛЯ ПОЛЬЗОВАТЕЛЯ -->
+    
+    <!-- Блок КАЛЕНДАРЬ ГОНОК ДЛЯ ПОЛЬЗОВАТЕЛЯ (ИСПРАВЛЕННЫЙ) -->
 <div class="races-container" style="background: rgba(0, 0, 0, 0.4); border-radius: 16px; margin: 12px 0; border: 1px solid #22c55e; overflow: hidden;">
-    <div class="races-header" style="display: flex; align-items: center; justify-content: space-between; padding: 12px;">
+    <div class="races-header" id="racesHeader" style="display: flex; align-items: center; justify-content: space-between; padding: 12px; cursor: pointer;">
         <div style="width: 30px;"></div>
         <div class="races-title" style="color: #22c55e; font-size: 14px; font-weight: bold;">📅 ЗАПЛАНИРОВАННЫЕ ГОНКИ</div>
-        <div style="width: 30px;"></div>
+        <div class="races-toggle-icon" id="racesToggleIcon" style="color: #22c55e; font-size: 20px; font-weight: bold;">▼</div>
     </div>
     <div class="races-content" id="racesCalendarContainer" style="padding: 0 12px 12px 12px;">
         <div style="text-align: center; padding: 20px;">Загрузка гонок...</div>
     </div>
 </div>
+
     <div class="similar-cars-container" id="similarContainer">
         <div class="similar-header-clickable" id="similarHeader">
             <div style="width: 30px;"></div>
@@ -2529,26 +2531,24 @@ function shareResult() {
 // СВОРАЧИВАНИЕ БЛОКОВ
 // ============================================
 let carsTrackExpanded = true, categoryExpanded = true, settingsExpanded = true, similarExpanded = true;
+let racesCalendarExpanded = true; // Добавляем переменную для календаря
+
 function toggleCarsTrack() { carsTrackExpanded = !carsTrackExpanded; document.getElementById('carsTrackContent').classList.toggle('collapsed', !carsTrackExpanded); document.getElementById('carsTrackToggleIcon').innerHTML = carsTrackExpanded ? '▼' : '▶'; }
 function toggleCategory() { categoryExpanded = !categoryExpanded; document.getElementById('categoryContent').classList.toggle('collapsed', !categoryExpanded); document.getElementById('categoryToggleIcon').innerHTML = categoryExpanded ? '▼' : '▶'; }
 function toggleSettings() { settingsExpanded = !settingsExpanded; document.getElementById('settingsContent').classList.toggle('collapsed', !settingsExpanded); document.getElementById('settingsToggleIcon').innerHTML = settingsExpanded ? '▼' : '▶'; }
 function toggleSimilar() { similarExpanded = !similarExpanded; document.getElementById('similarContent').classList.toggle('collapsed', !similarExpanded); document.getElementById('similarToggleIcon').innerHTML = similarExpanded ? '▼' : '▶'; }
 
-    function toggleCalendar() {
-    const calendarContent = document.getElementById('calendarContent');
-    const calendarToggleIcon = document.getElementById('calendarToggleIcon');
-    
-    if (calendarContent) {
-        const isCollapsed = calendarContent.classList.contains('collapsed');
-        if (isCollapsed) {
-            calendarContent.classList.remove('collapsed');
-            if (calendarToggleIcon) calendarToggleIcon.innerHTML = '▼';
-        } else {
-            calendarContent.classList.add('collapsed');
-            if (calendarToggleIcon) calendarToggleIcon.innerHTML = '▶';
-        }
+// Новая функция для сворачивания календаря гонок
+function toggleRacesCalendar() {
+    racesCalendarExpanded = !racesCalendarExpanded;
+    const content = document.getElementById('racesCalendarContainer');
+    const icon = document.getElementById('racesToggleIcon');
+    if (content) {
+        content.classList.toggle('collapsed', !racesCalendarExpanded);
+        if (icon) icon.innerHTML = racesCalendarExpanded ? '▼' : '▶';
     }
 }
+
 function updateVisibilityByDisplayMode(displayMode) {
     const carBlock = document.getElementById('carBlock');
     const similarBlock = document.getElementById('similarContainer');
@@ -2955,10 +2955,12 @@ function init() {
     document.getElementById('similarHeader').addEventListener('click', toggleSimilar);
     document.getElementById('carsTrackHeader').addEventListener('click', toggleCarsTrack);
     document.getElementById('categoryHeader').addEventListener('click', toggleCategory);
-    const calendarHeader = document.getElementById('calendarHeader');
-if (calendarHeader) {
-    calendarHeader.addEventListener('click', toggleCalendar);
-}
+    
+    // Добавляем обработчик для календаря гонок
+    const racesHeader = document.getElementById('racesHeader');
+    if (racesHeader) {
+        racesHeader.addEventListener('click', toggleRacesCalendar);
+    }
     
     // Кнопки управления
     document.getElementById('randomBtn').addEventListener('click', () => loadRace());
