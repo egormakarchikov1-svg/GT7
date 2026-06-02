@@ -2990,32 +2990,37 @@ function init() {
     document.getElementById('modeAllBtn').addEventListener('click', () => setDisplayMode('all'));
     document.getElementById('modeGroupOnlyBtn').addEventListener('click', () => setDisplayMode('group_only'));
     
-    // Обработчик выбора администратора для синхронизации
-    // Обработчик выбора администратора для синхронизации
-document.getElementById('adminSelect').addEventListener('change', (e) => { 
-    const newAdminId = e.target.value;
-    const oldAdminId = currentAdminId;
-    currentAdminId = newAdminId; 
-    console.log('👑 Выбран админ для синхронизации:', currentAdminId);
-    
-    if (newAdminId) {
-        selectAdmin(newAdminId);
-    } else {
-        selectAdmin(null);
-        // ✅ ДОБАВЬТЕ ЭТУ СТРОКУ:
-        clearAllParameters();
-    }
-    
-    if (oldAdminId !== newAdminId) {
-        stopAutoRefresh();
-        if (userSyncEnabled && currentAdminId) {
-            startAutoRefresh();
+    // ========================================
+    // ОБРАБОТЧИК ВЫБОРА АДМИНИСТРАТОРА (ОДИН!)
+    // ========================================
+    document.getElementById('adminSelect').addEventListener('change', (e) => { 
+        const newAdminId = e.target.value;
+        const oldAdminId = currentAdminId;
+        currentAdminId = newAdminId; 
+        console.log('👑 Выбран админ для синхронизации:', currentAdminId);
+        
+        if (newAdminId) {
+            selectAdmin(newAdminId);
+        } else {
+            selectAdmin(null);
+            clearAllParameters();
+            // Очищаем контейнер с гонками
+            const container = document.getElementById('racesCalendarContainer');
+            if (container) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">👑 Выберите администратора</div>';
+            }
         }
-    }
-    
-    updateModeSelectorVisibility();
-    loadRace(); 
-});
+        
+        if (oldAdminId !== newAdminId) {
+            stopAutoRefresh();
+            if (userSyncEnabled && currentAdminId) {
+                startAutoRefresh();
+            }
+        }
+        
+        updateModeSelectorVisibility();
+        loadRace(); 
+    });
     
     // Глобальные функции
     window.selectCar = selectCar;
@@ -3031,30 +3036,26 @@ document.getElementById('adminSelect').addEventListener('change', (e) => {
         startAutoRefresh();
     }
     
-    // Загружаем гонку (только если есть админ)
+    // Загружаем гонку
     loadRace();
     
-    // Восстановление админа для просмотра гонок
+    // ========================================
+    // ВОССТАНОВЛЕНИЕ АДМИНА ПРИ ЗАГРУЗКЕ
+    // ========================================
     const savedAdminId = localStorage.getItem('gt7_selected_admin_id');
     const adminSelectElement = document.getElementById('adminSelect');
     
-    if (adminSelectElement && adminSelectElement.value === '') {
-        localStorage.removeItem('gt7_selected_admin_id');
-        const container = document.getElementById('racesCalendarContainer');
-        if (container) {
-            container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">👑 Выберите администратора</div>';
-        }
-        // ✅ Очищаем параметры
-        clearAllParameters();
-    } else if (savedAdminId && adminSelectElement && adminSelectElement.value === savedAdminId) {
+    if (savedAdminId && adminSelectElement) {
+        adminSelectElement.value = savedAdminId;
         displayUserRaces(savedAdminId);
     } else {
+        // Очищаем селектор и параметры
+        if (adminSelectElement) adminSelectElement.value = '';
+        clearAllParameters();
         const container = document.getElementById('racesCalendarContainer');
         if (container) {
             container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">👑 Выберите администратора</div>';
         }
-        // ✅ Очищаем параметры
-        clearAllParameters();
     }
     
     // Загружаем список администраторов
