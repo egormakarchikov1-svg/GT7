@@ -1165,28 +1165,15 @@
     </div>
     <!-- Блок КАЛЕНДАРЬ ГОНОК ДЛЯ ПОЛЬЗОВАТЕЛЯ -->
 <div class="races-container" style="background: rgba(0, 0, 0, 0.4); border-radius: 16px; margin: 12px 0; border: 1px solid #22c55e; overflow: hidden;">
-    <div class="races-header" style="display: flex; align-items: center; justify-content: space-between; padding: 12px;">
+    <div class="races-header" id="calendarHeader" style="display: flex; align-items: center; justify-content: space-between; padding: 12px; cursor: pointer;">
         <div style="width: 30px;"></div>
         <div class="races-title" style="color: #22c55e; font-size: 14px; font-weight: bold;">📅 ЗАПЛАНИРОВАННЫЕ ГОНКИ</div>
-        <div style="width: 30px;"></div>
+        <div class="calendar-toggle-icon" id="calendarToggleIcon" style="color: #22c55e; font-size: 20px; font-weight: bold;">▼</div>
     </div>
-    <div class="races-content" id="racesCalendarContainer" style="padding: 0 12px 12px 12px;">
+    <div class="races-content" id="calendarContent" style="padding: 0 12px 12px 12px;">
         <div style="text-align: center; padding: 20px;">Загрузка гонок...</div>
     </div>
 </div>
-    <div class="similar-cars-container" id="similarContainer">
-        <div class="similar-header-clickable" id="similarHeader">
-            <div style="width: 30px;"></div>
-            <div class="similar-title">🎯 ПОДБОР АВТО ПО СХОЖИМ ПАРАМЕТРАМ</div>
-            <div class="similar-toggle-icon" id="similarToggleIcon">▼</div>
-        </div>
-        <div class="similar-content" id="similarContent">
-            <div id="refCarInfo" class="ref-car-info">Выберите авто из списка</div>
-            <ul class="similar-list" id="similarList"><li>Нажмите на авто для выбора референса</li></ul>
-            <button id="refreshSimilarBtn" class="btn-similar">🔄 ОБНОВИТЬ ПОДБОР</button>
-            <button id="resetCarsBtn" class="btn-similar" style="background: #ef4444;">🗑️ СБРОС ИСТОРИИ</button>
-        </div>
-    </div>
 
     <div id="groupModeMessage" class="group-mode-message" style="display: none;">
         <h3>🏁 МАШИНЫ ГОНОЧНОГО КЛАССА GR 🏁</h3>
