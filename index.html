@@ -2697,7 +2697,7 @@ async function displayUserRaces() {
     }
     <div>🛣️ ${race.track_name || '—'}</div>
     <div>🌤️ ${race.weather_name || '—'}</div>
-    <div>⏰ ${race.time_name || '—'} ${race.time_multiplier ? `<span class="time-x-badge">${race.time_multiplier}</span>` : ''}</div>
+    <span>⏰ ${race.time_name || '—'} ${race.time_multiplier ? race.time_multiplier : ''}</span>
     <div>⚙️ ${race.tires_value || 'X1'}</div>
     <div>⛽ ${race.fuel_value || 'X1'}</div>
 </div>
