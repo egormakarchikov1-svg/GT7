@@ -1025,6 +1025,9 @@
     background: #16a34a;
     transform: scale(1.02);
 }
+        .races-content.collapsed {
+    display: none;
+}
     </style>
 </head>
 <body>
@@ -2980,6 +2983,12 @@ function init() {
     document.getElementById('similarHeader').addEventListener('click', toggleSimilar);
     document.getElementById('carsTrackHeader').addEventListener('click', toggleCarsTrack);
     document.getElementById('categoryHeader').addEventListener('click', toggleCategory);
+    
+    // ✅ ДОБАВЬТЕ ОБРАБОТЧИК СВОРАЧИВАНИЯ КАЛЕНДАРЯ
+    const calendarHeader = document.getElementById('calendarHeader');
+    if (calendarHeader) {
+        calendarHeader.addEventListener('click', toggleCalendar);
+    }
     
     // Кнопки управления
     document.getElementById('randomBtn').addEventListener('click', () => loadRace());
