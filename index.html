@@ -2014,7 +2014,7 @@ function displayTrackIcon(iconUrl) {
         trackIcon.style.display = 'none';
         if (trackIconFallback) {
             trackIconFallback.style.display = 'flex';
-            trackIconFallback.innerHTML = '🛣️';
+            trackIconFallback.innerHTML = '';
         }
     }
 }
@@ -2513,7 +2513,7 @@ function shareResult() {
     const time = document.getElementById('timeValue')?.innerText || '—';
     const tires = document.getElementById('tiresValue')?.innerText || '—';
     const fuel = document.getElementById('fuelValue')?.innerText || '—';
-    const text = `🏁 GT7 RANDOM 🏁\n\n🚗 ${car}\n🛣️ ${track}\n🏆 ${category}\n🌤️ ${weather}\n⏰ ${time}\n🔘 ${tires}\n⛽ ${fuel}`;
+    const text = `🏁 GT7 RANDOM 🏁\n\n🚗 ${car}\n ${track}\n🏆 ${category}\n🌤️ ${weather}\n⏰ ${time}\n🔘 ${tires}\n⛽ ${fuel}`;
     navigator.clipboard.writeText(text).then(() => { 
         const btn = document.getElementById('shareBtn'); 
         const old = btn.innerHTML; 
@@ -2748,7 +2748,7 @@ async function displayUserRaces(adminId) {
                         `<div>🏆 ${race.category_name || '—'}</div>` :
                         `<div>🚗 ${race.car_name || '—'}</div>`
                     }
-                    <div>🛣️ ${race.track_name || '—'}</div>
+                    <div> ${race.track_name || '—'}</div>
                     <div>🌤️ ${race.weather_name || '—'}</div>
                     <div>⏰ ${race.time_name || '—'} ${race.time_multiplier ? race.time_multiplier : ''}</div>
                     <div>⚙️ ${race.tires_value || 'X1'}</div>
