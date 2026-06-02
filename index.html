@@ -1984,11 +1984,48 @@ function getTrackIcon(trackName) {
     if (trackName.includes("Yas Marina")) return "track_icons/27adb9-DCBqBoAB.png";
     return "track_icons/placeholder.png";
 }
+
+    function displayCarIcon(carIconPath) {
+    const carIcon = document.getElementById('carIcon');
+    const carIconFallback = document.getElementById('carIconFallback');
+    
+    if (carIconPath && carIconPath !== "") {
+        carIcon.src = carIconPath;
+        carIcon.style.display = "block";
+        if (carIconFallback) carIconFallback.style.display = "none";
+    } else {
+        carIcon.style.display = "none";
+        if (carIconFallback) {
+            carIconFallback.style.display = "flex";
+            carIconFallback.innerHTML = "🚗";
+        }
+    }
+}
+
+function displayTrackIcon(iconUrl) {
+    const trackIcon = document.getElementById('trackIcon');
+    const trackIconFallback = document.getElementById('trackIconFallback');
+    
+    if (iconUrl && iconUrl !== '') {
+        trackIcon.src = iconUrl;
+        trackIcon.style.display = 'block';
+        if (trackIconFallback) trackIconFallback.style.display = 'none';
+    } else {
+        trackIcon.style.display = 'none';
+        if (trackIconFallback) {
+            trackIconFallback.style.display = 'flex';
+            trackIconFallback.innerHTML = '🛣️';
+        }
+    }
+}
+
     
 function findCarByName(name) { return carsDatabase.find(c => c.name === name) || null; }
 function findTrackByName(name) { return tracksData.find(t => t.name === name) || null; }
 function findWeatherByName(name) { return weathers.find(w => w.name === name) || null; }
 function findTimeByName(name) { return times.find(t => t.name === name) || null; }
+
+
 
 // ============================================
 // СХОЖИЕ АВТО (твои функции)
@@ -2753,23 +2790,6 @@ async function applyRaceToGame(raceId) {
     } catch(e) {
         console.error('Ошибка загрузки гонки:', e);
         showStatus('❌ Ошибка загрузки параметров гонки', 'error');
-    }
-}
-
-    function displayTrackIcon(iconUrl) {
-    const trackIcon = document.getElementById('trackIcon');
-    const trackIconFallback = document.getElementById('trackIconFallback');
-    
-    if (iconUrl && iconUrl !== '') {
-        trackIcon.src = iconUrl;
-        trackIcon.style.display = 'block';
-        if (trackIconFallback) trackIconFallback.style.display = 'none';
-    } else {
-        trackIcon.style.display = 'none';
-        if (trackIconFallback) {
-            trackIconFallback.style.display = 'flex';
-            trackIconFallback.innerHTML = '🛣️';
-        }
     }
 }
 
