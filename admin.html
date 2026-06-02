@@ -2191,7 +2191,7 @@ function displayScheduledRaces(racesToShow = null) {
     }
     <span>🛣️ ${race.track_name || '—'}</span>
     <span>🌤️ ${race.weather_name || '—'}</span>  <!-- без обрезания -->
-    <span>⏰ ${race.time_name || '—'} ${race.time_multiplier ? race.time_multiplier : ''}</span>
+    <div>⏰ ${race.time_name || '—'} ${race.time_multiplier ? race.time_multiplier : ''}</div>
     <span>⚙️ ${race.tires_value || 'X1'}</span>
     <span>⛽ ${race.fuel_value || 'X1'}</span>
 </div>
