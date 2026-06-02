@@ -2926,26 +2926,29 @@ function init() {
     document.getElementById('modeGroupOnlyBtn').addEventListener('click', () => setDisplayMode('group_only'));
     
     // Обработчик выбора администратора для синхронизации
-    document.getElementById('adminSelect').addEventListener('change', (e) => { 
-        const newAdminId = e.target.value;
-        const oldAdminId = currentAdminId;
-        currentAdminId = newAdminId; 
-        console.log('👑 Выбран админ для синхронизации:', currentAdminId);
-        
-        if (newAdminId) {
-            selectAdmin(newAdminId);
+   document.getElementById('adminSelect').addEventListener('change', (e) => { 
+    const newAdminId = e.target.value;
+    const oldAdminId = currentAdminId;
+    currentAdminId = newAdminId; 
+    console.log('👑 Выбран админ для синхронизации:', currentAdminId);
+    
+    // ✅ Обрабатываем и выбор, и снятие выбора
+    if (newAdminId) {
+        selectAdmin(newAdminId);
+    } else {
+        selectAdmin(null);  // ← Очищает гонки при снятии выбора
+    }
+    
+    if (oldAdminId !== newAdminId) {
+        stopAutoRefresh();
+        if (userSyncEnabled && currentAdminId) {
+            startAutoRefresh();
         }
-        
-        if (oldAdminId !== newAdminId) {
-            stopAutoRefresh();
-            if (userSyncEnabled && currentAdminId) {
-                startAutoRefresh();
-            }
-        }
-        
-        updateModeSelectorVisibility();
-        loadRace(); 
-    });
+    }
+    
+    updateModeSelectorVisibility();
+    loadRace(); 
+});
     
     // Глобальные функции
     window.selectCar = selectCar;
