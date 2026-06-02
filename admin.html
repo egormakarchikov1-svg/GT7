@@ -2170,10 +2170,16 @@ function displayScheduledRaces(racesToShow = null) {
                 </div>
                 <div class="race-title">${race.title || '🏁 Гоночный заезд'}</div>
                 <div class="race-details">
-                    <span>🚗 ${race.car_name || '—'}</span>
-                    <span>🛣️ ${race.track_name || '—'}</span>
-                    <span>🏆 ${race.category_name || '—'}</span>
-                </div>
+    ${race.display_mode === 'group_only' ? 
+        `<span>🏆 ${race.category_name || '—'}</span>` :
+        `<span>🚗 ${race.car_name || '—'}</span>`
+    }
+    <span>🛣️ ${race.track_name || '—'}</span>
+    <span>🌤️ ${race.weather_name ? race.weather_name.substring(0, 20) : '—'}</span>
+    <span>⏰ ${race.time_name || '—'} ${race.time_multiplier ? `<span class="time-x-badge">${race.time_multiplier}</span>` : ''}</span>
+    <span>⚙️ ${race.tires_value || 'X1'}</span>
+    <span>⛽ ${race.fuel_value || 'X1'}</span>
+</div>
                 <div class="race-actions">
                     <button onclick="toggleRaceStatus('${race.id}')" class="status-toggle ${!isActive ? 'inactive' : ''}">
                         ${isActive ? '🔒 ДЕАКТИВИРОВАТЬ' : '🔓 АКТИВИРОВАТЬ'}
@@ -2385,23 +2391,35 @@ async function scheduleRace() {
         return;
     }
     
-    // ✅ ПОЛУЧАЕМ МНОЖИТЕЛЬ ВРЕМЕНИ
+    // Получаем множитель времени
     const timeValueHtml = document.getElementById('timeValue').innerHTML;
     const timeMultiplierMatch = timeValueHtml.match(/<span[^>]*>([^<]+)<\/span>/);
     const timeMultiplier = timeMultiplierMatch ? timeMultiplierMatch[1] : 'X1';
     const timeName = timeValueHtml.split('<')[0].trim();
     
+    // ✅ ДОБАВЛЕНО: проверяем режим отображения
+    const isGroupMode = displayMode === 'group_only';
+    
     const currentCombo = {
-        car_name: document.getElementById('carValue').innerHTML.split('<')[0].trim(),
+        // ✅ В групповом режиме НЕ сохраняем машину
+        car_name: isGroupMode ? '' : document.getElementById('carValue').innerHTML.split('<')[0].trim(),
         track_name: document.getElementById('trackValue').innerHTML.split('<')[0].trim(),
         category_name: document.getElementById('categoryText').innerHTML.split('<')[0].trim(),
         weather_name: document.getElementById('weatherValue').innerHTML.split('<')[0].trim(),
         time_name: timeName,
-        time_multiplier: timeMultiplier,  // ✅ ДОБАВЛЕНО!
+        time_multiplier: timeMultiplier,
         tires_value: document.getElementById('tiresValue').innerText,
         fuel_value: document.getElementById('fuelValue').innerText,
         display_mode: displayMode
     };
+    
+    // ✅ В групповом режиме НЕ добавляем похожие авто
+    if (!isGroupMode && currentRefCar) {
+        const similar = findSimilarCars(currentRefCar, 5, true);
+        for (let i = 0; i < similar.length; i++) {
+            currentCombo[`similar_car_${i+1}`] = similar[i].name;
+        }
+    }
     
     const datetime = `${date}T${time}:00`;
     
