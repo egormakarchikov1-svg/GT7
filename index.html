@@ -2671,9 +2671,11 @@ async function getActiveRaces(adminId) {
     }
 }
 
-async function displayUserRaces() {
-    // ✅ ДОБАВЛЕНО: проверяем, выбран ли админ
-    const currentAdminId = localStorage.getItem('gt7_current_admin_id'); // или ваша переменная
+async function displayUserRaces(adminId) {
+    // Если adminId передан в параметре - используем его, иначе берем из localStorage
+    const currentAdminId = adminId || localStorage.getItem('gt7_selected_admin_id');
+    
+    console.log('displayUserRaces, currentAdminId:', currentAdminId);
     
     if (!currentAdminId) {
         const container = document.getElementById('racesCalendarContainer');
@@ -2683,7 +2685,7 @@ async function displayUserRaces() {
         return;
     }
     
-    const races = await getActiveRaces(currentAdminId); // передаем adminId
+    const races = await getActiveRaces(currentAdminId);
     const container = document.getElementById('racesCalendarContainer');
     
     if (!container) return;
@@ -2705,16 +2707,16 @@ async function displayUserRaces() {
                 <div class="race-date">📅 ${dateStr}</div>
                 <div class="race-title">${race.title || '🏁 Гоночный заезд'}</div>
                 <div class="race-details">
-    ${race.display_mode === 'group_only' ? 
-        `<div>🏆 ${race.category_name || '—'}</div>` :
-        `<div>🚗 ${race.car_name || '—'}</div>`
-    }
-    <div>🛣️ ${race.track_name || '—'}</div>
-    <div>🌤️ ${race.weather_name || '—'}</div>
-    <div>⏰ ${race.time_name || '—'} ${race.time_multiplier ? race.time_multiplier : ''}</div>
-    <div>⚙️ ${race.tires_value || 'X1'}</div>
-    <div>⛽ ${race.fuel_value || 'X1'}</div>
-</div>
+                    ${race.display_mode === 'group_only' ? 
+                        `<div>🏆 ${race.category_name || '—'}</div>` :
+                        `<div>🚗 ${race.car_name || '—'}</div>`
+                    }
+                    <div>🛣️ ${race.track_name || '—'}</div>
+                    <div>🌤️ ${race.weather_name || '—'}</div>
+                    <div>⏰ ${race.time_name || '—'} ${race.time_multiplier ? race.time_multiplier : ''}</div>
+                    <div>⚙️ ${race.tires_value || 'X1'}</div>
+                    <div>⛽ ${race.fuel_value || 'X1'}</div>
+                </div>
                 <button class="apply-race-btn" onclick="applyRaceToGame('${race.id}')">🏁 ПРИМЕНИТЬ ГОНКУ</button>
             </div>
         `;
