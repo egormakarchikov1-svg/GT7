@@ -2740,12 +2740,28 @@ async function applyRaceToGame(raceId) {
     }
 }
 
+    function displayTrackIcon(iconUrl) {
+    const trackIcon = document.getElementById('trackIcon');
+    const trackIconFallback = document.getElementById('trackIconFallback');
+    
+    if (iconUrl && iconUrl !== '') {
+        trackIcon.src = iconUrl;
+        trackIcon.style.display = 'block';
+        if (trackIconFallback) trackIconFallback.style.display = 'none';
+    } else {
+        trackIcon.style.display = 'none';
+        if (trackIconFallback) {
+            trackIconFallback.style.display = 'flex';
+            trackIconFallback.innerHTML = '🛣️';
+        }
+    }
+}
+
 function applyRaceParameters(race) {
     // Если групповой режим - не применяем машину
     if (race.display_mode !== 'group_only') {
         if (race.car_name) {
             document.getElementById('carValue').innerHTML = race.car_name;
-            // Обновляем иконку машины
             const car = carsDatabase.find(c => c.name === race.car_name);
             if (car && car.icon) {
                 displayCarIcon(car.icon);
@@ -2755,20 +2771,8 @@ function applyRaceParameters(race) {
     
     if (race.track_name) {
         document.getElementById('trackValue').innerHTML = race.track_name;
-        // ✅ ДОБАВЛЕНО: обновляем иконку трассы
         const trackIconUrl = getTrackIcon(race.track_name);
-        if (trackIconUrl) {
-            displayTrackIcon(trackIconUrl);
-        } else {
-            // Если иконка не найдена, показываем fallback
-            const trackIcon = document.getElementById('trackIcon');
-            const trackIconFallback = document.getElementById('trackIconFallback');
-            if (trackIcon) trackIcon.style.display = 'none';
-            if (trackIconFallback) {
-                trackIconFallback.style.display = 'flex';
-                trackIconFallback.innerHTML = '🛣️';
-            }
-        }
+        displayTrackIcon(trackIconUrl);  // Функция сама обработает null
     }
     
     if (race.category_name) document.getElementById('categoryValue').innerHTML = race.category_name;
@@ -2782,7 +2786,6 @@ function applyRaceParameters(race) {
     if (race.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${race.tires_value}</span>`;
     if (race.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${race.fuel_value}</span>`;
     
-    // Обновляем режим отображения
     if (race.display_mode) {
         setDisplayMode(race.display_mode);
     }
