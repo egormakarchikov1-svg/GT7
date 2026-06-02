@@ -2445,9 +2445,10 @@ function applySyncedCombo(data) {
 async function loadRace() {
     console.log('🏁 loadRace вызвана');
     
-    // Если синхронизация выключена, ничего не делаем
+    // Если синхронизация выключена - генерируем локальную гонку
     if (!userSyncEnabled) {
-        console.log('ℹ️ Синхронизация выключена, гонка не генерируется автоматически');
+        console.log('🎲 Синхронизация выключена - генерируем локальную гонку');
+        generateLocalRace();
         return;
     }
     
@@ -3078,20 +3079,6 @@ function init() {
         startAutoRefresh();
     }
     
-    // Загружаем гонку
-    if (userSyncEnabled && currentAdminId) {
-     loadRace();
-    } else {
-        // Устанавливаем прочерки
-        document.getElementById('carValue').innerHTML = '—';
-        document.getElementById('trackValue').innerHTML = '—';
-        document.getElementById('categoryValue').innerHTML = '—';
-        document.getElementById('weatherValue').innerHTML = '—';
-        document.getElementById('timeValue').innerHTML = '—';
-        document.getElementById('tiresValue').innerHTML = '—';
-        document.getElementById('fuelValue').innerHTML = '—';
-    }
-    
     // Восстановление админа для просмотра гонок
     const savedAdminId = localStorage.getItem('gt7_selected_admin_id');
     const adminSelectElement = document.getElementById('adminSelect');
@@ -3124,6 +3111,8 @@ function init() {
 
     // Обновляем видимость блоков в зависимости от синхронизации
     updateModeSelectorVisibility();
+
+    loadRace();
 }
 
 // Запуск приложения
