@@ -1167,6 +1167,14 @@
         <div class="races-title" style="color: #22c55e; font-size: 14px; font-weight: bold;">📅 ЗАПЛАНИРОВАННЫЕ ГОНКИ</div>
         <div style="width: 30px;"></div>
     </div>
+    
+    <!-- ✅ СЕЛЕКТОР ВЫБОРА АДМИНИСТРАТОРА -->
+    <div style="padding: 0 15px 10px 15px;">
+        <select id="userAdminSelect" style="width: 100%; max-width: 280px; padding: 10px 15px; border-radius: 30px; background: #1e293b; color: white; border: 1px solid #22c55e; font-size: 14px; cursor: pointer; text-align: center; margin: 0 auto; display: block;">
+            <option value="">-- Выберите администратора --</option>
+        </select>
+    </div>
+    
     <div class="races-content" id="racesCalendarContainer" style="padding: 0 12px 12px 12px;">
         <div style="text-align: center; padding: 20px;">Загрузка гонок...</div>
     </div>
@@ -2786,7 +2794,7 @@ function applyRaceParameters(race) {
     if (race.track_name) {
         document.getElementById('trackValue').innerHTML = race.track_name;
         const trackIconUrl = getTrackIcon(race.track_name);
-        displayTrackIcon(trackIconUrl);  // Функция сама обработает null
+        displayTrackIcon(trackIconUrl);
     }
     
     if (race.category_name) document.getElementById('categoryValue').innerHTML = race.category_name;
@@ -2826,9 +2834,65 @@ function showStatus(message, type) {
 // ============================================
 
 function selectAdmin(adminId) {
-    localStorage.setItem('gt7_current_admin_id', adminId);
-    displayUserRaces(); // Обновляем список гонок
-    showStatus(`👑 Выбран администратор: ${adminId}`, 'success');
+    const container = document.getElementById('racesCalendarContainer');
+    
+    if (!adminId) {
+        localStorage.removeItem('gt7_selected_admin_id');
+        if (container) {
+            container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">👑 Выберите администратора</div>';
+        }
+        return;
+    }
+    
+    localStorage.setItem('gt7_selected_admin_id', adminId);
+    
+    if (container) {
+        container.innerHTML = '<div style="text-align: center; padding: 20px;">🔄 Загрузка гонок...</div>';
+    }
+    displayUserRaces(adminId);
+}
+
+async function loadUserAdmins() {
+    try {
+        const callbackName = 'jsonp_admins_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+        const url = `${APPS_SCRIPT_URL}?action=getAdmins&callback=${callbackName}&t=${Date.now()}`;
+        
+        const admins = await new Promise((resolve) => {
+            const timeout = setTimeout(() => {
+                if (window[callbackName]) delete window[callbackName];
+                resolve([]);
+            }, 10000);
+            
+            window[callbackName] = function(data) {
+                clearTimeout(timeout);
+                delete window[callbackName];
+                if (data && data.success && data.admins) {
+                    resolve(data.admins);
+                } else {
+                    resolve([]);
+                }
+            };
+            
+            const script = document.createElement('script');
+            script.src = url;
+            script.onerror = () => {
+                clearTimeout(timeout);
+                resolve([]);
+            };
+            document.body.appendChild(script);
+        });
+        
+        const select = document.getElementById('userAdminSelect');
+        if (select) {
+            const savedAdminId = localStorage.getItem('gt7_selected_admin_id');
+            select.innerHTML = '<option value="">-- Выберите администратора --</option>';
+            admins.forEach(admin => {
+                select.innerHTML += `<option value="${admin.id}" ${savedAdminId === admin.id ? 'selected' : ''}>${admin.name}</option>`;
+            });
+        }
+    } catch(e) {
+        console.error('Ошибка загрузки администраторов:', e);
+    }
 }
 
 // ============================================
@@ -2869,14 +2933,13 @@ function init() {
     document.getElementById('modeAllBtn').addEventListener('click', () => setDisplayMode('all'));
     document.getElementById('modeGroupOnlyBtn').addEventListener('click', () => setDisplayMode('group_only'));
     
-    // Обработчик выбора администратора
+    // Обработчик выбора администратора для синхронизации
     document.getElementById('adminSelect').addEventListener('change', (e) => { 
         const newAdminId = e.target.value;
         const oldAdminId = currentAdminId;
         currentAdminId = newAdminId; 
-        console.log('👑 Выбран админ:', currentAdminId);
+        console.log('👑 Выбран админ для синхронизации:', currentAdminId);
         
-        // Сохраняем выбранного админа для отображения гонок
         if (newAdminId) {
             selectAdmin(newAdminId);
         }
@@ -2909,22 +2972,33 @@ function init() {
     // Загружаем гонку
     loadRace();
     
-    // Проверяем, выбран ли админ для отображения гонок
-    const savedAdminId = localStorage.getItem('gt7_current_admin_id');
-    if (savedAdminId) {
+    // Восстановление админа для просмотра гонок
+    const savedAdminId = localStorage.getItem('gt7_selected_admin_id');
+    const adminSelectElement = document.getElementById('adminSelect');
+    
+    if (adminSelectElement && adminSelectElement.value === '') {
+        localStorage.removeItem('gt7_selected_admin_id');
+        const container = document.getElementById('racesCalendarContainer');
+        if (container) {
+            container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">👑 Выберите администратора</div>';
+        }
+    } else if (savedAdminId && adminSelectElement && adminSelectElement.value === savedAdminId) {
         displayUserRaces(savedAdminId);
     } else {
         const container = document.getElementById('racesCalendarContainer');
         if (container) {
-            container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">👑 Выберите администратора в настройках</div>';
+            container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">👑 Выберите администратора</div>';
         }
     }
     
-    // Обновляем каждые 60 секунд
+    // Загружаем список администраторов
+    loadUserAdmins();
+    
+    // Обновляем гонки каждые 60 секунд
     setInterval(() => {
-        const savedId = localStorage.getItem('gt7_current_admin_id');
-        if (savedId) {
-            displayUserRaces(savedId);
+        const selectedAdmin = localStorage.getItem('gt7_selected_admin_id');
+        if (selectedAdmin) {
+            displayUserRaces(selectedAdmin);
         }
     }, 60000);
 }
