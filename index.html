@@ -2743,10 +2743,34 @@ async function applyRaceToGame(raceId) {
 function applyRaceParameters(race) {
     // Если групповой режим - не применяем машину
     if (race.display_mode !== 'group_only') {
-        if (race.car_name) document.getElementById('carValue').innerHTML = race.car_name;
+        if (race.car_name) {
+            document.getElementById('carValue').innerHTML = race.car_name;
+            // Обновляем иконку машины
+            const car = carsDatabase.find(c => c.name === race.car_name);
+            if (car && car.icon) {
+                displayCarIcon(car.icon);
+            }
+        }
     }
     
-    if (race.track_name) document.getElementById('trackValue').innerHTML = race.track_name;
+    if (race.track_name) {
+        document.getElementById('trackValue').innerHTML = race.track_name;
+        // ✅ ДОБАВЛЕНО: обновляем иконку трассы
+        const trackIconUrl = getTrackIcon(race.track_name);
+        if (trackIconUrl) {
+            displayTrackIcon(trackIconUrl);
+        } else {
+            // Если иконка не найдена, показываем fallback
+            const trackIcon = document.getElementById('trackIcon');
+            const trackIconFallback = document.getElementById('trackIconFallback');
+            if (trackIcon) trackIcon.style.display = 'none';
+            if (trackIconFallback) {
+                trackIconFallback.style.display = 'flex';
+                trackIconFallback.innerHTML = '🛣️';
+            }
+        }
+    }
+    
     if (race.category_name) document.getElementById('categoryValue').innerHTML = race.category_name;
     if (race.weather_name) document.getElementById('weatherValue').innerHTML = race.weather_name;
     
