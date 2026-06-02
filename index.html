@@ -2691,14 +2691,16 @@ async function displayUserRaces() {
                 <div class="race-date">📅 ${dateStr}</div>
                 <div class="race-title">${race.title || '🏁 Гоночный заезд'}</div>
                 <div class="race-details">
-                    <div>🚗 ${race.car_name || '—'}</div>
-                    <div>🛣️ ${race.track_name || '—'}</div>
-                    <div>🏆 ${race.category_name || '—'}</div>
-                    <div>🌤️ ${race.weather_name || '—'}</div>
-                    <div>⏰ ${race.time_name || '—'} ${race.time_multiplier ? `<span class="time-x-badge">${race.time_multiplier}</span>` : ''}</div>
-                    <div>🔘 ${race.tires_value || 'X1'}</div>
-                    <div>⛽ ${race.fuel_value || 'X1'}</div>
-                </div>
+    ${race.display_mode === 'group_only' ? 
+        `<div>🏆 ${race.category_name || '—'}</div>` :
+        `<div>🚗 ${race.car_name || '—'}</div>`
+    }
+    <div>🛣️ ${race.track_name || '—'}</div>
+    <div>🌤️ ${race.weather_name || '—'}</div>
+    <div>⏰ ${race.time_name || '—'} ${race.time_multiplier ? `<span class="time-x-badge">${race.time_multiplier}</span>` : ''}</div>
+    <div>⚙️ ${race.tires_value || 'X1'}</div>
+    <div>⛽ ${race.fuel_value || 'X1'}</div>
+</div>
                 <button class="apply-race-btn" onclick="applyRaceToGame('${race.id}')">🏁 ПРИМЕНИТЬ ГОНКУ</button>
             </div>
         `;
@@ -2739,12 +2741,15 @@ async function applyRaceToGame(raceId) {
 }
 
 function applyRaceParameters(race) {
-    if (race.car_name) document.getElementById('carValue').innerHTML = race.car_name;
+    // Если групповой режим - не применяем машину
+    if (race.display_mode !== 'group_only') {
+        if (race.car_name) document.getElementById('carValue').innerHTML = race.car_name;
+    }
+    
     if (race.track_name) document.getElementById('trackValue').innerHTML = race.track_name;
     if (race.category_name) document.getElementById('categoryValue').innerHTML = race.category_name;
     if (race.weather_name) document.getElementById('weatherValue').innerHTML = race.weather_name;
     
-    // ✅ ИСПРАВЛЕНО: применяем время суток с множителем
     if (race.time_name) {
         const multiplier = race.time_multiplier || 'X1';
         document.getElementById('timeValue').innerHTML = `${race.time_name} <span class="time-x-badge">${multiplier}</span>`;
@@ -2752,6 +2757,12 @@ function applyRaceParameters(race) {
     
     if (race.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${race.tires_value}</span>`;
     if (race.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${race.fuel_value}</span>`;
+    
+    // Обновляем режим отображения
+    if (race.display_mode) {
+        setDisplayMode(race.display_mode);
+    }
+    
     localStorage.setItem('gt7_current_race', JSON.stringify(race));
 }
 
