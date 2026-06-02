@@ -2743,7 +2743,13 @@ function applyRaceParameters(race) {
     if (race.track_name) document.getElementById('trackValue').innerHTML = race.track_name;
     if (race.category_name) document.getElementById('categoryValue').innerHTML = race.category_name;
     if (race.weather_name) document.getElementById('weatherValue').innerHTML = race.weather_name;
-    if (race.time_name) document.getElementById('timeValue').innerHTML = race.time_name;
+    
+    // ✅ ИСПРАВЛЕНО: применяем время суток с множителем
+    if (race.time_name) {
+        const multiplier = race.time_multiplier || 'X1';
+        document.getElementById('timeValue').innerHTML = `${race.time_name} <span class="time-x-badge">${multiplier}</span>`;
+    }
+    
     if (race.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${race.tires_value}</span>`;
     if (race.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${race.fuel_value}</span>`;
     localStorage.setItem('gt7_current_race', JSON.stringify(race));
