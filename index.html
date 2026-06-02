@@ -1234,7 +1234,9 @@ let shownTracks = [];
 
 // ⚠️ ГЛАВНОЕ ИСПРАВЛЕНИЕ: переменные объявлены ОДИН РАЗ
 let currentAdminId = null;
-let userSyncEnabled = localStorage.getItem('gt7_sync_enabled') === 'true';
+// Принудительно ВЫКЛЮЧАЕМ синхронизацию при загрузке
+let userSyncEnabled = false;
+localStorage.setItem('gt7_sync_enabled', 'false');
 let syncedModeActive = false;
 let syncedComboData = null;
 let displayMode = localStorage.getItem('gt7_display_mode') || 'all';
