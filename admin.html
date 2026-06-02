@@ -250,17 +250,6 @@
     opacity: 0.5;
     background: linear-gradient(135deg, #1a1a2e, #0a0a15);
 }
-.race-item.inactive::after {
-    content: '⛔ НЕАКТИВНА';
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: #6b7280;
-    padding: 2px 8px;
-    border-radius: 15px;
-    font-size: 9px;
-    font-weight: bold;
-}
 .race-date {
     font-size: 14px;
     font-weight: bold;
@@ -2173,14 +2162,13 @@ function displayScheduledRaces(racesToShow = null) {
         
         if (!isActive) {
     dateClass = 'inactive-date';
-    statusBadge = '<span class="inactive-badge"></span>';  // пустой бейдж
-    // ИЛИ вообще убираем statusBadge
+    statusBadge = '<span class="inactive-badge">⛔ НЕАКТИВНА</span>';  // ← текст
 } else if (isUpcoming) {
     dateClass = 'upcoming-date';
-    statusBadge = '<span class="active-badge"></span>';    // пустой бейдж
+    statusBadge = '<span class="active-badge">✅ АКТИВНА</span>';      // ← текст
 } else {
     dateClass = 'passed-date';
-    statusBadge = '';  // для прошедших вообще не показываем
+    statusBadge = '<span class="inactive-badge">📅 ПРОШЛА</span>';      // ← текст
 }
         
         const dateStr = raceDate.toLocaleString('ru-RU', {
