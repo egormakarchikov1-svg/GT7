@@ -2499,12 +2499,13 @@ function toggleSyncMode() {
     userSyncEnabled = !userSyncEnabled;
     localStorage.setItem('gt7_sync_enabled', userSyncEnabled);
     const btn = document.getElementById('syncToggleBtn');
+    
     if (userSyncEnabled) { 
         btn.innerText = '🔒 ВКЛ'; 
-        btn.style.background = '#22c55e'; 
+        btn.style.background = '#22c55e';
     } else { 
         btn.innerText = '🔓 ВЫКЛ'; 
-        btn.style.background = '#ef4444'; 
+        btn.style.background = '#ef4444';
     }
     updateModeSelectorVisibility();
     loadRace();
@@ -2673,12 +2674,19 @@ async function loadAdmins() {
 
 function updateModeSelectorVisibility() {
     const modeSelectorBlock = document.getElementById('modeSelectorBlock');
-    if (!modeSelectorBlock) return;
+    const adminSelectBlock = document.getElementById('adminSelectBlock');
+    const racesContainer = document.querySelector('.races-container');
     
-    if (userSyncEnabled && currentAdminId) {
-        modeSelectorBlock.style.display = 'none';
+    if (userSyncEnabled) {
+        // Синхронизация ВКЛЮЧЕНА → всё показываем
+        if (modeSelectorBlock) modeSelectorBlock.style.display = 'block';
+        if (adminSelectBlock) adminSelectBlock.style.display = 'block';
+        if (racesContainer) racesContainer.style.display = 'block';
     } else {
-        modeSelectorBlock.style.display = 'block';
+        // Синхронизация ВЫКЛЮЧЕНА → всё скрываем
+        if (modeSelectorBlock) modeSelectorBlock.style.display = 'block';
+        if (adminSelectBlock) adminSelectBlock.style.display = 'none';
+        if (racesContainer) racesContainer.style.display = 'none';
     }
 }
 
@@ -3042,6 +3050,9 @@ function init() {
             displayUserRaces(selectedAdmin);
         }
     }, 60000);
+
+    // Обновляем видимость блоков в зависимости от синхронизации
+    updateModeSelectorVisibility();
 }
 
 // Запуск приложения
