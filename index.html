@@ -1037,7 +1037,7 @@
 #similarContainer,
 .races-container,
 #modeSelectorBlock {
-    display: none;
+    display: none !important;
 }
         
     </style>
@@ -2708,15 +2708,21 @@ function updateModeSelectorVisibility() {
     const settingsContainer = document.getElementById('settingsContainer');
     const similarContainer = document.getElementById('similarContainer');
     
+    // ПРИНУДИТЕЛЬНО скрываем все блоки сначала
+    const allBlocks = [adminSelectBlock, carsTrackContainer, categoryContainer, settingsContainer, similarContainer, racesContainer, modeSelectorBlock];
+    allBlocks.forEach(block => {
+        if (block) block.style.setProperty('display', 'none', 'important');
+    });
+    
     if (userSyncEnabled) {
         // ========== СИНХРОНИЗАЦИЯ ВКЛЮЧЕНА ==========
-        if (adminSelectBlock) adminSelectBlock.style.display = 'block';
-        if (carsTrackContainer) carsTrackContainer.style.display = 'block';
-        if (categoryContainer) categoryContainer.style.display = 'block';
-        if (settingsContainer) settingsContainer.style.display = 'block';
-        if (similarContainer) similarContainer.style.display = 'block';
-        if (racesContainer) racesContainer.style.display = 'block';
-        if (modeSelectorBlock) modeSelectorBlock.style.display = 'none';
+        if (adminSelectBlock) adminSelectBlock.style.setProperty('display', 'block', 'important');
+        if (carsTrackContainer) carsTrackContainer.style.setProperty('display', 'block', 'important');
+        if (categoryContainer) categoryContainer.style.setProperty('display', 'block', 'important');
+        if (settingsContainer) settingsContainer.style.setProperty('display', 'block', 'important');
+        if (similarContainer) similarContainer.style.setProperty('display', 'block', 'important');
+        if (racesContainer) racesContainer.style.setProperty('display', 'block', 'important');
+        if (modeSelectorBlock) modeSelectorBlock.style.setProperty('display', 'none', 'important');
         
         if (!currentAdminId) {
             document.getElementById('carValue').innerHTML = '—';
@@ -2729,25 +2735,13 @@ function updateModeSelectorVisibility() {
         }
     } else {
         // ========== СИНХРОНИЗАЦИЯ ВЫКЛЮЧЕНА ==========
-        // ПОКАЗЫВАЕМ блоки для самостоятельной игры
-        if (adminSelectBlock) adminSelectBlock.style.display = 'none';
-        if (modeSelectorBlock) modeSelectorBlock.style.display = 'block';
-        if (carsTrackContainer) carsTrackContainer.style.display = 'block';
-        if (categoryContainer) categoryContainer.style.display = 'block';
-        if (settingsContainer) settingsContainer.style.display = 'block';
-        if (similarContainer) similarContainer.style.display = 'block';
-        if (racesContainer) racesContainer.style.display = 'none';
-        
-        // НЕ ВЫЗЫВАЕМ generateLocalRace() здесь!
-        // Пользователь сам нажмёт кнопку "СЛУЧАЙНАЯ ГОНКА"
-        // Просто показываем прочерки
-        document.getElementById('carValue').innerHTML = '—';
-        document.getElementById('trackValue').innerHTML = '—';
-        document.getElementById('categoryValue').innerHTML = '—';
-        document.getElementById('weatherValue').innerHTML = '—';
-        document.getElementById('timeValue').innerHTML = '—';
-        document.getElementById('tiresValue').innerHTML = '—';
-        document.getElementById('fuelValue').innerHTML = '—';
+        if (adminSelectBlock) adminSelectBlock.style.setProperty('display', 'none', 'important');
+        if (modeSelectorBlock) modeSelectorBlock.style.setProperty('display', 'block', 'important');
+        if (carsTrackContainer) carsTrackContainer.style.setProperty('display', 'block', 'important');
+        if (categoryContainer) categoryContainer.style.setProperty('display', 'block', 'important');
+        if (settingsContainer) settingsContainer.style.setProperty('display', 'block', 'important');
+        if (similarContainer) similarContainer.style.setProperty('display', 'block', 'important');
+        if (racesContainer) racesContainer.style.setProperty('display', 'none', 'important');
     }
 }
 
