@@ -2385,12 +2385,19 @@ async function scheduleRace() {
         return;
     }
     
+    // ✅ ПОЛУЧАЕМ МНОЖИТЕЛЬ ВРЕМЕНИ
+    const timeValueHtml = document.getElementById('timeValue').innerHTML;
+    const timeMultiplierMatch = timeValueHtml.match(/<span[^>]*>([^<]+)<\/span>/);
+    const timeMultiplier = timeMultiplierMatch ? timeMultiplierMatch[1] : 'X1';
+    const timeName = timeValueHtml.split('<')[0].trim();
+    
     const currentCombo = {
         car_name: document.getElementById('carValue').innerHTML.split('<')[0].trim(),
         track_name: document.getElementById('trackValue').innerHTML.split('<')[0].trim(),
         category_name: document.getElementById('categoryText').innerHTML.split('<')[0].trim(),
         weather_name: document.getElementById('weatherValue').innerHTML.split('<')[0].trim(),
-        time_name: document.getElementById('timeValue').innerHTML.split('<')[0].trim(),
+        time_name: timeName,
+        time_multiplier: timeMultiplier,  // ✅ ДОБАВЛЕНО!
         tires_value: document.getElementById('tiresValue').innerText,
         fuel_value: document.getElementById('fuelValue').innerText,
         display_mode: displayMode
@@ -2401,7 +2408,6 @@ async function scheduleRace() {
     try {
         const callbackName = 'jsonp_schedule_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         
-        // ✅ ИСПРАВЛЕНО: правильно формируем URL параметры
         const params = new URLSearchParams();
         params.append('action', 'scheduleRace');
         params.append('adminId', currentAdmin.id);
