@@ -376,6 +376,30 @@
 .calendar-content.collapsed {
     display: none;
 }
+
+        /* Разрешаем перенос длинных строк */
+.race-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 12px;
+    color: #aaa;
+    margin-bottom: 12px;
+}
+
+/* Убираем ограничение по ширине */
+.race-details span {
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* Или сделать колонки вертикальными на маленьких экранах */
+@media (max-width: 600px) {
+    .race-details {
+        flex-direction: column;
+        gap: 5px;
+    }
+}
     </style>
 </head>
 <body>
@@ -2175,7 +2199,7 @@ function displayScheduledRaces(racesToShow = null) {
         `<span>🚗 ${race.car_name || '—'}</span>`
     }
     <span>🛣️ ${race.track_name || '—'}</span>
-    <span>🌤️ ${race.weather_name ? race.weather_name.substring(0, 20) : '—'}</span>
+    <span>🌤️ ${race.weather_name || '—'}</span>  <!-- без обрезания -->
     <span>⏰ ${race.time_name || '—'} ${race.time_multiplier ? race.time_multiplier : ''}</span>
     <span>⚙️ ${race.tires_value || 'X1'}</span>
     <span>⛽ ${race.fuel_value || 'X1'}</span>
