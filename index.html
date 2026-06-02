@@ -2509,13 +2509,12 @@ function toggleLock(param) {
 
 function toggleSyncMode() {
     userSyncEnabled = !userSyncEnabled;
-    localStorage.setItem('gt7_sync_enabled', userSyncEnabled);
+    localStorage.setItem('gt7_sync_enabled', userSyncEnabled ? 'true' : 'false');
     const btn = document.getElementById('syncToggleBtn');
     
     if (userSyncEnabled) { 
         btn.innerText = '🔒 ВКЛ'; 
         btn.style.background = '#22c55e';
-        // При включении синхронизации — очищаем прочерки, ждём выбора админа
         document.getElementById('carValue').innerHTML = '—';
         document.getElementById('trackValue').innerHTML = '—';
         document.getElementById('categoryValue').innerHTML = '—';
@@ -2526,8 +2525,7 @@ function toggleSyncMode() {
     } else { 
         btn.innerText = '🔓 ВЫКЛ'; 
         btn.style.background = '#ef4444';
-        // При выключении синхронизации — генерируем локальную гонку
-        generateLocalRace();
+        // НЕ ВЫЗЫВАЕМ generateLocalRace() здесь!
     }
     updateModeSelectorVisibility();
 }
@@ -2704,17 +2702,14 @@ function updateModeSelectorVisibility() {
     
     if (userSyncEnabled) {
         // ========== СИНХРОНИЗАЦИЯ ВКЛЮЧЕНА ==========
-        // Показываем блок выбора администратора
         if (adminSelectBlock) adminSelectBlock.style.display = 'block';
-        
-        // Блоки гонки показываем, но с прочерками
         if (carsTrackContainer) carsTrackContainer.style.display = 'block';
         if (categoryContainer) categoryContainer.style.display = 'block';
         if (settingsContainer) settingsContainer.style.display = 'block';
         if (similarContainer) similarContainer.style.display = 'block';
         if (racesContainer) racesContainer.style.display = 'block';
+        if (modeSelectorBlock) modeSelectorBlock.style.display = 'none';
         
-        // Если админ НЕ ВЫБРАН — показываем прочерки
         if (!currentAdminId) {
             document.getElementById('carValue').innerHTML = '—';
             document.getElementById('trackValue').innerHTML = '—';
@@ -2724,23 +2719,27 @@ function updateModeSelectorVisibility() {
             document.getElementById('tiresValue').innerHTML = '—';
             document.getElementById('fuelValue').innerHTML = '—';
         }
-        
-        // Режим выбора машин скрываем при синхронизации
-        if (modeSelectorBlock) modeSelectorBlock.style.display = 'none';
-        
     } else {
         // ========== СИНХРОНИЗАЦИЯ ВЫКЛЮЧЕНА ==========
-        // Пользователь сам создаёт условия — показываем ВСЁ, кроме админа
+        // ПОКАЗЫВАЕМ блоки для самостоятельной игры
         if (adminSelectBlock) adminSelectBlock.style.display = 'none';
         if (modeSelectorBlock) modeSelectorBlock.style.display = 'block';
         if (carsTrackContainer) carsTrackContainer.style.display = 'block';
         if (categoryContainer) categoryContainer.style.display = 'block';
         if (settingsContainer) settingsContainer.style.display = 'block';
         if (similarContainer) similarContainer.style.display = 'block';
-        if (racesContainer) racesContainer.style.display = 'none'; // Гонки не нужны
+        if (racesContainer) racesContainer.style.display = 'none';
         
-        // Генерируем случайную гонку
-        generateLocalRace();
+        // НЕ ВЫЗЫВАЕМ generateLocalRace() здесь!
+        // Пользователь сам нажмёт кнопку "СЛУЧАЙНАЯ ГОНКА"
+        // Просто показываем прочерки
+        document.getElementById('carValue').innerHTML = '—';
+        document.getElementById('trackValue').innerHTML = '—';
+        document.getElementById('categoryValue').innerHTML = '—';
+        document.getElementById('weatherValue').innerHTML = '—';
+        document.getElementById('timeValue').innerHTML = '—';
+        document.getElementById('tiresValue').innerHTML = '—';
+        document.getElementById('fuelValue').innerHTML = '—';
     }
 }
 
