@@ -14,11 +14,6 @@
     <meta name="theme-color" content="#ff4d4d">
     
     <style>
-
-.init-hidden {
-    display: none !important;
-}
-        
         * {
             margin: 0;
             padding: 0;
@@ -2681,47 +2676,17 @@ function updateModeSelectorVisibility() {
     const modeSelectorBlock = document.getElementById('modeSelectorBlock');
     const adminSelectBlock = document.getElementById('adminSelectBlock');
     const racesContainer = document.querySelector('.races-container');
-    const carsTrackContainer = document.getElementById('carsTrackContainer');
-    const categoryContainer = document.getElementById('categoryContainer');
-    const settingsContainer = document.getElementById('settingsContainer');
-    const similarContainer = document.getElementById('similarContainer');
     
     if (userSyncEnabled) {
-        // Синхронизация ВКЛЮЧЕНА → показываем блоки
+        // Синхронизация ВКЛЮЧЕНА → всё показываем
+        if (modeSelectorBlock) modeSelectorBlock.style.display = 'block';
         if (adminSelectBlock) adminSelectBlock.style.display = 'block';
         if (racesContainer) racesContainer.style.display = 'block';
-        if (carsTrackContainer) carsTrackContainer.style.display = 'block';
-        if (categoryContainer) categoryContainer.style.display = 'block';
-        if (settingsContainer) settingsContainer.style.display = 'block';
-        if (similarContainer) similarContainer.style.display = 'block';
-        
-        // Если админ НЕ ВЫБРАН — показываем прочерки, но блоки видимы
-        if (!currentAdminId) {
-            document.getElementById('carValue').innerHTML = '—';
-            document.getElementById('trackValue').innerHTML = '—';
-            document.getElementById('categoryValue').innerHTML = '—';
-            document.getElementById('weatherValue').innerHTML = '—';
-            document.getElementById('timeValue').innerHTML = '—';
-            document.getElementById('tiresValue').innerHTML = '—';
-            document.getElementById('fuelValue').innerHTML = '—';
-        }
     } else {
         // Синхронизация ВЫКЛЮЧЕНА → всё скрываем
+        if (modeSelectorBlock) modeSelectorBlock.style.display = 'block';
         if (adminSelectBlock) adminSelectBlock.style.display = 'none';
         if (racesContainer) racesContainer.style.display = 'none';
-        if (carsTrackContainer) carsTrackContainer.style.display = 'none';
-        if (categoryContainer) categoryContainer.style.display = 'none';
-        if (settingsContainer) settingsContainer.style.display = 'none';
-        if (similarContainer) similarContainer.style.display = 'none';
-        
-        // Устанавливаем прочерки
-        document.getElementById('carValue').innerHTML = '—';
-        document.getElementById('trackValue').innerHTML = '—';
-        document.getElementById('categoryValue').innerHTML = '—';
-        document.getElementById('weatherValue').innerHTML = '—';
-        document.getElementById('timeValue').innerHTML = '—';
-        document.getElementById('tiresValue').innerHTML = '—';
-        document.getElementById('fuelValue').innerHTML = '—';
     }
 }
 
@@ -3021,10 +2986,11 @@ function init() {
     currentAdminId = newAdminId; 
     console.log('👑 Выбран админ для синхронизации:', currentAdminId);
     
+    // ✅ Обрабатываем и выбор, и снятие выбора
     if (newAdminId) {
         selectAdmin(newAdminId);
     } else {
-        selectAdmin(null);
+        selectAdmin(null);  // ← Очищает гонки при снятии выбора
     }
     
     if (oldAdminId !== newAdminId) {
@@ -3035,20 +3001,7 @@ function init() {
     }
     
     updateModeSelectorVisibility();
-    
-    // Если админ выбран, загружаем гонку
-    if (currentAdminId) {
-        loadRace();
-    } else {
-        // Если админ НЕ ВЫБРАН — показываем прочерки
-        document.getElementById('carValue').innerHTML = '—';
-        document.getElementById('trackValue').innerHTML = '—';
-        document.getElementById('categoryValue').innerHTML = '—';
-        document.getElementById('weatherValue').innerHTML = '—';
-        document.getElementById('timeValue').innerHTML = '—';
-        document.getElementById('tiresValue').innerHTML = '—';
-        document.getElementById('fuelValue').innerHTML = '—';
-    }
+    loadRace(); 
 });
     
     // Глобальные функции
