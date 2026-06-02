@@ -1025,6 +1025,9 @@
     background: #16a34a;
     transform: scale(1.02);
 }
+        .races-content.collapsed {
+    display: none;
+}
     </style>
 </head>
 <body>
@@ -2531,6 +2534,21 @@ function toggleCategory() { categoryExpanded = !categoryExpanded; document.getEl
 function toggleSettings() { settingsExpanded = !settingsExpanded; document.getElementById('settingsContent').classList.toggle('collapsed', !settingsExpanded); document.getElementById('settingsToggleIcon').innerHTML = settingsExpanded ? '▼' : '▶'; }
 function toggleSimilar() { similarExpanded = !similarExpanded; document.getElementById('similarContent').classList.toggle('collapsed', !similarExpanded); document.getElementById('similarToggleIcon').innerHTML = similarExpanded ? '▼' : '▶'; }
 
+    function toggleCalendar() {
+    const calendarContent = document.getElementById('calendarContent');
+    const calendarToggleIcon = document.getElementById('calendarToggleIcon');
+    
+    if (calendarContent) {
+        const isCollapsed = calendarContent.classList.contains('collapsed');
+        if (isCollapsed) {
+            calendarContent.classList.remove('collapsed');
+            if (calendarToggleIcon) calendarToggleIcon.innerHTML = '▼';
+        } else {
+            calendarContent.classList.add('collapsed');
+            if (calendarToggleIcon) calendarToggleIcon.innerHTML = '▶';
+        }
+    }
+}
 function updateVisibilityByDisplayMode(displayMode) {
     const carBlock = document.getElementById('carBlock');
     const similarBlock = document.getElementById('similarContainer');
@@ -2937,6 +2955,10 @@ function init() {
     document.getElementById('similarHeader').addEventListener('click', toggleSimilar);
     document.getElementById('carsTrackHeader').addEventListener('click', toggleCarsTrack);
     document.getElementById('categoryHeader').addEventListener('click', toggleCategory);
+    const calendarHeader = document.getElementById('calendarHeader');
+if (calendarHeader) {
+    calendarHeader.addEventListener('click', toggleCalendar);
+}
     
     // Кнопки управления
     document.getElementById('randomBtn').addEventListener('click', () => loadRace());
