@@ -2172,15 +2172,16 @@ function displayScheduledRaces(racesToShow = null) {
         let statusBadge = '';
         
         if (!isActive) {
-            dateClass = 'inactive-date';
-            statusBadge = '<span class="inactive-badge">⛔ НЕАКТИВНА</span>';
-        } else if (isUpcoming) {
-            dateClass = 'upcoming-date';
-            statusBadge = '<span class="active-badge">✅ АКТИВНА</span>';
-        } else {
-            dateClass = 'passed-date';
-            statusBadge = '<span class="inactive-badge">📅 ПРОШЛА</span>';
-        }
+    dateClass = 'inactive-date';
+    statusBadge = '<span class="inactive-badge"></span>';  // пустой бейдж
+    // ИЛИ вообще убираем statusBadge
+} else if (isUpcoming) {
+    dateClass = 'upcoming-date';
+    statusBadge = '<span class="active-badge"></span>';    // пустой бейдж
+} else {
+    dateClass = 'passed-date';
+    statusBadge = '';  // для прошедших вообще не показываем
+}
         
         const dateStr = raceDate.toLocaleString('ru-RU', {
             day: '2-digit', month: '2-digit', year: 'numeric',
