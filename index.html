@@ -1028,6 +1028,18 @@
         .races-content.collapsed {
     display: none;
 }
+
+/* Начальное состояние — скрываем всё, кроме кнопки синхронизации */
+#adminSelectBlock,
+#carsTrackContainer,
+#categoryContainer,
+#settingsContainer,
+#similarContainer,
+.races-container,
+#modeSelectorBlock {
+    display: none;
+}
+        
     </style>
 </head>
 <body>
@@ -2503,12 +2515,21 @@ function toggleSyncMode() {
     if (userSyncEnabled) { 
         btn.innerText = '🔒 ВКЛ'; 
         btn.style.background = '#22c55e';
+        // При включении синхронизации — очищаем прочерки, ждём выбора админа
+        document.getElementById('carValue').innerHTML = '—';
+        document.getElementById('trackValue').innerHTML = '—';
+        document.getElementById('categoryValue').innerHTML = '—';
+        document.getElementById('weatherValue').innerHTML = '—';
+        document.getElementById('timeValue').innerHTML = '—';
+        document.getElementById('tiresValue').innerHTML = '—';
+        document.getElementById('fuelValue').innerHTML = '—';
     } else { 
         btn.innerText = '🔓 ВЫКЛ'; 
         btn.style.background = '#ef4444';
+        // При выключении синхронизации — генерируем локальную гонку
+        generateLocalRace();
     }
     updateModeSelectorVisibility();
-    loadRace();
 }
 
 function shareResult() {
@@ -2676,17 +2697,50 @@ function updateModeSelectorVisibility() {
     const modeSelectorBlock = document.getElementById('modeSelectorBlock');
     const adminSelectBlock = document.getElementById('adminSelectBlock');
     const racesContainer = document.querySelector('.races-container');
+    const carsTrackContainer = document.getElementById('carsTrackContainer');
+    const categoryContainer = document.getElementById('categoryContainer');
+    const settingsContainer = document.getElementById('settingsContainer');
+    const similarContainer = document.getElementById('similarContainer');
     
     if (userSyncEnabled) {
-        // Синхронизация ВКЛЮЧЕНА → всё показываем
-        if (modeSelectorBlock) modeSelectorBlock.style.display = 'block';
+        // ========== СИНХРОНИЗАЦИЯ ВКЛЮЧЕНА ==========
+        // Показываем блок выбора администратора
         if (adminSelectBlock) adminSelectBlock.style.display = 'block';
+        
+        // Блоки гонки показываем, но с прочерками
+        if (carsTrackContainer) carsTrackContainer.style.display = 'block';
+        if (categoryContainer) categoryContainer.style.display = 'block';
+        if (settingsContainer) settingsContainer.style.display = 'block';
+        if (similarContainer) similarContainer.style.display = 'block';
         if (racesContainer) racesContainer.style.display = 'block';
+        
+        // Если админ НЕ ВЫБРАН — показываем прочерки
+        if (!currentAdminId) {
+            document.getElementById('carValue').innerHTML = '—';
+            document.getElementById('trackValue').innerHTML = '—';
+            document.getElementById('categoryValue').innerHTML = '—';
+            document.getElementById('weatherValue').innerHTML = '—';
+            document.getElementById('timeValue').innerHTML = '—';
+            document.getElementById('tiresValue').innerHTML = '—';
+            document.getElementById('fuelValue').innerHTML = '—';
+        }
+        
+        // Режим выбора машин скрываем при синхронизации
+        if (modeSelectorBlock) modeSelectorBlock.style.display = 'none';
+        
     } else {
-        // Синхронизация ВЫКЛЮЧЕНА → всё скрываем
-        if (modeSelectorBlock) modeSelectorBlock.style.display = 'block';
+        // ========== СИНХРОНИЗАЦИЯ ВЫКЛЮЧЕНА ==========
+        // Пользователь сам создаёт условия — показываем ВСЁ, кроме админа
         if (adminSelectBlock) adminSelectBlock.style.display = 'none';
-        if (racesContainer) racesContainer.style.display = 'none';
+        if (modeSelectorBlock) modeSelectorBlock.style.display = 'block';
+        if (carsTrackContainer) carsTrackContainer.style.display = 'block';
+        if (categoryContainer) categoryContainer.style.display = 'block';
+        if (settingsContainer) settingsContainer.style.display = 'block';
+        if (similarContainer) similarContainer.style.display = 'block';
+        if (racesContainer) racesContainer.style.display = 'none'; // Гонки не нужны
+        
+        // Генерируем случайную гонку
+        generateLocalRace();
     }
 }
 
