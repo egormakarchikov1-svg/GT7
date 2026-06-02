@@ -2018,7 +2018,38 @@ function displayTrackIcon(iconUrl) {
         }
     }
 }
-
+function clearAllParameters() {
+    // Очищаем все параметры
+    document.getElementById('carValue').innerHTML = '—';
+    document.getElementById('trackValue').innerHTML = '—';
+    document.getElementById('categoryValue').innerHTML = '—';
+    document.getElementById('weatherValue').innerHTML = '—';
+    document.getElementById('timeValue').innerHTML = '—';
+    document.getElementById('tiresValue').innerHTML = '<span class="time-x-badge">X1</span>';
+    document.getElementById('fuelValue').innerHTML = '<span class="time-x-badge">X1</span>';
+    
+    // Очищаем иконки
+    const carIcon = document.getElementById('carIcon');
+    const carIconFallback = document.getElementById('carIconFallback');
+    const trackIcon = document.getElementById('trackIcon');
+    const trackIconFallback = document.getElementById('trackIconFallback');
+    
+    if (carIcon) carIcon.style.display = 'none';
+    if (carIconFallback) {
+        carIconFallback.style.display = 'flex';
+        carIconFallback.innerHTML = '🚗';
+    }
+    
+    if (trackIcon) trackIcon.style.display = 'none';
+    if (trackIconFallback) {
+        trackIconFallback.style.display = 'flex';
+        trackIconFallback.innerHTML = '🛣️';
+    }
+    
+    // Очищаем похожие авто
+    document.getElementById('refCarInfo').innerHTML = 'Выберите авто из списка';
+    document.getElementById('similarList').innerHTML = '<li>Нажмите на авто для выбора референса</li>';
+}
     
 function findCarByName(name) { return carsDatabase.find(c => c.name === name) || null; }
 function findTrackByName(name) { return tracksData.find(t => t.name === name) || null; }
@@ -2502,7 +2533,14 @@ function toggleSyncMode() {
         btn.style.background = '#ef4444'; 
     }
     updateModeSelectorVisibility();
-    loadRace();
+    
+    // ✅ Если синхронизация выключена - очищаем параметры и генерируем локальную гонку
+    if (!userSyncEnabled) {
+        clearAllParameters();
+        generateLocalRace();
+    } else {
+        loadRace();
+    }
 }
 
 function shareResult() {
@@ -2855,6 +2893,8 @@ function selectAdmin(adminId) {
         if (container) {
             container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">👑 Выберите администратора</div>';
         }
+        // ✅ Очищаем параметры
+        clearAllParameters();
         return;
     }
     
@@ -2916,6 +2956,9 @@ function init() {
     console.log('🚀 Инициализация приложения');
     loadShownCars();
     
+    // ✅ ОЧИЩАЕМ ВСЕ ПАРАМЕТРЫ ПРИ ЗАГРУЗКЕ
+    clearAllParameters();
+    
     // Настройка кнопок блокировки
     document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
         const param = btn.getAttribute('data-param');
@@ -2948,29 +2991,30 @@ function init() {
     document.getElementById('modeGroupOnlyBtn').addEventListener('click', () => setDisplayMode('group_only'));
     
     // Обработчик выбора администратора для синхронизации
-   document.getElementById('adminSelect').addEventListener('change', (e) => { 
-    const newAdminId = e.target.value;
-    const oldAdminId = currentAdminId;
-    currentAdminId = newAdminId; 
-    console.log('👑 Выбран админ для синхронизации:', currentAdminId);
-    
-    // ✅ Обрабатываем и выбор, и снятие выбора
-    if (newAdminId) {
-        selectAdmin(newAdminId);
-    } else {
-        selectAdmin(null);  // ← Очищает гонки при снятии выбора
-    }
-    
-    if (oldAdminId !== newAdminId) {
-        stopAutoRefresh();
-        if (userSyncEnabled && currentAdminId) {
-            startAutoRefresh();
+    document.getElementById('adminSelect').addEventListener('change', (e) => { 
+        const newAdminId = e.target.value;
+        const oldAdminId = currentAdminId;
+        currentAdminId = newAdminId; 
+        console.log('👑 Выбран админ для синхронизации:', currentAdminId);
+        
+        if (newAdminId) {
+            selectAdmin(newAdminId);
+        } else {
+            selectAdmin(null);
+            // ✅ Если админ не выбран - очищаем параметры
+            clearAllParameters();
         }
-    }
-    
-    updateModeSelectorVisibility();
-    loadRace(); 
-});
+        
+        if (oldAdminId !== newAdminId) {
+            stopAutoRefresh();
+            if (userSyncEnabled && currentAdminId) {
+                startAutoRefresh();
+            }
+        }
+        
+        updateModeSelectorVisibility();
+        loadRace(); 
+    });
     
     // Глобальные функции
     window.selectCar = selectCar;
@@ -2986,7 +3030,7 @@ function init() {
         startAutoRefresh();
     }
     
-    // Загружаем гонку
+    // Загружаем гонку (только если есть админ)
     loadRace();
     
     // Восстановление админа для просмотра гонок
@@ -2999,6 +3043,8 @@ function init() {
         if (container) {
             container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">👑 Выберите администратора</div>';
         }
+        // ✅ Очищаем параметры
+        clearAllParameters();
     } else if (savedAdminId && adminSelectElement && adminSelectElement.value === savedAdminId) {
         displayUserRaces(savedAdminId);
     } else {
@@ -3006,6 +3052,8 @@ function init() {
         if (container) {
             container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">👑 Выберите администратора</div>';
         }
+        // ✅ Очищаем параметры
+        clearAllParameters();
     }
     
     // Загружаем список администраторов
