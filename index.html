@@ -2168,9 +2168,22 @@ function updateFuel() { if (!locks.fuel) document.getElementById('fuelValue').in
 function updateCategory() { if (!locks.category) { const c = getRandomItem(categories); document.getElementById('categoryValue').innerHTML = `${c.icon} ${c.name} (${c.description})`; } }
 
 function generateLocalRace() {
-    updateVisibilityByDisplayMode(displayMode); updateCar(); updateTrack(); updateWeather(); updateTime(); updateTires(); updateFuel(); updateCategory();
+    // Показываем все блоки для игры
+    document.getElementById('carsTrackContainer').style.setProperty('display', 'block', 'important');
+    document.getElementById('categoryContainer').style.setProperty('display', 'block', 'important');
+    document.getElementById('settingsContainer').style.setProperty('display', 'block', 'important');
+    document.getElementById('similarContainer').style.setProperty('display', 'block', 'important');
+    document.getElementById('modeSelectorBlock').style.setProperty('display', 'block', 'important');
+    
+    updateVisibilityByDisplayMode(displayMode); 
+    updateCar(); 
+    updateTrack(); 
+    updateWeather(); 
+    updateTime(); 
+    updateTires(); 
+    updateFuel(); 
+    updateCategory();
 }
-
 // ============================================
 // СИНХРОНИЗАЦИЯ С GOOGLE SHEETS - ИСПРАВЛЕНА
 // ============================================
@@ -2735,13 +2748,12 @@ function updateModeSelectorVisibility() {
         }
     } else {
         // ========== СИНХРОНИЗАЦИЯ ВЫКЛЮЧЕНА ==========
+        // ВСЕ блоки СКРЫТЫ, пока не нажмут "СЛУЧАЙНАЯ ГОНКА"
+        // НИЧЕГО НЕ ПОКАЗЫВАЕМ, все уже скрыты через allBlocks
+        // Дополнительно скрываем админа и гонки
         if (adminSelectBlock) adminSelectBlock.style.setProperty('display', 'none', 'important');
-        if (modeSelectorBlock) modeSelectorBlock.style.setProperty('display', 'block', 'important');
-        if (carsTrackContainer) carsTrackContainer.style.setProperty('display', 'block', 'important');
-        if (categoryContainer) categoryContainer.style.setProperty('display', 'block', 'important');
-        if (settingsContainer) settingsContainer.style.setProperty('display', 'block', 'important');
-        if (similarContainer) similarContainer.style.setProperty('display', 'block', 'important');
         if (racesContainer) racesContainer.style.setProperty('display', 'none', 'important');
+        // modeSelectorBlock, carsTrackContainer и другие уже скрыты через allBlocks
     }
 }
 
