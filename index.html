@@ -1111,130 +1111,7 @@
         #currentModeText {
             transition: all 0.3s ease;
         }
-        /* Стили для экрана выбора администратора - УМЕНЬШЕННЫЙ И ПО ЦЕНТРУ */
-#setupScreen {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 60vh;
-}
-
-.setup-card {
-    background: rgba(0, 0, 0, 0.7);
-    border-radius: 24px;
-    padding: 20px 24px;
-    margin-bottom: 16px;
-    border: 1px solid #ff4d4d;
-    backdrop-filter: blur(10px);
-    width: 100%;
-    max-width: 320px;  /* Уменьшена ширина */
-    text-align: center;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-}
-
-.setup-card h3 {
-    color: #ff4d4d;
-    margin-bottom: 12px;
-    font-size: 16px;
-    text-align: center;
-}
-
-.setup-select {
-    width: 100%;
-    padding: 10px 14px;
-    border-radius: 40px;
-    background: #1e293b;
-    color: white;
-    border: 1px solid #ff4d4d;
-    font-size: 14px;
-    margin-bottom: 12px;
-    text-align: center;
-}
-
-.setup-btn {
-    background: #22c55e;
-    padding: 10px 16px;
-    font-size: 14px;
-    width: 100%;
-    border: none;
-    border-radius: 40px;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.setup-btn-secondary {
-    background: #ff4d4d;
-}
-
-.sync-buttons {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    margin: 12px 0;
-}
-
-.sync-buttons button {
-    flex: 1;
-    padding: 10px;
-    font-size: 14px;
-    border: none;
-    border-radius: 40px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.sync-on {
-    background: #22c55e;
-    color: white;
-}
-
-.sync-off {
-    background: #ef4444;
-    color: white;
-}
-
-.sync-status {
-    margin-top: 10px;
-    padding: 6px;
-    border-radius: 20px;
-    text-align: center;
-    font-size: 11px;
-}
-
-.sync-status.active {
-    background: #22c55e20;
-    color: #22c55e;
-}
-
-.sync-status.inactive {
-    background: #ef444420;
-    color: #ef4444;
-}
-
-.info-text {
-    margin-top: 10px;
-    font-size: 11px;
-    color: #aaa;
-    text-align: center;
-}
-        /* Центрирование всего экрана настройки */
-.screen {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-}
-
-#setupScreen {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
+        
     </style>
 </head>
 <body>
@@ -1299,18 +1176,7 @@
         <!-- ВАШ ОРИГИНАЛЬНЫЙ HTML НАЧИНАЕТСЯ С <div id="adminModeBanner" ...> -->
         
         <div id="adminModeBanner" style="display: none;"></div>
-    
-        <div class="admin-select" id="adminSelectBlock">
-            <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 8px;">
-                <span style="font-size: 20px;">👑</span>
-                <label style="font-size: 15px; font-weight: bold; background: linear-gradient(135deg, #ff4d4d, #ff9a3c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">ВЫБЕРИТЕ АДМИНИСТРАТОРА</label>
-                <span style="font-size: 20px;">👑</span>
-            </div>
-            <select id="adminSelectOrig" style="width: 100%; max-width: 280px; padding: 12px 20px; border-radius: 40px; background: linear-gradient(135deg, #1e293b, #0f172a); color: white; border: 1px solid #ff4d4d; font-size: 15px; font-weight: 600; cursor: pointer; text-align: center; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
-                <option value="">-- Выберите администратора --</option>
-            </select>
-            <div style="height: 2px; width: 60px; background: linear-gradient(90deg, transparent, #ff4d4d, transparent); margin: 12px auto 0;"></div>
-        </div>
+        
 
         <!-- Блок РЕЖИМ ЗАЕЗДА МАШИН -->
         <div class="cars-track-container" id="modeSelectorBlock" style="border-color: #8b5cf6;">
@@ -1482,42 +1348,17 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwCJv5sKYncJOWh
 let currentAdminId = null;
 let currentAdminName = null;
 let userSyncEnabled = false;
+// Флаг для предотвращения двойной загрузки
+let adminsLoaded = false;
 
-// Функции управления экранами
-function showWelcomeScreen() {
-    document.getElementById('welcomeScreen').classList.remove('hidden');
-    document.getElementById('setupScreen').classList.add('hidden');
-    document.getElementById('mainApp').classList.add('hidden');
-}
-
-function showSetupScreen() {
-    document.getElementById('welcomeScreen').classList.add('hidden');
-    document.getElementById('setupScreen').classList.remove('hidden');
-    document.getElementById('mainApp').classList.add('hidden');
-    loadAdminsFromGoogle();
-}
-
-function showMainApp() {
-    document.getElementById('welcomeScreen').classList.add('hidden');
-    document.getElementById('setupScreen').classList.add('hidden');
-    document.getElementById('mainApp').classList.remove('hidden');
-    
-    // Передаём выбранного админа и настройки синхронизации в основное приложение
-    if (window.setExternalSettings) {
-        window.setExternalSettings(currentAdminId, currentAdminName, userSyncEnabled);
-    }
-    
-    // Запускаем основное приложение
-    if (typeof init === 'function') {
-        init();
-    } else if (typeof initializeApp === 'function') {
-        initializeApp();
-    }
-}
-
-// Загрузка админов из Google Sheets (JSONP)
+// Загрузка админов из Google Sheets (JSONP) - ТОЛЬКО ОДИН РАЗ
 async function loadAdminsFromGoogle() {
+    // Если уже загружали - не загружаем снова
+    if (adminsLoaded) return;
+    
     const select = document.getElementById('adminSelect');
+    if (!select) return;
+    
     select.innerHTML = '<option value="">Загрузка...</option>';
     
     try {
@@ -1555,12 +1396,45 @@ async function loadAdminsFromGoogle() {
                 select.innerHTML += `<option value="${admin.id}">${admin.name}</option>`;
             });
             console.log('✅ Загружены админы:', admins);
+            adminsLoaded = true;
         } else {
             select.innerHTML = '<option value="">-- Ошибка загрузки --</option><option value="admin1">admin1</option><option value="admin2">admin2</option><option value="admin3">admin3</option>';
         }
     } catch(e) {
         console.error('Ошибка загрузки админов:', e);
         select.innerHTML = '<option value="">-- Ошибка загрузки --</option><option value="admin1">admin1</option><option value="admin2">admin2</option><option value="admin3">admin3</option>';
+    }
+}    
+
+// Функции управления экранами
+function showWelcomeScreen() {
+    document.getElementById('welcomeScreen').classList.remove('hidden');
+    document.getElementById('setupScreen').classList.add('hidden');
+    document.getElementById('mainApp').classList.add('hidden');
+}
+
+function showSetupScreen() {
+    document.getElementById('welcomeScreen').classList.add('hidden');
+    document.getElementById('setupScreen').classList.remove('hidden');
+    document.getElementById('mainApp').classList.add('hidden');
+    loadAdminsFromGoogle(); // Загружаем админов только один раз (благодаря флагу adminsLoaded)
+}
+
+function showMainApp() {
+    document.getElementById('welcomeScreen').classList.add('hidden');
+    document.getElementById('setupScreen').classList.add('hidden');
+    document.getElementById('mainApp').classList.remove('hidden');
+    
+    // Передаём выбранного админа и настройки синхронизации в основное приложение
+    if (window.setExternalSettings) {
+        window.setExternalSettings(currentAdminId, currentAdminName, userSyncEnabled);
+    }
+    
+    // Запускаем основное приложение
+    if (typeof init === 'function') {
+        init();
+    } else if (typeof initializeApp === 'function') {
+        initializeApp();
     }
 }
 
@@ -1610,12 +1484,11 @@ document.getElementById('syncOffBtn').addEventListener('click', () => {
 // Функция для передачи настроек в основное приложение
 window.setExternalSettings = function(adminId, adminName, syncEnabled) {
     console.log('Настройки переданы в основное приложение:', { adminId, adminName, syncEnabled });
-    const mainAdminSelect = document.getElementById('adminSelectOrig');
-    if (mainAdminSelect && adminId) {
-        mainAdminSelect.value = adminId;
-    }
+    
+    // Обновляем баннер синхронизации в основном приложении
     const banner = document.getElementById('adminSyncBanner');
     const adminNameSpan = document.getElementById('adminName');
+    
     if (syncEnabled && adminId) {
         banner.classList.remove('hidden');
         adminNameSpan.innerHTML = adminName || adminId;
@@ -1624,6 +1497,18 @@ window.setExternalSettings = function(adminId, adminName, syncEnabled) {
     }
 };
 
+// Проверяем, видел ли пользователь приветствие
+const hasSeenWelcome = localStorage.getItem('gt7_welcome_seen');
+if (hasSeenWelcome) {
+    showSetupScreen();
+} else {
+    showWelcomeScreen();
+}
+
+// Сохраняем флаг после СТАРТ
+document.getElementById('closeWelcomeBtn').addEventListener('click', () => {
+    localStorage.setItem('gt7_welcome_seen', 'true');
+});
 // Проверяем, видел ли пользователь приветствие
 const hasSeenWelcome = localStorage.getItem('gt7_welcome_seen');
 if (hasSeenWelcome) {
@@ -3656,7 +3541,7 @@ function init() {
     
     // Обновляем интерфейс
     updateSyncBtn();
-    // loadAdmins();  // ← УДАЛИТЬ ИЛИ ЗАКОММЕНТИРОВАТЬ ЭТУ СТРОКУ
+     // loadAdmins();  // ← УДАЛИТЬ ЭТУ СТРОКУ
     setDisplayMode(displayMode);
     updateModeSelectorVisibility();
     
