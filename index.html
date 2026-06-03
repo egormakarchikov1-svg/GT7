@@ -1152,8 +1152,14 @@
     <div class="setup-card">
         <h3>👑 ВЫБЕРИТЕ АДМИНИСТРАТОРА</h3>
         <select id="adminSelect" class="setup-select">
-            <option value="">Загрузка...</option>
+            <option value="">-- Выберите администратора --</option>
         </select>
+        <button id="continueToAdminBtn" class="setup-btn" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); margin-top: 15px;">
+            👑 ПРОДОЛЖИТЬ С АДМИНИСТРАТОРОМ
+        </button>
+        <div style="text-align: center; margin-top: 8px; font-size: 11px; color: #aaa;">
+            ✅ Включится режим синхронизации
+        </div>
     </div>
     
     <div class="setup-card" style="border-color: #ff4d4d;">
@@ -1420,71 +1426,80 @@ function showSetupScreen() {
 }
 
 function showMainApp() {
+    console.log('🟢 showMainApp вызвана, userSyncEnabled =', userSyncEnabled, 'adminId =', currentAdminId);
+    
+    // Показываем главный экран, скрываем остальные
     document.getElementById('welcomeScreen').classList.add('hidden');
     document.getElementById('setupScreen').classList.add('hidden');
     document.getElementById('mainApp').classList.remove('hidden');
     
-    // Передаём выбранного админа и настройки синхронизации в основное приложение
-    if (window.setExternalSettings) {
-        window.setExternalSettings(currentAdminId, currentAdminName, userSyncEnabled);
+    // Обновляем баннер синхронизации
+    const banner = document.getElementById('adminSyncBanner');
+    const adminNameSpan = document.getElementById('adminName');
+    
+    if (userSyncEnabled && currentAdminId) {
+        banner.classList.remove('hidden');
+        adminNameSpan.innerHTML = currentAdminName || currentAdminId;
+    } else {
+        banner.classList.add('hidden');
     }
     
-    // Запускаем основное приложение
+    // Запускаем init
     if (typeof init === 'function') {
         init();
     } else if (typeof initializeApp === 'function') {
         initializeApp();
     }
-}
-
-// Обновление статуса синхронизации
-function updateSyncStatus() {
-    const statusDiv = document.getElementById('syncStatus');
-    const banner = document.getElementById('adminSyncBanner');
-    const adminNameSpan = document.getElementById('adminName');
+    
+    // Автоматическая загрузка данных
+    setTimeout(async () => {
+    console.log('🔄 Автоматическая загрузка данных, режим:', userSyncEnabled ? 'СИНХРОНИЗАЦИЯ' : 'ЛОКАЛЬНЫЙ');
     
     if (userSyncEnabled && currentAdminId) {
-        statusDiv.innerHTML = '🔵 Синхронизация ВКЛЮЧЕНА';
-        statusDiv.className = 'sync-status active';
-        banner.classList.remove('hidden');
-        adminNameSpan.innerHTML = currentAdminName || currentAdminId;
+        // === РЕЖИМ СИНХРОНИЗАЦИИ ===
+        console.log('👑 Загружаем данные администратора...');
+        
+        // 1. Загружаем запланированные гонки
+        if (typeof displayUserRaces === 'function') {
+            await displayUserRaces(currentAdminId);
+            console.log('✅ Запланированные гонки загружены');
+        }
+        
+        // 2. Загружаем активную гонку от админа
+        if (typeof loadSyncedCombo === 'function') {
+            const synced = await loadSyncedCombo(true);
+            if (syncedModeActive && synced && typeof applySyncedCombo === 'function') {
+                applySyncedCombo(synced);
+                showStatusMessage(`✅ Данные администратора ${currentAdminName} загружены!`, 'success');
+            } else {
+                showStatusMessage('⚠️ Нет активной гонки от администратора', 'warning');
+            }
+        }
     } else {
-        statusDiv.innerHTML = '⚪ Синхронизация выключена';
-        statusDiv.className = 'sync-status inactive';
-        banner.classList.add('hidden');
+        // === ЛОКАЛЬНЫЙ РЕЖИМ ===
+        console.log('🎲 Генерируем локальную случайную гонку...');
+        if (typeof generateLocalRace === 'function') {
+            generateLocalRace();
+            showStatusMessage('🎲 Случайная гонка сгенерирована! Нажмите 🎲 для новой', 'info');
+        } else {
+            console.error('❌ Функция generateLocalRace не найдена!');
+            showStatusMessage('❌ Ошибка: функция генерации не найдена', 'error');
+        }
     }
+    
+    // Обновляем видимость блоков
+    if (typeof updateModeSelectorVisibility === 'function') {
+        updateModeSelectorVisibility();
+    }
+}, 100);
 }
 
-// Обработчики кнопок
-document.getElementById('closeWelcomeBtn').addEventListener('click', () => {
-    showSetupScreen();
-});
-
-document.getElementById('continueToAppBtn').addEventListener('click', () => {
-    const select = document.getElementById('adminSelect');
-    currentAdminId = select.value;
-    const selectedOption = select.options[select.selectedIndex];
-    currentAdminName = selectedOption ? selectedOption.text : currentAdminId;
-    showMainApp();
-});
-
-document.getElementById('syncOnBtn').addEventListener('click', () => {
-    userSyncEnabled = true;
-    updateSyncStatus();
-    alert('✅ Синхронизация ВКЛЮЧЕНА');
-});
-
-document.getElementById('syncOffBtn').addEventListener('click', () => {
-    userSyncEnabled = false;
-    updateSyncStatus();
-    alert('🔓 Синхронизация ВЫКЛЮЧЕНА');
-});
+// ===== ОБРАБОТЧИКИ КНОПОК =====
 
 // Функция для передачи настроек в основное приложение
 window.setExternalSettings = function(adminId, adminName, syncEnabled) {
     console.log('Настройки переданы в основное приложение:', { adminId, adminName, syncEnabled });
     
-    // Обновляем баннер синхронизации в основном приложении
     const banner = document.getElementById('adminSyncBanner');
     const adminNameSpan = document.getElementById('adminName');
     
@@ -1496,7 +1511,6 @@ window.setExternalSettings = function(adminId, adminName, syncEnabled) {
     }
 };
 
-// Проверяем, видел ли пользователь приветствие
 // Проверяем, видел ли пользователь приветствие
 const hasSeenWelcome = localStorage.getItem('gt7_welcome_seen');
 if (hasSeenWelcome) {
@@ -1514,7 +1528,33 @@ if (closeWelcomeBtn) {
     });
 }
 
-// НОВЫЙ обработчик для кнопки "СЛУЧАЙНАЯ ГОНКА" (с проверкой существования)
+// Обработчик для кнопки "ПРОДОЛЖИТЬ С АДМИНИСТРАТОРОМ"
+const continueToAdminBtn = document.getElementById('continueToAdminBtn');
+if (continueToAdminBtn) {
+    continueToAdminBtn.addEventListener('click', () => {
+        const select = document.getElementById('adminSelect');
+        const selectedValue = select.value;
+        
+        if (!selectedValue) {
+            alert('⚠️ Пожалуйста, выберите администратора!');
+            return;
+        }
+        
+        userSyncEnabled = true;
+        currentAdminId = selectedValue;
+        const selectedOption = select.options[select.selectedIndex];
+        currentAdminName = selectedOption ? selectedOption.text : currentAdminId;
+        
+        console.log('👑 Запуск в режиме синхронизации с админом:', currentAdminName);
+        showMainApp();
+        
+        setTimeout(() => {
+            showStatusMessage(`👑 Режим синхронизации: следуем настройкам ${currentAdminName}`, 'success');
+        }, 100);
+    });
+}
+    
+// Обработчик для кнопки "СЛУЧАЙНАЯ ГОНКА" (только ОДИН раз!)
 const localRaceBtn = document.getElementById('localRaceBtn');
 if (localRaceBtn) {
     localRaceBtn.addEventListener('click', () => {
@@ -1528,26 +1568,6 @@ if (localRaceBtn) {
         setTimeout(() => {
             showStatusMessage('🎲 Локальный режим: генерируем случайные гонки!', 'info');
         }, 100);
-    });
-}
-
-// НОВЫЙ обработчик для SELECT - выбор администратора (с проверкой существования)
-const adminSelect = document.getElementById('adminSelect');
-if (adminSelect) {
-    adminSelect.addEventListener('change', (e) => {
-        if (e.target.value) {
-            userSyncEnabled = true;
-            currentAdminId = e.target.value;
-            const selectedOption = e.target.options[e.target.selectedIndex];
-            currentAdminName = selectedOption ? selectedOption.text : currentAdminId;
-            
-            console.log('👑 Выбран админ, запуск в режиме синхронизации:', currentAdminName);
-            showMainApp();
-            
-            setTimeout(() => {
-                showStatusMessage(`👑 Режим синхронизации: следуем настройкам ${currentAdminName}`, 'success');
-            }, 100);
-        }
     });
 }
 
