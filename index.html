@@ -2992,11 +2992,21 @@ function updateModeSelectorVisibility() {
         if (carsTrackContainer) carsTrackContainer.style.setProperty('display', 'block', 'important');
         if (categoryContainer) categoryContainer.style.setProperty('display', 'block', 'important');
         if (settingsContainer) settingsContainer.style.setProperty('display', 'block', 'important');
-        if (similarContainer) similarContainer.style.setProperty('display', 'block', 'important');
         if (racesContainer) racesContainer.style.setProperty('display', 'block', 'important');
         if (modeSelectorBlock) modeSelectorBlock.style.setProperty('display', 'none', 'important');
         
-                if (!currentAdminId) {
+        // Блок подбора авто - показываем только в обычном режиме
+        if (similarContainer) {
+            if (displayMode === 'group_only') {
+                similarContainer.style.setProperty('display', 'none', 'important');
+                similarContainer.classList.add('hidden-block');
+            } else {
+                similarContainer.style.setProperty('display', 'block', 'important');
+                similarContainer.classList.remove('hidden-block');
+            }
+        }
+        
+        if (!currentAdminId) {
             document.getElementById('carValue').innerHTML = '—';
             document.getElementById('trackValue').innerHTML = '—';
             document.getElementById('categoryValue').innerHTML = '—';
@@ -3004,19 +3014,18 @@ function updateModeSelectorVisibility() {
             document.getElementById('timeValue').innerHTML = '—';
             document.getElementById('tiresValue').innerHTML = '—';
             document.getElementById('fuelValue').innerHTML = '—';
-
-                    const similarBlock = document.getElementById('similarContainer');
-            if (similarBlock) {
-                similarBlock.style.setProperty('display', 'none', 'important');
-                similarBlock.classList.add('hidden-block');
+            
+            // Скрываем блок подбора авто и сообщение
+            if (similarContainer) {
+                similarContainer.style.setProperty('display', 'none', 'important');
+                similarContainer.classList.add('hidden-block');
             }
-
-                    const groupMsg = document.getElementById('groupModeMessage');
+            const groupMsg = document.getElementById('groupModeMessage');
             if (groupMsg) {
                 groupMsg.style.setProperty('display', 'none', 'important');
             }
             
-            // Очищаем иконки (админ не выбран - показываем прочерки без иконок)
+            // Очищаем иконки
             const carIcon = document.getElementById('carIcon');
             if (carIcon) {
                 carIcon.src = '';
@@ -3027,7 +3036,6 @@ function updateModeSelectorVisibility() {
                 carIconFallback.style.display = 'none';
                 carIconFallback.innerHTML = '';
             }
-            
             const trackIcon = document.getElementById('trackIcon');
             if (trackIcon) {
                 trackIcon.src = '';
