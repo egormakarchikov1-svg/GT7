@@ -2917,10 +2917,9 @@ function updateModeSelectorVisibility() {
             document.getElementById('timeValue').innerHTML = '—';
             document.getElementById('tiresValue').innerHTML = '—';
             document.getElementById('fuelValue').innerHTML = '—';
-        } else {
-            // Если админ уже выбран, загружаем гонку
-            loadRace();
         }
+        // НЕТ else, НЕТ loadRace() - просто закрываем блок if
+        
     } else {
         // ========== СИНХРОНИЗАЦИЯ ВЫКЛЮЧЕНА ==========
         if (adminSelectBlock) adminSelectBlock.style.setProperty('display', 'none', 'important');
@@ -2936,17 +2935,6 @@ function updateModeSelectorVisibility() {
     }
 
     updateRandomButtonState();
-}
-
-    function updateRandomButtonState() {
-    const randomBtn = document.getElementById('randomBtn');
-    if (userSyncEnabled) {
-        // При включённой синхронизации - скрываем кнопку
-        randomBtn.style.display = 'none';
-    } else {
-        // При выключенной синхронизации - показываем кнопку
-        randomBtn.style.display = 'inline-flex';
-    }
 }
 
 // ============================================
