@@ -2404,12 +2404,11 @@ function startAutoRefresh() {
     if (autoRefreshInterval) clearInterval(autoRefreshInterval);
     
     autoRefreshInterval = setInterval(async () => {
-        if (userSyncEnabled && currentAdminId && !window.isLoadingCombo && !isFirstLoad) {
+        if (userSyncEnabled && currentAdminId) {
             console.log('🔄 Проверка обновлений...');
             const synced = await loadSyncedCombo(true);
             
             if (syncedModeActive && synced) {
-                // Создаём хеш данных
                 const currentHash = JSON.stringify({
                     car: synced.car_name,
                     track: synced.track_name,
@@ -2422,29 +2421,14 @@ function startAutoRefresh() {
                     display_mode: synced.display_mode
                 });
                 
-                // Сравниваем с предыдущим хешем
                 if (currentHash !== lastSyncedData) {
                     console.log('🔄 ДАННЫЕ РЕАЛЬНО ИЗМЕНИЛИСЬ! Обновляем...');
                     lastSyncedData = currentHash;
-                    window.isLoadingCombo = true;
                     applySyncedCombo(synced);
                     showRefreshIndicator();
-                    setTimeout(() => { 
-                        window.isLoadingCombo = false; 
-                    }, 5000);  // ← УВЕЛИЧЕНО ДО 5 СЕКУНД
                 } else {
                     console.log('📢 Данные НЕ ИЗМЕНИЛИСЬ, подсветки НЕТ');
                 }
-            }
-        } else {
-            if (!userSyncEnabled) {
-                // console.log('⏸️ Автообновление: синхронизация выключена');
-            } else if (!currentAdminId) {
-                // console.log('⏸️ Автообновление: админ не выбран');
-            } else if (window.isLoadingCombo) {
-                console.log('⏸️ Автообновление: идёт загрузка комбинации');
-            } else if (isFirstLoad) {
-                console.log('⏸️ Автообновление: первая загрузка, ждём');
             }
         }
     }, 5000);
@@ -2704,6 +2688,7 @@ function applySyncedCombo(data) {
 }
 
 // Функция загрузки гонки (основная)
+// Функция загрузки гонки (основная)
 async function loadRace() {
     console.log('🏁 loadRace вызвана');
     
@@ -2716,25 +2701,13 @@ async function loadRace() {
     
     const synced = await loadSyncedCombo();
     
-                    if (syncedModeActive && synced) {
+    if (syncedModeActive && synced) {
         console.log('🎯 ИСПОЛЬЗУЕМ АДМИНСКУЮ КОМБИНАЦИЮ');
         const banner = document.getElementById('adminModeBanner');
         if (banner) {
             banner.style.display = 'block';
         }
-        window.isLoadingCombo = true;
-        isFirstLoad = true;
         applySyncedCombo(synced);
-        
-        // Запускаем автообновление только если оно ещё не запущено
-        if (!autoRefreshInterval) {
-            startAutoRefresh();
-        }
-        
-        setTimeout(() => { 
-            window.isLoadingCombo = false;
-            isFirstLoad = false;
-        }, 5000);
         return;
     }
     
@@ -3429,7 +3402,7 @@ function init() {
         if (groupOnlyBtn) groupOnlyBtn.classList.remove('active');
     }
     
-     if (oldAdminId !== newAdminId) {
+      if (oldAdminId !== newAdminId) {
         stopAutoRefresh();
         if (userSyncEnabled && currentAdminId) {
             startAutoRefresh();
@@ -3438,13 +3411,10 @@ function init() {
     
     updateModeSelectorVisibility();
     
-    if (currentAdminId) {
-        window.isLoadingCombo = true;
-        isFirstLoad = true;
-        loadRace();
-        setTimeout(() => {
-            window.isLoadingCombo = false;
-        }, 5000);
+    if (currentAdminId) {  // ← was 'f', исправлено на 'if'
+        // Не вызываем loadRace вручную, автообновление само подхватит
+        window.isLoadingCombo = false;
+        isFirstLoad = false;
     }
 });
     
