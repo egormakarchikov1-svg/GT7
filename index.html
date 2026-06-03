@@ -2516,6 +2516,13 @@ async function loadSyncedCombo(forceRefresh = false) {
 function applySyncedCombo(data) {
     if (!data) return;
     
+    // Сразу скрываем блок подбора авто, чтобы не мелькал
+    const similarBlock = document.getElementById('similarContainer');
+    if (similarBlock) {
+        similarBlock.style.setProperty('display', 'none', 'important');
+        similarBlock.classList.add('hidden-block');
+    }
+    
     // ✅ ПРИМЕНЯЕМ БЛОКИРОВКИ ИЗ ДАННЫХ АДМИНА
     if (data.track_locked !== undefined) {
         locks.track = data.track_locked;
@@ -2567,7 +2574,6 @@ function applySyncedCombo(data) {
     };
     
     // МАШИНА - только если не заблокирована
-        // МАШИНА - только если не заблокирована
     if (!locks.car && data.car_name) {
         const car = findCarByName(data.car_name);
         if (car) {
@@ -2575,12 +2581,11 @@ function applySyncedCombo(data) {
             const carIcon = document.getElementById('carIcon');
             if (carIcon && car.icon) {
                 carIcon.src = car.icon;
-                carIcon.style.display = 'block';  // ← ДОБАВЬТЕ
+                carIcon.style.display = 'block';
             }
-            // Скрываем fallback
             const carIconFallback = document.getElementById('carIconFallback');
             if (carIconFallback) {
-                carIconFallback.style.display = 'none';  // ← ДОБАВЬТЕ
+                carIconFallback.style.display = 'none';
             }
             if (typeof displaySimilarCars === 'function') displaySimilarCars(car);
             highlightField('carValue');
@@ -2599,12 +2604,11 @@ function applySyncedCombo(data) {
             const trackIcon = document.getElementById('trackIcon');
             if (trackIcon) {
                 trackIcon.src = getTrackIcon(track.name);
-                trackIcon.style.display = 'block';  // ← ДОБАВЬТЕ
+                trackIcon.style.display = 'block';
             }
-            // Скрываем fallback
             const trackIconFallback = document.getElementById('trackIconFallback');
             if (trackIconFallback) {
-                trackIconFallback.style.display = 'none';  // ← ДОБАВЬТЕ
+                trackIconFallback.style.display = 'none';
             }
             highlightField('trackValue');
         }
@@ -2657,89 +2661,21 @@ function applySyncedCombo(data) {
     }
     
     // Обновляем РЕЖИМ ЗАЕЗДА
-        // Обновляем РЕЖИМ ЗАЕЗДА
     const newDisplayMode = data.display_mode || 'all';
     if (typeof updateVisibilityByDisplayMode === 'function') {
         updateVisibilityByDisplayMode(newDisplayMode);
     }
     
-    // ПРИНУДИТЕЛЬНО скрываем блок подбора авто в групповом режиме (каждый раз при обновлении)
+    // Показываем/скрываем блок подбора авто в зависимости от режима
     if (newDisplayMode === 'group_only') {
-        const similarBlock = document.getElementById('similarContainer');
         if (similarBlock) {
             similarBlock.style.setProperty('display', 'none', 'important');
             similarBlock.classList.add('hidden-block');
         }
     } else {
-        // В обычном режиме - показываем
-        const similarBlock = document.getElementById('similarContainer');
         if (similarBlock) {
             similarBlock.style.setProperty('display', 'block', 'important');
             similarBlock.classList.remove('hidden-block');
-        }
-    }
-}
-
-// Функция загрузки гонки (основная)
-async function loadRace() {
-    console.log('🏁 loadRace вызвана');
-    
-    // Если синхронизация выключена - генерируем локальную гонку
-    if (!userSyncEnabled) {
-        console.log('🎲 Синхронизация выключена - генерируем локальную гонку');
-        generateLocalRace();
-        return;
-    }
-    
-    const synced = await loadSyncedCombo();
-    
-    if (syncedModeActive && synced) {
-        console.log('🎯 ИСПОЛЬЗУЕМ АДМИНСКУЮ КОМБИНАЦИЮ');
-        const banner = document.getElementById('adminModeBanner');
-        if (banner) {
-            banner.style.display = 'block';
-        }
-        applySyncedCombo(synced);
-        return;
-    }
-    
-    console.log('🎲 НЕТ АКТИВНОЙ КОМБИНАЦИИ - ГЕНЕРИРУЕМ ЛОКАЛЬНУЮ ГОНКУ');
-    const banner = document.getElementById('adminModeBanner');
-    if (banner) banner.style.display = 'none';
-    generateLocalRace();
-}
-
-// ============================================
-// ФУНКЦИЯ ПРИНУДИТЕЛЬНОГО ОБНОВЛЕНИЯ
-// ============================================
-async function forceRefreshCombo() {
-    console.log('🔄 ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ ДАННЫХ...');
-    const btn = document.getElementById('forceRefreshBtn');
-    if (btn) {
-        const oldText = btn.innerHTML;
-        btn.innerHTML = '⏳ ОБНОВЛЕНИЕ...';
-        btn.disabled = true;
-    }
-    
-    const synced = await loadSyncedCombo(true);
-    
-    if (syncedModeActive && synced) {
-        applySyncedCombo(synced);
-        showRefreshIndicator();
-        if (btn) {
-            btn.innerHTML = '✅ ГОТОВО!';
-            setTimeout(() => {
-                btn.innerHTML = oldText;
-                btn.disabled = false;
-            }, 1500);
-        }
-    } else {
-        if (btn) {
-            btn.innerHTML = '❌ НЕТ ДАННЫХ';
-            setTimeout(() => {
-                btn.innerHTML = oldText;
-                btn.disabled = false;
-            }, 1500);
         }
     }
 }
