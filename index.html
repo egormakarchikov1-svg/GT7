@@ -1043,30 +1043,30 @@
         /* Стили для приветственного сообщения */
 /* Приветственное окно - полностью перекрывает экран */
 /* Приветственное окно - полное перекрытие */
+/* Приветственное окно - без чёрного фона */
 #welcomeMessage.welcome-message {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
-    background: #0a0a0a !important;
+    background: transparent !important;
     z-index: 999999 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    backdrop-filter: blur(0px) !important;
+    pointer-events: none !important;
 }
 
 #welcomeMessage .welcome-content {
+    pointer-events: auto !important;
     background: linear-gradient(135deg, #1e293b, #0f172a) !important;
     border-radius: 28px !important;
     padding: 24px 20px !important;
     max-width: 360px !important;
     width: 90% !important;
     border: 2px solid #ff4d4d !important;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5) !important;
-    position: relative !important;
-    z-index: 1000000 !important;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3) !important;
 }
 
 #welcomeMessage .welcome-icon {
