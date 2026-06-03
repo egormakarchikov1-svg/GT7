@@ -2568,6 +2568,7 @@ function applySyncedCombo(data) {
     };
     
     // МАШИНА - только если не заблокирована
+        // МАШИНА - только если не заблокирована
     if (!locks.car && data.car_name) {
         const car = findCarByName(data.car_name);
         if (car) {
@@ -2575,7 +2576,12 @@ function applySyncedCombo(data) {
             const carIcon = document.getElementById('carIcon');
             if (carIcon && car.icon) {
                 carIcon.src = car.icon;
-                carIcon.style.display = 'block';
+                carIcon.style.display = 'block';  // ← ДОБАВЬТЕ
+            }
+            // Скрываем fallback
+            const carIconFallback = document.getElementById('carIconFallback');
+            if (carIconFallback) {
+                carIconFallback.style.display = 'none';  // ← ДОБАВЬТЕ
             }
             if (typeof displaySimilarCars === 'function') displaySimilarCars(car);
             highlightField('carValue');
@@ -2592,7 +2598,15 @@ function applySyncedCombo(data) {
         if (track) {
             document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
             const trackIcon = document.getElementById('trackIcon');
-            if (trackIcon) trackIcon.src = getTrackIcon(track.name);
+            if (trackIcon) {
+                trackIcon.src = getTrackIcon(track.name);
+                trackIcon.style.display = 'block';  // ← ДОБАВЬТЕ
+            }
+            // Скрываем fallback
+            const trackIconFallback = document.getElementById('trackIconFallback');
+            if (trackIconFallback) {
+                trackIconFallback.style.display = 'none';  // ← ДОБАВЬТЕ
+            }
             highlightField('trackValue');
         }
     }
@@ -2966,7 +2980,7 @@ function updateModeSelectorVisibility() {
         if (racesContainer) racesContainer.style.setProperty('display', 'block', 'important');
         if (modeSelectorBlock) modeSelectorBlock.style.setProperty('display', 'none', 'important');
         
-        if (!currentAdminId) {
+                if (!currentAdminId) {
             document.getElementById('carValue').innerHTML = '—';
             document.getElementById('trackValue').innerHTML = '—';
             document.getElementById('categoryValue').innerHTML = '—';
@@ -2975,7 +2989,7 @@ function updateModeSelectorVisibility() {
             document.getElementById('tiresValue').innerHTML = '—';
             document.getElementById('fuelValue').innerHTML = '—';
             
-            // Очищаем иконки
+            // Очищаем иконки (админ не выбран - показываем прочерки без иконок)
             const carIcon = document.getElementById('carIcon');
             if (carIcon) {
                 carIcon.src = '';
