@@ -1482,7 +1482,6 @@ document.getElementById('syncOffBtn').addEventListener('click', () => {
     updateSyncStatus();
     alert('🔓 Синхронизация ВЫКЛЮЧЕНА');
 });
-
 // Функция для передачи настроек в основное приложение
 window.setExternalSettings = function(adminId, adminName, syncEnabled) {
     console.log('Настройки переданы в основное приложение:', { adminId, adminName, syncEnabled });
@@ -1514,9 +1513,6 @@ if (hasSeenWelcome) {
 document.getElementById('closeWelcomeBtn').addEventListener('click', () => {
     localStorage.setItem('gt7_welcome_seen', 'true');
 });
-
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwCJv5sKYncJOWhGQ8W1YVU3xcSjGhS1bwITp6PTU60NF0N5PxVubmwnvI2bho_xi6t9w/exec';
-const GOOGLE_SHEETS_ID = '1YAJUPE73Nxwe1oEF1xZBHkGj_zg_uGdW7VkTyHtEOOE';
 
 // Состояние блокировок
 const locks = { car: false, track: false, weather: false, time: false, tires: false, fuel: false, category: false };
