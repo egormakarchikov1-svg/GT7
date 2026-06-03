@@ -3356,17 +3356,40 @@ function init() {
     updateRandomButtonState();
     
    // Обработчик выбора администратора для синхронизации
-   document.getElementById('adminSelect').addEventListener('change', (e) => { 
+      document.getElementById('adminSelect').addEventListener('change', (e) => { 
     const newAdminId = e.target.value;
     const oldAdminId = currentAdminId;
     currentAdminId = newAdminId; 
     console.log('👑 Выбран админ для синхронизации:', currentAdminId);
     
-    // ✅ Обрабатываем и выбор, и снятие выбора
     if (newAdminId) {
         selectAdmin(newAdminId);
     } else {
-        selectAdmin(null);  // ← Очищает гонки при снятии выбора
+        selectAdmin(null);
+        // Сброс режима и очистка данных при снятии админа
+        displayMode = 'all';
+        localStorage.setItem('gt7_display_mode', 'all');
+        
+        // Очищаем все поля
+        document.getElementById('carValue').innerHTML = '—';
+        document.getElementById('trackValue').innerHTML = '—';
+        document.getElementById('categoryValue').innerHTML = '—';
+        document.getElementById('weatherValue').innerHTML = '—';
+        document.getElementById('timeValue').innerHTML = '—';
+        document.getElementById('tiresValue').innerHTML = '—';
+        document.getElementById('fuelValue').innerHTML = '—';
+        
+        // Очищаем иконки
+        const carIcon = document.getElementById('carIcon');
+        if (carIcon) carIcon.style.display = 'none';
+        const trackIcon = document.getElementById('trackIcon');
+        if (trackIcon) trackIcon.style.display = 'none';
+        
+        // Сбрасываем подсветку кнопок
+        const allBtn = document.getElementById('modeAllBtn');
+        const groupOnlyBtn = document.getElementById('modeGroupOnlyBtn');
+        if (allBtn) allBtn.classList.remove('active');
+        if (groupOnlyBtn) groupOnlyBtn.classList.remove('active');
     }
     
     if (oldAdminId !== newAdminId) {
@@ -3378,7 +3401,6 @@ function init() {
     
     updateModeSelectorVisibility();
     
-    // ← ДОБАВЬТЕ ЭТУ СТРОКУ
     if (currentAdminId) {
         loadRace();
     }
