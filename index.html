@@ -2899,12 +2899,6 @@ function updateModeSelectorVisibility() {
     const settingsContainer = document.getElementById('settingsContainer');
     const similarContainer = document.getElementById('similarContainer');
     
-    // ПРИНУДИТЕЛЬНО скрываем все блоки сначала
-    const allBlocks = [adminSelectBlock, carsTrackContainer, categoryContainer, settingsContainer, similarContainer, racesContainer, modeSelectorBlock];
-    allBlocks.forEach(block => {
-        if (block) block.style.setProperty('display', 'none', 'important');
-    });
-    
     if (userSyncEnabled) {
         // ========== СИНХРОНИЗАЦИЯ ВКЛЮЧЕНА ==========
         if (adminSelectBlock) adminSelectBlock.style.setProperty('display', 'block', 'important');
@@ -2930,7 +2924,12 @@ function updateModeSelectorVisibility() {
     } else {
         // ========== СИНХРОНИЗАЦИЯ ВЫКЛЮЧЕНА ==========
         if (adminSelectBlock) adminSelectBlock.style.setProperty('display', 'none', 'important');
+        if (carsTrackContainer) carsTrackContainer.style.setProperty('display', 'none', 'important');
+        if (categoryContainer) categoryContainer.style.setProperty('display', 'none', 'important');
+        if (settingsContainer) settingsContainer.style.setProperty('display', 'none', 'important');
+        if (similarContainer) similarContainer.style.setProperty('display', 'none', 'important');
         if (racesContainer) racesContainer.style.setProperty('display', 'none', 'important');
+        if (modeSelectorBlock) modeSelectorBlock.style.setProperty('display', 'none', 'important');
 
         const groupMsg = document.getElementById('groupModeMessage');
         if (groupMsg) groupMsg.style.setProperty('display', 'none', 'important');
