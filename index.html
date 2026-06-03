@@ -2316,14 +2316,22 @@ function updateFuel() { if (!locks.fuel) document.getElementById('fuelValue').in
 function updateCategory() { if (!locks.category) { const c = getRandomItem(categories); document.getElementById('categoryValue').innerHTML = `${c.icon} ${c.name} (${c.description})`; } }
 
 function generateLocalRace() {
-    // Показываем все блоки для игры
+    // Показываем основные блоки
     document.getElementById('carsTrackContainer').style.setProperty('display', 'block', 'important');
     document.getElementById('categoryContainer').style.setProperty('display', 'block', 'important');
     document.getElementById('settingsContainer').style.setProperty('display', 'block', 'important');
-    document.getElementById('similarContainer').style.setProperty('display', 'block', 'important');
     document.getElementById('modeSelectorBlock').style.setProperty('display', 'block', 'important');
     
-    updateVisibilityByDisplayMode(displayMode); 
+    // Блок подбора авто показываем ТОЛЬКО в обычном режиме
+    if (displayMode !== 'group_only') {
+        document.getElementById('similarContainer').style.setProperty('display', 'block', 'important');
+        document.getElementById('similarContainer').classList.remove('hidden-block');
+    } else {
+        document.getElementById('similarContainer').style.setProperty('display', 'none', 'important');
+        document.getElementById('similarContainer').classList.add('hidden-block');
+    }
+    
+    updateVisibilityByDisplayMode(displayMode);
     updateCar(); 
     updateTrack(); 
     updateWeather(); 
@@ -2778,6 +2786,7 @@ function updateVisibilityByDisplayMode(displayMode) {
     const allBtn = document.getElementById('modeAllBtn');
     const groupOnlyBtn = document.getElementById('modeGroupOnlyBtn');
     const modeText = document.getElementById('currentModeText');
+    const similarBlock = document.getElementById('similarContainer');
     
     if (mode === 'all') {
         if (allBtn) allBtn.classList.add('active');
@@ -2787,6 +2796,11 @@ function updateVisibilityByDisplayMode(displayMode) {
             modeText.style.color = '#3b82f6';
         }
         updateVisibilityByDisplayMode('all');
+        // Показываем блок подбора авто
+        if (similarBlock) {
+            similarBlock.style.setProperty('display', 'block', 'important');
+            similarBlock.classList.remove('hidden-block');
+        }
     } else {
         if (groupOnlyBtn) groupOnlyBtn.classList.add('active');
         if (allBtn) allBtn.classList.remove('active');
@@ -2795,6 +2809,11 @@ function updateVisibilityByDisplayMode(displayMode) {
             modeText.style.color = '#8b5cf6';
         }
         updateVisibilityByDisplayMode('group_only');
+        // Скрываем блок подбора авто
+        if (similarBlock) {
+            similarBlock.style.setProperty('display', 'none', 'important');
+            similarBlock.classList.add('hidden-block');
+        }
     }
 }
 
