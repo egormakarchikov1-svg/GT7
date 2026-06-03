@@ -2531,6 +2531,13 @@ async function loadSyncedCombo(forceRefresh = false) {
 function applySyncedCombo(data) {
     if (!data) return;
     
+    // СРАЗУ СКРЫВАЕМ БЛОК ПОДБОРА АВТО (чтобы не мелькал)
+    const similarBlockFirst = document.getElementById('similarContainer');
+    if (similarBlockFirst) {
+        similarBlockFirst.style.setProperty('display', 'none', 'important');
+        similarBlockFirst.classList.add('hidden-block');
+    }
+    
     // ✅ ПРИМЕНЯЕМ БЛОКИРОВКИ ИЗ ДАННЫХ АДМИНА
     if (data.track_locked !== undefined) {
         locks.track = data.track_locked;
@@ -2582,7 +2589,6 @@ function applySyncedCombo(data) {
     };
     
     // МАШИНА - только если не заблокирована
-        // МАШИНА - только если не заблокирована
     if (!locks.car && data.car_name) {
         const car = findCarByName(data.car_name);
         if (car) {
@@ -2590,12 +2596,11 @@ function applySyncedCombo(data) {
             const carIcon = document.getElementById('carIcon');
             if (carIcon && car.icon) {
                 carIcon.src = car.icon;
-                carIcon.style.display = 'block';  // ← ДОБАВЬТЕ
+                carIcon.style.display = 'block';
             }
-            // Скрываем fallback
             const carIconFallback = document.getElementById('carIconFallback');
             if (carIconFallback) {
-                carIconFallback.style.display = 'none';  // ← ДОБАВЬТЕ
+                carIconFallback.style.display = 'none';
             }
             if (typeof displaySimilarCars === 'function') displaySimilarCars(car);
             highlightField('carValue');
@@ -2614,12 +2619,11 @@ function applySyncedCombo(data) {
             const trackIcon = document.getElementById('trackIcon');
             if (trackIcon) {
                 trackIcon.src = getTrackIcon(track.name);
-                trackIcon.style.display = 'block';  // ← ДОБАВЬТЕ
+                trackIcon.style.display = 'block';
             }
-            // Скрываем fallback
             const trackIconFallback = document.getElementById('trackIconFallback');
             if (trackIconFallback) {
-                trackIconFallback.style.display = 'none';  // ← ДОБАВЬТЕ
+                trackIconFallback.style.display = 'none';
             }
             highlightField('trackValue');
         }
@@ -2672,27 +2676,31 @@ function applySyncedCombo(data) {
     }
     
     // Обновляем РЕЖИМ ЗАЕЗДА
-        // Обновляем РЕЖИМ ЗАЕЗДА
     const newDisplayMode = data.display_mode || 'all';
     if (typeof updateVisibilityByDisplayMode === 'function') {
         updateVisibilityByDisplayMode(newDisplayMode);
     }
     
-    // ПРИНУДИТЕЛЬНО скрываем блок подбора авто в групповом режиме (каждый раз при обновлении)
-    if (newDisplayMode === 'group_only') {
-        const similarBlock = document.getElementById('similarContainer');
-        if (similarBlock) {
+    // ЕЩЁ РАЗ ПРИНУДИТЕЛЬНО СКРЫВАЕМ БЛОК ПОДБОРА АВТО В ГРУППОВОМ РЕЖИМЕ
+    const similarBlock = document.getElementById('similarContainer');
+    if (similarBlock) {
+        if (newDisplayMode === 'group_only') {
             similarBlock.style.setProperty('display', 'none', 'important');
             similarBlock.classList.add('hidden-block');
-        }
-    } else {
-        // В обычном режиме - показываем
-        const similarBlock = document.getElementById('similarContainer');
-        if (similarBlock) {
+        } else {
             similarBlock.style.setProperty('display', 'block', 'important');
             similarBlock.classList.remove('hidden-block');
         }
     }
+    
+    // ДОПОЛНИТЕЛЬНОЕ СКРЫТИЕ ЧЕРЕЗ 50МС (на случай, если что-то перезапишет)
+    setTimeout(() => {
+        const similarBlockLast = document.getElementById('similarContainer');
+        if (similarBlockLast && displayMode === 'group_only') {
+            similarBlockLast.style.setProperty('display', 'none', 'important');
+            similarBlockLast.classList.add('hidden-block');
+        }
+    }, 50);
 }
 
 // Функция загрузки гонки (основная)
