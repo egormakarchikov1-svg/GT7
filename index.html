@@ -2708,19 +2708,25 @@ async function loadRace() {
     
     const synced = await loadSyncedCombo();
     
-                if (syncedModeActive && synced) {
+                    if (syncedModeActive && synced) {
         console.log('🎯 ИСПОЛЬЗУЕМ АДМИНСКУЮ КОМБИНАЦИЮ');
         const banner = document.getElementById('adminModeBanner');
         if (banner) {
             banner.style.display = 'block';
         }
         window.isLoadingCombo = true;
-        isFirstLoad = true;  // ← ДОБАВЬТЕ ЭТУ СТРОКУ
+        isFirstLoad = true;
         applySyncedCombo(synced);
+        
+        // Запускаем автообновление только если оно ещё не запущено
+        if (!autoRefreshInterval) {
+            startAutoRefresh();
+        }
+        
         setTimeout(() => { 
             window.isLoadingCombo = false;
             isFirstLoad = false;
-        }, 5000);  // ← УВЕЛИЧЬТЕ ДО 5 СЕКУНД
+        }, 5000);
         return;
     }
     
@@ -3445,7 +3451,7 @@ function init() {
     
     // Запускаем автообновление если включена синхронизация и выбран админ
     if (userSyncEnabled && currentAdminId) {
-        startAutoRefresh();
+
     }
     
     // Восстановление админа для просмотра гонок
