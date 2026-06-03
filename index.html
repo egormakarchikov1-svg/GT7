@@ -1482,15 +1482,14 @@ document.getElementById('syncOffBtn').addEventListener('click', () => {
     updateSyncStatus();
     alert('🔓 Синхронизация ВЫКЛЮЧЕНА');
 });
+
 // Функция для передачи настроек в основное приложение
 window.setExternalSettings = function(adminId, adminName, syncEnabled) {
     console.log('Настройки переданы в основное приложение:', { adminId, adminName, syncEnabled });
-    // Здесь можно обновить скрытый select админа в основном приложении
     const mainAdminSelect = document.getElementById('adminSelectOrig');
     if (mainAdminSelect && adminId) {
         mainAdminSelect.value = adminId;
     }
-    // Обновляем баннер синхронизации
     const banner = document.getElementById('adminSyncBanner');
     const adminNameSpan = document.getElementById('adminName');
     if (syncEnabled && adminId) {
