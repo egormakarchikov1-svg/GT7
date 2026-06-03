@@ -2403,7 +2403,7 @@ function startAutoRefresh() {
     if (autoRefreshInterval) clearInterval(autoRefreshInterval);
     
     autoRefreshInterval = setInterval(async () => {
-        if (userSyncEnabled && currentAdminId) {
+        if (userSyncEnabled && currentAdminId && !window.isLoadingCombo) {
             console.log('🔄 Проверка обновлений...');
             const synced = await loadSyncedCombo(true);
             
@@ -2425,8 +2425,10 @@ function startAutoRefresh() {
                 if (currentHash !== lastSyncedData) {
                     console.log('🔄 ДАННЫЕ РЕАЛЬНО ИЗМЕНИЛИСЬ! Обновляем...');
                     lastSyncedData = currentHash;
+                    window.isLoadingCombo = true;
                     applySyncedCombo(synced);
                     showRefreshIndicator();
+                    setTimeout(() => { window.isLoadingCombo = false; }, 3000);
                 } else {
                     console.log('📢 Данные НЕ ИЗМЕНИЛИСЬ, подсветки НЕТ');
                 }
@@ -2693,13 +2695,15 @@ async function loadRace() {
     
     const synced = await loadSyncedCombo();
     
-    if (syncedModeActive && synced) {
+        if (syncedModeActive && synced) {
         console.log('🎯 ИСПОЛЬЗУЕМ АДМИНСКУЮ КОМБИНАЦИЮ');
         const banner = document.getElementById('adminModeBanner');
         if (banner) {
             banner.style.display = 'block';
         }
+        window.isLoadingCombo = true;
         applySyncedCombo(synced);
+        setTimeout(() => { window.isLoadingCombo = false; }, 3000);
         return;
     }
     
