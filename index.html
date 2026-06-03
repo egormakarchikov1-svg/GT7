@@ -3004,6 +3004,12 @@ function updateModeSelectorVisibility() {
             document.getElementById('timeValue').innerHTML = '—';
             document.getElementById('tiresValue').innerHTML = '—';
             document.getElementById('fuelValue').innerHTML = '—';
+
+                    const similarBlock = document.getElementById('similarContainer');
+            if (similarBlock) {
+                similarBlock.style.setProperty('display', 'none', 'important');
+                similarBlock.classList.add('hidden-block');
+            }
             
             // Очищаем иконки (админ не выбран - показываем прочерки без иконок)
             const carIcon = document.getElementById('carIcon');
