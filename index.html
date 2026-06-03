@@ -3010,6 +3010,11 @@ function updateModeSelectorVisibility() {
                 similarBlock.style.setProperty('display', 'none', 'important');
                 similarBlock.classList.add('hidden-block');
             }
+
+                    const groupMsg = document.getElementById('groupModeMessage');
+            if (groupMsg) {
+                groupMsg.style.setProperty('display', 'none', 'important');
+            }
             
             // Очищаем иконки (админ не выбран - показываем прочерки без иконок)
             const carIcon = document.getElementById('carIcon');
