@@ -10,11 +10,7 @@
     <meta name="theme-color" content="#ff4d4d">
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -42,7 +38,6 @@
         .screen { transition: all 0.3s ease; }
         .hidden { display: none !important; }
         
-        /* Приветственное окно */
         .welcome-content { text-align: center; }
         .welcome-icon { font-size: 64px; margin-bottom: 16px; }
         .welcome-content h2 { color: #ff4d4d; font-size: 22px; margin-bottom: 20px; }
@@ -75,7 +70,6 @@
             margin-top: 16px;
         }
         
-        /* Экран настройки */
         .setup-card {
             background: rgba(0, 0, 0, 0.5);
             border-radius: 20px;
@@ -115,7 +109,6 @@
         .sync-status.active { background: #22c55e20; color: #22c55e; }
         .sync-status.inactive { background: #ef444420; color: #ef4444; }
         
-        /* Основной интерфейс */
         .cars-track-container, .category-container, .settings-container, .similar-cars-container, .races-container {
             background: rgba(0, 0, 0, 0.4);
             border-radius: 16px;
@@ -405,9 +398,7 @@ const carsDatabase = [
     { name: "Lamborghini Huracán '15", rating: 627, category: "", hp: 610, weight: 1422 },
     { name: "McLaren 650S '14", rating: 636, category: "", hp: 650, weight: 1330 },
     { name: "Nissan GT-R '17", rating: 588, category: "", hp: 572, weight: 1770 },
-    { name: "Audi R8 V10 '16", rating: 626, category: "", hp: 610, weight: 1454 },
-    { name: "Mercedes-AMG GT R '17", rating: 611, category: "", hp: 585, weight: 1660 },
-    { name: "BMW M4 '14", rating: 570, category: "", hp: 431, weight: 1497 }
+    { name: "Audi R8 V10 '16", rating: 626, category: "", hp: 610, weight: 1454 }
 ];
 
 const tracksData = [
@@ -429,7 +420,7 @@ const weathers = [
     { name: "Легкий дождь", icon: "🌦️" }
 ];
 
-const times = [
+const timesList = [
     { name: "День", icon: "🔆" },
     { name: "Вечер", icon: "🌆" },
     { name: "Ночь", icon: "🌙" }
@@ -445,10 +436,104 @@ let displayMode = 'all';
 let currentAdminId = null;
 let currentAdminName = null;
 let userSyncEnabled = false;
-let adminsList = [];
 
 // ============================================
-// ФУНКЦИИ
+// JSONP ЗАПРОСЫ (для Google Apps Script)
+// ============================================
+function jsonpRequest(url, callbackName, timeout = 10000) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        const timer = setTimeout(() => {
+            if (window[callbackName]) delete window[callbackName];
+            if (script.parentNode) script.parentNode.removeChild(script);
+            reject(new Error('Timeout'));
+        }, timeout);
+        
+        window[callbackName] = function(data) {
+            clearTimeout(timer);
+            delete window[callbackName];
+            if (script.parentNode) script.parentNode.removeChild(script);
+            resolve(data);
+        };
+        
+        script.src = `${url}&callback=${callbackName}&_=${Date.now()}`;
+        script.onerror = () => {
+            clearTimeout(timer);
+            delete window[callbackName];
+            reject(new Error('Network error'));
+        };
+        document.body.appendChild(script);
+    });
+}
+
+// ============================================
+// ЗАГРУЗКА АДМИНОВ ИЗ GOOGLE SHEETS (JSONP)
+// ============================================
+async function loadAdminsFromGoogle() {
+    const select = document.getElementById('adminSelect');
+    select.innerHTML = '<option value="">Загрузка администраторов...</option>';
+    
+    try {
+        const callbackName = 'jsonp_admins_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+        const data = await jsonpRequest(`${APPS_SCRIPT_URL}?action=getAdmins`, callbackName);
+        
+        if (data && data.success && data.admins && data.admins.length > 0) {
+            select.innerHTML = '<option value="">-- Выберите администратора --</option>';
+            data.admins.forEach(admin => {
+                select.innerHTML += `<option value="${admin.id}">${admin.name}</option>`;
+            });
+            console.log('✅ Загружены администраторы:', data.admins);
+        } else {
+            throw new Error('Нет данных');
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки администраторов:', error);
+        select.innerHTML = '<option value="">-- Ошибка загрузки --</option><option value="admin1">Admin 1 (демо)</option><option value="admin2">Admin 2 (демо)</option><option value="admin3">Admin 3 (демо)</option>';
+    }
+}
+
+// ============================================
+// ЗАГРУЗКА СИНХРОНИЗИРОВАННЫХ ДАННЫХ (JSONP)
+// ============================================
+async function loadSyncedRace() {
+    if (!userSyncEnabled || !currentAdminId) return false;
+    
+    try {
+        const callbackName = 'jsonp_combo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+        const data = await jsonpRequest(`${APPS_SCRIPT_URL}?action=getCurrentCombo&adminId=${currentAdminId}`, callbackName);
+        
+        if (data && data.active === 'TRUE') {
+            if (data.car_name && !locks.car) {
+                document.getElementById('carValue').innerHTML = data.car_name;
+            }
+            if (data.track_name && !locks.track) {
+                document.getElementById('trackValue').innerHTML = `${data.track_name} <span class="time-x-badge">${data.laps || '5'} кругов</span>`;
+            }
+            if (data.category_name && !locks.category) {
+                document.getElementById('categoryValue').innerHTML = data.category_name;
+            }
+            if (data.weather_name && !locks.weather) {
+                document.getElementById('weatherValue').innerHTML = data.weather_name;
+            }
+            if (data.time_name && !locks.time) {
+                document.getElementById('timeValue').innerHTML = `${data.time_name} <span class="time-x-badge">${data.time_multiplier || 'X1'}</span>`;
+            }
+            if (data.tires_value && !locks.tires) {
+                document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${data.tires_value}</span>`;
+            }
+            if (data.fuel_value && !locks.fuel) {
+                document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${data.fuel_value}</span>`;
+            }
+            return true;
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки синхронизации:', error);
+    }
+    return false;
+}
+
+// ============================================
+// ОСНОВНЫЕ ФУНКЦИИ
 // ============================================
 function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function getRandomXValue() { return `X${Math.floor(Math.random() * 20) + 1}`; }
@@ -503,8 +588,8 @@ function updateWeatherByTrack(track) {
 
 function updateTimeByTrack(track) {
     if (locks.time) return;
-    let avail = times;
-    if (track.times && track.times.length) avail = times.filter(t => track.times.includes(t.name));
+    let avail = timesList;
+    if (track.times && track.times.length) avail = timesList.filter(t => track.times.includes(t.name));
     const tm = getRandomItem(avail);
     document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${getRandomXValue()}</span>`;
 }
@@ -623,73 +708,6 @@ function setDisplayMode(mode) {
         allBtn.classList.remove('active');
     }
     generateLocalRace();
-}
-
-// ============================================
-// ЗАГРУЗКА АДМИНОВ ИЗ GOOGLE SHEETS
-// ============================================
-async function loadAdminsFromGoogle() {
-    const select = document.getElementById('adminSelect');
-    select.innerHTML = '<option value="">Загрузка администраторов...</option>';
-    
-    try {
-        const response = await fetch(`${APPS_SCRIPT_URL}?action=getAdmins&t=${Date.now()}`);
-        const data = await response.json();
-        
-        if (data.success && data.admins && data.admins.length > 0) {
-            adminsList = data.admins;
-            select.innerHTML = '<option value="">-- Выберите администратора --</option>';
-            adminsList.forEach(admin => {
-                select.innerHTML += `<option value="${admin.id}">${admin.name}</option>`;
-            });
-            console.log('✅ Загружены администраторы:', adminsList);
-        } else {
-            throw new Error('Нет данных');
-        }
-    } catch (error) {
-        console.error('Ошибка загрузки администраторов:', error);
-        select.innerHTML = '<option value="">-- Ошибка загрузки --</option><option value="admin1">Admin 1 (демо)</option><option value="admin2">Admin 2 (демо)</option>';
-    }
-}
-
-// ============================================
-// ЗАГРУЗКА СИНХРОНИЗИРОВАННЫХ ДАННЫХ
-// ============================================
-async function loadSyncedRace() {
-    if (!userSyncEnabled || !currentAdminId) return false;
-    
-    try {
-        const response = await fetch(`${APPS_SCRIPT_URL}?action=getCurrentCombo&adminId=${currentAdminId}&t=${Date.now()}`);
-        const data = await response.json();
-        
-        if (data && data.active === 'TRUE') {
-            if (data.car_name && !locks.car) {
-                document.getElementById('carValue').innerHTML = data.car_name;
-            }
-            if (data.track_name && !locks.track) {
-                document.getElementById('trackValue').innerHTML = `${data.track_name} <span class="time-x-badge">${data.laps || '5'} кругов</span>`;
-            }
-            if (data.category_name && !locks.category) {
-                document.getElementById('categoryValue').innerHTML = data.category_name;
-            }
-            if (data.weather_name && !locks.weather) {
-                document.getElementById('weatherValue').innerHTML = data.weather_name;
-            }
-            if (data.time_name && !locks.time) {
-                document.getElementById('timeValue').innerHTML = `${data.time_name} <span class="time-x-badge">${data.time_multiplier || 'X1'}</span>`;
-            }
-            if (data.tires_value && !locks.tires) {
-                document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${data.tires_value}</span>`;
-            }
-            if (data.fuel_value && !locks.fuel) {
-                document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${data.fuel_value}</span>`;
-            }
-            return true;
-        }
-    } catch (error) {
-        console.error('Ошибка загрузки синхронизации:', error);
-    }
-    return false;
 }
 
 // ============================================
