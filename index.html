@@ -2706,10 +2706,14 @@ function toggleSyncMode() {
         document.getElementById('timeValue').innerHTML = '—';
         document.getElementById('tiresValue').innerHTML = '—';
         document.getElementById('fuelValue').innerHTML = '—';
+        
+        // Если админ уже выбран - загружаем гонку
+        if (currentAdminId) {
+            loadRace();
+        }
     } else { 
         btn.innerText = '🔓 ВЫКЛ'; 
         btn.style.background = '#ef4444';
-        // НЕ ВЫЗЫВАЕМ generateLocalRace() здесь!
     }
     updateModeSelectorVisibility();
 }
@@ -2919,15 +2923,14 @@ function updateModeSelectorVisibility() {
             document.getElementById('timeValue').innerHTML = '—';
             document.getElementById('tiresValue').innerHTML = '—';
             document.getElementById('fuelValue').innerHTML = '—';
+        } else {
+            // Если админ уже выбран, загружаем гонку
+            loadRace();
         }
     } else {
         // ========== СИНХРОНИЗАЦИЯ ВЫКЛЮЧЕНА ==========
-        // ВСЕ блоки СКРЫТЫ, пока не нажмут "СЛУЧАЙНАЯ ГОНКА"
-        // НИЧЕГО НЕ ПОКАЗЫВАЕМ, все уже скрыты через allBlocks
-        // Дополнительно скрываем админа и гонки
         if (adminSelectBlock) adminSelectBlock.style.setProperty('display', 'none', 'important');
         if (racesContainer) racesContainer.style.setProperty('display', 'none', 'important');
-        // modeSelectorBlock, carsTrackContainer и другие уже скрыты через allBlocks
 
         const groupMsg = document.getElementById('groupModeMessage');
         if (groupMsg) groupMsg.style.setProperty('display', 'none', 'important');
