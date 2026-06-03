@@ -2485,7 +2485,6 @@ async function loadSyncedCombo(forceRefresh = false) {
                 if (banner) {
                     banner.style.display = 'block';
                 }
-                updateModeSelectorVisibility();
                 resolve(data);
             } else {
                 console.log('❌ active !== TRUE, комбинация не активна');
@@ -2658,9 +2657,26 @@ function applySyncedCombo(data) {
     }
     
     // Обновляем РЕЖИМ ЗАЕЗДА
+        // Обновляем РЕЖИМ ЗАЕЗДА
     const newDisplayMode = data.display_mode || 'all';
     if (typeof updateVisibilityByDisplayMode === 'function') {
         updateVisibilityByDisplayMode(newDisplayMode);
+    }
+    
+    // ПРИНУДИТЕЛЬНО скрываем блок подбора авто в групповом режиме (каждый раз при обновлении)
+    if (newDisplayMode === 'group_only') {
+        const similarBlock = document.getElementById('similarContainer');
+        if (similarBlock) {
+            similarBlock.style.setProperty('display', 'none', 'important');
+            similarBlock.classList.add('hidden-block');
+        }
+    } else {
+        // В обычном режиме - показываем
+        const similarBlock = document.getElementById('similarContainer');
+        if (similarBlock) {
+            similarBlock.style.setProperty('display', 'block', 'important');
+            similarBlock.classList.remove('hidden-block');
+        }
     }
 }
 
