@@ -1148,25 +1148,24 @@
     </div>
 
     <!-- ЭКРАН 2: ВЫБОР АДМИНИСТРАТОРА И СИНХРОНИЗАЦИИ -->
-    <div id="setupScreen" class="screen hidden">
-        <div class="setup-card">
-            <h3>👑 ВЫБЕРИТЕ АДМИНИСТРАТОРА</h3>
-            <select id="adminSelect" class="setup-select">
-                <option value="">Загрузка...</option>
-            </select>
-            <button id="continueToAppBtn" class="setup-btn setup-btn-secondary">➡️ ПРОДОЛЖИТЬ</button>
-        </div>
-        
-        <div class="setup-card">
-            <h3>🔄 РЕЖИМ СИНХРОНИЗАЦИИ</h3>
-            <div class="sync-buttons">
-                <button id="syncOffBtn" class="sync-off">🔓 ВЫКЛ</button>
-                <button id="syncOnBtn" class="sync-on">🔒 ВКЛ</button>
-            </div>
-            <div id="syncStatus" class="sync-status inactive">⚪ Синхронизация выключена</div>
-            <div style="margin-top: 12px; font-size: 12px; color: #aaa; text-align: center;">ВКЛ — гонки синхронизируются с администратором</div>
+   <div id="setupScreen" class="screen hidden">
+    <div class="setup-card">
+        <h3>👑 ВЫБЕРИТЕ АДМИНИСТРАТОРА</h3>
+        <select id="adminSelect" class="setup-select">
+            <option value="">Загрузка...</option>
+        </select>
+    </div>
+    
+    <div class="setup-card" style="border-color: #ff4d4d;">
+        <h3 style="color: #ff4d4d;">🎲 ИЛИ СЛУЧАЙНАЯ ГОНКА</h3>
+        <button id="localRaceBtn" class="setup-btn" style="background: linear-gradient(135deg, #ff4d4d, #cc0000); font-size: 18px; padding: 16px;">
+            🎲 СЛУЧАЙНАЯ ГОНКА
+        </button>
+        <div style="text-align: center; margin-top: 12px; font-size: 12px; color: #aaa;">
+            ⚡ Локальный режим без синхронизации
         </div>
     </div>
+</div>
 
     <!-- ЭКРАН 3: ОСНОВНОЕ ПРИЛОЖЕНИЕ (ВАШ ОРИГИНАЛЬНЫЙ HTML) -->
     <div id="mainApp" class="screen hidden">
@@ -1498,6 +1497,7 @@ window.setExternalSettings = function(adminId, adminName, syncEnabled) {
 };
 
 // Проверяем, видел ли пользователь приветствие
+// Проверяем, видел ли пользователь приветствие
 const hasSeenWelcome = localStorage.getItem('gt7_welcome_seen');
 if (hasSeenWelcome) {
     showSetupScreen();
@@ -1505,15 +1505,51 @@ if (hasSeenWelcome) {
     showWelcomeScreen();
 }
 
-// Сохраняем флаг после СТАРТ
-document.getElementById('closeWelcomeBtn').addEventListener('click', () => {
-    localStorage.setItem('gt7_welcome_seen', 'true');
-});
+// Обработчик закрытия приветствия
+const closeWelcomeBtn = document.getElementById('closeWelcomeBtn');
+if (closeWelcomeBtn) {
+    closeWelcomeBtn.addEventListener('click', () => {
+        localStorage.setItem('gt7_welcome_seen', 'true');
+        showSetupScreen();
+    });
+}
 
-// Сохраняем флаг после СТАРТ
-document.getElementById('closeWelcomeBtn').addEventListener('click', () => {
-    localStorage.setItem('gt7_welcome_seen', 'true');
-});
+// НОВЫЙ обработчик для кнопки "СЛУЧАЙНАЯ ГОНКА" (с проверкой существования)
+const localRaceBtn = document.getElementById('localRaceBtn');
+if (localRaceBtn) {
+    localRaceBtn.addEventListener('click', () => {
+        userSyncEnabled = false;
+        currentAdminId = null;
+        currentAdminName = null;
+        
+        console.log('🎲 Запуск в локальном режиме');
+        showMainApp();
+        
+        setTimeout(() => {
+            showStatusMessage('🎲 Локальный режим: генерируем случайные гонки!', 'info');
+        }, 100);
+    });
+}
+
+// НОВЫЙ обработчик для SELECT - выбор администратора (с проверкой существования)
+const adminSelect = document.getElementById('adminSelect');
+if (adminSelect) {
+    adminSelect.addEventListener('change', (e) => {
+        if (e.target.value) {
+            userSyncEnabled = true;
+            currentAdminId = e.target.value;
+            const selectedOption = e.target.options[e.target.selectedIndex];
+            currentAdminName = selectedOption ? selectedOption.text : currentAdminId;
+            
+            console.log('👑 Выбран админ, запуск в режиме синхронизации:', currentAdminName);
+            showMainApp();
+            
+            setTimeout(() => {
+                showStatusMessage(`👑 Режим синхронизации: следуем настройкам ${currentAdminName}`, 'success');
+            }, 100);
+        }
+    });
+}
 
 // Состояние блокировок
 const locks = { car: false, track: false, weather: false, time: false, tires: false, fuel: false, category: false };
@@ -1540,6 +1576,48 @@ function getRandomXValue() { return `X${Math.floor(Math.random() * 20) + 1}`; }
 // Иконка трассы
 function getTrackIcon(trackName) {
     return 'https://cdn-icons-png.flaticon.com/512/1998/1998626.png';
+}
+
+    function showStatusMessage(message, type) {
+    let statusDiv = document.getElementById('tempStatusMessage');
+    if (!statusDiv) {
+        statusDiv = document.createElement('div');
+        statusDiv.id = 'tempStatusMessage';
+        statusDiv.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 9999;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        `;
+        document.body.appendChild(statusDiv);
+    }
+    
+    const colors = {
+        success: '#22c55e',
+        warning: '#f59e0b',
+        error: '#ef4444',
+        info: '#3b82f6'
+    };
+    
+    statusDiv.style.background = colors[type] || colors.info;
+    statusDiv.innerHTML = message;
+    statusDiv.style.opacity = '1';
+    
+    setTimeout(() => {
+        statusDiv.style.opacity = '0';
+        setTimeout(() => {
+            if (statusDiv.parentNode) statusDiv.parentNode.removeChild(statusDiv);
+        }, 300);
+    }, 3000);
 }
 
 // ============================================
