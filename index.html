@@ -2318,9 +2318,11 @@ function updateCategory() { if (!locks.category) { const c = getRandomItem(categ
 function generateLocalRace() {
     // Показываем основные блоки
     document.getElementById('carsTrackContainer').style.setProperty('display', 'block', 'important');
-    document.getElementById('categoryContainer').style.setProperty('display', 'block', 'important');
     document.getElementById('settingsContainer').style.setProperty('display', 'block', 'important');
     document.getElementById('modeSelectorBlock').style.setProperty('display', 'block', 'important');
+    
+    // НЕ показываем categoryContainer здесь - пусть updateVisibilityByDisplayMode решает
+    // document.getElementById('categoryContainer').style.setProperty('display', 'block', 'important'); ← УБРАТЬ
 
     const groupMsg = document.getElementById('groupModeMessage');
     if (displayMode === 'group_only') {
@@ -2768,8 +2770,14 @@ function updateVisibilityByDisplayMode(displayMode) {
     if (displayMode === 'group_only') {
         // ГРУППОВОЙ РЕЖИМ: скрываем машину и похожие авто, показываем категорию
         if (carBlock) carBlock.classList.add('hidden-block');
-        if (similarBlock) similarBlock.classList.add('hidden-block');  // ← СКРЫВАЕМ
-        if (categoryBlock) categoryBlock.classList.remove('hidden-block');
+        if (similarBlock) {
+            similarBlock.classList.add('hidden-block');
+            similarBlock.style.setProperty('display', 'none', 'important');
+        }
+        if (categoryBlock) {
+            categoryBlock.classList.remove('hidden-block');
+            categoryBlock.style.setProperty('display', 'block', 'important');
+        }
         if (groupMsg) groupMsg.style.display = 'block';
         if (trackBlock) trackBlock.classList.add('track-centered');
         if (paramsGrid) { 
@@ -2777,10 +2785,16 @@ function updateVisibilityByDisplayMode(displayMode) {
             paramsGrid.style.justifyContent = 'center'; 
         }
     } else {
-        // ОБЫЧНЫЙ РЕЖИМ: показываем всё, скрываем категорию
+        // ОБЫЧНЫЙ РЕЖИМ: показываем всё, СКРЫВАЕМ категорию
         if (carBlock) carBlock.classList.remove('hidden-block');
-        if (similarBlock) similarBlock.classList.remove('hidden-block');  // ← ПОКАЗЫВАЕМ
-        if (categoryBlock) categoryBlock.classList.add('hidden-block');
+        if (similarBlock) {
+            similarBlock.classList.remove('hidden-block');
+            similarBlock.style.setProperty('display', 'block', 'important');
+        }
+        if (categoryBlock) {
+            categoryBlock.classList.add('hidden-block');
+            categoryBlock.style.setProperty('display', 'none', 'important');  // ← ДОБАВЬТЕ ЭТУ СТРОКУ
+        }
         if (groupMsg) groupMsg.style.display = 'none';
         if (trackBlock) trackBlock.classList.remove('track-centered');
         if (paramsGrid) { 
@@ -2789,7 +2803,6 @@ function updateVisibilityByDisplayMode(displayMode) {
         }
     }
 }
-
     function setDisplayMode(mode) {
     displayMode = mode;
     localStorage.setItem('gt7_display_mode', mode);
