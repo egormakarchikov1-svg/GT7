@@ -2757,6 +2757,19 @@ function updateModeSelectorVisibility() {
         if (racesContainer) racesContainer.style.setProperty('display', 'none', 'important');
         // modeSelectorBlock, carsTrackContainer и другие уже скрыты через allBlocks
     }
+
+    updateRandomButtonState();
+}
+
+    function updateRandomButtonState() {
+    const randomBtn = document.getElementById('randomBtn');
+    if (userSyncEnabled) {
+        // При включённой синхронизации - скрываем кнопку
+        randomBtn.style.display = 'none';
+    } else {
+        // При выключенной синхронизации - показываем кнопку
+        randomBtn.style.display = 'inline-flex';
+    }
 }
 
 // ============================================
@@ -3047,6 +3060,8 @@ function init() {
     document.getElementById('syncToggleBtn').addEventListener('click', toggleSyncMode);
     document.getElementById('modeAllBtn').addEventListener('click', () => setDisplayMode('all'));
     document.getElementById('modeGroupOnlyBtn').addEventListener('click', () => setDisplayMode('group_only'));
+
+    updateRandomButtonState();
     
     // Обработчик выбора администратора для синхронизации
    document.getElementById('adminSelect').addEventListener('change', (e) => { 
