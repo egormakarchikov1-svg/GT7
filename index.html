@@ -1418,6 +1418,7 @@ let syncedModeActive = false;
 let syncedComboData = null;
 let displayMode = localStorage.getItem('gt7_display_mode') || 'all';
 let lastSyncedData = null;
+let isFirstLoad = true;
 
 // ============================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
@@ -2403,7 +2404,7 @@ function startAutoRefresh() {
     if (autoRefreshInterval) clearInterval(autoRefreshInterval);
     
     autoRefreshInterval = setInterval(async () => {
-        if (userSyncEnabled && currentAdminId && !window.isLoadingCombo) {
+        if (userSyncEnabled && currentAdminId && !window.isLoadingCombo && !isFirstLoad) {
             console.log('🔄 Проверка обновлений...');
             const synced = await loadSyncedCombo(true);
             
@@ -2695,7 +2696,7 @@ async function loadRace() {
     
     const synced = await loadSyncedCombo();
     
-        if (syncedModeActive && synced) {
+            if (syncedModeActive && synced) {
         console.log('🎯 ИСПОЛЬЗУЕМ АДМИНСКУЮ КОМБИНАЦИЮ');
         const banner = document.getElementById('adminModeBanner');
         if (banner) {
@@ -2703,7 +2704,10 @@ async function loadRace() {
         }
         window.isLoadingCombo = true;
         applySyncedCombo(synced);
-        setTimeout(() => { window.isLoadingCombo = false; }, 3000);
+        setTimeout(() => { 
+            window.isLoadingCombo = false;
+            isFirstLoad = false;
+        }, 3000);
         return;
     }
     
@@ -2775,6 +2779,7 @@ function toggleSyncMode() {
         document.getElementById('fuelValue').innerHTML = '—';
         
         // Если админ уже выбран - загружаем гонку
+        isFirstLoad = true;
         if (currentAdminId) {
             loadRace();
         }
