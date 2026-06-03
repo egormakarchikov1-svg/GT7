@@ -1522,16 +1522,13 @@ let shownCars = [];
 let shownTracks = [];
 
 // ⚠️ ГЛАВНОЕ ИСПРАВЛЕНИЕ: переменные объявлены ОДИН РАЗ
-let currentAdminId = null;
-// Принудительно ВЫКЛЮЧАЕМ синхронизацию при загрузке
-let userSyncEnabled = false;
+// (currentAdminId и userSyncEnabled уже объявлены в блоке управления экранами)
 localStorage.setItem('gt7_sync_enabled', 'false');
 let syncedModeActive = false;
 let syncedComboData = null;
 let displayMode = localStorage.getItem('gt7_display_mode') || 'all';
 let lastSyncedData = null;
 let isFirstLoad = true;
-
 // ============================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 // ============================================
