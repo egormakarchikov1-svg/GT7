@@ -3429,10 +3429,13 @@ function init() {
         if (groupOnlyBtn) groupOnlyBtn.classList.remove('active');
     }
     
-    if (oldAdminId !== newAdminId) {
+     if (oldAdminId !== newAdminId) {
         stopAutoRefresh();
         if (userSyncEnabled && currentAdminId) {
-            startAutoRefresh();
+            // Запускаем автообновление с задержкой 3 секунды, чтобы первая загрузка успела завершиться
+            setTimeout(() => {
+                startAutoRefresh();
+            }, 3000);
         }
     }
     
