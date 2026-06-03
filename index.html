@@ -1188,6 +1188,124 @@
 #currentModeText {
     transition: all 0.3s ease;
 }
+
+/* Приветственное окно - прозрачное и компактное */
+.welcome-message {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.welcome-content {
+    background: rgba(15, 23, 42, 0.95);
+    border-radius: 24px;
+    padding: 20px;
+    max-width: 340px;
+    width: 100%;
+    text-align: center;
+    border: 1px solid rgba(255, 77, 77, 0.3);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.welcome-icon {
+    font-size: 48px;
+    margin-bottom: 8px;
+}
+
+.welcome-content h2 {
+    color: #ff4d4d;
+    font-size: 18px;
+    margin-bottom: 12px;
+}
+
+.welcome-content p {
+    color: #eee;
+    font-size: 13px;
+    margin-bottom: 12px;
+    text-align: left;
+}
+
+.welcome-modes {
+    margin: 12px 0;
+    text-align: left;
+}
+
+.welcome-mode {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+}
+
+.mode-icon {
+    font-size: 24px;
+    min-width: 36px;
+    text-align: center;
+}
+
+.welcome-mode div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.welcome-mode strong {
+    color: #ff4d4d;
+    font-size: 14px;
+}
+
+.welcome-mode small {
+    color: #22c55e;
+    font-size: 10px;
+}
+
+.welcome-mode span {
+    color: #aaa;
+    font-size: 11px;
+}
+
+.welcome-close-btn {
+    background: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 12px;
+    width: 100%;
+    transition: all 0.2s;
+}
+
+.welcome-close-btn:hover {
+    background: #e03a3a;
+    transform: scale(1.01);
+}
         
     </style>
 </head>
