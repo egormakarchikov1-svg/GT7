@@ -1157,6 +1157,37 @@
     background: #e03a3a;
     transform: scale(1.02);
 }
+
+        /* Подсветка выбранного режима */
+.mode-btn {
+    transition: all 0.3s ease;
+    opacity: 0.7;
+}
+
+.mode-btn.active {
+    opacity: 1;
+    box-shadow: 0 0 15px currentColor;
+    transform: scale(1.02);
+}
+
+#modeAllBtn.active {
+    background: #3b82f6 !important;
+    box-shadow: 0 0 15px #3b82f6;
+}
+
+#modeGroupOnlyBtn.active {
+    background: #8b5cf6 !important;
+    box-shadow: 0 0 15px #8b5cf6;
+}
+
+/* Дополнительная подсветка текста текущего режима */
+#currentModeDisplay {
+    transition: all 0.3s ease;
+}
+
+#currentModeText {
+    transition: all 0.3s ease;
+}
         
     </style>
 </head>
