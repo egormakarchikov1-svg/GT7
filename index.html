@@ -2658,7 +2658,6 @@ function applySyncedCombo(data) {
     }
     
     // Обновляем РЕЖИМ ЗАЕЗДА
-        // Обновляем РЕЖИМ ЗАЕЗДА
     const newDisplayMode = data.display_mode || 'all';
     if (typeof updateVisibilityByDisplayMode === 'function') {
         updateVisibilityByDisplayMode(newDisplayMode);
@@ -2818,7 +2817,6 @@ function updateVisibilityByDisplayMode(displayMode) {
         if (carBlock) carBlock.classList.add('hidden-block');
         if (similarBlock) {
             similarBlock.classList.add('hidden-block');
-            similarBlock.style.cssText = '';  // ОЧИЩАЕМ старые стили
             similarBlock.style.setProperty('display', 'none', 'important');
         }
         if (categoryBlock) {
@@ -2836,18 +2834,54 @@ function updateVisibilityByDisplayMode(displayMode) {
         if (carBlock) carBlock.classList.remove('hidden-block');
         if (similarBlock) {
             similarBlock.classList.remove('hidden-block');
-            similarBlock.style.cssText = '';  // ОЧИЩАЕМ старые стили
             similarBlock.style.setProperty('display', 'block', 'important');
         }
         if (categoryBlock) {
             categoryBlock.classList.add('hidden-block');
-            categoryBlock.style.setProperty('display', 'none', 'important');
+            categoryBlock.style.setProperty('display', 'none', 'important');  // ← ДОБАВЬТЕ ЭТУ СТРОКУ
         }
         if (groupMsg) groupMsg.style.display = 'none';
         if (trackBlock) trackBlock.classList.remove('track-centered');
         if (paramsGrid) { 
             paramsGrid.style.display = 'grid'; 
             paramsGrid.style.justifyContent = 'normal'; 
+        }
+    }
+}
+    function setDisplayMode(mode) {
+    displayMode = mode;
+    localStorage.setItem('gt7_display_mode', mode);
+    
+    const allBtn = document.getElementById('modeAllBtn');
+    const groupOnlyBtn = document.getElementById('modeGroupOnlyBtn');
+    const modeText = document.getElementById('currentModeText');
+    const similarBlock = document.getElementById('similarContainer');
+    
+    if (mode === 'all') {
+        if (allBtn) allBtn.classList.add('active');
+        if (groupOnlyBtn) groupOnlyBtn.classList.remove('active');
+        if (modeText) {
+            modeText.innerHTML = 'ВЕСЬ СПИСОК МАШИН 🚗';
+            modeText.style.color = '#3b82f6';
+        }
+        updateVisibilityByDisplayMode('all');
+        // Показываем блок подбора авто
+        if (similarBlock) {
+            similarBlock.style.setProperty('display', 'block', 'important');
+            similarBlock.classList.remove('hidden-block');
+        }
+    } else {
+        if (groupOnlyBtn) groupOnlyBtn.classList.add('active');
+        if (allBtn) allBtn.classList.remove('active');
+        if (modeText) {
+            modeText.innerHTML = ' МАШИНЫ ГОНОЧНОГО КЛАССА GR 🏁';
+            modeText.style.color = '#8b5cf6';
+        }
+        updateVisibilityByDisplayMode('group_only');
+        // Скрываем блок подбора авто
+        if (similarBlock) {
+            similarBlock.style.setProperty('display', 'none', 'important');
+            similarBlock.classList.add('hidden-block');
         }
     }
 }
