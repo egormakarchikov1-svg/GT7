@@ -1039,11 +1039,157 @@
 #modeSelectorBlock {
     display: none !important;
 }
+
+        /* Стили для приветственного сообщения */
+.welcome-message {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.welcome-content {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    border-radius: 28px;
+    padding: 24px 20px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    border: 2px solid #ff4d4d;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.welcome-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+}
+
+.welcome-content h2 {
+    color: #ff4d4d;
+    font-size: 22px;
+    margin-bottom: 20px;
+}
+
+.welcome-content p {
+    color: #eee;
+    font-size: 14px;
+    margin-bottom: 16px;
+    text-align: left;
+}
+
+.welcome-modes {
+    margin: 20px 0;
+    text-align: left;
+}
+
+.welcome-mode {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+}
+
+.mode-icon {
+    font-size: 28px;
+    min-width: 44px;
+    text-align: center;
+}
+
+.welcome-mode div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.welcome-mode strong {
+    color: #ff4d4d;
+    font-size: 16px;
+}
+
+.welcome-mode small {
+    color: #22c55e;
+    font-size: 11px;
+}
+
+.welcome-mode span {
+    color: #aaa;
+    font-size: 12px;
+}
+
+.welcome-close-btn {
+    background: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 40px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 16px;
+    width: 100%;
+    transition: all 0.2s;
+}
+
+.welcome-close-btn:hover {
+    background: #e03a3a;
+    transform: scale(1.02);
+}
         
     </style>
 </head>
 <body>
 <div class="container">
+
+<div id="welcomeMessage" class="welcome-message" style="display: none;">
+        <div class="welcome-content">
+            <div class="welcome-icon">🏁</div>
+            <h2>Добро пожаловать в GT7 Random Race!</h2>
+            <p>🎮 <strong>Два режима игры:</strong></p>
+            <div class="welcome-modes">
+                <div class="welcome-mode">
+                    <span class="mode-icon">🎲</span>
+                    <div>
+                        <strong>Обычный режим</strong>
+                        <small>Синхронизация ВЫКЛ</small>
+                        <span>→ Нажмите "СЛУЧАЙНАЯ ГОНКА" и играйте!</span>
+                    </div>
+                </div>
+                <div class="welcome-mode">
+                    <span class="mode-icon">👑</span>
+                    <div>
+                        <strong>Режим синхронизации</strong>
+                        <small>Синхронизация ВКЛ</small>
+                        <span>→ Выберите администратора и следуйте его настройкам</span>
+                    </div>
+                </div>
+            </div>
+            <button id="closeWelcomeBtn" class="welcome-close-btn">СТАРТ</button>
+        </div>
+    </div>
+    
     <div id="adminModeBanner" style="display: none;"></div>
     
     <div class="admin-select" id="adminSelectBlock">
@@ -3134,8 +3280,22 @@ function init() {
 
     // Обновляем видимость блоков в зависимости от синхронизации
     updateModeSelectorVisibility();
-}
 
+    const hasSeenWelcome = localStorage.getItem('gt7_welcome_seen');
+    if (!hasSeenWelcome) {
+        const welcomeMsg = document.getElementById('welcomeMessage');
+        if (welcomeMsg) {
+            welcomeMsg.style.display = 'flex';
+            const closeBtn = document.getElementById('closeWelcomeBtn');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    welcomeMsg.style.display = 'none';
+                    localStorage.setItem('gt7_welcome_seen', 'true');
+                });
+            }
+        }
+    }
+}
 // Запуск приложения
 init();
 </script>
