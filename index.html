@@ -2429,10 +2429,22 @@ function startAutoRefresh() {
                     window.isLoadingCombo = true;
                     applySyncedCombo(synced);
                     showRefreshIndicator();
-                    setTimeout(() => { window.isLoadingCombo = false; }, 3000);
+                    setTimeout(() => { 
+                        window.isLoadingCombo = false; 
+                    }, 5000);  // ← УВЕЛИЧЕНО ДО 5 СЕКУНД
                 } else {
                     console.log('📢 Данные НЕ ИЗМЕНИЛИСЬ, подсветки НЕТ');
                 }
+            }
+        } else {
+            if (!userSyncEnabled) {
+                // console.log('⏸️ Автообновление: синхронизация выключена');
+            } else if (!currentAdminId) {
+                // console.log('⏸️ Автообновление: админ не выбран');
+            } else if (window.isLoadingCombo) {
+                console.log('⏸️ Автообновление: идёт загрузка комбинации');
+            } else if (isFirstLoad) {
+                console.log('⏸️ Автообновление: первая загрузка, ждём');
             }
         }
     }, 5000);
@@ -2781,6 +2793,7 @@ function toggleSyncMode() {
         
         // Если админ уже выбран - загружаем гонку
         isFirstLoad = true;
+        window.isLoadingCombo = true;
         if (currentAdminId) {
             loadRace();
         }
@@ -3412,7 +3425,12 @@ function init() {
     updateModeSelectorVisibility();
     
     if (currentAdminId) {
+        window.isLoadingCombo = true;
+        isFirstLoad = true;
         loadRace();
+        setTimeout(() => {
+            window.isLoadingCombo = false;
+        }, 5000);
     }
 });
     
