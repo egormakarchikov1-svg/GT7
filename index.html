@@ -2974,6 +2974,29 @@ function updateModeSelectorVisibility() {
             document.getElementById('timeValue').innerHTML = '—';
             document.getElementById('tiresValue').innerHTML = '—';
             document.getElementById('fuelValue').innerHTML = '—';
+            
+            // Очищаем иконки
+            const carIcon = document.getElementById('carIcon');
+            if (carIcon) {
+                carIcon.src = '';
+                carIcon.style.display = 'none';
+            }
+            const carIconFallback = document.getElementById('carIconFallback');
+            if (carIconFallback) {
+                carIconFallback.style.display = 'none';
+                carIconFallback.innerHTML = '';
+            }
+            
+            const trackIcon = document.getElementById('trackIcon');
+            if (trackIcon) {
+                trackIcon.src = '';
+                trackIcon.style.display = 'none';
+            }
+            const trackIconFallback = document.getElementById('trackIconFallback');
+            if (trackIconFallback) {
+                trackIconFallback.style.display = 'none';
+                trackIconFallback.innerHTML = '';
+            }
         }
     } else {
         // ========== СИНХРОНИЗАЦИЯ ВЫКЛЮЧЕНА ==========
