@@ -2890,6 +2890,19 @@ async function loadAdmins() {
     }
 }
 
+   // Обновление состояния кнопки случайной гонки
+function updateRandomButtonState() {
+    const randomBtn = document.getElementById('randomBtn');
+    if (randomBtn) {
+        if (userSyncEnabled) {
+            randomBtn.style.display = 'none';
+        } else {
+            randomBtn.style.display = 'inline-flex';
+        }
+    }
+}
+
+// Обновление видимости блоков
 function updateModeSelectorVisibility() {
     const modeSelectorBlock = document.getElementById('modeSelectorBlock');
     const adminSelectBlock = document.getElementById('adminSelectBlock');
@@ -2918,8 +2931,6 @@ function updateModeSelectorVisibility() {
             document.getElementById('tiresValue').innerHTML = '—';
             document.getElementById('fuelValue').innerHTML = '—';
         }
-        // НЕТ else, НЕТ loadRace() - просто закрываем блок if
-        
     } else {
         // ========== СИНХРОНИЗАЦИЯ ВЫКЛЮЧЕНА ==========
         if (adminSelectBlock) adminSelectBlock.style.setProperty('display', 'none', 'important');
