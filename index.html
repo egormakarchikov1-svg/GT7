@@ -1509,13 +1509,6 @@ if (hasSeenWelcome) {
 document.getElementById('closeWelcomeBtn').addEventListener('click', () => {
     localStorage.setItem('gt7_welcome_seen', 'true');
 });
-// Проверяем, видел ли пользователь приветствие
-const hasSeenWelcome = localStorage.getItem('gt7_welcome_seen');
-if (hasSeenWelcome) {
-    showSetupScreen();
-} else {
-    showWelcomeScreen();
-}
 
 // Сохраняем флаг после СТАРТ
 document.getElementById('closeWelcomeBtn').addEventListener('click', () => {
