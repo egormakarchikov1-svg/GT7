@@ -2696,18 +2696,19 @@ async function loadRace() {
     
     const synced = await loadSyncedCombo();
     
-            if (syncedModeActive && synced) {
+                if (syncedModeActive && synced) {
         console.log('🎯 ИСПОЛЬЗУЕМ АДМИНСКУЮ КОМБИНАЦИЮ');
         const banner = document.getElementById('adminModeBanner');
         if (banner) {
             banner.style.display = 'block';
         }
         window.isLoadingCombo = true;
+        isFirstLoad = true;  // ← ДОБАВЬТЕ ЭТУ СТРОКУ
         applySyncedCombo(synced);
         setTimeout(() => { 
             window.isLoadingCombo = false;
             isFirstLoad = false;
-        }, 3000);
+        }, 5000);  // ← УВЕЛИЧЬТЕ ДО 5 СЕКУНД
         return;
     }
     
