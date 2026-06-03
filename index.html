@@ -2743,14 +2743,14 @@ function updateVisibilityByDisplayMode(displayMode) {
     const similarBlock = document.getElementById('similarContainer');
     const groupMsg = document.getElementById('groupModeMessage');
     const trackBlock = document.getElementById('trackBlock');
-    const categoryBlock = document.getElementById('categoryContainer'); // ← ДОБАВИТЬ
+    const categoryBlock = document.getElementById('categoryContainer');
     const paramsGrid = document.querySelector('.params-grid');
     
     if (displayMode === 'group_only') {
         // ГРУППОВОЙ РЕЖИМ: скрываем машину и похожие авто, показываем категорию
         if (carBlock) carBlock.classList.add('hidden-block');
-        if (similarBlock) similarBlock.classList.add('hidden-block');
-        if (categoryBlock) categoryBlock.classList.remove('hidden-block'); // ← ПОКАЗАТЬ
+        if (similarBlock) similarBlock.classList.add('hidden-block');  // ← СКРЫВАЕМ
+        if (categoryBlock) categoryBlock.classList.remove('hidden-block');
         if (groupMsg) groupMsg.style.display = 'block';
         if (trackBlock) trackBlock.classList.add('track-centered');
         if (paramsGrid) { 
@@ -2760,8 +2760,8 @@ function updateVisibilityByDisplayMode(displayMode) {
     } else {
         // ОБЫЧНЫЙ РЕЖИМ: показываем всё, скрываем категорию
         if (carBlock) carBlock.classList.remove('hidden-block');
-        if (similarBlock) similarBlock.classList.remove('hidden-block');
-        if (categoryBlock) categoryBlock.classList.add('hidden-block'); // ← СКРЫТЬ
+        if (similarBlock) similarBlock.classList.remove('hidden-block');  // ← ПОКАЗЫВАЕМ
+        if (categoryBlock) categoryBlock.classList.add('hidden-block');
         if (groupMsg) groupMsg.style.display = 'none';
         if (trackBlock) trackBlock.classList.remove('track-centered');
         if (paramsGrid) { 
