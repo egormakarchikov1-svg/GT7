@@ -3347,7 +3347,7 @@ function init() {
 
     updateRandomButtonState();
     
-    // Обработчик выбора администратора для синхронизации
+   // Обработчик выбора администратора для синхронизации
    document.getElementById('adminSelect').addEventListener('change', (e) => { 
     const newAdminId = e.target.value;
     const oldAdminId = currentAdminId;
@@ -3369,6 +3369,11 @@ function init() {
     }
     
     updateModeSelectorVisibility();
+    
+    // ← ДОБАВЬТЕ ЭТУ СТРОКУ
+    if (currentAdminId) {
+        loadRace();
+    }
 });
     
     // Глобальные функции
