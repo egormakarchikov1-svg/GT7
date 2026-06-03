@@ -3032,16 +3032,16 @@ function updateModeSelectorVisibility() {
         if (racesContainer) racesContainer.style.setProperty('display', 'block', 'important');
         if (modeSelectorBlock) modeSelectorBlock.style.setProperty('display', 'none', 'important');
         
-        // Блок подбора авто - показываем только в обычном режиме
-        if (similarContainer) {
-            if (displayMode === 'group_only') {
-                similarContainer.style.setProperty('display', 'none', 'important');
-                similarContainer.classList.add('hidden-block');
-            } else {
-                similarContainer.style.setProperty('display', 'block', 'important');
-                similarContainer.classList.remove('hidden-block');
-            }
-        }
+        // НЕ ПОКАЗЫВАЕМ БЛОК ПОДБОРА АВТО ЗДЕСЬ - пусть applySyncedCombo решает
+        // if (similarContainer) {
+        //     if (displayMode === 'group_only') {
+        //         similarContainer.style.setProperty('display', 'none', 'important');
+        //         similarContainer.classList.add('hidden-block');
+        //     } else {
+        //         similarContainer.style.setProperty('display', 'block', 'important');
+        //         similarContainer.classList.remove('hidden-block');
+        //     }
+        // }
         
         if (!currentAdminId) {
             document.getElementById('carValue').innerHTML = '—';
