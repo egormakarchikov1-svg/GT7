@@ -2321,6 +2321,13 @@ function generateLocalRace() {
     document.getElementById('categoryContainer').style.setProperty('display', 'block', 'important');
     document.getElementById('settingsContainer').style.setProperty('display', 'block', 'important');
     document.getElementById('modeSelectorBlock').style.setProperty('display', 'block', 'important');
+
+    const groupMsg = document.getElementById('groupModeMessage');
+    if (displayMode === 'group_only') {
+        groupMsg.style.setProperty('display', 'block', 'important');
+    } else {
+        groupMsg.style.setProperty('display', 'none', 'important');
+    }
     
     // Блок подбора авто показываем ТОЛЬКО в обычном режиме
     if (displayMode !== 'group_only') {
@@ -2921,6 +2928,9 @@ function updateModeSelectorVisibility() {
         if (adminSelectBlock) adminSelectBlock.style.setProperty('display', 'none', 'important');
         if (racesContainer) racesContainer.style.setProperty('display', 'none', 'important');
         // modeSelectorBlock, carsTrackContainer и другие уже скрыты через allBlocks
+
+        const groupMsg = document.getElementById('groupModeMessage');
+        if (groupMsg) groupMsg.style.setProperty('display', 'none', 'important');
     }
 
     updateRandomButtonState();
