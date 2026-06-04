@@ -3396,11 +3396,11 @@ async function applyRaceToGame(raceId) {
         
         if (race) {
             applyRaceParameters(race);
-            showStatus('✅ Параметры гонки загружены!', 'success');
+            showStatusMessage('✅ Параметры гонки загружены!', 'success');  // ← ИСПРАВЛЕНО
         }
     } catch(e) {
         console.error('Ошибка загрузки гонки:', e);
-        showStatus('❌ Ошибка загрузки параметров гонки', 'error');
+        showStatusMessage('❌ Ошибка загрузки параметров гонки', 'error');  // ← ИСПРАВЛЕНО
     }
 }
 
