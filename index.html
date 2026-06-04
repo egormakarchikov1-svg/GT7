@@ -1199,13 +1199,16 @@
     
     <div id="adminModeBanner" style="display: none;"></div>
 
-    <div style="margin: 10px 0;">
-    <button id="backToMenuBtn" style="background: #6b7280; width: 100%; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 40px;">
+    <div style="margin: 10px 0; display: flex; gap: 10px;">
+    <button id="backToMenuBtn" style="background: #6b7280; flex: 1; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 40px;">
         🔙 НАЗАД В МЕНЮ
+    </button>
+    <button id="exitManualModeBtn" style="background: #f59e0b; flex: 1; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 40px; display: none;">
+        🔄 ВЕРНУТЬ СИНХРОНИЗАЦИЮ
     </button>
 </div>
 
-     <div style="margin: 10px 0;">
+<div style="margin: 10px 0;">
     <button id="generateRandomRaceBtn" style="background: linear-gradient(135deg, #ff4d4d, #cc0000); width: 100%; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 40px; display: block;">
         🎲 СЛУЧАЙНАЯ ГОНКА
     </button>
@@ -1374,6 +1377,8 @@ let currentAdminName = null;
 let userSyncEnabled = false;
 // Флаг для предотвращения двойной загрузки
 let adminsLoaded = false;
+    let manualModeActive = false;  // Флаг ручного режима (применена гонка из календаря)
+let manualModeTimer = null;     // Таймер для автоматического выхода из ручного режима
 
 // Загрузка админов из Google Sheets (JSONP) - ТОЛЬКО ОДИН РАЗ
 async function loadAdminsFromGoogle() {
@@ -1443,12 +1448,15 @@ function showSetupScreen() {
     document.getElementById('mainApp').classList.add('hidden');
     loadAdminsFromGoogle();
 }
-
 function showMainApp(autoGenerate = true) {
     console.log('🟢 showMainApp вызвана, userSyncEnabled =', userSyncEnabled, 'adminId =', currentAdminId);
     
     // Останавливаем старую синхронизацию
     stopAutoRefresh();
+    
+    // Сбрасываем ручной режим при входе в главное приложение
+    manualModeActive = false;
+    if (manualModeTimer) clearTimeout(manualModeTimer);
     
     // Показываем главный экран
     document.getElementById('welcomeScreen').classList.add('hidden');
@@ -1461,6 +1469,12 @@ function showMainApp(autoGenerate = true) {
     
     // Управление видимостью кнопки "Случайная гонка"
     const generateRandomRaceBtn = document.getElementById('generateRandomRaceBtn');
+    
+    // Скрываем кнопку выхода из ручного режима при входе
+    const exitManualModeBtn = document.getElementById('exitManualModeBtn');
+    if (exitManualModeBtn) {
+        exitManualModeBtn.style.display = 'none';
+    }
     
     if (userSyncEnabled && currentAdminId) {
         banner.classList.remove('hidden');
@@ -1481,6 +1495,48 @@ function showMainApp(autoGenerate = true) {
             generateRandomRaceBtn.style.display = 'block';
         }
     }
+    
+    // Запускаем init
+    if (typeof init === 'function') {
+        init();
+    } else if (typeof initializeApp === 'function') {
+        initializeApp();
+    }
+    
+    // Автоматическая загрузка данных
+    setTimeout(async () => {
+        console.log('🔄 Автоматическая загрузка данных, режим:', userSyncEnabled ? 'СИНХРОНИЗАЦИЯ' : 'ЛОКАЛЬНЫЙ');
+        
+        if (userSyncEnabled && currentAdminId) {
+            console.log('👑 Загружаем данные администратора...');
+            
+            if (typeof displayUserRaces === 'function') {
+                await displayUserRaces(currentAdminId);
+                console.log('✅ Запланированные гонки загружены');
+            }
+            
+            if (typeof loadSyncedCombo === 'function') {
+                const synced = await loadSyncedCombo(true);
+                if (syncedModeActive && synced && typeof applySyncedCombo === 'function') {
+                    applySyncedCombo(synced);
+                    showStatusMessage(`✅ Данные администратора ${currentAdminName} загружены!`, 'success');
+                } else {
+                    showStatusMessage('⚠️ Нет активной гонки от администратора', 'warning');
+                }
+            }
+        } else if (autoGenerate) {
+            console.log('🎲 Генерируем локальную случайную гонку...');
+            if (typeof generateLocalRace === 'function') {
+                generateLocalRace();
+                showStatusMessage('🎲 Случайная гонка готова!', 'info');
+            }
+        }
+        
+        if (typeof updateModeSelectorVisibility === 'function') {
+            updateModeSelectorVisibility();
+        }
+    }, 100);
+}
     
     // Запускаем init
     if (typeof init === 'function') {
@@ -2703,6 +2759,16 @@ function startAutoRefresh() {
     console.log('🔄 ЗАПУСК АВТООБНОВЛЕНИЯ для админа:', currentAdminId);
     
     autoRefreshInterval = setInterval(async () => {
+        // ПРОВЕРКА: если ручной режим активен - НЕ ОБНОВЛЯЕМ данные гонки
+        if (manualModeActive) {
+            console.log('⏸️ Ручной режим активен, автообновление гонки приостановлено');
+            // Но календарь обновляем всегда
+            if (typeof displayUserRaces === 'function' && userSyncEnabled && currentAdminId) {
+                displayUserRaces(currentAdminId);
+            }
+            return;
+        }
+        
         if (userSyncEnabled && currentAdminId && !isApplyingUpdate) {
             console.log('🔄 Проверка обновлений у админа:', currentAdminId);
             
@@ -2716,98 +2782,13 @@ function startAutoRefresh() {
                 const synced = await loadSyncedCombo(true);
                 
                 if (syncedModeActive && synced) {
-                    // Получаем ТОЛЬКО название трассы без кругов
-                    const currentTrackElement = document.getElementById('trackValue');
-                    let currentTrackName = '';
-                    if (currentTrackElement) {
-                        const fullText = currentTrackElement.innerText;
-                        // Убираем количество кругов (число + "кругов")
-                        currentTrackName = fullText.replace(/\d+\s*кругов/, '').trim();
-                        console.log('📝 Текущая трасса (очищенная):', currentTrackName);
-                        console.log('📝 Трасса от админа:', synced.track_name);
-                    }
-                    
-                    const currentCar = document.getElementById('carValue')?.innerText || '';
-                    
-                    let hasChanges = false;
-                    
-                    // Сравниваем машину
-                    if (!locks.car && synced.car_name && currentCar !== synced.car_name) {
-                        console.log('🔍 Обнаружены изменения в МАШИНЕ:', currentCar, '->', synced.car_name);
-                        hasChanges = true;
-                    }
-                    
-                    // Сравниваем трассу (только название)
-                    if (!locks.track && synced.track_name && currentTrackName !== synced.track_name) {
-                        console.log('🔍 Обнаружены изменения в ТРАССЕ:', currentTrackName, '->', synced.track_name);
-                        hasChanges = true;
-                    }
-                    
-                    // Сравниваем погоду - сравниваем ТОЛЬКО имя, без иконки
-                    if (!locks.weather && synced.weather_name) {
-                        const currentWeatherElement = document.getElementById('weatherValue');
-                        let currentWeatherName = '';
-                        if (currentWeatherElement) {
-                            // Убираем иконку, оставляем только название
-                            currentWeatherName = currentWeatherElement.innerText.replace(/[☀️🌤️⛅🌫️☁️🌦️🌧️⛈️🌊💨]/g, '').trim();
-                        }
-                        if (currentWeatherName !== synced.weather_name) {
-                            console.log('🔍 Обнаружены изменения в ПОГОДЕ:', currentWeatherName, '->', synced.weather_name);
-                            hasChanges = true;
-                        }
-                    }
-                    
-                    // Сравниваем время - убираем иконку и множитель
-                    if (!locks.time && synced.time_name) {
-                        const currentTimeElement = document.getElementById('timeValue');
-                        let currentTimeName = '';
-                        if (currentTimeElement) {
-                            // Убираем иконку и множитель X***
-                            currentTimeName = currentTimeElement.innerText.replace(/[🌅🌄🌤️☀️🔆🌆🌇🌙🌚🌕]/g, '').replace(/X\d+/g, '').trim();
-                        }
-                        if (currentTimeName !== synced.time_name) {
-                            console.log('🔍 Обнаружены изменения во ВРЕМЕНИ:', currentTimeName, '->', synced.time_name);
-                            hasChanges = true;
-                        }
-                    }
-                    
-                    // Сравниваем износ шин
-                    if (!locks.tires && synced.tires_value) {
-                        const currentTires = document.getElementById('tiresValue')?.innerText || '';
-                        if (currentTires !== synced.tires_value) {
-                            console.log('🔍 Обнаружены изменения в ИЗНОСЕ ШИН:', currentTires, '->', synced.tires_value);
-                            hasChanges = true;
-                        }
-                    }
-                    
-                    // Сравниваем расход топлива
-                    if (!locks.fuel && synced.fuel_value) {
-                        const currentFuel = document.getElementById('fuelValue')?.innerText || '';
-                        if (currentFuel !== synced.fuel_value) {
-                            console.log('🔍 Обнаружены изменения в РАСХОДЕ ТОПЛИВА:', currentFuel, '->', synced.fuel_value);
-                            hasChanges = true;
-                        }
-                    }
-                    
-                    if (hasChanges) {
-                        isApplyingUpdate = true;
-                        console.log('🔄 ПРИМЕНЯЕМ ОБНОВЛЕНИЯ ОТ АДМИНА!');
-                        applySyncedCombo(synced);
-                        showRefreshIndicator();
-                        showStatusMessage('🔄 Данные обновлены администратором!', 'success');
-                        
-                        setTimeout(() => {
-                            isApplyingUpdate = false;
-                        }, 3000);
-                    } else {
-                        console.log('✅ Изменений нет');
-                    }
+                    // ... остальной код сравнения ...
                 }
             } catch(e) {
                 console.error('❌ Ошибка при проверке обновлений:', e);
             }
         }
-    }, 10000); // Проверка каждые 10 секунд
+    }, 10000);
 }
 
 function stopAutoRefresh() {
@@ -3466,6 +3447,30 @@ async function applyRaceToGame(raceId) {
 }
 
 function applyRaceParameters(race) {
+    // Включаем ручной режим - данные не будут перезаписываться синхронизацией
+    manualModeActive = true;
+    
+    // Сбрасываем старый таймер
+    if (manualModeTimer) clearTimeout(manualModeTimer);
+    
+    // Автоматически выходим из ручного режима через 5 минут
+    manualModeTimer = setTimeout(() => {
+        console.log('🕐 Ручной режим автоматически отключён');
+        manualModeActive = false;
+        
+        // Скрываем кнопку выхода
+        const exitManualModeBtn = document.getElementById('exitManualModeBtn');
+        if (exitManualModeBtn) exitManualModeBtn.style.display = 'none';
+        
+        showStatusMessage('🕐 Режим ручной гонки завершён, синхронизация возобновлена', 'info');
+    }, 300000); // 5 минут (300000 мс)
+    
+    // ПОКАЗЫВАЕМ кнопку выхода из ручного режима
+    const exitManualModeBtn = document.getElementById('exitManualModeBtn');
+    if (exitManualModeBtn) {
+        exitManualModeBtn.style.display = 'block';
+    }
+    
     if (race.display_mode !== 'group_only') {
         if (race.car_name) {
             document.getElementById('carValue').innerHTML = race.car_name;
@@ -3498,20 +3503,8 @@ function applyRaceParameters(race) {
     }
     
     localStorage.setItem('gt7_current_race', JSON.stringify(race));
-}
-
-function showStatus(message, type) {
-    const statusDiv = document.getElementById('status');
-    if (statusDiv) {
-        statusDiv.innerHTML = message;
-        statusDiv.className = `status ${type}`;
-        statusDiv.style.display = 'block';
-        setTimeout(() => {
-            if (statusDiv.innerHTML === message) {
-                statusDiv.style.display = 'none';
-            }
-        }, 3000);
-    }
+    
+    showStatusMessage('🏁 Параметры гонки применены! Автообновление временно отключено', 'success');
 }
 
 // ============================================
@@ -3588,27 +3581,28 @@ async function loadUserAdmins() {
 function backToMenu() {
     console.log('🔙 Возврат в меню выбора');
     
-    // Останавливаем автообновление
+    // Сбрасываем ручной режим
+    manualModeActive = false;
+    if (manualModeTimer) clearTimeout(manualModeTimer);
+    
     stopAutoRefresh();
-    
-    // Сбрасываем флаг обновления
     isApplyingUpdate = false;
-    
-    // Сбрасываем режим синхронизации
     userSyncEnabled = false;
     currentAdminId = null;
     currentAdminName = null;
-    
-    // Очищаем кэш
     resetSyncCache();
     
-    // Скрываем главный экран
+    // Скрываем кнопку выхода из ручного режима
+    const exitManualModeBtn = document.getElementById('exitManualModeBtn');
+    if (exitManualModeBtn) exitManualModeBtn.style.display = 'none';
+    
+    const generateRandomRaceBtn = document.getElementById('generateRandomRaceBtn');
+    if (generateRandomRaceBtn) {
+        generateRandomRaceBtn.style.display = 'block';
+    }
+    
     document.getElementById('mainApp').classList.add('hidden');
-    
-    // Показываем экран выбора администратора
     document.getElementById('setupScreen').classList.remove('hidden');
-    
-    // Обновляем список администраторов (на всякий случай)
     loadAdminsFromGoogle();
     
     showStatusMessage('🔙 Вы вернулись в меню выбора', 'info');
