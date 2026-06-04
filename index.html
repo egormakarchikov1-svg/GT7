@@ -3555,10 +3555,17 @@ function init() {
     });
     
     // Обработчики сворачивания блоков
-    document.getElementById('settingsHeader').addEventListener('click', toggleSettings);
-    document.getElementById('similarHeader').addEventListener('click', toggleSimilar);
-    document.getElementById('carsTrackHeader').addEventListener('click', toggleCarsTrack);
-    document.getElementById('categoryHeader').addEventListener('click', toggleCategory);
+    const settingsHeader = document.getElementById('settingsHeader');
+    if (settingsHeader) settingsHeader.addEventListener('click', toggleSettings);
+    
+    const similarHeader = document.getElementById('similarHeader');
+    if (similarHeader) similarHeader.addEventListener('click', toggleSimilar);
+    
+    const carsTrackHeader = document.getElementById('carsTrackHeader');
+    if (carsTrackHeader) carsTrackHeader.addEventListener('click', toggleCarsTrack);
+    
+    const categoryHeader = document.getElementById('categoryHeader');
+    if (categoryHeader) categoryHeader.addEventListener('click', toggleCategory);
     
     // Добавляем обработчик для календаря гонок
     const racesHeader = document.getElementById('racesHeader');
@@ -3566,83 +3573,24 @@ function init() {
         racesHeader.addEventListener('click', toggleRacesCalendar);
     }
     
-    // Кнопки управления
-    document.getElementById('randomBtn').addEventListener('click', () => loadRace());
+    // Кнопки управления - КОММЕНТИРУЕМ ТЕ, КОТОРЫХ НЕТ
+    // document.getElementById('randomBtn').addEventListener('click', () => loadRace());
     document.getElementById('refreshSimilarBtn').addEventListener('click', refreshSimilarCars);
     document.getElementById('resetCarsBtn').addEventListener('click', resetCarsHistory);
-    document.getElementById('shareBtn').addEventListener('click', shareResult);
-    document.getElementById('syncToggleBtn').addEventListener('click', toggleSyncMode);
+    // document.getElementById('shareBtn').addEventListener('click', shareResult);
+    // document.getElementById('syncToggleBtn').addEventListener('click', toggleSyncMode);
     document.getElementById('modeAllBtn').addEventListener('click', () => setDisplayMode('all'));
     document.getElementById('modeGroupOnlyBtn').addEventListener('click', () => setDisplayMode('group_only'));
 
     updateRandomButtonState();
-    
-   // Обработчик выбора администратора для синхронизации
-      document.getElementById('adminSelect').addEventListener('change', (e) => { 
-    const newAdminId = e.target.value;
-    const oldAdminId = currentAdminId;
-    currentAdminId = newAdminId; 
-    console.log('👑 Выбран админ для синхронизации:', currentAdminId);
-    
-    if (newAdminId) {
-        selectAdmin(newAdminId);
-    } else {
-        selectAdmin(null);
-        // Сброс режима и очистка данных при снятии админа
-        displayMode = 'all';
-        localStorage.setItem('gt7_display_mode', 'all');
-        
-        // Очищаем все поля
-        document.getElementById('carValue').innerHTML = '—';
-        document.getElementById('trackValue').innerHTML = '—';
-        document.getElementById('categoryValue').innerHTML = '—';
-        document.getElementById('weatherValue').innerHTML = '—';
-        document.getElementById('timeValue').innerHTML = '—';
-        document.getElementById('tiresValue').innerHTML = '—';
-        document.getElementById('fuelValue').innerHTML = '—';
-        
-        // Очищаем иконки
-        const carIcon = document.getElementById('carIcon');
-        if (carIcon) carIcon.style.display = 'none';
-        const trackIcon = document.getElementById('trackIcon');
-        if (trackIcon) trackIcon.style.display = 'none';
-        
-        // Сбрасываем подсветку кнопок
-        const allBtn = document.getElementById('modeAllBtn');
-        const groupOnlyBtn = document.getElementById('modeGroupOnlyBtn');
-        if (allBtn) allBtn.classList.remove('active');
-        if (groupOnlyBtn) groupOnlyBtn.classList.remove('active');
-    }
-    
-      if (oldAdminId !== newAdminId) {
-        stopAutoRefresh();
-        if (userSyncEnabled && currentAdminId) {
-            startAutoRefresh();
-        }
-    }
-    
-    updateModeSelectorVisibility();
-    
-    if (currentAdminId) {  // ← was 'f', исправлено на 'if'
-        // Не вызываем loadRace вручную, автообновление само подхватит
-        window.isLoadingCombo = false;
-        isFirstLoad = false;
-    }
-});
     
     // Глобальные функции
     window.selectCar = selectCar;
     
     // Обновляем интерфейс
     updateSyncBtn();
-     // loadAdmins();  // ← УДАЛИТЬ ЭТУ СТРОКУ
     setDisplayMode(displayMode);
     updateModeSelectorVisibility();
-    
-    // Запускаем автообновление если включена синхронизация и выбран админ
-    if (userSyncEnabled && currentAdminId) {
-
-    }
     
     // Восстановление админа для просмотра гонок
     const savedAdminId = localStorage.getItem('gt7_selected_admin_id');
@@ -3692,6 +3640,7 @@ function init() {
         }
     }
 }
+
 // Запуск приложения
 init();
 </script>
