@@ -2428,16 +2428,13 @@ function displayTrackIcon(iconUrl) {
     }
 }
 
-    
 function findCarByName(name) { return carsDatabase.find(c => c.name === name) || null; }
 function findTrackByName(name) { return tracksData.find(t => t.name === name) || null; }
 function findWeatherByName(name) { return weathers.find(w => w.name === name) || null; }
 function findTimeByName(name) { return times.find(t => t.name === name) || null; }
 
-
-
 // ============================================
-// СХОЖИЕ АВТО (твои функции)
+// СХОЖИЕ АВТО
 // ============================================
 function calculateSimilarity(car1, car2) {
     const ratingDiff = Math.abs(car1.rating - car2.rating) / 1000;
@@ -2525,7 +2522,6 @@ function addToShownCars(name) { if (!shownCars.includes(name)) { shownCars.push(
 function getRandomCarWithoutRepeat() {
     let avail = carsDatabase.filter(c => !shownCars.includes(c.name));
     
-    // ✅ ДОБАВЬ ФИЛЬТРАЦИЮ ПО РЕЖИМУ
     if (displayMode === 'group_only') {
         avail = avail.filter(car => car.category && car.category !== '');
     }
@@ -2560,13 +2556,9 @@ function updateFuel() { if (!locks.fuel) document.getElementById('fuelValue').in
 function updateCategory() { if (!locks.category) { const c = getRandomItem(categories); document.getElementById('categoryValue').innerHTML = `${c.icon} ${c.name} (${c.description})`; } }
 
 function generateLocalRace() {
-    // Показываем основные блоки
     document.getElementById('carsTrackContainer').style.setProperty('display', 'block', 'important');
     document.getElementById('settingsContainer').style.setProperty('display', 'block', 'important');
     document.getElementById('modeSelectorBlock').style.setProperty('display', 'block', 'important');
-    
-    // НЕ показываем categoryContainer здесь - пусть updateVisibilityByDisplayMode решает
-    // document.getElementById('categoryContainer').style.setProperty('display', 'block', 'important'); ← УБРАТЬ
 
     const groupMsg = document.getElementById('groupModeMessage');
     if (displayMode === 'group_only') {
@@ -2575,7 +2567,6 @@ function generateLocalRace() {
         groupMsg.style.setProperty('display', 'none', 'important');
     }
     
-    // Блок подбора авто показываем ТОЛЬКО в обычном режиме
     if (displayMode !== 'group_only') {
         document.getElementById('similarContainer').style.setProperty('display', 'block', 'important');
         document.getElementById('similarContainer').classList.remove('hidden-block');
@@ -2593,14 +2584,13 @@ function generateLocalRace() {
     updateFuel(); 
     updateCategory();
 }
+
 // ============================================
-// СИНХРОНИЗАЦИЯ С GOOGLE SHEETS - ИСПРАВЛЕНА
+// СИНХРОНИЗАЦИЯ С GOOGLE SHEETS
 // ============================================
 
-// Переменная для интервала автообновления
 let autoRefreshInterval = null;
 
-// Функция для показа индикатора обновления
 function showRefreshIndicator() {
     const banner = document.getElementById('adminModeBanner');
     if (banner) {
@@ -2634,28 +2624,25 @@ function startAutoRefresh() {
                 });
                 
                 if (currentHash !== lastSyncedData) {
-                    console.log('🔄 ДАННЫЕ РЕАЛЬНО ИЗМЕНИЛИСЬ! Обновляем...');
+                    console.log('🔄 ДАННЫЕ ИЗМЕНИЛИСЬ! Обновляем...');
                     lastSyncedData = currentHash;
                     applySyncedCombo(synced);
                     showRefreshIndicator();
-                } else {
-                    console.log('📢 Данные НЕ ИЗМЕНИЛИСЬ, подсветки НЕТ');
                 }
             }
         }
     }, 5000);
 }
 
-// Функция остановки автообновления
 function stopAutoRefresh() {
     if (autoRefreshInterval) {
         clearInterval(autoRefreshInterval);
         autoRefreshInterval = null;
     }
 }
-// Основная функция загрузки синхронизированной комбинации
+
 async function loadSyncedCombo(forceRefresh = false) {
-    console.log('🔍 loadSyncedCombo вызвана, currentAdminId =', currentAdminId, 'forceRefresh:', forceRefresh);
+    console.log('🔍 loadSyncedCombo вызвана, currentAdminId =', currentAdminId);
     
     if (!userSyncEnabled || !currentAdminId) {
         console.log('❌ Синхронизация выключена или админ не выбран');
@@ -2669,16 +2656,14 @@ async function loadSyncedCombo(forceRefresh = false) {
         const callbackName = 'jsonp_combo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         const timestamp = Date.now();
         const url = `${APPS_SCRIPT_URL}?action=getCurrentCombo&adminId=${encodeURIComponent(currentAdminId)}&callback=${callbackName}&_=${timestamp}&force=${forceRefresh ? '1' : '0'}`;
-        console.log('📡 JSONP Запрос:', url);
         
         const timeout = setTimeout(() => {
             if (window[callbackName]) {
                 delete window[callbackName];
                 if (script && script.parentNode) document.body.removeChild(script);
-                console.log('❌ Таймаут JSONP запроса');
-                syncedModeActive = false;
-                resolve(null);
             }
+            syncedModeActive = false;
+            resolve(null);
         }, 10000);
         
         window[callbackName] = function(data) {
@@ -2686,19 +2671,14 @@ async function loadSyncedCombo(forceRefresh = false) {
             delete window[callbackName];
             if (script && script.parentNode) document.body.removeChild(script);
             
-            console.log('📊 Данные получены, active =', data?.active, 'timestamp:', data?.timestamp);
-            
             if (data && (data.active === 'TRUE' || data.active === true)) {
                 console.log('✅ Админская комбинация АКТИВНА!');
                 syncedModeActive = true;
                 syncedComboData = data;
                 const banner = document.getElementById('adminModeBanner');
-                if (banner) {
-                    banner.style.display = 'block';
-                }
+                if (banner) banner.style.display = 'block';
                 resolve(data);
             } else {
-                console.log('❌ active !== TRUE, комбинация не активна');
                 syncedModeActive = false;
                 syncedComboData = null;
                 const banner = document.getElementById('adminModeBanner');
@@ -2711,11 +2691,7 @@ async function loadSyncedCombo(forceRefresh = false) {
         script.src = url;
         script.onerror = function() {
             clearTimeout(timeout);
-            if (window[callbackName]) {
-                delete window[callbackName];
-                if (script && script.parentNode) document.body.removeChild(script);
-            }
-            console.error('❌ Ошибка JSONP запроса');
+            if (window[callbackName]) delete window[callbackName];
             syncedModeActive = false;
             resolve(null);
         };
@@ -2723,48 +2699,23 @@ async function loadSyncedCombo(forceRefresh = false) {
     });
 }
 
-// Функция применения синхронизированных данных
 function applySyncedCombo(data) {
     if (!data) return;
     
-    // СРАЗУ СКРЫВАЕМ БЛОК ПОДБОРА АВТО (чтобы не мелькал)
     const similarBlockFirst = document.getElementById('similarContainer');
     if (similarBlockFirst) {
         similarBlockFirst.style.setProperty('display', 'none', 'important');
         similarBlockFirst.classList.add('hidden-block');
     }
     
-    // ✅ ПРИМЕНЯЕМ БЛОКИРОВКИ ИЗ ДАННЫХ АДМИНА
-    if (data.track_locked !== undefined) {
-        locks.track = data.track_locked;
-        console.log('Применена блокировка трассы от админа:', locks.track);
-    }
-    if (data.car_locked !== undefined) {
-        locks.car = data.car_locked;
-        console.log('Применена блокировка машины от админа:', locks.car);
-    }
-    if (data.weather_locked !== undefined) {
-        locks.weather = data.weather_locked;
-        console.log('Применена блокировка погоды от админа:', locks.weather);
-    }
-    if (data.time_locked !== undefined) {
-        locks.time = data.time_locked;
-        console.log('Применена блокировка времени от админа:', locks.time);
-    }
-    if (data.tires_locked !== undefined) {
-        locks.tires = data.tires_locked;
-        console.log('Применена блокировка износа шин от админа:', locks.tires);
-    }
-    if (data.fuel_locked !== undefined) {
-        locks.fuel = data.fuel_locked;
-        console.log('Применена блокировка расхода топлива от админа:', locks.fuel);
-    }
-    if (data.category_locked !== undefined) {
-        locks.category = data.category_locked;
-        console.log('Применена блокировка категории от админа:', locks.category);
-    }
+    if (data.track_locked !== undefined) locks.track = data.track_locked;
+    if (data.car_locked !== undefined) locks.car = data.car_locked;
+    if (data.weather_locked !== undefined) locks.weather = data.weather_locked;
+    if (data.time_locked !== undefined) locks.time = data.time_locked;
+    if (data.tires_locked !== undefined) locks.tires = data.tires_locked;
+    if (data.fuel_locked !== undefined) locks.fuel = data.fuel_locked;
+    if (data.category_locked !== undefined) locks.category = data.category_locked;
     
-    // Обновляем отображение кнопок замков
     Object.keys(locks).forEach(param => {
         document.querySelectorAll(`.lock-btn[data-param="${param}"], .settings-lock-btn[data-param="${param}"]`).forEach(btn => {
             btn.innerText = locks[param] ? '🔒' : '🔓';
@@ -2772,19 +2723,15 @@ function applySyncedCombo(data) {
         });
     });
     
-    // Анимированное обновление - подсветка измененных полей
     const highlightField = (elementId) => {
         const element = document.getElementById(elementId);
         if (element) {
             element.style.transition = 'background 0.3s';
             element.style.background = 'rgba(34, 197, 94, 0.3)';
-            setTimeout(() => {
-                element.style.background = '';
-            }, 500);
+            setTimeout(() => element.style.background = '', 500);
         }
     };
     
-    // МАШИНА - только если не заблокирована
     if (!locks.car && data.car_name) {
         const car = findCarByName(data.car_name);
         if (car) {
@@ -2795,9 +2742,7 @@ function applySyncedCombo(data) {
                 carIcon.style.display = 'block';
             }
             const carIconFallback = document.getElementById('carIconFallback');
-            if (carIconFallback) {
-                carIconFallback.style.display = 'none';
-            }
+            if (carIconFallback) carIconFallback.style.display = 'none';
             if (typeof displaySimilarCars === 'function') displaySimilarCars(car);
             highlightField('carValue');
         } else {
@@ -2806,7 +2751,6 @@ function applySyncedCombo(data) {
         }
     }
     
-    // ТРАССА - только если не заблокирована
     if (!locks.track && data.track_name) {
         const track = findTrackByName(data.track_name);
         const laps = data.laps || '5';
@@ -2818,14 +2762,11 @@ function applySyncedCombo(data) {
                 trackIcon.style.display = 'block';
             }
             const trackIconFallback = document.getElementById('trackIconFallback');
-            if (trackIconFallback) {
-                trackIconFallback.style.display = 'none';
-            }
+            if (trackIconFallback) trackIconFallback.style.display = 'none';
             highlightField('trackValue');
         }
     }
     
-    // КАТЕГОРИЯ - только если не заблокирована
     if (!locks.category && data.category_name) {
         const cat = categories.find(c => c.name === data.category_name);
         if (cat) {
@@ -2836,7 +2777,6 @@ function applySyncedCombo(data) {
         highlightField('categoryValue');
     }
     
-    // ПОГОДА - только если не заблокирована
     if (!locks.weather && data.weather_name) {
         const w = findWeatherByName(data.weather_name);
         if (w) {
@@ -2847,7 +2787,6 @@ function applySyncedCombo(data) {
         highlightField('weatherValue');
     }
     
-    // ВРЕМЯ - только если не заблокировано
     if (!locks.time && data.time_name) {
         const tm = findTimeByName(data.time_name);
         const multiplier = data.time_multiplier || 'X1';
@@ -2859,25 +2798,21 @@ function applySyncedCombo(data) {
         highlightField('timeValue');
     }
     
-    // ИЗНОС ШИН - только если не заблокирован
     if (!locks.tires && data.tires_value) {
         document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${data.tires_value}</span>`;
         highlightField('tiresValue');
     }
     
-    // РАСХОД ТОПЛИВА - только если не заблокирован
     if (!locks.fuel && data.fuel_value) {
         document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${data.fuel_value}</span>`;
         highlightField('fuelValue');
     }
     
-    // Обновляем РЕЖИМ ЗАЕЗДА
     const newDisplayMode = data.display_mode || 'all';
     if (typeof updateVisibilityByDisplayMode === 'function') {
         updateVisibilityByDisplayMode(newDisplayMode);
     }
     
-    // ЕЩЁ РАЗ ПРИНУДИТЕЛЬНО СКРЫВАЕМ БЛОК ПОДБОРА АВТО В ГРУППОВОМ РЕЖИМЕ
     const similarBlock = document.getElementById('similarContainer');
     if (similarBlock) {
         if (newDisplayMode === 'group_only') {
@@ -2889,7 +2824,6 @@ function applySyncedCombo(data) {
         }
     }
     
-    // ДОПОЛНИТЕЛЬНОЕ СКРЫТИЕ ЧЕРЕЗ 50МС (на случай, если что-то перезапишет)
     setTimeout(() => {
         const similarBlockLast = document.getElementById('similarContainer');
         if (similarBlockLast && displayMode === 'group_only') {
@@ -2899,12 +2833,9 @@ function applySyncedCombo(data) {
     }, 50);
 }
 
-// Функция загрузки гонки (основная)
-// Функция загрузки гонки (основная)
 async function loadRace() {
     console.log('🏁 loadRace вызвана');
     
-    // Если синхронизация выключена - генерируем локальную гонку
     if (!userSyncEnabled) {
         console.log('🎲 Синхронизация выключена - генерируем локальную гонку');
         generateLocalRace();
@@ -2916,9 +2847,7 @@ async function loadRace() {
     if (syncedModeActive && synced) {
         console.log('🎯 ИСПОЛЬЗУЕМ АДМИНСКУЮ КОМБИНАЦИЮ');
         const banner = document.getElementById('adminModeBanner');
-        if (banner) {
-            banner.style.display = 'block';
-        }
+        if (banner) banner.style.display = 'block';
         applySyncedCombo(synced);
         return;
     }
@@ -2929,9 +2858,6 @@ async function loadRace() {
     generateLocalRace();
 }
 
-// ============================================
-// ФУНКЦИЯ ПРИНУДИТЕЛЬНОГО ОБНОВЛЕНИЯ
-// ============================================
 async function forceRefreshCombo() {
     console.log('🔄 ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ ДАННЫХ...');
     const btn = document.getElementById('forceRefreshBtn');
@@ -2963,8 +2889,9 @@ async function forceRefreshCombo() {
         }
     }
 }
+
 // ============================================
-// УПРАВЛЕНИЕ
+// УПРАВЛЕНИЕ (ИСПРАВЛЕНО - УДАЛЕНЫ ЛИШНИЕ ФУНКЦИИ)
 // ============================================
 function toggleLock(param) {
     locks[param] = !locks[param];
@@ -2974,64 +2901,18 @@ function toggleLock(param) {
     });
 }
 
-function toggleSyncMode() {
-    userSyncEnabled = !userSyncEnabled;
-    localStorage.setItem('gt7_sync_enabled', userSyncEnabled ? 'true' : 'false');
-    const btn = document.getElementById('syncToggleBtn');
-    
-    if (userSyncEnabled) { 
-        btn.innerText = '🔒 ВКЛ'; 
-        btn.style.background = '#22c55e';
-        document.getElementById('carValue').innerHTML = '—';
-        document.getElementById('trackValue').innerHTML = '—';
-        document.getElementById('categoryValue').innerHTML = '—';
-        document.getElementById('weatherValue').innerHTML = '—';
-        document.getElementById('timeValue').innerHTML = '—';
-        document.getElementById('tiresValue').innerHTML = '—';
-        document.getElementById('fuelValue').innerHTML = '—';
-        
-        // Если админ уже выбран - загружаем гонку
-        isFirstLoad = true;
-        window.isLoadingCombo = true;
-        if (currentAdminId) {
-            loadRace();
-        }
-    } else { 
-        btn.innerText = '🔓 ВЫКЛ'; 
-        btn.style.background = '#ef4444';
-    }
-    updateModeSelectorVisibility();
-}
-
-function shareResult() {
-    const car = document.getElementById('carValue')?.innerText || '—';
-    const track = document.getElementById('trackValue')?.innerText || '—';
-    const category = document.getElementById('categoryValue')?.innerText || '—';
-    const weather = document.getElementById('weatherValue')?.innerText || '—';
-    const time = document.getElementById('timeValue')?.innerText || '—';
-    const tires = document.getElementById('tiresValue')?.innerText || '—';
-    const fuel = document.getElementById('fuelValue')?.innerText || '—';
-    const text = `🏁 GT7 RANDOM 🏁\n\n🚗 ${car}\n ${track}\n🏆 ${category}\n🌤️ ${weather}\n⏰ ${time}\n🔘 ${tires}\n⛽ ${fuel}`;
-    navigator.clipboard.writeText(text).then(() => { 
-        const btn = document.getElementById('shareBtn'); 
-        const old = btn.innerHTML; 
-        btn.innerHTML = '✅ СКОПИРОВАНО!'; 
-        setTimeout(() => btn.innerHTML = old, 2000); 
-    }).catch(() => alert('Ошибка копирования'));
-}
+// ФУНКЦИИ toggleSyncMode, shareResult, updateRandomButtonState - УДАЛЕНЫ
 
 // ============================================
 // СВОРАЧИВАНИЕ БЛОКОВ
 // ============================================
 let carsTrackExpanded = true, categoryExpanded = true, settingsExpanded = true, similarExpanded = true;
-let racesCalendarExpanded = true; // Добавляем переменную для календаря
+let racesCalendarExpanded = true;
 
 function toggleCarsTrack() { carsTrackExpanded = !carsTrackExpanded; document.getElementById('carsTrackContent').classList.toggle('collapsed', !carsTrackExpanded); document.getElementById('carsTrackToggleIcon').innerHTML = carsTrackExpanded ? '▼' : '▶'; }
 function toggleCategory() { categoryExpanded = !categoryExpanded; document.getElementById('categoryContent').classList.toggle('collapsed', !categoryExpanded); document.getElementById('categoryToggleIcon').innerHTML = categoryExpanded ? '▼' : '▶'; }
 function toggleSettings() { settingsExpanded = !settingsExpanded; document.getElementById('settingsContent').classList.toggle('collapsed', !settingsExpanded); document.getElementById('settingsToggleIcon').innerHTML = settingsExpanded ? '▼' : '▶'; }
 function toggleSimilar() { similarExpanded = !similarExpanded; document.getElementById('similarContent').classList.toggle('collapsed', !similarExpanded); document.getElementById('similarToggleIcon').innerHTML = similarExpanded ? '▼' : '▶'; }
-
-// Новая функция для сворачивания календаря гонок
 function toggleRacesCalendar() {
     racesCalendarExpanded = !racesCalendarExpanded;
     const content = document.getElementById('racesCalendarContainer');
@@ -3051,7 +2932,6 @@ function updateVisibilityByDisplayMode(displayMode) {
     const paramsGrid = document.querySelector('.params-grid');
     
     if (displayMode === 'group_only') {
-        // ГРУППОВОЙ РЕЖИМ: скрываем машину и похожие авто, показываем категорию
         if (carBlock) carBlock.classList.add('hidden-block');
         if (similarBlock) {
             similarBlock.classList.add('hidden-block');
@@ -3068,7 +2948,6 @@ function updateVisibilityByDisplayMode(displayMode) {
             paramsGrid.style.justifyContent = 'center'; 
         }
     } else {
-        // ОБЫЧНЫЙ РЕЖИМ: показываем всё, СКРЫВАЕМ категорию
         if (carBlock) carBlock.classList.remove('hidden-block');
         if (similarBlock) {
             similarBlock.classList.remove('hidden-block');
@@ -3076,7 +2955,7 @@ function updateVisibilityByDisplayMode(displayMode) {
         }
         if (categoryBlock) {
             categoryBlock.classList.add('hidden-block');
-            categoryBlock.style.setProperty('display', 'none', 'important');  // ← ДОБАВЬТЕ ЭТУ СТРОКУ
+            categoryBlock.style.setProperty('display', 'none', 'important');
         }
         if (groupMsg) groupMsg.style.display = 'none';
         if (trackBlock) trackBlock.classList.remove('track-centered');
@@ -3086,7 +2965,8 @@ function updateVisibilityByDisplayMode(displayMode) {
         }
     }
 }
-    function setDisplayMode(mode) {
+
+function setDisplayMode(mode) {
     displayMode = mode;
     localStorage.setItem('gt7_display_mode', mode);
     
@@ -3103,7 +2983,6 @@ function updateVisibilityByDisplayMode(displayMode) {
             modeText.style.color = '#3b82f6';
         }
         updateVisibilityByDisplayMode('all');
-        // Показываем блок подбора авто
         if (similarBlock) {
             similarBlock.style.setProperty('display', 'block', 'important');
             similarBlock.classList.remove('hidden-block');
@@ -3112,11 +2991,10 @@ function updateVisibilityByDisplayMode(displayMode) {
         if (groupOnlyBtn) groupOnlyBtn.classList.add('active');
         if (allBtn) allBtn.classList.remove('active');
         if (modeText) {
-            modeText.innerHTML = ' МАШИНЫ ГОНОЧНОГО КЛАССА GR 🏁';
+            modeText.innerHTML = 'МАШИНЫ ГОНОЧНОГО КЛАССА GR 🏁';
             modeText.style.color = '#8b5cf6';
         }
         updateVisibilityByDisplayMode('group_only');
-        // Скрываем блок подбора авто
         if (similarBlock) {
             similarBlock.style.setProperty('display', 'none', 'important');
             similarBlock.classList.add('hidden-block');
@@ -3124,19 +3002,14 @@ function updateVisibilityByDisplayMode(displayMode) {
     }
 }
 
+// ФУНКЦИЯ updateSyncBtn - УПРОЩЕНА (ничего не делает)
 function updateSyncBtn() {
-    const btn = document.getElementById('syncToggleBtn');
-    if (userSyncEnabled) { 
-        btn.innerText = '🔒 ВКЛ'; 
-        btn.style.background = '#22c55e'; 
-    } else { 
-        btn.innerText = '🔓 ВЫКЛ'; 
-        btn.style.background = '#ef4444'; 
-    }
+    return;
 }
 
 async function loadAdmins() {
     const select = document.getElementById('adminSelect');
+    if (!select) return;
     select.innerHTML = '<option value="">-- Выберите администратора --</option>';
     
     try {
@@ -3186,18 +3059,6 @@ async function loadAdmins() {
     }
 }
 
-   // Обновление состояния кнопки случайной гонки
-function updateRandomButtonState() {
-    const randomBtn = document.getElementById('randomBtn');
-    if (randomBtn) {
-        if (userSyncEnabled) {
-            randomBtn.style.display = 'none';
-        } else {
-            randomBtn.style.display = 'inline-flex';
-        }
-    }
-}
-
 // Обновление видимости блоков
 function updateModeSelectorVisibility() {
     const modeSelectorBlock = document.getElementById('modeSelectorBlock');
@@ -3209,24 +3070,12 @@ function updateModeSelectorVisibility() {
     const similarContainer = document.getElementById('similarContainer');
     
     if (userSyncEnabled) {
-        // ========== СИНХРОНИЗАЦИЯ ВКЛЮЧЕНА ==========
         if (adminSelectBlock) adminSelectBlock.style.setProperty('display', 'block', 'important');
         if (carsTrackContainer) carsTrackContainer.style.setProperty('display', 'block', 'important');
         if (categoryContainer) categoryContainer.style.setProperty('display', 'block', 'important');
         if (settingsContainer) settingsContainer.style.setProperty('display', 'block', 'important');
         if (racesContainer) racesContainer.style.setProperty('display', 'block', 'important');
         if (modeSelectorBlock) modeSelectorBlock.style.setProperty('display', 'none', 'important');
-        
-        // НЕ ПОКАЗЫВАЕМ БЛОК ПОДБОРА АВТО ЗДЕСЬ - пусть applySyncedCombo решает
-        // if (similarContainer) {
-        //     if (displayMode === 'group_only') {
-        //         similarContainer.style.setProperty('display', 'none', 'important');
-        //         similarContainer.classList.add('hidden-block');
-        //     } else {
-        //         similarContainer.style.setProperty('display', 'block', 'important');
-        //         similarContainer.classList.remove('hidden-block');
-        //     }
-        // }
         
         if (!currentAdminId) {
             document.getElementById('carValue').innerHTML = '—';
@@ -3237,17 +3086,13 @@ function updateModeSelectorVisibility() {
             document.getElementById('tiresValue').innerHTML = '—';
             document.getElementById('fuelValue').innerHTML = '—';
             
-            // Скрываем блок подбора авто и сообщение
             if (similarContainer) {
                 similarContainer.style.setProperty('display', 'none', 'important');
                 similarContainer.classList.add('hidden-block');
             }
             const groupMsg = document.getElementById('groupModeMessage');
-            if (groupMsg) {
-                groupMsg.style.setProperty('display', 'none', 'important');
-            }
+            if (groupMsg) groupMsg.style.setProperty('display', 'none', 'important');
             
-            // Очищаем иконки
             const carIcon = document.getElementById('carIcon');
             if (carIcon) {
                 carIcon.src = '';
@@ -3270,7 +3115,6 @@ function updateModeSelectorVisibility() {
             }
         }
     } else {
-        // ========== СИНХРОНИЗАЦИЯ ВЫКЛЮЧЕНА ==========
         if (adminSelectBlock) adminSelectBlock.style.setProperty('display', 'none', 'important');
         if (carsTrackContainer) carsTrackContainer.style.setProperty('display', 'none', 'important');
         if (categoryContainer) categoryContainer.style.setProperty('display', 'none', 'important');
@@ -3282,21 +3126,18 @@ function updateModeSelectorVisibility() {
         const groupMsg = document.getElementById('groupModeMessage');
         if (groupMsg) groupMsg.style.setProperty('display', 'none', 'important');
     }
-
-    updateRandomButtonState();
 }
 
 // ============================================
-// ФУНКЦИИ КАЛЕНДАРЯ ДЛЯ ПОЛЬЗОВАТЕЛЯ
+// ФУНКЦИИ КАЛЕНДАРЯ
 // ============================================
 
 async function getActiveRaces(adminId) {
-    if (!adminId) return []; // Если админ не выбран - возвращаем пустой массив
+    if (!adminId) return [];
     
     try {
         const userId = localStorage.getItem('gt7_user_id') || 'default';
         const callbackName = 'jsonp_races_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        // ✅ ПЕРЕДАЕМ adminId в запрос
         const url = `${APPS_SCRIPT_URL}?action=getUserRaces&userId=${userId}&adminId=${adminId}&callback=${callbackName}&t=${Date.now()}`;
         
         const races = await new Promise((resolve, reject) => {
@@ -3331,7 +3172,6 @@ async function getActiveRaces(adminId) {
 }
 
 async function displayUserRaces(adminId) {
-    // Если adminId передан в параметре - используем его, иначе берем из localStorage
     const currentAdminId = adminId || localStorage.getItem('gt7_selected_admin_id');
     
     console.log('displayUserRaces, currentAdminId:', currentAdminId);
@@ -3370,7 +3210,7 @@ async function displayUserRaces(adminId) {
                         `<div>🏆 ${race.category_name || '—'}</div>` :
                         `<div>🚗 ${race.car_name || '—'}</div>`
                     }
-                    <div> ${race.track_name || '—'}</div>
+                    <div>${race.track_name || '—'}</div>
                     <div>🌤️ ${race.weather_name || '—'}</div>
                     <div>⏰ ${race.time_name || '—'} ${race.time_multiplier ? race.time_multiplier : ''}</div>
                     <div>⚙️ ${race.tires_value || 'X1'}</div>
@@ -3416,7 +3256,6 @@ async function applyRaceToGame(raceId) {
 }
 
 function applyRaceParameters(race) {
-    // Если групповой режим - не применяем машину
     if (race.display_mode !== 'group_only') {
         if (race.car_name) {
             document.getElementById('carValue').innerHTML = race.car_name;
@@ -3532,13 +3371,12 @@ async function loadUserAdmins() {
 }
 
 // ============================================
-// ИНИЦИАЛИЗАЦИЯ
+// ИНИЦИАЛИЗАЦИЯ (ИСПРАВЛЕНА)
 // ============================================
 function init() {
     console.log('🚀 Инициализация приложения');
     loadShownCars();
     
-    // Настройка кнопок блокировки
     document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
         const param = btn.getAttribute('data-param');
         if (locks[param] === false) {
@@ -3554,7 +3392,6 @@ function init() {
         });
     });
     
-    // Обработчики сворачивания блоков
     const settingsHeader = document.getElementById('settingsHeader');
     if (settingsHeader) settingsHeader.addEventListener('click', toggleSettings);
     
@@ -3567,32 +3404,26 @@ function init() {
     const categoryHeader = document.getElementById('categoryHeader');
     if (categoryHeader) categoryHeader.addEventListener('click', toggleCategory);
     
-    // Добавляем обработчик для календаря гонок
     const racesHeader = document.getElementById('racesHeader');
-    if (racesHeader) {
-        racesHeader.addEventListener('click', toggleRacesCalendar);
-    }
+    if (racesHeader) racesHeader.addEventListener('click', toggleRacesCalendar);
     
-    // Кнопки управления - КОММЕНТИРУЕМ ТЕ, КОТОРЫХ НЕТ
-    // document.getElementById('randomBtn').addEventListener('click', () => loadRace());
-    document.getElementById('refreshSimilarBtn').addEventListener('click', refreshSimilarCars);
-    document.getElementById('resetCarsBtn').addEventListener('click', resetCarsHistory);
-    // document.getElementById('shareBtn').addEventListener('click', shareResult);
-    // document.getElementById('syncToggleBtn').addEventListener('click', toggleSyncMode);
-    document.getElementById('modeAllBtn').addEventListener('click', () => setDisplayMode('all'));
-    document.getElementById('modeGroupOnlyBtn').addEventListener('click', () => setDisplayMode('group_only'));
-
-    updateRandomButtonState();
+    const refreshBtn = document.getElementById('refreshSimilarBtn');
+    if (refreshBtn) refreshBtn.addEventListener('click', refreshSimilarCars);
     
-    // Глобальные функции
+    const resetBtn = document.getElementById('resetCarsBtn');
+    if (resetBtn) resetBtn.addEventListener('click', resetCarsHistory);
+    
+    const modeAllBtn = document.getElementById('modeAllBtn');
+    if (modeAllBtn) modeAllBtn.addEventListener('click', () => setDisplayMode('all'));
+    
+    const modeGroupBtn = document.getElementById('modeGroupOnlyBtn');
+    if (modeGroupBtn) modeGroupBtn.addEventListener('click', () => setDisplayMode('group_only'));
+    
     window.selectCar = selectCar;
     
-    // Обновляем интерфейс
-    updateSyncBtn();
     setDisplayMode(displayMode);
     updateModeSelectorVisibility();
     
-    // Восстановление админа для просмотра гонок
     const savedAdminId = localStorage.getItem('gt7_selected_admin_id');
     const adminSelectElement = document.getElementById('adminSelect');
     
@@ -3611,10 +3442,8 @@ function init() {
         }
     }
     
-    // Загружаем список администраторов
     loadUserAdmins();
     
-    // Обновляем гонки каждые 60 секунд
     setInterval(() => {
         const selectedAdmin = localStorage.getItem('gt7_selected_admin_id');
         if (selectedAdmin) {
@@ -3622,7 +3451,6 @@ function init() {
         }
     }, 60000);
 
-    // Обновляем видимость блоков в зависимости от синхронизации
     updateModeSelectorVisibility();
 
     const hasSeenWelcome = localStorage.getItem('gt7_welcome_seen');
