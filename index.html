@@ -1153,13 +1153,17 @@
         </div>
     </div>
     
-    <div style="text-align: center; margin-top: 15px;">
-        <button id="backToWelcomeBtn" class="setup-btn" style="background: #475569;">
-            🔙 НАЗАД
+    <div class="setup-card" style="border-color: #ff4d4d;">
+        <h3 style="color: #ff4d4d;">🎲 ИЛИ СЛУЧАЙНАЯ ГОНКА</h3>
+        <button id="localRaceFromSetupBtn" class="setup-btn" style="background: linear-gradient(135deg, #ff4d4d, #cc0000); font-size: 18px; padding: 16px;">
+            🎲 СЛУЧАЙНАЯ ГОНКА
         </button>
+        <div style="text-align: center; margin-top: 12px; font-size: 12px; color: #aaa;">
+            ⚡ Локальный режим без синхронизации
+        </div>
     </div>
 </div>
-
+    
 <!-- ЭКРАН 3: ОСНОВНОЕ ПРИЛОЖЕНИЕ -->
 <div id="mainApp" class="screen hidden">
     <div id="adminSyncBanner" class="admin-banner hidden">👑 Режим синхронизации АКТИВЕН | Администратор: <span id="adminName">—</span></div>
@@ -1503,18 +1507,116 @@ if (hasSeenWelcome) {
     showWelcomeScreen();
 }
 
-// Обработчик для кнопки "СЛУЧАЙНАЯ ГОНКА" на приветственном экране
 const welcomeLocalRaceBtn = document.getElementById('welcomeLocalRaceBtn');
 if (welcomeLocalRaceBtn) {
     welcomeLocalRaceBtn.addEventListener('click', () => {
-        // Настройки для локального режима
         userSyncEnabled = false;
         currentAdminId = null;
         currentAdminName = null;
         
-        console.log('🎲 Запуск локальной случайной гонки');
+        console.log('🎲 Запуск локальной случайной гонки с приветственного экрана');
         
-        // Сразу показываем главный экран с генерацией
+        document.getElementById('welcomeScreen').classList.add('hidden');
+        document.getElementById('setupScreen').classList.add('hidden');
+        document.getElementById('mainApp').classList.remove('hidden');
+        
+        const banner = document.getElementById('adminSyncBanner');
+        if (banner) banner.classList.add('hidden');
+        
+        if (typeof init === 'function') init();
+        
+        setTimeout(() => {
+            if (typeof generateLocalRace === 'function') {
+                generateLocalRace();
+                showStatusMessage('🎲 Случайная гонка готова!', 'info');
+            }
+            if (typeof updateModeSelectorVisibility === 'function') {
+                updateModeSelectorVisibility();
+            }
+        }, 100);
+    });
+}
+
+// Обработчик для кнопки "ВЫБОР АДМИНИСТРАТОРА" на приветственном экране
+const welcomeAdminBtn = document.getElementById('welcomeAdminBtn');
+if (welcomeAdminBtn) {
+    welcomeAdminBtn.addEventListener('click', () => {
+        showSetupScreen();
+    });
+}
+
+// ===== ОБРАБОТЧИКИ НА ЭКРАНЕ ВЫБОРА АДМИНИСТРАТОРА =====
+
+// Обработчик для кнопки "ПРОДОЛЖИТЬ С АДМИНИСТРАТОРОМ"
+const continueToAdminBtn = document.getElementById('continueToAdminBtn');
+if (continueToAdminBtn) {
+    continueToAdminBtn.addEventListener('click', () => {
+        const select = document.getElementById('adminSelect');
+        const selectedValue = select.value;
+        
+        if (!selectedValue) {
+            alert('⚠️ Пожалуйста, выберите администратора!');
+            return;
+        }
+        
+        userSyncEnabled = true;
+        currentAdminId = selectedValue;
+        const selectedOption = select.options[select.selectedIndex];
+        currentAdminName = selectedOption ? selectedOption.text : currentAdminId;
+        
+        console.log('👑 Запуск в режиме синхронизации с админом:', currentAdminName);
+        showMainApp(false);
+        
+        setTimeout(() => {
+            showStatusMessage(`👑 Режим синхронизации: следуем настройкам ${currentAdminName}`, 'success');
+        }, 100);
+    });
+}
+
+// Обработчик для кнопки "СЛУЧАЙНАЯ ГОНКА" на экране выбора админа
+const localRaceFromSetupBtn = document.getElementById('localRaceFromSetupBtn');
+if (localRaceFromSetupBtn) {
+    localRaceFromSetupBtn.addEventListener('click', () => {
+        userSyncEnabled = false;
+        currentAdminId = null;
+        currentAdminName = null;
+        
+        console.log('🎲 Запуск в локальном режиме с экрана выбора админа');
+        
+        document.getElementById('welcomeScreen').classList.add('hidden');
+        document.getElementById('setupScreen').classList.add('hidden');
+        document.getElementById('mainApp').classList.remove('hidden');
+        
+        const banner = document.getElementById('adminSyncBanner');
+        if (banner) banner.classList.add('hidden');
+        
+        if (typeof init === 'function') init();
+        
+        setTimeout(() => {
+            if (typeof generateLocalRace === 'function') {
+                generateLocalRace();
+                showStatusMessage('🎲 Случайная гонка готова!', 'info');
+            }
+            if (typeof updateModeSelectorVisibility === 'function') {
+                updateModeSelectorVisibility();
+            }
+        }, 100);
+    });
+}
+
+
+// Обработчик для кнопки "СЛУЧАЙНАЯ ГОНКА" на экране выбора админа
+const localRaceFromSetupBtn = document.getElementById('localRaceFromSetupBtn');
+if (localRaceFromSetupBtn) {
+    localRaceFromSetupBtn.addEventListener('click', () => {
+        // Локальный режим - синхронизация ВЫКЛ, админ не выбран
+        userSyncEnabled = false;
+        currentAdminId = null;
+        currentAdminName = null;
+        
+        console.log('🎲 Запуск в локальном режиме с экрана выбора админа');
+        
+        // Показываем главный экран
         document.getElementById('welcomeScreen').classList.add('hidden');
         document.getElementById('setupScreen').classList.add('hidden');
         document.getElementById('mainApp').classList.remove('hidden');
@@ -1539,37 +1641,38 @@ if (welcomeLocalRaceBtn) {
     });
 }
 
-// Обработчик для кнопки "ВЫБОР АДМИНИСТРАТОРА" на приветственном экране
+// Кнопка "ВЫБОР АДМИНИСТРАТОРА" на приветственном экране
 const welcomeAdminBtn = document.getElementById('welcomeAdminBtn');
 if (welcomeAdminBtn) {
     welcomeAdminBtn.addEventListener('click', () => {
-        // Показываем экран выбора администратора
-        showSetupScreen();
+        showSetupScreen();  // Просто показываем экран выбора админа
     });
 }
 
-// Обработчик для кнопки "ПРОДОЛЖИТЬ С АДМИНИСТРАТОРОМ"
-const continueToAdminBtn = document.getElementById('continueToAdminBtn');
-if (continueToAdminBtn) {
-    continueToAdminBtn.addEventListener('click', () => {
-        const select = document.getElementById('adminSelect');
-        const selectedValue = select.value;
+// Кнопка "СЛУЧАЙНАЯ ГОНКА" на приветственном экране (оставляем как быстрый доступ)
+const welcomeLocalRaceBtn = document.getElementById('welcomeLocalRaceBtn');
+if (welcomeLocalRaceBtn) {
+    welcomeLocalRaceBtn.addEventListener('click', () => {
+        userSyncEnabled = false;
+        currentAdminId = null;
+        currentAdminName = null;
         
-        if (!selectedValue) {
-            alert('⚠️ Пожалуйста, выберите администратора!');
-            return;
-        }
+        console.log('🎲 Запуск локальной случайной гонки с приветственного экрана');
         
-        userSyncEnabled = true;
-        currentAdminId = selectedValue;
-        const selectedOption = select.options[select.selectedIndex];
-        currentAdminName = selectedOption ? selectedOption.text : currentAdminId;
+        document.getElementById('welcomeScreen').classList.add('hidden');
+        document.getElementById('setupScreen').classList.add('hidden');
+        document.getElementById('mainApp').classList.remove('hidden');
         
-        console.log('👑 Запуск в режиме синхронизации с админом:', currentAdminName);
-        showMainApp(false);  // ← ИСПРАВЛЕНО: добавил false (НЕ генерируем локальную гонку)
+        const banner = document.getElementById('adminSyncBanner');
+        if (banner) banner.classList.add('hidden');
+        
+        if (typeof init === 'function') init();
         
         setTimeout(() => {
-            showStatusMessage(`👑 Режим синхронизации: следуем настройкам ${currentAdminName}`, 'success');
+            if (typeof generateLocalRace === 'function') {
+                generateLocalRace();
+                showStatusMessage('🎲 Случайная гонка готова!', 'info');
+            }
         }, 100);
     });
 }
