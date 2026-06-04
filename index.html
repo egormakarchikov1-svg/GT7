@@ -2849,9 +2849,7 @@ function applySyncedCombo(data) {
         }
     };
     
-    // МАШИНА
     if (!locks.car && data.car_name) {
-        const currentCar = document.getElementById('carValue')?.innerText || '';
         const car = findCarByName(data.car_name);
         if (car) {
             document.getElementById('carValue').innerText = car.name;
@@ -2863,104 +2861,68 @@ function applySyncedCombo(data) {
             const carIconFallback = document.getElementById('carIconFallback');
             if (carIconFallback) carIconFallback.style.display = 'none';
             if (typeof displaySimilarCars === 'function') displaySimilarCars(car);
-            // Подсвечиваем ТОЛЬКО если значение действительно изменилось
-            if (currentCar !== car.name) highlightField('carValue');
+            highlightField('carValue');
         } else {
-            if (document.getElementById('carValue').innerText !== data.car_name) {
-                document.getElementById('carValue').innerText = data.car_name;
-                highlightField('carValue');
-            }
+            document.getElementById('carValue').innerText = data.car_name;
+            highlightField('carValue');
         }
     }
     
-    // ТРАССА
     if (!locks.track && data.track_name) {
-        const currentTrackHTML = document.getElementById('trackValue')?.innerHTML || '';
         const track = findTrackByName(data.track_name);
         const laps = data.laps || '5';
         if (track) {
-            const newTrackHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
-            if (currentTrackHTML !== newTrackHTML) {
-                document.getElementById('trackValue').innerHTML = newTrackHTML;
-                const trackIcon = document.getElementById('trackIcon');
-                if (trackIcon) {
-                    trackIcon.src = getTrackIcon(track.name);
-                    trackIcon.style.display = 'block';
-                }
-                const trackIconFallback = document.getElementById('trackIconFallback');
-                if (trackIconFallback) trackIconFallback.style.display = 'none';
-                highlightField('trackValue');
+            document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
+            const trackIcon = document.getElementById('trackIcon');
+            if (trackIcon) {
+                trackIcon.src = getTrackIcon(track.name);
+                trackIcon.style.display = 'block';
             }
+            const trackIconFallback = document.getElementById('trackIconFallback');
+            if (trackIconFallback) trackIconFallback.style.display = 'none';
+            highlightField('trackValue');
         }
     }
     
-    // КАТЕГОРИЯ
     if (!locks.category && data.category_name) {
-        const currentCategory = document.getElementById('categoryValue')?.innerHTML || '';
         const cat = categories.find(c => c.name === data.category_name);
-        let newCategoryHTML = '';
         if (cat) {
-            newCategoryHTML = `${cat.icon} ${cat.name} (${cat.description})`;
+            document.getElementById('categoryValue').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
         } else {
-            newCategoryHTML = data.category_name;
+            document.getElementById('categoryValue').innerHTML = data.category_name;
         }
-        if (currentCategory !== newCategoryHTML) {
-            document.getElementById('categoryValue').innerHTML = newCategoryHTML;
-            highlightField('categoryValue');
-        }
+        highlightField('categoryValue');
     }
     
-    // ПОГОДА
     if (!locks.weather && data.weather_name) {
-        const currentWeather = document.getElementById('weatherValue')?.innerHTML || '';
         const w = findWeatherByName(data.weather_name);
-        let newWeatherHTML = '';
         if (w) {
-            newWeatherHTML = `${w.icon} ${w.name}`;
+            document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`;
         } else {
-            newWeatherHTML = data.weather_name;
+            document.getElementById('weatherValue').innerHTML = data.weather_name;
         }
-        if (currentWeather !== newWeatherHTML) {
-            document.getElementById('weatherValue').innerHTML = newWeatherHTML;
-            highlightField('weatherValue');
-        }
+        highlightField('weatherValue');
     }
     
-    // ВРЕМЯ
     if (!locks.time && data.time_name) {
-        const currentTime = document.getElementById('timeValue')?.innerHTML || '';
         const tm = findTimeByName(data.time_name);
         const multiplier = data.time_multiplier || 'X1';
-        let newTimeHTML = '';
         if (tm) {
-            newTimeHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${multiplier}</span>`;
+            document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${multiplier}</span>`;
         } else {
-            newTimeHTML = `${data.time_name} <span class="time-x-badge">${multiplier}</span>`;
+            document.getElementById('timeValue').innerHTML = `${data.time_name} <span class="time-x-badge">${multiplier}</span>`;
         }
-        if (currentTime !== newTimeHTML) {
-            document.getElementById('timeValue').innerHTML = newTimeHTML;
-            highlightField('timeValue');
-        }
+        highlightField('timeValue');
     }
     
-    // ИЗНОС ШИН
     if (!locks.tires && data.tires_value) {
-        const currentTires = document.getElementById('tiresValue')?.innerHTML || '';
-        const newTiresHTML = `<span class="time-x-badge">${data.tires_value}</span>`;
-        if (currentTires !== newTiresHTML) {
-            document.getElementById('tiresValue').innerHTML = newTiresHTML;
-            highlightField('tiresValue');
-        }
+        document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${data.tires_value}</span>`;
+        highlightField('tiresValue');
     }
     
-    // РАСХОД ТОПЛИВА
     if (!locks.fuel && data.fuel_value) {
-        const currentFuel = document.getElementById('fuelValue')?.innerHTML || '';
-        const newFuelHTML = `<span class="time-x-badge">${data.fuel_value}</span>`;
-        if (currentFuel !== newFuelHTML) {
-            document.getElementById('fuelValue').innerHTML = newFuelHTML;
-            highlightField('fuelValue');
-        }
+        document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${data.fuel_value}</span>`;
+        highlightField('fuelValue');
     }
     
     const newDisplayMode = data.display_mode || 'all';
