@@ -1432,14 +1432,27 @@ function showMainApp(autoGenerate = true) {
     const banner = document.getElementById('adminSyncBanner');
     const adminNameSpan = document.getElementById('adminName');
     
+    // Управление видимостью кнопки "Случайная гонка"
+    const generateRandomRaceBtn = document.getElementById('generateRandomRaceBtn');
+    
     if (userSyncEnabled && currentAdminId) {
         banner.classList.remove('hidden');
         adminNameSpan.innerHTML = currentAdminName || currentAdminId;
         
         // ЗАПУСКАЕМ СИНХРОНИЗАЦИЮ ДЛЯ ВЫБРАННОГО АДМИНА
         startAutoRefresh();
+        
+        // В режиме синхронизации СКРЫВАЕМ кнопку "Случайная гонка"
+        if (generateRandomRaceBtn) {
+            generateRandomRaceBtn.style.display = 'none';
+        }
     } else {
         banner.classList.add('hidden');
+        
+        // В локальном режиме ПОКАЗЫВАЕМ кнопку "Случайная гонка"
+        if (generateRandomRaceBtn) {
+            generateRandomRaceBtn.style.display = 'block';
+        }
     }
     
     // Запускаем init
@@ -3681,43 +3694,47 @@ function init() {
     }
 
     // Обработчик кнопки генерации случайной гонки
-    const generateRandomRaceBtn = document.getElementById('generateRandomRaceBtn');
-    if (generateRandomRaceBtn) {
-        generateRandomRaceBtn.addEventListener('click', () => {
-            console.log('🎲 Генерация новой случайной гонки');
+const generateRandomRaceBtn = document.getElementById('generateRandomRaceBtn');
+if (generateRandomRaceBtn) {
+    generateRandomRaceBtn.addEventListener('click', () => {
+        console.log('🎲 Генерация новой случайной гонки');
+        
+        // Сбрасываем флаг обновления
+        isApplyingUpdate = false;
+        
+        // Если в режиме синхронизации - выходим из него
+        if (userSyncEnabled) {
+            userSyncEnabled = false;
+            currentAdminId = null;
+            currentAdminName = null;
             
-            // Сбрасываем флаг обновления
-            isApplyingUpdate = false;
+            // Скрываем баннер синхронизации
+            const banner = document.getElementById('adminSyncBanner');
+            if (banner) banner.classList.add('hidden');
             
-            // Если в режиме синхронизации - выходим из него
-            if (userSyncEnabled) {
-                userSyncEnabled = false;
-                currentAdminId = null;
-                currentAdminName = null;
-                
-                // Скрываем баннер синхронизации
-                const banner = document.getElementById('adminSyncBanner');
-                if (banner) banner.classList.add('hidden');
-                
-                // Останавливаем автообновление
-                stopAutoRefresh();
-                
-                // Очищаем кэш
-                resetSyncCache();
-                
-                console.log('🔄 Выход из режима синхронизации, переход в локальный режим');
+            // Останавливаем автообновление
+            stopAutoRefresh();
+            
+            // Очищаем кэш
+            resetSyncCache();
+            
+            // ПОКАЗЫВАЕМ кнопку "Случайная гонка" при выходе из синхронизации
+            if (generateRandomRaceBtn) {
+                generateRandomRaceBtn.style.display = 'block';
             }
             
-            // Генерируем новую гонку
-            setTimeout(() => {
-                if (typeof generateLocalRace === 'function') {
-                    generateLocalRace();
-                    showStatusMessage('🎲 Новая случайная гонка сгенерирована!', 'success');
-                }
-            }, 100);
-        });
-        console.log('✅ Кнопка генерации случайной гонки активирована');
-    }
+            console.log('🔄 Выход из режима синхронизации, переход в локальный режим');
+        }
+        
+        // Генерируем новую гонку
+        setTimeout(() => {
+            if (typeof generateLocalRace === 'function') {
+                generateLocalRace();
+                showStatusMessage('🎲 Новая случайная гонка сгенерирована!', 'success');
+            }
+        }, 100);
+    });
+    console.log('✅ Кнопка генерации случайной гонки активирована');
 }
 
 // Запуск приложения
