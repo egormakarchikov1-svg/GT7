@@ -2654,71 +2654,78 @@ function startAutoRefresh() {
             console.log('🔄 Проверка обновлений у админа:', currentAdminId);
             
             try {
-                // Принудительно загружаем свежие данные (forceRefresh = true)
                 const synced = await loadSyncedCombo(true);
                 
                 if (syncedModeActive && synced) {
-                    // Получаем текущие значения из UI
-                    const currentCar = document.getElementById('carValue')?.innerText || '';
+                    // Получаем ТОЛЬКО название трассы без кругов
                     const currentTrackElement = document.getElementById('trackValue');
-                    const currentWeather = document.getElementById('weatherValue')?.innerHTML || '';
-                    const currentTime = document.getElementById('timeValue')?.innerHTML || '';
-                    const currentTires = document.getElementById('tiresValue')?.innerHTML || '';
-                    const currentFuel = document.getElementById('fuelValue')?.innerHTML || '';
-                    
-                    // Извлекаем название трассы без количества кругов
                     let currentTrackName = '';
                     if (currentTrackElement) {
                         const fullText = currentTrackElement.innerText;
-                        currentTrackName = fullText.split(' кругов')[0].split('кругов')[0].trim();
+                        // Убираем количество кругов (число + "кругов")
+                        currentTrackName = fullText.replace(/\d+\s*кругов/, '').trim();
+                        console.log('📝 Текущая трасса (очищенная):', currentTrackName);
+                        console.log('📝 Трасса от админа:', synced.track_name);
                     }
+                    
+                    const currentCar = document.getElementById('carValue')?.innerText || '';
                     
                     let hasChanges = false;
                     
-                    // Проверяем изменения в МАШИНЕ
+                    // Сравниваем машину
                     if (!locks.car && synced.car_name && currentCar !== synced.car_name) {
                         console.log('🔍 Обнаружены изменения в МАШИНЕ:', currentCar, '->', synced.car_name);
                         hasChanges = true;
                     }
                     
-                    // Проверяем изменения в ТРАССЕ
+                    // Сравниваем трассу (только название)
                     if (!locks.track && synced.track_name && currentTrackName !== synced.track_name) {
                         console.log('🔍 Обнаружены изменения в ТРАССЕ:', currentTrackName, '->', synced.track_name);
                         hasChanges = true;
                     }
                     
-                    // Проверяем изменения в ПОГОДЕ
+                    // Сравниваем погоду - сравниваем ТОЛЬКО имя, без иконки
                     if (!locks.weather && synced.weather_name) {
-                        const expectedWeather = synced.weather_name;
-                        if (!currentWeather.includes(expectedWeather) && currentWeather !== expectedWeather) {
-                            console.log('🔍 Обнаружены изменения в ПОГОДЕ:', currentWeather, '->', expectedWeather);
+                        const currentWeatherElement = document.getElementById('weatherValue');
+                        let currentWeatherName = '';
+                        if (currentWeatherElement) {
+                            // Убираем иконку, оставляем только название
+                            currentWeatherName = currentWeatherElement.innerText.replace(/[☀️🌤️⛅🌫️☁️🌦️🌧️⛈️🌊💨]/g, '').trim();
+                        }
+                        if (currentWeatherName !== synced.weather_name) {
+                            console.log('🔍 Обнаружены изменения в ПОГОДЕ:', currentWeatherName, '->', synced.weather_name);
                             hasChanges = true;
                         }
                     }
                     
-                    // Проверяем изменения во ВРЕМЕНИ
+                    // Сравниваем время - убираем иконку и множитель
                     if (!locks.time && synced.time_name) {
-                        const expectedTime = `${synced.time_name} <span class="time-x-badge">${synced.time_multiplier || 'X1'}</span>`;
-                        if (currentTime !== expectedTime) {
-                            console.log('🔍 Обнаружены изменения во ВРЕМЕНИ:', currentTime, '->', expectedTime);
+                        const currentTimeElement = document.getElementById('timeValue');
+                        let currentTimeName = '';
+                        if (currentTimeElement) {
+                            // Убираем иконку и множитель X***
+                            currentTimeName = currentTimeElement.innerText.replace(/[🌅🌄🌤️☀️🔆🌆🌇🌙🌚🌕]/g, '').replace(/X\d+/g, '').trim();
+                        }
+                        if (currentTimeName !== synced.time_name) {
+                            console.log('🔍 Обнаружены изменения во ВРЕМЕНИ:', currentTimeName, '->', synced.time_name);
                             hasChanges = true;
                         }
                     }
                     
-                    // Проверяем изменения в ИЗНОСЕ ШИН
+                    // Сравниваем износ шин
                     if (!locks.tires && synced.tires_value) {
-                        const expectedTires = `<span class="time-x-badge">${synced.tires_value}</span>`;
-                        if (currentTires !== expectedTires) {
-                            console.log('🔍 Обнаружены изменения в ИЗНОСЕ ШИН:', currentTires, '->', expectedTires);
+                        const currentTires = document.getElementById('tiresValue')?.innerText || '';
+                        if (currentTires !== synced.tires_value) {
+                            console.log('🔍 Обнаружены изменения в ИЗНОСЕ ШИН:', currentTires, '->', synced.tires_value);
                             hasChanges = true;
                         }
                     }
                     
-                    // Проверяем изменения в РАСХОДЕ ТОПЛИВА
+                    // Сравниваем расход топлива
                     if (!locks.fuel && synced.fuel_value) {
-                        const expectedFuel = `<span class="time-x-badge">${synced.fuel_value}</span>`;
-                        if (currentFuel !== expectedFuel) {
-                            console.log('🔍 Обнаружены изменения в РАСХОДЕ ТОПЛИВА:', currentFuel, '->', expectedFuel);
+                        const currentFuel = document.getElementById('fuelValue')?.innerText || '';
+                        if (currentFuel !== synced.fuel_value) {
+                            console.log('🔍 Обнаружены изменения в РАСХОДЕ ТОПЛИВА:', currentFuel, '->', synced.fuel_value);
                             hasChanges = true;
                         }
                     }
@@ -2741,7 +2748,7 @@ function startAutoRefresh() {
                 console.error('❌ Ошибка при проверке обновлений:', e);
             }
         }
-    }, 5000); // Проверка каждые 5 секунд
+    }, 5000);
 }
 function stopAutoRefresh() {
     if (autoRefreshInterval) {
