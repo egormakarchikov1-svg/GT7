@@ -1117,38 +1117,29 @@
 <body>
 <div class="container">
 
-    <!-- ЭКРАН 1: ПРИВЕТСТВИЕ -->
-    <div id="welcomeScreen" class="screen">
-        <div id="welcomeMessage" class="welcome-message" style="display: flex;">
-            <div class="welcome-content">
-                <div class="welcome-icon">🏁</div>
-                <h2>Добро пожаловать в GT7 Random Race!</h2>
-                <p>🎮 <strong>Два режима игры:</strong></p>
-                <div class="welcome-modes">
-                    <div class="welcome-mode">
-                        <span class="mode-icon">🎲</span>
-                        <div>
-                            <strong>Обычный режим</strong>
-                            <small>Синхронизация ВЫКЛ</small>
-                            <span>→ Нажмите "СЛУЧАЙНАЯ ГОНКА" и играйте!</span>
-                        </div>
-                    </div>
-                    <div class="welcome-mode">
-                        <span class="mode-icon">👑</span>
-                        <div>
-                            <strong>Режим синхронизации</strong>
-                            <small>Синхронизация ВКЛ</small>
-                            <span>→ Выберите администратора и следуйте его настройкам</span>
-                        </div>
-                    </div>
-                </div>
-                <button id="closeWelcomeBtn" class="welcome-close-btn">СТАРТ</button>
+    <!-- ЭКРАН 1: ПРИВЕТСТВИЕ С ВЫБОРОМ РЕЖИМА -->
+<div id="welcomeScreen" class="screen">
+    <div id="welcomeMessage" class="welcome-message" style="display: flex;">
+        <div class="welcome-content">
+            <div class="welcome-icon">🏁</div>
+            <h2>Добро пожаловать в GT7 Random Race!</h2>
+            <p style="margin-bottom: 20px;">🎮 <strong>Выберите режим игры:</strong></p>
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <button id="welcomeLocalRaceBtn" style="background: linear-gradient(135deg, #ff4d4d, #cc0000); padding: 16px; font-size: 18px; border: none; border-radius: 40px; color: white; font-weight: bold; cursor: pointer;">
+                    🎲 СЛУЧАЙНАЯ ГОНКА
+                    <span style="display: block; font-size: 12px; opacity: 0.8;">Локальный режим без синхронизации</span>
+                </button>
+                <button id="welcomeAdminBtn" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); padding: 16px; font-size: 18px; border: none; border-radius: 40px; color: white; font-weight: bold; cursor: pointer;">
+                    👑 ВЫБОР АДМИНИСТРАТОРА
+                    <span style="display: block; font-size: 12px; opacity: 0.8;">Режим синхронизации</span>
+                </button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- ЭКРАН 2: ВЫБОР АДМИНИСТРАТОРА И СИНХРОНИЗАЦИИ -->
-   <div id="setupScreen" class="screen hidden">
+<!-- ЭКРАН 2: ВЫБОР АДМИНИСТРАТОРА -->
+<div id="setupScreen" class="screen hidden">
     <div class="setup-card">
         <h3>👑 ВЫБЕРИТЕ АДМИНИСТРАТОРА</h3>
         <select id="adminSelect" class="setup-select">
@@ -1162,184 +1153,175 @@
         </div>
     </div>
     
-    <div class="setup-card" style="border-color: #ff4d4d;">
-        <h3 style="color: #ff4d4d;">🎲 ИЛИ СЛУЧАЙНАЯ ГОНКА</h3>
-        <button id="localRaceBtn" class="setup-btn" style="background: linear-gradient(135deg, #ff4d4d, #cc0000); font-size: 18px; padding: 16px;">
-            🎲 СЛУЧАЙНАЯ ГОНКА
+    <div style="text-align: center; margin-top: 15px;">
+        <button id="backToWelcomeBtn" class="setup-btn" style="background: #475569;">
+            🔙 НАЗАД
         </button>
-        <div style="text-align: center; margin-top: 12px; font-size: 12px; color: #aaa;">
-            ⚡ Локальный режим без синхронизации
-        </div>
     </div>
 </div>
 
-    <!-- ЭКРАН 3: ОСНОВНОЕ ПРИЛОЖЕНИЕ (ВАШ ОРИГИНАЛЬНЫЙ HTML) -->
-    <div id="mainApp" class="screen hidden">
-        <div id="adminSyncBanner" class="admin-banner hidden">👑 Режим синхронизации АКТИВЕН | Администратор: <span id="adminName">—</span></div>
-        
-        <!-- СЮДА ВСТАВЬТЕ ВЕСЬ ВАШ ОРИГИНАЛЬНЫЙ HTML ИЗ body -->
-        <!-- ВАШ ОРИГИНАЛЬНЫЙ HTML НАЧИНАЕТСЯ С <div id="adminModeBanner" ...> -->
-        
-        <div id="adminModeBanner" style="display: none;"></div>
-        
-
-        <!-- Блок РЕЖИМ ЗАЕЗДА МАШИН -->
-        <div class="cars-track-container" id="modeSelectorBlock" style="border-color: #8b5cf6;">
-            <div class="cars-track-header-clickable" style="cursor: default;">
-                <div style="width: 30px;"></div>
-                <div class="cars-track-title" style="color: #8b5cf6;">🎮 РЕЖИМ ЗАЕЗДА 🎮</div>
-                <div style="width: 30px;"></div>
+<!-- ЭКРАН 3: ОСНОВНОЕ ПРИЛОЖЕНИЕ -->
+<div id="mainApp" class="screen hidden">
+    <div id="adminSyncBanner" class="admin-banner hidden">👑 Режим синхронизации АКТИВЕН | Администратор: <span id="adminName">—</span></div>
+    
+    <div id="adminModeBanner" style="display: none;"></div>
+    
+    <!-- Блок РЕЖИМ ЗАЕЗДА МАШИН -->
+    <div class="cars-track-container" id="modeSelectorBlock" style="border-color: #8b5cf6;">
+        <div class="cars-track-header-clickable" style="cursor: default;">
+            <div style="width: 30px;"></div>
+            <div class="cars-track-title" style="color: #8b5cf6;">🎮 РЕЖИМ ЗАЕЗДА 🎮</div>
+            <div style="width: 30px;"></div>
+        </div>
+        <div class="cars-track-content">
+            <div style="display: flex; gap: 15px; justify-content: center; padding: 15px; flex-wrap: wrap;">
+                <button id="modeAllBtn" class="mode-btn" style="background: #3b82f6;">🚗 ВЕСЬ СПИСОК МАШИН</button>
+                <button id="modeGroupOnlyBtn" class="mode-btn" style="background: #8b5cf6;">🏁 МАШИНЫ ГОНОЧНОГО КЛАССА GR</button>
             </div>
-            <div class="cars-track-content">
-                <div style="display: flex; gap: 15px; justify-content: center; padding: 15px; flex-wrap: wrap;">
-                    <button id="modeAllBtn" class="mode-btn" style="background: #3b82f6;">🚗 ВЕСЬ СПИСОК МАШИН</button>
-                    <button id="modeGroupOnlyBtn" class="mode-btn" style="background: #8b5cf6;">🏁  МАШИНЫ ГОНОЧНОГО КЛАССА GR</button>
-                </div>
-                <div id="currentModeDisplay" style="text-align: center; padding: 10px; background: #ff4d4d20; border-radius: 12px;">
-                    Текущий режим: <strong id="currentModeText">ВЕСЬ СПИСОК МАШИН</strong>
-                </div>
+            <div id="currentModeDisplay" style="text-align: center; padding: 10px; background: #ff4d4d20; border-radius: 12px;">
+                Текущий режим: <strong id="currentModeText">ВЕСЬ СПИСОК МАШИН</strong>
             </div>
         </div>
-        
-        <div class="cars-track-container" id="carsTrackContainer">
-            <div class="cars-track-header-clickable" id="carsTrackHeader">
-                <div style="width: 30px;"></div>
-                <div class="cars-track-title">🏁 МАШИНА И ТРАССА 🏁</div>
-                <div class="cars-track-toggle-icon" id="carsTrackToggleIcon">▼</div>
-            </div>
-            <div class="cars-track-content" id="carsTrackContent">
-                <div class="params-grid">
-                    <div class="param-block" id="carBlock" data-param="car">
-                        <div class="param-header">
-                            <button class="lock-btn" data-param="car" data-state="unlocked">🔓</button>
-                            <div class="param-label">
-                                <img src="car-icon.png" class="header-icon" alt="car" onerror="this.style.display='none'; this.nextSibling.style.display='inline';">
-                                <span style="display:none;">🚗</span>
-                                <span>МАШИНА</span>
-                            </div>
-                            <div style="width: 48px;"></div>
+    </div>
+    
+    <div class="cars-track-container" id="carsTrackContainer">
+        <div class="cars-track-header-clickable" id="carsTrackHeader">
+            <div style="width: 30px;"></div>
+            <div class="cars-track-title">🏁 МАШИНА И ТРАССА 🏁</div>
+            <div class="cars-track-toggle-icon" id="carsTrackToggleIcon">▼</div>
+        </div>
+        <div class="cars-track-content" id="carsTrackContent">
+            <div class="params-grid">
+                <div class="param-block" id="carBlock" data-param="car">
+                    <div class="param-header">
+                        <button class="lock-btn" data-param="car" data-state="unlocked">🔓</button>
+                        <div class="param-label">
+                            <img src="car-icon.png" class="header-icon" alt="car" onerror="this.style.display='none'; this.nextSibling.style.display='inline';">
+                            <span style="display:none;">🚗</span>
+                            <span>МАШИНА</span>
                         </div>
-                        <div class="icon-container">
-                            <img class="car-icon" id="carIcon" src="" alt="Иконка" style="display: none;" onerror="this.style.display='none'; document.getElementById('carIconFallback').style.display='flex';">
-                            <div id="carIconFallback" class="car-icon icon-error" style="display: none; align-items: center; justify-content: center;"></div>
-                        </div>
-                        <div class="param-value" id="carValue">—</div>
+                        <div style="width: 48px;"></div>
                     </div>
+                    <div class="icon-container">
+                        <img class="car-icon" id="carIcon" src="" alt="Иконка" style="display: none;" onerror="this.style.display='none'; document.getElementById('carIconFallback').style.display='flex';">
+                        <div id="carIconFallback" class="car-icon icon-error" style="display: none; align-items: center; justify-content: center;"></div>
+                    </div>
+                    <div class="param-value" id="carValue">—</div>
+                </div>
 
-                    <div class="param-block" id="trackBlock" data-param="track">
-                        <div class="param-header">
-                            <button class="lock-btn" data-param="track" data-state="unlocked">🔓</button>
-                            <div class="param-label">
-                                <img src="track-icon.png" class="header-icon" alt="track" onerror="this.style.display='none'; this.nextSibling.style.display='inline';">
-                                <span style="display:none;">🏁</span>
-                                <span>ТРАССА</span>
-                            </div>
-                            <div style="width: 48px;"></div>
+                <div class="param-block" id="trackBlock" data-param="track">
+                    <div class="param-header">
+                        <button class="lock-btn" data-param="track" data-state="unlocked">🔓</button>
+                        <div class="param-label">
+                            <img src="track-icon.png" class="header-icon" alt="track" onerror="this.style.display='none'; this.nextSibling.style.display='inline';">
+                            <span style="display:none;">🏁</span>
+                            <span>ТРАССА</span>
                         </div>
-                        <div class="icon-container">
-                            <img class="track-icon" id="trackIcon" src="" alt="Иконка" style="display: none;" onerror="this.style.display='none'; document.getElementById('trackIconFallback').style.display='flex';">
-                            <div id="trackIconFallback" class="track-icon icon-error" style="display: none; align-items: center; justify-content: center;"></div>
-                        </div>
-                        <div class="param-value" id="trackValue">—</div>
+                        <div style="width: 48px;"></div>
                     </div>
+                    <div class="icon-container">
+                        <img class="track-icon" id="trackIcon" src="" alt="Иконка" style="display: none;" onerror="this.style.display='none'; document.getElementById('trackIconFallback').style.display='flex';">
+                        <div id="trackIconFallback" class="track-icon icon-error" style="display: none; align-items: center; justify-content: center;"></div>
+                    </div>
+                    <div class="param-value" id="trackValue">—</div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="category-container hidden-block" id="categoryContainer">
-            <div class="category-header-clickable" id="categoryHeader">
-                <div style="width: 30px;"></div>
-                <div class="category-title">🏆 ГОНОЧНЫЙ КЛАСС 🏆</div>
-                <div class="category-toggle-icon" id="categoryToggleIcon">▼</div>
-            </div>
-            <div class="category-content" id="categoryContent">
-                <div class="category-value" id="categoryValue">—</div>
-            </div>
+    <div class="category-container hidden-block" id="categoryContainer">
+        <div class="category-header-clickable" id="categoryHeader">
+            <div style="width: 30px;"></div>
+            <div class="category-title">🏆 ГОНОЧНЫЙ КЛАСС 🏆</div>
+            <div class="category-toggle-icon" id="categoryToggleIcon">▼</div>
         </div>
+        <div class="category-content" id="categoryContent">
+            <div class="category-value" id="categoryValue">—</div>
+        </div>
+    </div>
 
-        <div class="settings-container" id="settingsContainer">
-            <div class="settings-header-clickable" id="settingsHeader">
-                <div style="width: 30px;"></div>
-                <div class="settings-title">⚙️ УСЛОВИЯ ГОНКИ ⚙️</div>
-                <div class="toggle-icon" id="settingsToggleIcon">▼</div>
-            </div>
-            <div class="settings-content" id="settingsContent">
-                <div class="settings-items">
-                    <div class="settings-item">
-                        <div class="settings-header">
-                            <div class="settings-label">🌤️ ПОГОДА</div>
-                            <button class="settings-lock-btn" data-param="weather" data-state="unlocked">🔓</button>
-                        </div>
-                        <div class="settings-value" id="weatherValue">—</div>
+    <div class="settings-container" id="settingsContainer">
+        <div class="settings-header-clickable" id="settingsHeader">
+            <div style="width: 30px;"></div>
+            <div class="settings-title">⚙️ УСЛОВИЯ ГОНКИ ⚙️</div>
+            <div class="toggle-icon" id="settingsToggleIcon">▼</div>
+        </div>
+        <div class="settings-content" id="settingsContent">
+            <div class="settings-items">
+                <div class="settings-item">
+                    <div class="settings-header">
+                        <div class="settings-label">🌤️ ПОГОДА</div>
+                        <button class="settings-lock-btn" data-param="weather" data-state="unlocked">🔓</button>
                     </div>
-                    <div class="settings-item">
-                        <div class="settings-header">
-                            <div class="settings-label">⏰ ВРЕМЯ СУТОК</div>
-                            <button class="settings-lock-btn" data-param="time" data-state="unlocked">🔓</button>
-                        </div>
-                        <div class="settings-value" id="timeValue">—</div>
+                    <div class="settings-value" id="weatherValue">—</div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-header">
+                        <div class="settings-label">⏰ ВРЕМЯ СУТОК</div>
+                        <button class="settings-lock-btn" data-param="time" data-state="unlocked">🔓</button>
                     </div>
-                    <div class="settings-item" data-param="tires">
-                        <div class="settings-header">
-                            <div class="settings-label">
-                                <img src="Wheel.png" class="settings-icon" onerror="this.style.display='none'; this.nextSibling.style.display='inline';">
-                                <span style="display:none;">🔘</span>
-                                <span>ИЗНОС ШИН</span>
-                            </div>
-                            <button class="settings-lock-btn" data-param="tires" data-state="unlocked">🔓</button>
+                    <div class="settings-value" id="timeValue">—</div>
+                </div>
+                <div class="settings-item" data-param="tires">
+                    <div class="settings-header">
+                        <div class="settings-label">
+                            <img src="Wheel.png" class="settings-icon" onerror="this.style.display='none'; this.nextSibling.style.display='inline';">
+                            <span style="display:none;">🔘</span>
+                            <span>ИЗНОС ШИН</span>
                         </div>
-                        <div class="settings-value" id="tiresValue"><span class="time-x-badge">X1</span></div>
+                        <button class="settings-lock-btn" data-param="tires" data-state="unlocked">🔓</button>
                     </div>
-                    <div class="settings-item">
-                        <div class="settings-header">
-                            <div class="settings-label">⛽ РАСХОД ТОПЛИВА</div>
-                            <button class="settings-lock-btn" data-param="fuel" data-state="unlocked">🔓</button>
-                        </div>
-                        <div class="settings-value" id="fuelValue"><span class="time-x-badge">X1</span></div>
+                    <div class="settings-value" id="tiresValue"><span class="time-x-badge">X1</span></div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-header">
+                        <div class="settings-label">⛽ РАСХОД ТОПЛИВА</div>
+                        <button class="settings-lock-btn" data-param="fuel" data-state="unlocked">🔓</button>
                     </div>
+                    <div class="settings-value" id="fuelValue"><span class="time-x-badge">X1</span></div>
                 </div>
             </div>
         </div>
-        
-        <!-- Блок КАЛЕНДАРЬ ГОНОК -->
-        <div class="races-container" style="background: rgba(0, 0, 0, 0.4); border-radius: 16px; margin: 12px 0; border: 1px solid #22c55e; overflow: hidden;">
-            <div class="races-header" id="racesHeader" style="display: flex; align-items: center; justify-content: space-between; padding: 12px; cursor: pointer;">
-                <div style="width: 30px;"></div>
-                <div class="races-title" style="color: #22c55e; font-size: 14px; font-weight: bold;">📅 ЗАПЛАНИРОВАННЫЕ ГОНКИ</div>
-                <div class="races-toggle-icon" id="racesToggleIcon" style="color: #22c55e; font-size: 20px; font-weight: bold;">▼</div>
-            </div>
-            <div class="races-content" id="racesCalendarContainer" style="padding: 0 12px 12px 12px;">
-                <div style="text-align: center; padding: 20px;">Загрузка гонок...</div>
-            </div>
+    </div>
+    
+    <!-- Блок КАЛЕНДАРЬ ГОНОК -->
+    <div class="races-container" style="background: rgba(0, 0, 0, 0.4); border-radius: 16px; margin: 12px 0; border: 1px solid #22c55e; overflow: hidden;">
+        <div class="races-header" id="racesHeader" style="display: flex; align-items: center; justify-content: space-between; padding: 12px; cursor: pointer;">
+            <div style="width: 30px;"></div>
+            <div class="races-title" style="color: #22c55e; font-size: 14px; font-weight: bold;">📅 ЗАПЛАНИРОВАННЫЕ ГОНКИ</div>
+            <div class="races-toggle-icon" id="racesToggleIcon" style="color: #22c55e; font-size: 20px; font-weight: bold;">▼</div>
         </div>
+        <div class="races-content" id="racesCalendarContainer" style="padding: 0 12px 12px 12px;">
+            <div style="text-align: center; padding: 20px;">Загрузка гонок...</div>
+        </div>
+    </div>
 
-        <div class="similar-cars-container" id="similarContainer">
-            <div class="similar-header-clickable" id="similarHeader">
-                <div style="width: 30px;"></div>
-                <div class="similar-title">🎯 ПОДБОР АВТО ПО СХОЖИМ ПАРАМЕТРАМ</div>
-                <div class="similar-toggle-icon" id="similarToggleIcon">▼</div>
-            </div>
-            <div class="similar-content" id="similarContent">
-                <div id="refCarInfo" class="ref-car-info">Выберите авто из списка</div>
-                <ul class="similar-list" id="similarList"><li>Нажмите на авто для выбора референса</li></ul>
-                <button id="refreshSimilarBtn" class="btn-similar">🔄 ОБНОВИТЬ ПОДБОР</button>
-                <button id="resetCarsBtn" class="btn-similar" style="background: #ef4444;">🗑️ СБРОС ИСТОРИИ</button>
-            </div>
+    <div class="similar-cars-container" id="similarContainer">
+        <div class="similar-header-clickable" id="similarHeader">
+            <div style="width: 30px;"></div>
+            <div class="similar-title">🎯 ПОДБОР АВТО ПО СХОЖИМ ПАРАМЕТРАМ</div>
+            <div class="similar-toggle-icon" id="similarToggleIcon">▼</div>
         </div>
+        <div class="similar-content" id="similarContent">
+            <div id="refCarInfo" class="ref-car-info">Выберите авто из списка</div>
+            <ul class="similar-list" id="similarList"><li>Нажмите на авто для выбора референса</li></ul>
+            <button id="refreshSimilarBtn" class="btn-similar">🔄 ОБНОВИТЬ ПОДБОР</button>
+            <button id="resetCarsBtn" class="btn-similar" style="background: #ef4444;">🗑️ СБРОС ИСТОРИИ</button>
+        </div>
+    </div>
 
-        <div id="groupModeMessage" class="group-mode-message" style="display: none;">
-            <h3>🏁 МАШИНЫ ГОНОЧНОГО КЛАССА GR 🏁</h3>
-        </div>
+    <div id="groupModeMessage" class="group-mode-message" style="display: none;">
+        <h3>🏁 МАШИНЫ ГОНОЧНОГО КЛАССА GR 🏁</h3>
+    </div>
 
-        <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin: 15px 0;">
-            <button id="randomBtn" class="btn-main">🎲 СЛУЧАЙНАЯ ГОНКА</button>
-            <button id="shareBtn" class="btn-main" style="background: #3b82f6;">📤 ПОДЕЛИТЬСЯ</button>
-        </div>
+    <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin: 15px 0;">
+        <button id="randomBtn" class="btn-main">🎲 СЛУЧАЙНАЯ ГОНКА</button>
+        <button id="shareBtn" class="btn-main" style="background: #3b82f6;">📤 ПОДЕЛИТЬСЯ</button>
+    </div>
 
-        <div class="sync-toggle-container">
-            <span>🔄 РЕЖИМ СИНХРОНИЗАЦИИ</span>
-            <button id="syncToggleBtn">🔒 ВКЛ</button>
-        </div>
+    <div class="sync-toggle-container">
+        <span>🔄 РЕЖИМ СИНХРОНИЗАЦИИ</span>
+        <button id="syncToggleBtn">🔒 ВКЛ</button>
     </div>
 </div>
 
@@ -1422,11 +1404,11 @@ function showSetupScreen() {
     document.getElementById('welcomeScreen').classList.add('hidden');
     document.getElementById('setupScreen').classList.remove('hidden');
     document.getElementById('mainApp').classList.add('hidden');
-    loadAdminsFromGoogle(); // Загружаем админов только один раз (благодаря флагу adminsLoaded)
+    loadAdminsFromGoogle();
 }
 
-function showMainApp() {
-    console.log('🟢 showMainApp вызвана, userSyncEnabled =', userSyncEnabled, 'adminId =', currentAdminId);
+function showMainApp(autoGenerate = true) {
+    console.log('🟢 showMainApp вызвана, userSyncEnabled =', userSyncEnabled, 'adminId =', currentAdminId, 'autoGenerate =', autoGenerate);
     
     // Показываем главный экран, скрываем остальные
     document.getElementById('welcomeScreen').classList.add('hidden');
@@ -1453,45 +1435,47 @@ function showMainApp() {
     
     // Автоматическая загрузка данных
     setTimeout(async () => {
-    console.log('🔄 Автоматическая загрузка данных, режим:', userSyncEnabled ? 'СИНХРОНИЗАЦИЯ' : 'ЛОКАЛЬНЫЙ');
-    
-    if (userSyncEnabled && currentAdminId) {
-        // === РЕЖИМ СИНХРОНИЗАЦИИ ===
-        console.log('👑 Загружаем данные администратора...');
+        console.log('🔄 Автоматическая загрузка данных, режим:', userSyncEnabled ? 'СИНХРОНИЗАЦИЯ' : 'ЛОКАЛЬНЫЙ');
         
-        // 1. Загружаем запланированные гонки
-        if (typeof displayUserRaces === 'function') {
-            await displayUserRaces(currentAdminId);
-            console.log('✅ Запланированные гонки загружены');
-        }
-        
-        // 2. Загружаем активную гонку от админа
-        if (typeof loadSyncedCombo === 'function') {
-            const synced = await loadSyncedCombo(true);
-            if (syncedModeActive && synced && typeof applySyncedCombo === 'function') {
-                applySyncedCombo(synced);
-                showStatusMessage(`✅ Данные администратора ${currentAdminName} загружены!`, 'success');
-            } else {
-                showStatusMessage('⚠️ Нет активной гонки от администратора', 'warning');
+        if (userSyncEnabled && currentAdminId) {
+            // === РЕЖИМ СИНХРОНИЗАЦИИ ===
+            console.log('👑 Загружаем данные администратора...');
+            
+            // 1. Загружаем запланированные гонки
+            if (typeof displayUserRaces === 'function') {
+                await displayUserRaces(currentAdminId);
+                console.log('✅ Запланированные гонки загружены');
             }
-        }
-    } else {
-        // === ЛОКАЛЬНЫЙ РЕЖИМ ===
-        console.log('🎲 Генерируем локальную случайную гонку...');
-        if (typeof generateLocalRace === 'function') {
-            generateLocalRace();
-            showStatusMessage('🎲 Случайная гонка сгенерирована! Нажмите 🎲 для новой', 'info');
+            
+            // 2. Загружаем активную гонку от админа
+            if (typeof loadSyncedCombo === 'function') {
+                const synced = await loadSyncedCombo(true);
+                if (syncedModeActive && synced && typeof applySyncedCombo === 'function') {
+                    applySyncedCombo(synced);
+                    showStatusMessage(`✅ Данные администратора ${currentAdminName} загружены!`, 'success');
+                } else {
+                    showStatusMessage('⚠️ Нет активной гонки от администратора', 'warning');
+                }
+            }
+        } else if (autoGenerate) {
+            // === ЛОКАЛЬНЫЙ РЕЖИМ С АВТОГЕНЕРАЦИЕЙ ===
+            console.log('🎲 Генерируем локальную случайную гонку...');
+            if (typeof generateLocalRace === 'function') {
+                generateLocalRace();
+                showStatusMessage('🎲 Случайная гонка готова!', 'info');
+            } else {
+                console.error('❌ Функция generateLocalRace не найдена!');
+                showStatusMessage('❌ Ошибка: функция генерации не найдена', 'error');
+            }
         } else {
-            console.error('❌ Функция generateLocalRace не найдена!');
-            showStatusMessage('❌ Ошибка: функция генерации не найдена', 'error');
+            console.log('🎲 Локальный режим без автогенерации');
         }
-    }
-    
-    // Обновляем видимость блоков
-    if (typeof updateModeSelectorVisibility === 'function') {
-        updateModeSelectorVisibility();
-    }
-}, 100);
+        
+        // Обновляем видимость блоков
+        if (typeof updateModeSelectorVisibility === 'function') {
+            updateModeSelectorVisibility();
+        }
+    }, 100);
 }
 
 // ===== ОБРАБОТЧИКИ КНОПОК =====
@@ -1519,11 +1503,47 @@ if (hasSeenWelcome) {
     showWelcomeScreen();
 }
 
-// Обработчик закрытия приветствия
-const closeWelcomeBtn = document.getElementById('closeWelcomeBtn');
-if (closeWelcomeBtn) {
-    closeWelcomeBtn.addEventListener('click', () => {
-        localStorage.setItem('gt7_welcome_seen', 'true');
+// Обработчик для кнопки "СЛУЧАЙНАЯ ГОНКА" на приветственном экране
+const welcomeLocalRaceBtn = document.getElementById('welcomeLocalRaceBtn');
+if (welcomeLocalRaceBtn) {
+    welcomeLocalRaceBtn.addEventListener('click', () => {
+        // Настройки для локального режима
+        userSyncEnabled = false;
+        currentAdminId = null;
+        currentAdminName = null;
+        
+        console.log('🎲 Запуск локальной случайной гонки');
+        
+        // Сразу показываем главный экран с генерацией
+        document.getElementById('welcomeScreen').classList.add('hidden');
+        document.getElementById('setupScreen').classList.add('hidden');
+        document.getElementById('mainApp').classList.remove('hidden');
+        
+        // Обновляем баннер (скрыт)
+        const banner = document.getElementById('adminSyncBanner');
+        if (banner) banner.classList.add('hidden');
+        
+        // Запускаем init
+        if (typeof init === 'function') init();
+        
+        // Сразу генерируем случайную гонку
+        setTimeout(() => {
+            if (typeof generateLocalRace === 'function') {
+                generateLocalRace();
+                showStatusMessage('🎲 Случайная гонка готова!', 'info');
+            }
+            if (typeof updateModeSelectorVisibility === 'function') {
+                updateModeSelectorVisibility();
+            }
+        }, 100);
+    });
+}
+
+// Обработчик для кнопки "ВЫБОР АДМИНИСТРАТОРА" на приветственном экране
+const welcomeAdminBtn = document.getElementById('welcomeAdminBtn');
+if (welcomeAdminBtn) {
+    welcomeAdminBtn.addEventListener('click', () => {
+        // Показываем экран выбора администратора
         showSetupScreen();
     });
 }
@@ -1546,7 +1566,7 @@ if (continueToAdminBtn) {
         currentAdminName = selectedOption ? selectedOption.text : currentAdminId;
         
         console.log('👑 Запуск в режиме синхронизации с админом:', currentAdminName);
-        showMainApp();
+        showMainApp(false);  // ← ИСПРАВЛЕНО: добавил false (НЕ генерируем локальную гонку)
         
         setTimeout(() => {
             showStatusMessage(`👑 Режим синхронизации: следуем настройкам ${currentAdminName}`, 'success');
@@ -1554,22 +1574,7 @@ if (continueToAdminBtn) {
     });
 }
     
-// Обработчик для кнопки "СЛУЧАЙНАЯ ГОНКА" (только ОДИН раз!)
-const localRaceBtn = document.getElementById('localRaceBtn');
-if (localRaceBtn) {
-    localRaceBtn.addEventListener('click', () => {
-        userSyncEnabled = false;
-        currentAdminId = null;
-        currentAdminName = null;
-        
-        console.log('🎲 Запуск в локальном режиме');
-        showMainApp();
-        
-        setTimeout(() => {
-            showStatusMessage('🎲 Локальный режим: генерируем случайные гонки!', 'info');
-        }, 100);
-    });
-}
+
 
 // Состояние блокировок
 const locks = { car: false, track: false, weather: false, time: false, tires: false, fuel: false, category: false };
