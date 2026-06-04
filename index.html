@@ -2754,14 +2754,23 @@ function startAutoRefresh() {
                 console.error('❌ Ошибка при проверке обновлений:', e);
             }
         }
-    }, 10000); // Изменено с 5000 на 10000 мс (10 секунд)
+    }, 10000); // Проверка каждые 10 секунд
 }
+
 function stopAutoRefresh() {
     if (autoRefreshInterval) {
         clearInterval(autoRefreshInterval);
         autoRefreshInterval = null;
         console.log('🛑 Автообновление остановлено');
     }
+}
+
+// Функция для очистки кэша синхронизации - ДОБАВЛЕНА
+function resetSyncCache() {
+    lastSyncedData = null;
+    syncedModeActive = false;
+    syncedComboData = null;
+    console.log('🗑️ Кэш синхронизации очищен');
 }
 
 async function loadSyncedCombo(forceRefresh = false, retryCount = 0) {
