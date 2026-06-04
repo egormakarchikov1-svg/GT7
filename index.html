@@ -1166,6 +1166,7 @@
 </div>
     
 <!-- ЭКРАН 3: ОСНОВНОЕ ПРИЛОЖЕНИЕ -->
+<!-- ЭКРАН 3: ОСНОВНОЕ ПРИЛОЖЕНИЕ -->
 <div id="mainApp" class="screen hidden">
     <div id="adminSyncBanner" class="admin-banner hidden">👑 Режим синхронизации АКТИВЕН | Администратор: <span id="adminName">—</span></div>
     
@@ -1319,15 +1320,7 @@
         <h3>🏁 МАШИНЫ ГОНОЧНОГО КЛАССА GR 🏁</h3>
     </div>
 
-    <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin: 15px 0;">
-        <button id="randomBtn" class="btn-main">🎲 СЛУЧАЙНАЯ ГОНКА</button>
-        <button id="shareBtn" class="btn-main" style="background: #3b82f6;">📤 ПОДЕЛИТЬСЯ</button>
-    </div>
-
-    <div class="sync-toggle-container">
-        <span>🔄 РЕЖИМ СИНХРОНИЗАЦИИ</span>
-        <button id="syncToggleBtn">🔒 ВКЛ</button>
-    </div>
+    <!-- КНОПКИ УДАЛЕНЫ! ТОЛЬКО ГЕНЕРАЦИЯ ЧЕРЕЗ ОБРАБОТЧИК -->
 </div>
 
 <script>
@@ -1554,24 +1547,26 @@ if (localRaceFromSetupBtn) {
         currentAdminId = null;
         currentAdminName = null;
         
-        console.log('🎲 Запуск в локальном режиме с экрана выбора админа');
+        console.log('🎲 Запуск в локальном режиме');
         
-        document.getElementById('welcomeScreen').classList.add('hidden');
+        // Скрываем экран выбора админа
         document.getElementById('setupScreen').classList.add('hidden');
+        
+        // Показываем главный экран
         document.getElementById('mainApp').classList.remove('hidden');
         
+        // Скрываем баннер синхронизации
         const banner = document.getElementById('adminSyncBanner');
         if (banner) banner.classList.add('hidden');
         
+        // Запускаем init
         if (typeof init === 'function') init();
         
+        // Сразу генерируем гонку
         setTimeout(() => {
             if (typeof generateLocalRace === 'function') {
                 generateLocalRace();
                 showStatusMessage('🎲 Случайная гонка готова!', 'info');
-            }
-            if (typeof updateModeSelectorVisibility === 'function') {
-                updateModeSelectorVisibility();
             }
         }, 100);
     });
