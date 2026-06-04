@@ -2654,25 +2654,71 @@ function startAutoRefresh() {
             console.log('🔄 Проверка обновлений у админа:', currentAdminId);
             
             try {
+                // Принудительно загружаем свежие данные (forceRefresh = true)
                 const synced = await loadSyncedCombo(true);
                 
                 if (syncedModeActive && synced) {
+                    // Получаем текущие значения из UI
+                    const currentCar = document.getElementById('carValue')?.innerText || '';
                     const currentTrackElement = document.getElementById('trackValue');
-                    const currentHTML = currentTrackElement ? currentTrackElement.innerHTML : '';
-                    const expectedLaps = synced.laps || '5';
-                    const expectedHTML = `${synced.track_name} <span class="time-x-badge">${expectedLaps} кругов</span>`;
+                    const currentWeather = document.getElementById('weatherValue')?.innerHTML || '';
+                    const currentTime = document.getElementById('timeValue')?.innerHTML || '';
+                    const currentTires = document.getElementById('tiresValue')?.innerHTML || '';
+                    const currentFuel = document.getElementById('fuelValue')?.innerHTML || '';
+                    
+                    // Извлекаем название трассы без количества кругов
+                    let currentTrackName = '';
+                    if (currentTrackElement) {
+                        const fullText = currentTrackElement.innerText;
+                        currentTrackName = fullText.split(' кругов')[0].split('кругов')[0].trim();
+                    }
                     
                     let hasChanges = false;
                     
-                    if (!locks.track && currentHTML !== expectedHTML) {
-                        console.log('🔍 Обнаружены изменения в ТРАССЕ!');
+                    // Проверяем изменения в МАШИНЕ
+                    if (!locks.car && synced.car_name && currentCar !== synced.car_name) {
+                        console.log('🔍 Обнаружены изменения в МАШИНЕ:', currentCar, '->', synced.car_name);
                         hasChanges = true;
                     }
                     
-                    if (!locks.car && synced.car_name) {
-                        const currentCar = document.getElementById('carValue')?.innerText || '';
-                        if (currentCar !== synced.car_name) {
-                            console.log('🔍 Обнаружены изменения в МАШИНЕ!');
+                    // Проверяем изменения в ТРАССЕ
+                    if (!locks.track && synced.track_name && currentTrackName !== synced.track_name) {
+                        console.log('🔍 Обнаружены изменения в ТРАССЕ:', currentTrackName, '->', synced.track_name);
+                        hasChanges = true;
+                    }
+                    
+                    // Проверяем изменения в ПОГОДЕ
+                    if (!locks.weather && synced.weather_name) {
+                        const expectedWeather = synced.weather_name;
+                        if (!currentWeather.includes(expectedWeather) && currentWeather !== expectedWeather) {
+                            console.log('🔍 Обнаружены изменения в ПОГОДЕ:', currentWeather, '->', expectedWeather);
+                            hasChanges = true;
+                        }
+                    }
+                    
+                    // Проверяем изменения во ВРЕМЕНИ
+                    if (!locks.time && synced.time_name) {
+                        const expectedTime = `${synced.time_name} <span class="time-x-badge">${synced.time_multiplier || 'X1'}</span>`;
+                        if (currentTime !== expectedTime) {
+                            console.log('🔍 Обнаружены изменения во ВРЕМЕНИ:', currentTime, '->', expectedTime);
+                            hasChanges = true;
+                        }
+                    }
+                    
+                    // Проверяем изменения в ИЗНОСЕ ШИН
+                    if (!locks.tires && synced.tires_value) {
+                        const expectedTires = `<span class="time-x-badge">${synced.tires_value}</span>`;
+                        if (currentTires !== expectedTires) {
+                            console.log('🔍 Обнаружены изменения в ИЗНОСЕ ШИН:', currentTires, '->', expectedTires);
+                            hasChanges = true;
+                        }
+                    }
+                    
+                    // Проверяем изменения в РАСХОДЕ ТОПЛИВА
+                    if (!locks.fuel && synced.fuel_value) {
+                        const expectedFuel = `<span class="time-x-badge">${synced.fuel_value}</span>`;
+                        if (currentFuel !== expectedFuel) {
+                            console.log('🔍 Обнаружены изменения в РАСХОДЕ ТОПЛИВА:', currentFuel, '->', expectedFuel);
                             hasChanges = true;
                         }
                     }
@@ -2687,13 +2733,15 @@ function startAutoRefresh() {
                         setTimeout(() => {
                             isApplyingUpdate = false;
                         }, 2000);
+                    } else {
+                        console.log('✅ Изменений нет');
                     }
                 }
             } catch(e) {
                 console.error('❌ Ошибка при проверке обновлений:', e);
             }
         }
-    }, 5000);
+    }, 5000); // Проверка каждые 5 секунд
 }
 function stopAutoRefresh() {
     if (autoRefreshInterval) {
