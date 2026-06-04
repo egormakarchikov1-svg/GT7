@@ -1171,6 +1171,12 @@
     <div id="adminSyncBanner" class="admin-banner hidden">👑 Режим синхронизации АКТИВЕН | Администратор: <span id="adminName">—</span></div>
     
     <div id="adminModeBanner" style="display: none;"></div>
+
+    <div style="margin: 10px 0;">
+    <button id="manualSyncBtn" style="background: #8b5cf6; width: 100%;">
+        🔄 ПРИНУДИТЕЛЬНАЯ СИНХРОНИЗАЦИЯ
+    </button>
+</div>
     
     <!-- Блок РЕЖИМ ЗАЕЗДА МАШИН -->
     <div class="cars-track-container" id="modeSelectorBlock" style="border-color: #8b5cf6;">
@@ -1406,9 +1412,12 @@ function showSetupScreen() {
 }
 
 function showMainApp(autoGenerate = true) {
-    console.log('🟢 showMainApp вызвана, userSyncEnabled =', userSyncEnabled, 'adminId =', currentAdminId, 'autoGenerate =', autoGenerate);
+    console.log('🟢 showMainApp вызвана, userSyncEnabled =', userSyncEnabled, 'adminId =', currentAdminId);
     
-    // Показываем главный экран, скрываем остальные
+    // Останавливаем старую синхронизацию
+    stopAutoRefresh();
+    
+    // Показываем главный экран
     document.getElementById('welcomeScreen').classList.add('hidden');
     document.getElementById('setupScreen').classList.add('hidden');
     document.getElementById('mainApp').classList.remove('hidden');
@@ -1420,6 +1429,9 @@ function showMainApp(autoGenerate = true) {
     if (userSyncEnabled && currentAdminId) {
         banner.classList.remove('hidden');
         adminNameSpan.innerHTML = currentAdminName || currentAdminId;
+        
+        // ЗАПУСКАЕМ СИНХРОНИЗАЦИЮ ДЛЯ ВЫБРАННОГО АДМИНА
+        startAutoRefresh();
     } else {
         banner.classList.add('hidden');
     }
@@ -1436,16 +1448,13 @@ function showMainApp(autoGenerate = true) {
         console.log('🔄 Автоматическая загрузка данных, режим:', userSyncEnabled ? 'СИНХРОНИЗАЦИЯ' : 'ЛОКАЛЬНЫЙ');
         
         if (userSyncEnabled && currentAdminId) {
-            // === РЕЖИМ СИНХРОНИЗАЦИИ ===
             console.log('👑 Загружаем данные администратора...');
             
-            // 1. Загружаем запланированные гонки
             if (typeof displayUserRaces === 'function') {
                 await displayUserRaces(currentAdminId);
                 console.log('✅ Запланированные гонки загружены');
             }
             
-            // 2. Загружаем активную гонку от админа
             if (typeof loadSyncedCombo === 'function') {
                 const synced = await loadSyncedCombo(true);
                 if (syncedModeActive && synced && typeof applySyncedCombo === 'function') {
@@ -1456,20 +1465,13 @@ function showMainApp(autoGenerate = true) {
                 }
             }
         } else if (autoGenerate) {
-            // === ЛОКАЛЬНЫЙ РЕЖИМ С АВТОГЕНЕРАЦИЕЙ ===
             console.log('🎲 Генерируем локальную случайную гонку...');
             if (typeof generateLocalRace === 'function') {
                 generateLocalRace();
                 showStatusMessage('🎲 Случайная гонка готова!', 'info');
-            } else {
-                console.error('❌ Функция generateLocalRace не найдена!');
-                showStatusMessage('❌ Ошибка: функция генерации не найдена', 'error');
             }
-        } else {
-            console.log('🎲 Локальный режим без автогенерации');
         }
         
-        // Обновляем видимость блоков
         if (typeof updateModeSelectorVisibility === 'function') {
             updateModeSelectorVisibility();
         }
@@ -1525,6 +1527,12 @@ if (continueToAdminBtn) {
             return;
         }
         
+        // Останавливаем старую синхронизацию
+        stopAutoRefresh();
+        
+        // ОЧИЩАЕМ КЭШ ПРИ СМЕНЕ АДМИНИСТРАТОРА
+        resetSyncCache();
+        
         userSyncEnabled = true;
         currentAdminId = selectedValue;
         const selectedOption = select.options[select.selectedIndex];
@@ -1535,6 +1543,16 @@ if (continueToAdminBtn) {
         
         setTimeout(() => {
             showStatusMessage(`👑 Режим синхронизации: следуем настройкам ${currentAdminName}`, 'success');
+            // Дополнительная проверка через 1 секунду
+            setTimeout(() => {
+                if (typeof loadSyncedCombo === 'function') {
+                    loadSyncedCombo(true).then(synced => {
+                        if (synced) {
+                            console.log('✅ Первичная синхронизация успешна');
+                        }
+                    });
+                }
+            }, 1000);
         }, 100);
     });
 }
@@ -2605,39 +2623,50 @@ function showRefreshIndicator() {
 function startAutoRefresh() {
     if (autoRefreshInterval) clearInterval(autoRefreshInterval);
     
+    console.log('🔄 ЗАПУСК АВТООБНОВЛЕНИЯ для админа:', currentAdminId);
+    
     autoRefreshInterval = setInterval(async () => {
         if (userSyncEnabled && currentAdminId) {
-            console.log('🔄 Проверка обновлений...');
+            console.log('🔄 Проверка обновлений у админа:', currentAdminId);
+            
+            // ВАЖНО: forceRefresh = true, чтобы игнорировать кэш
             const synced = await loadSyncedCombo(true);
             
             if (syncedModeActive && synced) {
-                const currentHash = JSON.stringify({
-                    car: synced.car_name,
-                    track: synced.track_name,
-                    weather: synced.weather_name,
-                    time: synced.time_name,
-                    tires: synced.tires_value,
-                    fuel: synced.fuel_value,
-                    category: synced.category_name,
-                    laps: synced.laps,
-                    display_mode: synced.display_mode
-                });
+                // Сравниваем с текущими данными в UI
+                const currentCar = document.getElementById('carValue').innerText;
+                const currentTrack = document.getElementById('trackValue').innerText.split(' ')[0];
                 
-                if (currentHash !== lastSyncedData) {
-                    console.log('🔄 ДАННЫЕ ИЗМЕНИЛИСЬ! Обновляем...');
-                    lastSyncedData = currentHash;
+                let hasChanges = false;
+                
+                if (!locks.car && synced.car_name && currentCar !== synced.car_name) {
+                    console.log('🔍 Обнаружены изменения в МАШИНЕ:', currentCar, '->', synced.car_name);
+                    hasChanges = true;
+                }
+                
+                if (!locks.track && synced.track_name && currentTrack !== synced.track_name) {
+                    console.log('🔍 Обнаружены изменения в ТРАССЕ:', currentTrack, '->', synced.track_name);
+                    hasChanges = true;
+                }
+                
+                if (hasChanges) {
+                    console.log('🔄 ПРИМЕНЯЕМ ОБНОВЛЕНИЯ ОТ АДМИНА!');
                     applySyncedCombo(synced);
                     showRefreshIndicator();
+                    showStatusMessage('🔄 Данные обновлены администратором!', 'success');
+                } else {
+                    console.log('✅ Изменений нет');
                 }
             }
         }
-    }, 5000);
+    }, 1000); // 5 секунд - можно уменьшить до 2000 для более частой проверки
 }
 
 function stopAutoRefresh() {
     if (autoRefreshInterval) {
         clearInterval(autoRefreshInterval);
         autoRefreshInterval = null;
+        console.log('🛑 Автообновление остановлено');
     }
 }
 
@@ -3373,6 +3402,31 @@ async function loadUserAdmins() {
 // ============================================
 // ИНИЦИАЛИЗАЦИЯ (ИСПРАВЛЕНА)
 // ============================================
+async function manualSync() {
+    if (!userSyncEnabled || !currentAdminId) {
+        showStatusMessage('❌ Режим синхронизации не активирован', 'warning');
+        return;
+    }
+    
+    showStatusMessage('🔄 Принудительная синхронизация...', 'info');
+    const synced = await loadSyncedCombo(true);
+    
+    if (syncedModeActive && synced) {
+        applySyncedCombo(synced);
+        showStatusMessage('✅ Данные принудительно синхронизированы!', 'success');
+    } else {
+        showStatusMessage('⚠️ Нет активных данных от администратора', 'warning');
+    }
+}
+
+// Функция для очистки кэша синхронизации
+function resetSyncCache() {
+    lastSyncedData = null;
+    syncedModeActive = false;
+    syncedComboData = null;
+    console.log('🗑️ Кэш синхронизации очищен');
+}
+    
 function init() {
     console.log('🚀 Инициализация приложения');
     loadShownCars();
@@ -3466,6 +3520,13 @@ function init() {
                 });
             }
         }
+    }
+
+    // Обработчик кнопки принудительной синхронизации
+    const manualSyncBtn = document.getElementById('manualSyncBtn');
+    if (manualSyncBtn) {
+        manualSyncBtn.addEventListener('click', manualSync);
+        console.log('✅ Кнопка ручной синхронизации активирована');
     }
 }
 
