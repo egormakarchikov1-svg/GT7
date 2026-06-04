@@ -1179,10 +1179,10 @@
 </div>
 
      <div style="margin: 10px 0;">
-        <button id="generateRandomRaceBtn" style="background: linear-gradient(135deg, #ff4d4d, #cc0000); width: 100%; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 40px;">
-            🎲 СЛУЧАЙНАЯ ГОНКА
-        </button>
-    </div>
+    <button id="generateRandomRaceBtn" style="background: linear-gradient(135deg, #ff4d4d, #cc0000); width: 100%; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 40px; display: block;">
+        🎲 СЛУЧАЙНАЯ ГОНКА
+    </button>
+</div>
     
     <!-- Блок РЕЖИМ ЗАЕЗДА МАШИН -->
     <div class="cars-track-container" id="modeSelectorBlock" style="border-color: #8b5cf6;">
@@ -1613,17 +1613,26 @@ if (continueToAdminBtn) {
 const localRaceFromSetupBtn = document.getElementById('localRaceFromSetupBtn');
 if (localRaceFromSetupBtn) {
     localRaceFromSetupBtn.addEventListener('click', () => {
+        console.log('🎲 Запуск в локальном режиме со второго экрана');
+        
         userSyncEnabled = false;
         currentAdminId = null;
         currentAdminName = null;
-        
-        console.log('🎲 Запуск в локальном режиме');
         
         document.getElementById('setupScreen').classList.add('hidden');
         document.getElementById('mainApp').classList.remove('hidden');
         
         const banner = document.getElementById('adminSyncBanner');
         if (banner) banner.classList.add('hidden');
+        
+        // Показываем кнопку "Случайная гонка"
+        const generateRandomRaceBtn = document.getElementById('generateRandomRaceBtn');
+        if (generateRandomRaceBtn) {
+            generateRandomRaceBtn.style.display = 'block';
+        }
+        
+        stopAutoRefresh();
+        resetSyncCache();
         
         if (typeof init === 'function') init();
         
@@ -1635,7 +1644,6 @@ if (localRaceFromSetupBtn) {
         }, 100);
     });
 }
-
 // Состояние блокировок
 const locks = { car: false, track: false, weather: false, time: false, tires: false, fuel: false, category: false };
 
