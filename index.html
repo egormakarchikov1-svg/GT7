@@ -1495,22 +1495,60 @@ window.setExternalSettings = function(adminId, adminName, syncEnabled) {
     }
 };
 
-// Проверяем, видел ли пользователь приветствие
-// Проверяем, видел ли пользователь приветствие
+// ===== ОБРАБОТЧИКИ КНОПОК НА ПРИВЕТСТВЕННОМ ЭКРАНЕ =====
+
+// 1. Кнопка "СЛУЧАЙНАЯ ГОНКА" на приветственном экране
+const welcomeLocalRaceBtn = document.getElementById('welcomeLocalRaceBtn');
+if (welcomeLocalRaceBtn) {
+    welcomeLocalRaceBtn.addEventListener('click', () => {
+        console.log('🎲 Запуск локальной случайной гонки');
+        
+        userSyncEnabled = false;
+        currentAdminId = null;
+        currentAdminName = null;
+        
+        document.getElementById('welcomeScreen').classList.add('hidden');
+        document.getElementById('mainApp').classList.remove('hidden');
+        
+        const banner = document.getElementById('adminSyncBanner');
+        if (banner) banner.classList.add('hidden');
+        
+        stopAutoRefresh();
+        resetSyncCache();
+        
+        if (typeof init === 'function') init();
+        
+        setTimeout(() => {
+            if (typeof generateLocalRace === 'function') {
+                generateLocalRace();
+                showStatusMessage('🎲 Случайная гонка готова!', 'info');
+            }
+        }, 100);
+        
+        localStorage.setItem('gt7_welcome_seen', 'true');
+    });
+}
+
+// 2. Кнопка "ВЫБОР АДМИНИСТРАТОРА" на приветственном экране
+const welcomeAdminBtn = document.getElementById('welcomeAdminBtn');
+if (welcomeAdminBtn) {
+    welcomeAdminBtn.addEventListener('click', () => {
+        console.log('👑 Переход к выбору администратора');
+        
+        document.getElementById('welcomeScreen').classList.add('hidden');
+        document.getElementById('setupScreen').classList.remove('hidden');
+        loadAdminsFromGoogle();
+        
+        localStorage.setItem('gt7_welcome_seen', 'true');
+    });
+}
+
+// Проверяем, видел ли пользователь приветствие (только ОДИН РАЗ!)
 const hasSeenWelcome = localStorage.getItem('gt7_welcome_seen');
 if (hasSeenWelcome) {
     showSetupScreen();
 } else {
     showWelcomeScreen();
-}
-
-// Обработчик закрытия приветствия (кнопка СТАРТ)
-const closeWelcomeBtn = document.getElementById('closeWelcomeBtn');
-if (closeWelcomeBtn) {
-    closeWelcomeBtn.addEventListener('click', () => {
-        localStorage.setItem('gt7_welcome_seen', 'true');
-        showSetupScreen();
-    });
 }
 
 // ===== ОБРАБОТЧИКИ НА ЭКРАНЕ ВЫБОРА АДМИНИСТРАТОРА =====
@@ -1527,10 +1565,7 @@ if (continueToAdminBtn) {
             return;
         }
         
-        // Останавливаем старую синхронизацию
         stopAutoRefresh();
-        
-        // ОЧИЩАЕМ КЭШ ПРИ СМЕНЕ АДМИНИСТРАТОРА
         resetSyncCache();
         
         userSyncEnabled = true;
@@ -1543,7 +1578,6 @@ if (continueToAdminBtn) {
         
         setTimeout(() => {
             showStatusMessage(`👑 Режим синхронизации: следуем настройкам ${currentAdminName}`, 'success');
-            // Дополнительная проверка через 1 секунду
             setTimeout(() => {
                 if (typeof loadSyncedCombo === 'function') {
                     loadSyncedCombo(true).then(synced => {
@@ -1567,20 +1601,14 @@ if (localRaceFromSetupBtn) {
         
         console.log('🎲 Запуск в локальном режиме');
         
-        // Скрываем экран выбора админа
         document.getElementById('setupScreen').classList.add('hidden');
-        
-        // Показываем главный экран
         document.getElementById('mainApp').classList.remove('hidden');
         
-        // Скрываем баннер синхронизации
         const banner = document.getElementById('adminSyncBanner');
         if (banner) banner.classList.add('hidden');
         
-        // Запускаем init
         if (typeof init === 'function') init();
         
-        // Сразу генерируем гонку
         setTimeout(() => {
             if (typeof generateLocalRace === 'function') {
                 generateLocalRace();
@@ -1589,8 +1617,6 @@ if (localRaceFromSetupBtn) {
         }, 100);
     });
 }
-    
-
 
 // Состояние блокировок
 const locks = { car: false, track: false, weather: false, time: false, tires: false, fuel: false, category: false };
@@ -1600,26 +1626,24 @@ let currentTrack = null;
 let shownCars = [];
 let shownTracks = [];
 
-// ⚠️ ГЛАВНОЕ ИСПРАВЛЕНИЕ: переменные объявлены ОДИН РАЗ
-// (currentAdminId и userSyncEnabled уже объявлены в блоке управления экранами)
 localStorage.setItem('gt7_sync_enabled', 'false');
 let syncedModeActive = false;
 let syncedComboData = null;
 let displayMode = localStorage.getItem('gt7_display_mode') || 'all';
 let lastSyncedData = null;
 let isFirstLoad = true;
+
 // ============================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 // ============================================
 function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function getRandomXValue() { return `X${Math.floor(Math.random() * 20) + 1}`; }
 
-// Иконка трассы
 function getTrackIcon(trackName) {
     return 'https://cdn-icons-png.flaticon.com/512/1998/1998626.png';
 }
 
-    function showStatusMessage(message, type) {
+function showStatusMessage(message, type) {
     let statusDiv = document.getElementById('tempStatusMessage');
     if (!statusDiv) {
         statusDiv = document.createElement('div');
@@ -1660,7 +1684,6 @@ function getTrackIcon(trackName) {
         }, 300);
     }, 3000);
 }
-
 // ============================================
 // ДАННЫЕ ДЛЯ ЛОКАЛЬНОЙ ГЕНЕРАЦИИ
 // ============================================
