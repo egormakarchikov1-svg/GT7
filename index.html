@@ -2656,39 +2656,33 @@ function startAutoRefresh() {
             const synced = await loadSyncedCombo(true);
             
             if (syncedModeActive && synced) {
-                const currentCarElement = document.getElementById('carValue');
-                const currentTrackElement = document.getElementById('trackValue');
+                // Сохраняем хэш текущего состояния
+                const currentCar = document.getElementById('carValue')?.innerText || '';
+                const currentTrackHTML = document.getElementById('trackValue')?.innerHTML || '';
+                const currentWeather = document.getElementById('weatherValue')?.innerHTML || '';
+                const currentTime = document.getElementById('timeValue')?.innerHTML || '';
+                const currentTires = document.getElementById('tiresValue')?.innerHTML || '';
+                const currentFuel = document.getElementById('fuelValue')?.innerHTML || '';
                 
-                let currentTrackName = '';
-                if (currentTrackElement) {
-                    const fullText = currentTrackElement.innerText;
-                    currentTrackName = fullText.split(' кругов')[0].split('кругов')[0].trim();
-                }
+                const currentHash = `${currentCar}|${currentTrackHTML}|${currentWeather}|${currentTime}|${currentTires}|${currentFuel}`;
                 
-                const currentCar = currentCarElement ? currentCarElement.innerText : '';
+                // Формируем ожидаемый хэш от админа
+                const expectedLaps = synced.laps || '5';
+                const expectedTrackHTML = `${synced.track_name} <span class="time-x-badge">${expectedLaps} кругов</span>`;
+                const expectedHash = `${synced.car_name || ''}|${expectedTrackHTML}|${synced.weather_name || ''}|${synced.time_name || ''} <span class="time-x-badge">${synced.time_multiplier || 'X1'}</span>|<span class="time-x-badge">${synced.tires_value || 'X1'}</span>|<span class="time-x-badge">${synced.fuel_value || 'X1'}</span>`;
                 
-                let hasChanges = false;
-                
-                if (!locks.car && synced.car_name && currentCar !== synced.car_name) {
-                    console.log('🔍 Обнаружены изменения в МАШИНЕ:', currentCar, '->', synced.car_name);
-                    hasChanges = true;
-                }
-                
-                if (!locks.track && synced.track_name && currentTrackName !== synced.track_name) {
-                    console.log('🔍 Обнаружены изменения в ТРАССЕ:', currentTrackName, '->', synced.track_name);
-                    hasChanges = true;
-                }
-                
-                if (hasChanges) {
-                    isApplyingUpdate = true;
+                if (currentHash !== expectedHash) {
                     console.log('🔄 ПРИМЕНЯЕМ ОБНОВЛЕНИЯ ОТ АДМИНА!');
+                    isApplyingUpdate = true;
                     applySyncedCombo(synced);
                     showRefreshIndicator();
                     showStatusMessage('🔄 Данные обновлены администратором!', 'success');
                     
                     setTimeout(() => {
                         isApplyingUpdate = false;
-                    }, 1000);
+                    }, 2000);
+                } else {
+                    console.log('✅ Изменений нет');
                 }
             }
         }
