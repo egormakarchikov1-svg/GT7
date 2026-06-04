@@ -12,7 +12,6 @@
     <meta name="theme-color" content="#ff4d4d">
     
     <style>
-        /* ВАШ ПОЛНЫЙ CSS (КОПИРУЮ ВАШ КОД) */
         * {
             margin: 0;
             padding: 0;
@@ -47,11 +46,9 @@
             transition: all 0.3s ease;
         }
         
-        /* Управление экранами */
         .screen { transition: all 0.3s ease; }
         .hidden { display: none !important; }
         
-        /* Стили для экрана выбора администратора */
         .setup-card {
             background: rgba(0, 0, 0, 0.5);
             border-radius: 20px;
@@ -81,17 +78,18 @@
             font-weight: bold;
             cursor: pointer;
         }
-        .setup-btn-secondary { background: #ff4d4d; }
-        .sync-buttons { display: flex; gap: 15px; justify-content: center; margin: 15px 0; }
-        .sync-buttons button { flex: 1; padding: 12px; font-size: 16px; border: none; border-radius: 40px; font-weight: bold; cursor: pointer; }
-        .sync-on { background: #22c55e; color: white; }
-        .sync-off { background: #ef4444; color: white; }
-        .sync-status { margin-top: 12px; padding: 8px; border-radius: 20px; text-align: center; font-size: 12px; }
-        .sync-status.active { background: #22c55e20; color: #22c55e; }
-        .sync-status.inactive { background: #ef444420; color: #ef4444; }
         .admin-banner { background: #22c55e20; border: 1px solid #22c55e; border-radius: 12px; padding: 10px; margin-bottom: 12px; text-align: center; font-size: 12px; color: #22c55e; }
         
-        /* ВАШИ ОСТАЛЬНЫЕ СТИЛИ (адаптивные, блоки и т.д.) */
+        /* ДОБАВЛЕННЫЙ CSS ДЛЯ КНОПКИ НОВОЙ ГОНКИ */
+        #newLocalRaceBtnContainer {
+            display: none;
+            justify-content: center;
+            margin: 15px 0;
+        }
+        .local-mode #newLocalRaceBtnContainer {
+            display: flex !important;
+        }
+        
         @media (max-width: 480px) and (orientation: portrait) {
             body { padding: 4px; }
             .container { padding: 8px 6px; border-radius: 16px; max-width: 100%; min-height: 85vh; display: flex; flex-direction: column; justify-content: center; }
@@ -107,9 +105,7 @@
             .icon-container { min-height: 50px; margin-bottom: 3px; }
             .car-icon, .track-icon { max-height: 40px; min-height: 40px; }
             .param-value, .category-value { font-size: 10px; padding: 5px 6px; margin-top: 3px; min-height: 50px; display: flex; align-items: center; justify-content: center; }
-            .btn-group button { font-size: 8px; padding: 5px 4px; min-width: 52px; }
             .btn-main { min-width: 120px; font-size: 12px; padding: 8px 11px; min-height: 44px; }
-            .btn-icon { width: 16px; height: 16px; }
             .btn-similar { font-size: 10px; padding: 6px 10px; }
             .similar-title { font-size: 11px; margin-bottom: 6px; }
             .ref-car-info { font-size: 9px; padding: 6px; margin-bottom: 8px; min-height: 65px; }
@@ -121,152 +117,87 @@
             .settings-container { padding: 6px; margin: 6px 0; }
             .settings-item { padding: 6px; }
             .settings-label { font-size: 9px; white-space: nowrap; }
-            .settings-value { font-size: 11px; padding: 4px; word-break: break-word; line-height: 1.2; min-height: 45px; display: flex; align-items: center; justify-content: center; }
+            .settings-value { font-size: 11px; padding: 4px; min-height: 45px; display: flex; align-items: center; justify-content: center; }
             .settings-lock-btn { padding: 2px 6px; font-size: 8px; min-width: 32px; }
             .settings-items { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; min-height: 170px; }
-            .settings-header { display: flex; flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: nowrap; gap: 4px; margin-bottom: 6px; }
-            .settings-value-small { font-size: 9px !important; line-height: 1.2; }
-            .settings-icon { width: 16px !important; height: 16px !important; }
             .time-x-badge { font-size: 7px; padding: 2px 3px; margin-left: 2px; white-space: nowrap; }
-            .result-icon { font-size: 12px !important; }
-            #tiresValue, #fuelValue { font-size: 14px !important; padding: 3px !important; }
             .header-icon { width: 28px !important; height: 28px !important; }
-            .category-icon { width: 22px !important; height: 22px !important; }
-            .category-value { min-height: 55px; }
         }
 
         @media (max-width: 850px) and (orientation: landscape) {
             body { padding: 6px; }
             .container { padding: 8px 10px; border-radius: 16px; max-width: 95%; min-height: 85vh; }
             .cars-track-container, .category-container, .settings-container, .similar-cars-container { padding: 5px; margin-bottom: 6px; }
-            .cars-track-header-clickable, .category-header-clickable, .settings-header-clickable, .similar-header-clickable { padding: 6px 10px; }
-            .cars-track-title, .category-title, .settings-title, .similar-title { font-size: 12px; }
-            .cars-track-toggle-icon, .category-toggle-icon, .toggle-icon, .similar-toggle-icon { font-size: 14px; }
             .params-grid { gap: 10px; grid-template-columns: repeat(2, 1fr) !important; min-height: 180px; }
             .param-label { font-size: 9px; padding: 4px 8px; }
-            .param-label img { width: 14px; height: 14px; }
             .lock-btn { padding: 3px 6px; font-size: 9px; min-width: 29px; }
-            .param-header { gap: 5px; margin-bottom: 4px; }
             .icon-container { min-height: 40px; margin-bottom: 3px; }
             .car-icon, .track-icon { max-height: 32px; min-height: 32px; }
-            .param-value, .category-value { font-size: 8px; padding: 4px 5px; margin-top: 3px; min-height: 45px; display: flex; align-items: center; justify-content: center; }
-            .btn-group button { font-size: 7px; padding: 4px 3px; min-width: 48px; }
+            .param-value, .category-value { font-size: 8px; padding: 4px 5px; min-height: 45px; }
             .btn-main { min-width: 112px; font-size: 11px; padding: 6px 10px; min-height: 40px; }
-            .btn-icon { width: 14px; height: 14px; }
             .btn-similar { font-size: 9px; padding: 5px 8px; }
-            .similar-title { font-size: 10px; margin-bottom: 5px; }
-            .ref-car-info { font-size: 8px; padding: 5px; margin-bottom: 6px; min-height: 55px; }
-            .similar-list li { padding: 5px; font-size: 8px; min-height: 35px; }
-            .similar-list { min-height: 220px; }
-            .car-name { font-size: 9px; }
-            .car-stats { font-size: 6px; gap: 2px; }
-            .similarity-badge { font-size: 7px; padding: 1px 3px; }
             .settings-container { padding: 6px; margin: 6px 0; }
             .settings-item { padding: 5px; }
-            .settings-label { font-size: 8px; white-space: nowrap; }
-            .settings-value { font-size: 11px; padding: 3px; min-height: 40px; display: flex; align-items: center; justify-content: center; }
-            .settings-lock-btn { padding: 2px 5px; font-size: 7px; min-width: 28px; }
-            .settings-items { gap: 5px; min-height: 150px; }
-            .settings-header { gap: 3px; margin-bottom: 4px; }
-            .settings-value-small { font-size: 9px !important; }
-            .settings-icon { width: 14px !important; height: 14px !important; }
-            .result-icon { font-size: 12px !important; }
             .time-x-badge { font-size: 7px; padding: 2px 4px; }
             .header-icon { width: 24px !important; height: 24px !important; }
-            .category-icon { width: 18px !important; height: 18px !important; }
-            .category-value { min-height: 45px; }
         }
 
         @media (min-width: 481px) and (max-width: 800px) and (orientation: portrait) {
             body { padding: 10px; }
             .container { padding: 16px 14px; border-radius: 24px; max-width: 550px; min-height: 85vh; }
-            .cars-track-container, .category-container, .settings-container, .similar-cars-container { padding: 8px; margin-bottom: 10px; }
             .params-grid { gap: 15px; grid-template-columns: repeat(2, 1fr) !important; min-height: 220px; }
             .param-label { font-size: 14px; padding: 8px 16px; }
-            .param-label img { width: 22px; height: 22px; }
             .lock-btn { padding: 6px 12px; font-size: 13px; min-width: 45px; }
-            .param-header { gap: 10px; margin-bottom: 8px; }
             .icon-container { min-height: 70px; margin-bottom: 6px; }
             .car-icon, .track-icon { max-height: 65px; min-height: 65px; }
-            .param-value, .category-value { font-size: 14px; padding: 8px 10px; margin-top: 5px; min-height: 65px; display: flex; align-items: center; justify-content: center; }
-            .btn-group button { font-size: 11px; padding: 8px 8px; min-width: 75px; }
+            .param-value, .category-value { font-size: 14px; padding: 8px 10px; min-height: 65px; }
             .btn-main { min-width: 180px; font-size: 17px; padding: 11px 16px; min-height: 55px; }
-            .btn-icon { width: 22px; height: 22px; }
             .btn-similar { font-size: 13px; padding: 8px 12px; }
             .similar-title { font-size: 16px; margin-bottom: 10px; }
-            .ref-car-info { font-size: 12px; padding: 10px; margin-bottom: 12px; min-height: 80px; }
+            .ref-car-info { font-size: 12px; padding: 10px; min-height: 80px; }
             .similar-list li { padding: 10px; font-size: 12px; min-height: 55px; }
-            .similar-list { min-height: 320px; }
-            .car-name { font-size: 13px; }
-            .car-stats { font-size: 10px; gap: 6px; }
-            .similarity-badge { font-size: 11px; padding: 3px 6px; }
             .settings-container { padding: 12px; margin: 12px 0; }
             .settings-item { padding: 10px; }
             .settings-label { font-size: 14px; }
-            .settings-value { font-size: 22px; padding: 8px; min-height: 65px; display: flex; align-items: center; justify-content: center; }
+            .settings-value { font-size: 22px; padding: 8px; min-height: 65px; }
             .settings-lock-btn { padding: 5px 12px; font-size: 12px; }
-            .settings-value-small { font-size: 15px !important; }
-            .settings-icon { width: 28px !important; height: 28px !important; }
-            .settings-items { min-height: 220px; }
-            .result-icon { font-size: 26px !important; }
-            .category-icon { width: 28px !important; height: 28px !important; }
-            .category-value { min-height: 70px; }
+            .header-icon { width: 28px !important; height: 28px !important; }
         }
 
         @media (min-width: 801px) and (max-width: 1024px) and (orientation: landscape) {
             body { padding: 15px; }
             .container { max-width: 900px; padding: 18px 16px; border-radius: 28px; min-height: 85vh; }
-            .cars-track-container, .category-container, .settings-container, .similar-cars-container { padding: 10px; margin-bottom: 12px; }
             .params-grid { gap: 20px; grid-template-columns: repeat(2, 1fr) !important; min-height: 240px; }
             .param-label { font-size: 16px; padding: 10px 18px; }
-            .param-label img { width: 28px; height: 28px; }
             .lock-btn { padding: 7px 14px; font-size: 14px; min-width: 50px; }
-            .param-header { gap: 12px; margin-bottom: 10px; }
             .icon-container { min-height: 85px; margin-bottom: 8px; }
             .car-icon, .track-icon { max-height: 80px; min-height: 80px; }
-            .param-value, .category-value { font-size: 15px; padding: 10px 12px; margin-top: 6px; min-height: 70px; display: flex; align-items: center; justify-content: center; }
-            .btn-group button { font-size: 12px; padding: 9px 12px; min-width: 90px; }
+            .param-value, .category-value { font-size: 15px; padding: 10px 12px; min-height: 70px; }
             .btn-main { min-width: 220px; font-size: 19px; padding: 12px 20px; min-height: 60px; }
-            .btn-icon { width: 26px; height: 26px; }
             .btn-similar { font-size: 14px; padding: 10px 14px; }
             .similar-title { font-size: 18px; margin-bottom: 12px; }
-            .ref-car-info { font-size: 13px; padding: 12px; margin-bottom: 14px; min-height: 85px; }
+            .ref-car-info { font-size: 13px; padding: 12px; min-height: 85px; }
             .similar-list li { padding: 12px; font-size: 13px; min-height: 60px; }
-            .similar-list { min-height: 350px; }
-            .car-name { font-size: 14px; }
-            .car-stats { font-size: 11px; gap: 8px; }
-            .similarity-badge { font-size: 12px; padding: 3px 8px; }
             .settings-container { padding: 15px; margin: 15px 0; }
             .settings-item { padding: 12px; }
             .settings-label { font-size: 16px; }
-            .settings-value { font-size: 26px; padding: 10px; min-height: 70px; display: flex; align-items: center; justify-content: center; }
+            .settings-value { font-size: 26px; padding: 10px; min-height: 70px; }
             .settings-lock-btn { padding: 6px 14px; font-size: 14px; }
-            .settings-value-small { font-size: 17px !important; }
-            .settings-icon { width: 32px !important; height: 32px !important; }
-            .settings-items { min-height: 240px; }
-            .result-icon { font-size: 30px !important; }
-            .category-icon { width: 32px !important; height: 32px !important; }
-            .category-value { min-height: 75px; }
+            .header-icon { width: 32px !important; height: 32px !important; }
         }
 
         @media (min-width: 1281px) {
             .container { max-width: 1100px; padding: 24px 22px; min-height: 85vh; }
-            .cars-track-container, .category-container, .settings-container, .similar-cars-container { padding: 15px; margin-bottom: 18px; }
             .params-grid { gap: 30px; grid-template-columns: repeat(2, 1fr) !important; min-height: 280px; }
             .param-label { font-size: 20px; padding: 14px 28px; }
-            .param-label img { width: 36px; height: 36px; }
             .lock-btn { padding: 10px 18px; font-size: 18px; min-width: 70px; }
             .car-icon, .track-icon { max-height: 120px; min-height: 120px; }
-            .param-value, .category-value { font-size: 18px; padding: 14px 16px; min-height: 85px; display: flex; align-items: center; justify-content: center; }
-            .btn-group button { font-size: 15px; padding: 12px 18px; }
+            .param-value, .category-value { font-size: 18px; padding: 14px 16px; min-height: 85px; }
             .btn-main { min-width: 300px; font-size: 24px; padding: 16px 28px; min-height: 70px; }
-            .btn-icon { width: 34px; height: 34px; }
             .similar-title { font-size: 24px; }
             .settings-value { font-size: 34px; min-height: 85px; }
             .settings-items { min-height: 280px; }
             .similar-list { min-height: 400px; }
-            .category-icon { width: 36px !important; height: 36px !important; }
-            .category-value { min-height: 85px; }
         }
         
         .cars-track-container {
@@ -275,7 +206,6 @@
             margin: 12px 0;
             border: 1px solid #ff4d4d;
             overflow: hidden;
-            transition: all 0.3s ease;
         }
         
         .cars-track-header-clickable {
@@ -284,11 +214,6 @@
             justify-content: space-between;
             padding: 12px;
             cursor: pointer;
-            transition: background 0.2s ease;
-        }
-        
-        .cars-track-header-clickable:hover {
-            background: rgba(255, 77, 77, 0.1);
         }
         
         .cars-track-title {
@@ -306,17 +231,13 @@
             color: #ff4d4d;
             font-size: 20px;
             font-weight: bold;
-            transition: transform 0.3s ease;
         }
         
         .cars-track-content {
             padding: 0 12px 12px 12px;
-            transition: all 0.3s ease;
         }
         
-        .cars-track-content.collapsed {
-            display: none;
-        }
+        .cars-track-content.collapsed { display: none; }
         
         .category-container {
             background: rgba(0, 0, 0, 0.4);
@@ -324,7 +245,6 @@
             margin: 12px 0;
             border: 1px solid #ff4d4d;
             overflow: hidden;
-            transition: all 0.3s ease;
         }
         
         .category-header-clickable {
@@ -333,11 +253,6 @@
             justify-content: space-between;
             padding: 12px;
             cursor: pointer;
-            transition: background 0.2s ease;
-        }
-        
-        .category-header-clickable:hover {
-            background: rgba(255, 77, 77, 0.1);
         }
         
         .category-title {
@@ -355,18 +270,14 @@
             color: #ff4d4d;
             font-size: 20px;
             font-weight: bold;
-            transition: transform 0.3s ease;
         }
         
         .category-content {
             padding: 0 12px 12px 12px;
-            transition: all 0.3s ease;
             text-align: center;
         }
         
-        .category-content.collapsed {
-            display: none;
-        }
+        .category-content.collapsed { display: none; }
         
         .params-grid {
             display: grid;
@@ -376,13 +287,10 @@
         }
         
         .param-block {
-            margin-bottom: 0;
             text-align: center;
-            position: relative;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
         }
         
         .param-header {
@@ -392,7 +300,6 @@
             gap: 12px;
             margin-bottom: 10px;
             width: 100%;
-            position: relative;
         }
         
         .param-label {
@@ -402,10 +309,8 @@
             padding: 12px 20px;
             border-radius: 30px;
             font-size: 16px;
-            letter-spacing: 1px;
             display: inline-flex;
             align-items: center;
-            justify-content: center;
             gap: 8px;
         }
         
@@ -416,47 +321,21 @@
             font-size: 14px;
             padding: 8px 14px;
             cursor: pointer;
-            transition: all 0.2s ease;
-            backdrop-filter: blur(4px);
-            margin: 0;
-            box-shadow: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
             min-width: 48px;
         }
         
-        .lock-btn:hover {
-            transform: scale(1.05);
-        }
+        .lock-btn[data-state="unlocked"] { background: #22c55e; color: white; }
+        .lock-btn[data-state="locked"] { background: #ef4444; color: white; }
         
-        .lock-btn[data-state="unlocked"] {
-            background: #22c55e;
-            color: white;
-            box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
-        }
-        
-        .lock-btn[data-state="locked"] {
-            background: #ef4444;
-            color: white;
-            box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
-        }
-        
-        .header-icon {
-            width: 45px;
-            height: 45px;
-            object-fit: contain;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-        }
+        .header-icon { width: 45px; height: 45px; object-fit: contain; }
         
         .icon-container {
             background: transparent;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 90px;
-            margin-bottom: 8px;
             min-height: 70px;
+            margin-bottom: 8px;
         }
         
         .car-icon, .track-icon {
@@ -471,8 +350,6 @@
             font-size: 16px;
             font-weight: 600;
             color: #f1f5f9;
-            line-height: 1.3;
-            word-break: break-word;
             background: #0f172a80;
             padding: 8px 10px;
             border-radius: 16px;
@@ -480,27 +357,10 @@
             width: 100%;
         }
         
-        .category-label {
-            font-weight: 700;
-            color: #ffffff;
-            background: #0f172a;
-            padding: 12px 20px;
-            border-radius: 30px;
-            font-size: 16px;
-            letter-spacing: 1px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-        
         .category-value {
             font-size: 16px;
             font-weight: 600;
             color: #f1f5f9;
-            line-height: 1.3;
-            word-break: break-word;
             background: #0f172a80;
             padding: 8px 10px;
             border-radius: 16px;
@@ -510,13 +370,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-        
-        .category-icon {
-            width: 32px;
-            height: 32px;
-            object-fit: contain;
-            vertical-align: middle;
         }
         
         button {
@@ -529,51 +382,28 @@
             border-radius: 60px;
             cursor: pointer;
             margin: 6px 4px;
-            transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
-            box-shadow: 0 5px 15px rgba(255,77,77,0.2);
         }
         
-        button:active {
-            transform: scale(0.96);
-            background: #e03a3a;
-        }
+        button:active { transform: scale(0.96); }
         
         .btn-main {
-            width: auto;
             min-width: 190px;
             background: #ff4d4d;
             font-size: 18px;
             font-weight: 900;
-            font-family: 'Rajdhani', 'Orbitron', 'Segoe UI', sans-serif;
-            letter-spacing: 1px;
             text-transform: uppercase;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
             padding: 10px 16px;
-            display: inline-flex;
-            margin: 8px auto;
         }
         
         .btn-similar {
             background: #7c3aed;
-            margin-top: 5px;
             font-size: 14px;
             font-weight: 700;
-            font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
             padding: 8px 12px;
-        }
-        
-        .btn-icon {
-            vertical-align: middle;
-            margin-right: 8px;
-            filter: brightness(0) invert(1);
-            width: 24px;
-            height: 24px;
         }
         
         .settings-container {
@@ -582,7 +412,6 @@
             margin: 12px 0;
             border: 1px solid #22c55e;
             overflow: hidden;
-            transition: all 0.3s ease;
         }
         
         .settings-header-clickable {
@@ -591,11 +420,6 @@
             justify-content: space-between;
             padding: 12px;
             cursor: pointer;
-            transition: background 0.2s ease;
-        }
-        
-        .settings-header-clickable:hover {
-            background: rgba(34, 197, 94, 0.1);
         }
         
         .settings-title {
@@ -609,21 +433,10 @@
             flex: 1;
         }
         
-        .toggle-icon {
-            color: #22c55e;
-            font-size: 20px;
-            font-weight: bold;
-            transition: transform 0.3s ease;
-        }
+        .toggle-icon { color: #22c55e; font-size: 20px; font-weight: bold; }
         
-        .settings-content {
-            padding: 0 12px 12px 12px;
-            transition: all 0.3s ease;
-        }
-        
-        .settings-content.collapsed {
-            display: none;
-        }
+        .settings-content { padding: 0 12px 12px 12px; }
+        .settings-content.collapsed { display: none; }
         
         .settings-items {
             display: grid;
@@ -658,12 +471,7 @@
             gap: 8px;
         }
         
-        .settings-icon {
-            width: 24px;
-            height: 24px;
-            object-fit: contain;
-            vertical-align: middle;
-        }
+        .settings-icon { width: 24px; height: 24px; object-fit: contain; }
         
         .settings-lock-btn {
             background: rgba(0, 0, 0, 0.5);
@@ -672,19 +480,11 @@
             font-size: 12px;
             padding: 5px 12px;
             cursor: pointer;
-            transition: all 0.2s ease;
             font-weight: 600;
         }
         
-        .settings-lock-btn[data-state="unlocked"] {
-            background: #22c55e;
-            color: white;
-        }
-        
-        .settings-lock-btn[data-state="locked"] {
-            background: #ef4444;
-            color: white;
-        }
+        .settings-lock-btn[data-state="unlocked"] { background: #22c55e; color: white; }
+        .settings-lock-btn[data-state="locked"] { background: #ef4444; color: white; }
         
         .settings-value {
             font-size: 16px;
@@ -699,17 +499,6 @@
             justify-content: center;
             gap: 10px;
             flex-wrap: wrap;
-        }
-        
-        .settings-value-small {
-            font-size: 16px !important;
-            font-weight: 600;
-        }
-        
-        .result-icon {
-            font-size: 24px;
-            display: inline-block;
-            vertical-align: middle;
         }
         
         .time-x-badge {
@@ -728,7 +517,6 @@
             margin: 12px 0;
             border: 1px solid #ff4d4d;
             overflow: hidden;
-            transition: all 0.3s ease;
         }
         
         .similar-header-clickable {
@@ -737,11 +525,6 @@
             justify-content: space-between;
             padding: 12px;
             cursor: pointer;
-            transition: background 0.2s ease;
-        }
-        
-        .similar-header-clickable:hover {
-            background: rgba(255, 77, 77, 0.1);
         }
         
         .similar-title {
@@ -755,21 +538,10 @@
             flex: 1;
         }
         
-        .similar-toggle-icon {
-            color: #ff4d4d;
-            font-size: 20px;
-            font-weight: bold;
-            transition: transform 0.3s ease;
-        }
+        .similar-toggle-icon { color: #ff4d4d; font-size: 20px; font-weight: bold; }
         
-        .similar-content {
-            padding: 0 12px 12px 12px;
-            transition: all 0.3s ease;
-        }
-        
-        .similar-content.collapsed {
-            display: none;
-        }
+        .similar-content { padding: 0 12px 12px 12px; }
+        .similar-content.collapsed { display: none; }
         
         .ref-car-info {
             background: #ff4d4d20;
@@ -778,7 +550,6 @@
             margin-bottom: 14px;
             font-size: 13px;
             border-left: 3px solid #ff4d4d;
-            line-height: 1.4;
         }
         
         .similar-list {
@@ -798,21 +569,10 @@
             align-items: center;
             gap: 8px;
             flex-wrap: wrap;
-            transition: all 0.2s;
             cursor: pointer;
         }
         
-        .similar-list li:hover {
-            background: #1e293b;
-            transform: scale(1.02);
-        }
-        
-        .car-name {
-            font-weight: bold;
-            flex: 2;
-            min-width: 100px;
-            font-size: 13px;
-        }
+        .car-name { font-weight: bold; flex: 2; min-width: 100px; font-size: 13px; }
         
         .car-stats {
             color: #ff4d4d;
@@ -820,14 +580,12 @@
             display: flex;
             gap: 6px;
             flex-wrap: wrap;
-            justify-content: flex-end;
         }
         
         .car-stats span {
             background: rgba(255, 77, 77, 0.1);
             padding: 2px 5px;
             border-radius: 10px;
-            white-space: nowrap;
         }
         
         .similarity-badge {
@@ -839,131 +597,27 @@
             font-weight: bold;
         }
         
-        @media (hover: none) {
-            .lock-btn:hover, .similar-list li:hover, button:hover, .settings-lock-btn:hover,
-            .settings-header-clickable:hover, .similar-header-clickable:hover,
-            .cars-track-header-clickable:hover, .category-header-clickable:hover {
-                transform: none;
-            }
-        }
-        
-        @media (max-width: 850px) and (orientation: landscape) {
-            .settings-value-small { font-size: 8px !important; }
-            .time-x-badge { font-size: 6px !important; padding: 1px 3px !important; }
-            .result-icon { font-size: 10px !important; }
-            #tiresValue, #fuelValue { font-size: 12px !important; }
-        }
-        
-        #shareBtn {
-            background: #3b82f6;
-            margin-top: 8px;
-        }
-        #shareBtn:hover {
-            background: #2563eb;
-        }
-
-        .admin-select {
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 24px;
-            padding: 18px 15px;
-            margin: 12px 0;
-            text-align: center;
-            border: 1px solid rgba(255, 77, 77, 0.3);
-            backdrop-filter: blur(8px);
-            transition: all 0.3s ease;
-        }
-
-        .admin-select select {
-            width: 100%;
-            max-width: 280px;
-            padding: 12px 20px;
-            border-radius: 40px;
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            color: white;
-            border: 1px solid #ff4d4d;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .admin-select select:hover {
-            border-color: #ff9a3c;
-            box-shadow: 0 0 12px rgba(255, 77, 77, 0.4);
-            transform: scale(1.01);
-        }
-
-        .admin-select select:focus {
-            outline: none;
-            border-color: #ff4d4d;
-            box-shadow: 0 0 12px rgba(255, 77, 77, 0.5);
-        }
-
-        .admin-select option {
-            background: #1e293b;
-            color: white;
-        }
-
-        .hidden-block {
-            display: none !important;
-        }
-
-        .track-centered {
-            grid-column: 1 / -1 !important;
-            max-width: 100% !important;
-            width: 100% !important;
-        }
-
         .group-mode-message {
             background: linear-gradient(135deg, #8b5cf6, #6d28d9);
             border-radius: 16px;
             padding: 15px;
             margin: 12px 0;
             text-align: center;
-            border: 1px solid #a78bfa;
         }
-
-        .group-mode-message h3 {
-            color: white;
-            margin-bottom: 8px;
-            font-size: 16px;
-        }
-
-        .group-mode-message p {
-            color: #e0e7ff;
-            font-size: 13px;
-        }
-
+        
+        .group-mode-message h3 { color: white; margin-bottom: 8px; font-size: 16px; }
+        
         .race-card {
             background: linear-gradient(135deg, #1e293b, #0f172a);
             border-radius: 12px;
             padding: 15px;
             margin-bottom: 12px;
             border-left: 4px solid #22c55e;
-            transition: all 0.2s;
         }
-
-        .race-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-
-        .race-date {
-            font-size: 14px;
-            color: #22c55e;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-
-        .race-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 12px;
-            color: #fff;
-        }
-
+        
+        .race-date { font-size: 14px; color: #22c55e; font-weight: bold; margin-bottom: 8px; }
+        .race-title { font-size: 18px; font-weight: bold; margin-bottom: 12px; color: #fff; }
+        
         .race-details {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -972,13 +626,13 @@
             color: #aaa;
             margin-bottom: 12px;
         }
-
+        
         .race-details div {
             background: rgba(0,0,0,0.3);
             padding: 4px 8px;
             border-radius: 8px;
         }
-
+        
         .apply-race-btn {
             background: #22c55e;
             border: none;
@@ -988,29 +642,13 @@
             font-weight: bold;
             cursor: pointer;
             width: 100%;
-            transition: all 0.2s;
-        }
-
-        .apply-race-btn:hover {
-            background: #16a34a;
-            transform: scale(1.02);
         }
         
-        .races-content.collapsed {
-            display: none;
-        }
-
-        /* Начальное состояние — скрываем всё, кроме приветствия */
-        #adminSelectBlock,
-        #carsTrackContainer,
-        #categoryContainer,
-        #settingsContainer,
-        #similarContainer,
-        .races-container,
-        #modeSelectorBlock {
-            display: none !important;
-        }
-
+        .races-content.collapsed { display: none; }
+        
+        .hidden-block { display: none !important; }
+        .track-centered { grid-column: 1 / -1 !important; width: 100% !important; }
+        
         .welcome-message {
             position: fixed;
             top: 0;
@@ -1025,7 +663,7 @@
             justify-content: center;
             padding: 20px;
         }
-
+        
         .welcome-content {
             background: linear-gradient(135deg, #1e293b, #0f172a);
             border-radius: 28px;
@@ -1034,18 +672,10 @@
             width: 100%;
             text-align: center;
             border: 2px solid #ff4d4d;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.3s ease;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
+        
         .welcome-icon { font-size: 64px; margin-bottom: 16px; }
         .welcome-content h2 { color: #ff4d4d; font-size: 22px; margin-bottom: 20px; }
-        .welcome-content p { color: #eee; font-size: 14px; margin-bottom: 16px; text-align: left; }
         
         .welcome-modes { margin: 20px 0; text-align: left; }
         
@@ -1075,252 +705,216 @@
             cursor: pointer;
             margin-top: 16px;
             width: 100%;
-            transition: all 0.2s;
-        }
-
-        .welcome-close-btn:hover {
-            background: #e03a3a;
-            transform: scale(1.02);
-        }
-
-        .mode-btn {
-            transition: all 0.3s ease;
-            opacity: 0.7;
-        }
-
-        .mode-btn.active {
-            opacity: 1;
-            box-shadow: 0 0 15px currentColor;
-            transform: scale(1.02);
-        }
-
-        #modeAllBtn.active {
-            background: #3b82f6 !important;
-            box-shadow: 0 0 15px #3b82f6;
-        }
-
-        #modeGroupOnlyBtn.active {
-            background: #8b5cf6 !important;
-            box-shadow: 0 0 15px #8b5cf6;
-        }
-
-        #currentModeDisplay {
-            transition: all 0.3s ease;
-        }
-
-        #currentModeText {
-            transition: all 0.3s ease;
         }
         
+        .mode-btn { transition: all 0.3s ease; opacity: 0.7; }
+        .mode-btn.active { opacity: 1; box-shadow: 0 0 15px currentColor; transform: scale(1.02); }
+        #modeAllBtn.active { background: #3b82f6 !important; }
+        #modeGroupOnlyBtn.active { background: #8b5cf6 !important; }
     </style>
 </head>
 <body>
 <div class="container">
 
-    <!-- ЭКРАН 1: ПРИВЕТСТВИЕ С ВЫБОРОМ РЕЖИМА -->
-<div id="welcomeScreen" class="screen">
-    <div id="welcomeMessage" class="welcome-message" style="display: flex;">
-        <div class="welcome-content">
-            <div class="welcome-icon">🏁</div>
-            <h2>Добро пожаловать в GT7 Random Race!</h2>
-            <p style="margin-bottom: 20px;">🎮 <strong>Выберите режим игры:</strong></p>
-            <div style="display: flex; flex-direction: column; gap: 15px;">
-                <button id="welcomeLocalRaceBtn" style="background: linear-gradient(135deg, #ff4d4d, #cc0000); padding: 16px; font-size: 18px; border: none; border-radius: 40px; color: white; font-weight: bold; cursor: pointer;">
-                    🎲 СЛУЧАЙНАЯ ГОНКА
-                    <span style="display: block; font-size: 12px; opacity: 0.8;">Локальный режим без синхронизации</span>
-                </button>
-                <button id="welcomeAdminBtn" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); padding: 16px; font-size: 18px; border: none; border-radius: 40px; color: white; font-weight: bold; cursor: pointer;">
-                    👑 ВЫБОР АДМИНИСТРАТОРА
-                    <span style="display: block; font-size: 12px; opacity: 0.8;">Режим синхронизации</span>
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-<!-- ЭКРАН 2: ВЫБОР АДМИНИСТРАТОРА -->
-<div id="setupScreen" class="screen hidden">
-    <div class="setup-card">
-        <h3>👑 ВЫБЕРИТЕ АДМИНИСТРАТОРА</h3>
-        <select id="adminSelect" class="setup-select">
-            <option value="">-- Выберите администратора --</option>
-        </select>
-        <button id="continueToAdminBtn" class="setup-btn" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); margin-top: 15px;">
-            👑 ПРОДОЛЖИТЬ С АДМИНИСТРАТОРОМ
-        </button>
-        <div style="text-align: center; margin-top: 8px; font-size: 11px; color: #aaa;">
-            ✅ Включится режим синхронизации
-        </div>
-    </div>
-    
-    <div class="setup-card" style="border-color: #ff4d4d;">
-        <h3 style="color: #ff4d4d;">🎲 ИЛИ СЛУЧАЙНАЯ ГОНКА</h3>
-        <button id="localRaceFromSetupBtn" class="setup-btn" style="background: linear-gradient(135deg, #ff4d4d, #cc0000); font-size: 18px; padding: 16px;">
-            🎲 СЛУЧАЙНАЯ ГОНКА
-        </button>
-        <div style="text-align: center; margin-top: 12px; font-size: 12px; color: #aaa;">
-            ⚡ Локальный режим без синхронизации
-        </div>
-    </div>
-</div>
-    
-<!-- ЭКРАН 3: ОСНОВНОЕ ПРИЛОЖЕНИЕ -->
-<!-- ЭКРАН 3: ОСНОВНОЕ ПРИЛОЖЕНИЕ -->
-<div id="mainApp" class="screen hidden">
-    <div id="adminSyncBanner" class="admin-banner hidden">👑 Режим синхронизации АКТИВЕН | Администратор: <span id="adminName">—</span></div>
-    
-    <div id="adminModeBanner" style="display: none;"></div>
-    
-    <!-- Блок РЕЖИМ ЗАЕЗДА МАШИН -->
-    <div class="cars-track-container" id="modeSelectorBlock" style="border-color: #8b5cf6;">
-        <div class="cars-track-header-clickable" style="cursor: default;">
-            <div style="width: 30px;"></div>
-            <div class="cars-track-title" style="color: #8b5cf6;">🎮 РЕЖИМ ЗАЕЗДА 🎮</div>
-            <div style="width: 30px;"></div>
-        </div>
-        <div class="cars-track-content">
-            <div style="display: flex; gap: 15px; justify-content: center; padding: 15px; flex-wrap: wrap;">
-                <button id="modeAllBtn" class="mode-btn" style="background: #3b82f6;">🚗 ВЕСЬ СПИСОК МАШИН</button>
-                <button id="modeGroupOnlyBtn" class="mode-btn" style="background: #8b5cf6;">🏁 МАШИНЫ ГОНОЧНОГО КЛАССА GR</button>
-            </div>
-            <div id="currentModeDisplay" style="text-align: center; padding: 10px; background: #ff4d4d20; border-radius: 12px;">
-                Текущий режим: <strong id="currentModeText">ВЕСЬ СПИСОК МАШИН</strong>
-            </div>
-        </div>
-    </div>
-    
-    <div class="cars-track-container" id="carsTrackContainer">
-        <div class="cars-track-header-clickable" id="carsTrackHeader">
-            <div style="width: 30px;"></div>
-            <div class="cars-track-title">🏁 МАШИНА И ТРАССА 🏁</div>
-            <div class="cars-track-toggle-icon" id="carsTrackToggleIcon">▼</div>
-        </div>
-        <div class="cars-track-content" id="carsTrackContent">
-            <div class="params-grid">
-                <div class="param-block" id="carBlock" data-param="car">
-                    <div class="param-header">
-                        <button class="lock-btn" data-param="car" data-state="unlocked">🔓</button>
-                        <div class="param-label">
-                            <img src="car-icon.png" class="header-icon" alt="car" onerror="this.style.display='none'; this.nextSibling.style.display='inline';">
-                            <span style="display:none;">🚗</span>
-                            <span>МАШИНА</span>
+    <!-- ЭКРАН 1: ПРИВЕТСТВИЕ -->
+    <div id="welcomeScreen" class="screen">
+        <div id="welcomeMessage" class="welcome-message" style="display: flex;">
+            <div class="welcome-content">
+                <div class="welcome-icon">🏁</div>
+                <h2>Добро пожаловать в GT7 Random Race!</h2>
+                <div class="welcome-modes">
+                    <div class="welcome-mode">
+                        <span class="mode-icon">🎲</span>
+                        <div>
+                            <strong>Обычный режим</strong>
+                            <small>Синхронизация ВЫКЛ</small>
+                            <span>→ Нажмите "СЛУЧАЙНАЯ ГОНКА" и играйте!</span>
                         </div>
-                        <div style="width: 48px;"></div>
                     </div>
-                    <div class="icon-container">
-                        <img class="car-icon" id="carIcon" src="" alt="Иконка" style="display: none;" onerror="this.style.display='none'; document.getElementById('carIconFallback').style.display='flex';">
-                        <div id="carIconFallback" class="car-icon icon-error" style="display: none; align-items: center; justify-content: center;"></div>
-                    </div>
-                    <div class="param-value" id="carValue">—</div>
-                </div>
-
-                <div class="param-block" id="trackBlock" data-param="track">
-                    <div class="param-header">
-                        <button class="lock-btn" data-param="track" data-state="unlocked">🔓</button>
-                        <div class="param-label">
-                            <img src="track-icon.png" class="header-icon" alt="track" onerror="this.style.display='none'; this.nextSibling.style.display='inline';">
-                            <span style="display:none;">🏁</span>
-                            <span>ТРАССА</span>
+                    <div class="welcome-mode">
+                        <span class="mode-icon">👑</span>
+                        <div>
+                            <strong>Режим синхронизации</strong>
+                            <small>Синхронизация ВКЛ</small>
+                            <span>→ Выберите администратора и следуйте его настройкам</span>
                         </div>
-                        <div style="width: 48px;"></div>
                     </div>
-                    <div class="icon-container">
-                        <img class="track-icon" id="trackIcon" src="" alt="Иконка" style="display: none;" onerror="this.style.display='none'; document.getElementById('trackIconFallback').style.display='flex';">
-                        <div id="trackIconFallback" class="track-icon icon-error" style="display: none; align-items: center; justify-content: center;"></div>
-                    </div>
-                    <div class="param-value" id="trackValue">—</div>
                 </div>
+                <button id="closeWelcomeBtn" class="welcome-close-btn">СТАРТ</button>
             </div>
         </div>
     </div>
 
-    <div class="category-container hidden-block" id="categoryContainer">
-        <div class="category-header-clickable" id="categoryHeader">
-            <div style="width: 30px;"></div>
-            <div class="category-title">🏆 ГОНОЧНЫЙ КЛАСС 🏆</div>
-            <div class="category-toggle-icon" id="categoryToggleIcon">▼</div>
+    <!-- ЭКРАН 2: ВЫБОР АДМИНИСТРАТОРА -->
+    <div id="setupScreen" class="screen hidden">
+        <div class="setup-card">
+            <h3>👑 ВЫБЕРИТЕ АДМИНИСТРАТОРА</h3>
+            <select id="adminSelect" class="setup-select">
+                <option value="">Загрузка...</option>
+            </select>
+            <button id="continueToAdminBtn" class="setup-btn" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);">
+                👑 ПРОДОЛЖИТЬ С АДМИНИСТРАТОРОМ
+            </button>
         </div>
-        <div class="category-content" id="categoryContent">
-            <div class="category-value" id="categoryValue">—</div>
+        
+        <div class="setup-card" style="border-color: #ff4d4d;">
+            <h3 style="color: #ff4d4d;">🎲 ИЛИ СЛУЧАЙНАЯ ГОНКА</h3>
+            <button id="localRaceFromSetupBtn" class="setup-btn" style="background: linear-gradient(135deg, #ff4d4d, #cc0000);">
+                🎲 СЛУЧАЙНАЯ ГОНКА
+            </button>
         </div>
     </div>
 
-    <div class="settings-container" id="settingsContainer">
-        <div class="settings-header-clickable" id="settingsHeader">
-            <div style="width: 30px;"></div>
-            <div class="settings-title">⚙️ УСЛОВИЯ ГОНКИ ⚙️</div>
-            <div class="toggle-icon" id="settingsToggleIcon">▼</div>
-        </div>
-        <div class="settings-content" id="settingsContent">
-            <div class="settings-items">
-                <div class="settings-item">
-                    <div class="settings-header">
-                        <div class="settings-label">🌤️ ПОГОДА</div>
-                        <button class="settings-lock-btn" data-param="weather" data-state="unlocked">🔓</button>
-                    </div>
-                    <div class="settings-value" id="weatherValue">—</div>
+    <!-- ЭКРАН 3: ОСНОВНОЕ ПРИЛОЖЕНИЕ -->
+    <div id="mainApp" class="screen hidden">
+        <div id="adminSyncBanner" class="admin-banner hidden">👑 Режим синхронизации АКТИВЕН | Администратор: <span id="adminName">—</span></div>
+        
+        <div class="cars-track-container" id="modeSelectorBlock" style="border-color: #8b5cf6;">
+            <div class="cars-track-header-clickable" style="cursor: default;">
+                <div style="width: 30px;"></div>
+                <div class="cars-track-title" style="color: #8b5cf6;">🎮 РЕЖИМ ЗАЕЗДА 🎮</div>
+                <div style="width: 30px;"></div>
+            </div>
+            <div class="cars-track-content">
+                <div style="display: flex; gap: 15px; justify-content: center; padding: 15px; flex-wrap: wrap;">
+                    <button id="modeAllBtn" class="mode-btn" style="background: #3b82f6;">🚗 ВЕСЬ СПИСОК МАШИН</button>
+                    <button id="modeGroupOnlyBtn" class="mode-btn" style="background: #8b5cf6;">🏁 МАШИНЫ ГОНОЧНОГО КЛАССА GR</button>
                 </div>
-                <div class="settings-item">
-                    <div class="settings-header">
-                        <div class="settings-label">⏰ ВРЕМЯ СУТОК</div>
-                        <button class="settings-lock-btn" data-param="time" data-state="unlocked">🔓</button>
-                    </div>
-                    <div class="settings-value" id="timeValue">—</div>
-                </div>
-                <div class="settings-item" data-param="tires">
-                    <div class="settings-header">
-                        <div class="settings-label">
-                            <img src="Wheel.png" class="settings-icon" onerror="this.style.display='none'; this.nextSibling.style.display='inline';">
-                            <span style="display:none;">🔘</span>
-                            <span>ИЗНОС ШИН</span>
-                        </div>
-                        <button class="settings-lock-btn" data-param="tires" data-state="unlocked">🔓</button>
-                    </div>
-                    <div class="settings-value" id="tiresValue"><span class="time-x-badge">X1</span></div>
-                </div>
-                <div class="settings-item">
-                    <div class="settings-header">
-                        <div class="settings-label">⛽ РАСХОД ТОПЛИВА</div>
-                        <button class="settings-lock-btn" data-param="fuel" data-state="unlocked">🔓</button>
-                    </div>
-                    <div class="settings-value" id="fuelValue"><span class="time-x-badge">X1</span></div>
+                <div id="currentModeDisplay" style="text-align: center; padding: 10px; background: #ff4d4d20; border-radius: 12px;">
+                    Текущий режим: <strong id="currentModeText">ВЕСЬ СПИСОК МАШИН</strong>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Блок КАЛЕНДАРЬ ГОНОК -->
-    <div class="races-container" style="background: rgba(0, 0, 0, 0.4); border-radius: 16px; margin: 12px 0; border: 1px solid #22c55e; overflow: hidden;">
-        <div class="races-header" id="racesHeader" style="display: flex; align-items: center; justify-content: space-between; padding: 12px; cursor: pointer;">
-            <div style="width: 30px;"></div>
-            <div class="races-title" style="color: #22c55e; font-size: 14px; font-weight: bold;">📅 ЗАПЛАНИРОВАННЫЕ ГОНКИ</div>
-            <div class="races-toggle-icon" id="racesToggleIcon" style="color: #22c55e; font-size: 20px; font-weight: bold;">▼</div>
+        
+        <div class="cars-track-container" id="carsTrackContainer">
+            <div class="cars-track-header-clickable" id="carsTrackHeader">
+                <div style="width: 30px;"></div>
+                <div class="cars-track-title">🏁 МАШИНА И ТРАССА 🏁</div>
+                <div class="cars-track-toggle-icon" id="carsTrackToggleIcon">▼</div>
+            </div>
+            <div class="cars-track-content" id="carsTrackContent">
+                <div class="params-grid">
+                    <div class="param-block" id="carBlock" data-param="car">
+                        <div class="param-header">
+                            <button class="lock-btn" data-param="car" data-state="unlocked">🔓</button>
+                            <div class="param-label">
+                                <img src="car-icon.png" class="header-icon" alt="car" onerror="this.style.display='none'; this.nextSibling.style.display='inline';">
+                                <span style="display:none;">🚗</span>
+                                <span>МАШИНА</span>
+                            </div>
+                            <div style="width: 48px;"></div>
+                        </div>
+                        <div class="icon-container">
+                            <img class="car-icon" id="carIcon" src="" alt="Иконка" style="display: none;" onerror="this.style.display='none'; document.getElementById('carIconFallback').style.display='flex';">
+                            <div id="carIconFallback" class="car-icon icon-error" style="display: none; align-items: center; justify-content: center;"></div>
+                        </div>
+                        <div class="param-value" id="carValue">—</div>
+                    </div>
+                    <div class="param-block" id="trackBlock" data-param="track">
+                        <div class="param-header">
+                            <button class="lock-btn" data-param="track" data-state="unlocked">🔓</button>
+                            <div class="param-label">
+                                <img src="track-icon.png" class="header-icon" alt="track" onerror="this.style.display='none'; this.nextSibling.style.display='inline';">
+                                <span style="display:none;">🏁</span>
+                                <span>ТРАССА</span>
+                            </div>
+                            <div style="width: 48px;"></div>
+                        </div>
+                        <div class="icon-container">
+                            <img class="track-icon" id="trackIcon" src="" alt="Иконка" style="display: none;" onerror="this.style.display='none'; document.getElementById('trackIconFallback').style.display='flex';">
+                            <div id="trackIconFallback" class="track-icon icon-error" style="display: none; align-items: center; justify-content: center;"></div>
+                        </div>
+                        <div class="param-value" id="trackValue">—</div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="races-content" id="racesCalendarContainer" style="padding: 0 12px 12px 12px;">
-            <div style="text-align: center; padding: 20px;">Загрузка гонок...</div>
-        </div>
-    </div>
 
-    <div class="similar-cars-container" id="similarContainer">
-        <div class="similar-header-clickable" id="similarHeader">
-            <div style="width: 30px;"></div>
-            <div class="similar-title">🎯 ПОДБОР АВТО ПО СХОЖИМ ПАРАМЕТРАМ</div>
-            <div class="similar-toggle-icon" id="similarToggleIcon">▼</div>
+        <div class="category-container hidden-block" id="categoryContainer">
+            <div class="category-header-clickable" id="categoryHeader">
+                <div style="width: 30px;"></div>
+                <div class="category-title">🏆 ГОНОЧНЫЙ КЛАСС 🏆</div>
+                <div class="category-toggle-icon" id="categoryToggleIcon">▼</div>
+            </div>
+            <div class="category-content" id="categoryContent">
+                <div class="category-value" id="categoryValue">—</div>
+            </div>
         </div>
-        <div class="similar-content" id="similarContent">
-            <div id="refCarInfo" class="ref-car-info">Выберите авто из списка</div>
-            <ul class="similar-list" id="similarList"><li>Нажмите на авто для выбора референса</li></ul>
-            <button id="refreshSimilarBtn" class="btn-similar">🔄 ОБНОВИТЬ ПОДБОР</button>
-            <button id="resetCarsBtn" class="btn-similar" style="background: #ef4444;">🗑️ СБРОС ИСТОРИИ</button>
+
+        <div class="settings-container" id="settingsContainer">
+            <div class="settings-header-clickable" id="settingsHeader">
+                <div style="width: 30px;"></div>
+                <div class="settings-title">⚙️ УСЛОВИЯ ГОНКИ ⚙️</div>
+                <div class="toggle-icon" id="settingsToggleIcon">▼</div>
+            </div>
+            <div class="settings-content" id="settingsContent">
+                <div class="settings-items">
+                    <div class="settings-item">
+                        <div class="settings-header">
+                            <div class="settings-label">🌤️ ПОГОДА</div>
+                            <button class="settings-lock-btn" data-param="weather" data-state="unlocked">🔓</button>
+                        </div>
+                        <div class="settings-value" id="weatherValue">—</div>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-header">
+                            <div class="settings-label">⏰ ВРЕМЯ СУТОК</div>
+                            <button class="settings-lock-btn" data-param="time" data-state="unlocked">🔓</button>
+                        </div>
+                        <div class="settings-value" id="timeValue">—</div>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-header">
+                            <div class="settings-label">🔘 ИЗНОС ШИН</div>
+                            <button class="settings-lock-btn" data-param="tires" data-state="unlocked">🔓</button>
+                        </div>
+                        <div class="settings-value" id="tiresValue"><span class="time-x-badge">X1</span></div>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-header">
+                            <div class="settings-label">⛽ РАСХОД ТОПЛИВА</div>
+                            <button class="settings-lock-btn" data-param="fuel" data-state="unlocked">🔓</button>
+                        </div>
+                        <div class="settings-value" id="fuelValue"><span class="time-x-badge">X1</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="races-container" style="background: rgba(0, 0, 0, 0.4); border-radius: 16px; margin: 12px 0; border: 1px solid #22c55e;">
+            <div class="races-header" id="racesHeader" style="display: flex; align-items: center; justify-content: space-between; padding: 12px; cursor: pointer;">
+                <div style="width: 30px;"></div>
+                <div class="races-title" style="color: #22c55e; font-size: 14px; font-weight: bold;">📅 ЗАПЛАНИРОВАННЫЕ ГОНКИ</div>
+                <div class="races-toggle-icon" id="racesToggleIcon" style="color: #22c55e; font-size: 20px; font-weight: bold;">▼</div>
+            </div>
+            <div class="races-content" id="racesCalendarContainer" style="padding: 0 12px 12px 12px;">
+                <div style="text-align: center; padding: 20px;">Загрузка гонок...</div>
+            </div>
+        </div>
+
+        <div class="similar-cars-container" id="similarContainer">
+            <div class="similar-header-clickable" id="similarHeader">
+                <div style="width: 30px;"></div>
+                <div class="similar-title">🎯 ПОДБОР АВТО ПО СХОЖИМ ПАРАМЕТРАМ</div>
+                <div class="similar-toggle-icon" id="similarToggleIcon">▼</div>
+            </div>
+            <div class="similar-content" id="similarContent">
+                <div id="refCarInfo" class="ref-car-info">Выберите авто из списка</div>
+                <ul class="similar-list" id="similarList"><li>Нажмите на авто для выбора референса</li></ul>
+                <button id="refreshSimilarBtn" class="btn-similar">🔄 ОБНОВИТЬ ПОДБОР</button>
+                <button id="resetCarsBtn" class="btn-similar" style="background: #ef4444;">🗑️ СБРОС ИСТОРИИ</button>
+            </div>
+        </div>
+
+        <div id="groupModeMessage" class="group-mode-message" style="display: none;">
+            <h3>🏁 МАШИНЫ ГОНОЧНОГО КЛАССА GR 🏁</h3>
+        </div>
+
+        <!-- НОВАЯ КНОПКА ДЛЯ ЛОКАЛЬНОГО РЕЖИМА -->
+        <div id="newLocalRaceBtnContainer">
+            <button id="newLocalRaceBtn" class="btn-main">🎲 НОВАЯ СЛУЧАЙНАЯ ГОНКА</button>
         </div>
     </div>
-
-    <div id="groupModeMessage" class="group-mode-message" style="display: none;">
-        <h3>🏁 МАШИНЫ ГОНОЧНОГО КЛАССА GR 🏁</h3>
-    </div>
-
-    <!-- КНОПКИ УДАЛЕНЫ! ТОЛЬКО ГЕНЕРАЦИЯ ЧЕРЕЗ ОБРАБОТЧИК -->
 </div>
 
 <script>
@@ -2545,10 +2139,8 @@ function resetCarsHistory() { shownCars = []; saveShownCars(); alert('✅ Ист
 // ============================================
 function getRandomLaps(trackLength) { return Math.floor(Math.random() * 15) + 5; }
 
-function updateCar() { if (!locks.car) { const c = getRandomCarWithoutRepeat(); document.getElementById('carValue').innerText = c.name; document.getElementById('carIcon').src = c.icon; document.getElementById('carIcon').style.display = 'block'; displaySimilarCars(c); } }
-function updateTrack() { if (!locks.track) { const t = getRandomItem(tracksData); currentTrack = t.name; document.getElementById('trackValue').innerHTML = `${t.name} <span class="time-x-badge">${getRandomLaps(t.length)} кругов</span>`; document.getElementById('trackIcon').src = getTrackIcon(t.name); document.getElementById('trackIcon').style.display = 'block'; if (!locks.weather) updateWeatherByTrack(t); if (!locks.time) updateTimeByTrack(t); } }
-function updateWeatherByTrack(track) { if (locks.weather) return; let avail = weathers; if (track.weather && track.weather[0] === 'dry') avail = weathers.filter(w => !w.name.includes('дождь') && !w.name.includes('Дождь')); const w = getRandomItem(avail); document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`; }
-function updateTimeByTrack(track) { if (locks.time) return; let avail = times; if (track.times && track.times.length) avail = times.filter(t => track.times.includes(t.name)); const tm = getRandomItem(avail); document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${getRandomXValue()}</span>`; }
+function updateCar() { if (!locks.car) { const c = getRandomCarWithoutRepeat(); document.getElementById('carValue').innerText = c.name; document.getElementById('carIcon').src = c.icon; document.getElementById('carIcon').style.display = 'block'; } }
+function updateTrack() { if (!locks.track) { const t = getRandomItem(tracksData); currentTrack = t.name; document.getElementById('trackValue').innerHTML = `${t.name} <span class="time-x-badge">${getRandomLaps(t.length)} кругов</span>`; document.getElementById('trackIcon').src = getTrackIcon(t.name); document.getElementById('trackIcon').style.display = 'block'; } }
 function updateWeather() { if (!locks.weather) { const w = getRandomItem(weathers); document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`; } }
 function updateTime() { if (!locks.time) { const t = getRandomItem(times); document.getElementById('timeValue').innerHTML = `${t.icon} ${t.name} <span class="time-x-badge">${getRandomXValue()}</span>`; } }
 function updateTires() { if (!locks.tires) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${getRandomXValue()}</span>`; }
@@ -2556,920 +2148,159 @@ function updateFuel() { if (!locks.fuel) document.getElementById('fuelValue').in
 function updateCategory() { if (!locks.category) { const c = getRandomItem(categories); document.getElementById('categoryValue').innerHTML = `${c.icon} ${c.name} (${c.description})`; } }
 
 function generateLocalRace() {
-    document.getElementById('carsTrackContainer').style.setProperty('display', 'block', 'important');
-    document.getElementById('settingsContainer').style.setProperty('display', 'block', 'important');
-    document.getElementById('modeSelectorBlock').style.setProperty('display', 'block', 'important');
-
-    const groupMsg = document.getElementById('groupModeMessage');
-    if (displayMode === 'group_only') {
-        groupMsg.style.setProperty('display', 'block', 'important');
-    } else {
-        groupMsg.style.setProperty('display', 'none', 'important');
-    }
-    
-    if (displayMode !== 'group_only') {
-        document.getElementById('similarContainer').style.setProperty('display', 'block', 'important');
-        document.getElementById('similarContainer').classList.remove('hidden-block');
-    } else {
-        document.getElementById('similarContainer').style.setProperty('display', 'none', 'important');
-        document.getElementById('similarContainer').classList.add('hidden-block');
-    }
-    
-    updateVisibilityByDisplayMode(displayMode);
-    updateCar(); 
-    updateTrack(); 
-    updateWeather(); 
-    updateTime(); 
-    updateTires(); 
-    updateFuel(); 
-    updateCategory();
+    document.getElementById('carsTrackContainer').style.display = 'block';
+    document.getElementById('settingsContainer').style.display = 'block';
+    document.getElementById('modeSelectorBlock').style.display = 'block';
+    updateCar(); updateTrack(); updateWeather(); updateTime(); updateTires(); updateFuel(); updateCategory();
 }
 
-// ============================================
-// СИНХРОНИЗАЦИЯ С GOOGLE SHEETS
-// ============================================
-
-let autoRefreshInterval = null;
-
-function showRefreshIndicator() {
-    const banner = document.getElementById('adminModeBanner');
-    if (banner) {
-        banner.style.transition = 'background 0.3s';
-        banner.style.background = 'rgba(34, 197, 94, 0.3)';
-        setTimeout(() => {
-            banner.style.background = '';
-        }, 500);
-    }
-}
-
-function startAutoRefresh() {
-    if (autoRefreshInterval) clearInterval(autoRefreshInterval);
-    
-    autoRefreshInterval = setInterval(async () => {
-        if (userSyncEnabled && currentAdminId) {
-            console.log('🔄 Проверка обновлений...');
-            const synced = await loadSyncedCombo(true);
-            
-            if (syncedModeActive && synced) {
-                const currentHash = JSON.stringify({
-                    car: synced.car_name,
-                    track: synced.track_name,
-                    weather: synced.weather_name,
-                    time: synced.time_name,
-                    tires: synced.tires_value,
-                    fuel: synced.fuel_value,
-                    category: synced.category_name,
-                    laps: synced.laps,
-                    display_mode: synced.display_mode
-                });
-                
-                if (currentHash !== lastSyncedData) {
-                    console.log('🔄 ДАННЫЕ ИЗМЕНИЛИСЬ! Обновляем...');
-                    lastSyncedData = currentHash;
-                    applySyncedCombo(synced);
-                    showRefreshIndicator();
-                }
-            }
-        }
-    }, 5000);
-}
-
-function stopAutoRefresh() {
-    if (autoRefreshInterval) {
-        clearInterval(autoRefreshInterval);
-        autoRefreshInterval = null;
-    }
-}
-
-async function loadSyncedCombo(forceRefresh = false) {
-    console.log('🔍 loadSyncedCombo вызвана, currentAdminId =', currentAdminId);
-    
-    if (!userSyncEnabled || !currentAdminId) {
-        console.log('❌ Синхронизация выключена или админ не выбран');
-        syncedModeActive = false;
-        const banner = document.getElementById('adminModeBanner');
-        if (banner) banner.style.display = 'none';
-        return null;
-    }
-    
-    return new Promise((resolve) => {
-        const callbackName = 'jsonp_combo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const timestamp = Date.now();
-        const url = `${APPS_SCRIPT_URL}?action=getCurrentCombo&adminId=${encodeURIComponent(currentAdminId)}&callback=${callbackName}&_=${timestamp}&force=${forceRefresh ? '1' : '0'}`;
-        
-        const timeout = setTimeout(() => {
-            if (window[callbackName]) {
-                delete window[callbackName];
-                if (script && script.parentNode) document.body.removeChild(script);
-            }
-            syncedModeActive = false;
-            resolve(null);
-        }, 10000);
-        
-        window[callbackName] = function(data) {
-            clearTimeout(timeout);
-            delete window[callbackName];
-            if (script && script.parentNode) document.body.removeChild(script);
-            
-            if (data && (data.active === 'TRUE' || data.active === true)) {
-                console.log('✅ Админская комбинация АКТИВНА!');
-                syncedModeActive = true;
-                syncedComboData = data;
-                const banner = document.getElementById('adminModeBanner');
-                if (banner) banner.style.display = 'block';
-                resolve(data);
-            } else {
-                syncedModeActive = false;
-                syncedComboData = null;
-                const banner = document.getElementById('adminModeBanner');
-                if (banner) banner.style.display = 'none';
-                resolve(null);
-            }
-        };
-        
-        const script = document.createElement('script');
-        script.src = url;
-        script.onerror = function() {
-            clearTimeout(timeout);
-            if (window[callbackName]) delete window[callbackName];
-            syncedModeActive = false;
-            resolve(null);
-        };
-        document.body.appendChild(script);
-    });
-}
-
-function applySyncedCombo(data) {
-    if (!data) return;
-    
-    const similarBlockFirst = document.getElementById('similarContainer');
-    if (similarBlockFirst) {
-        similarBlockFirst.style.setProperty('display', 'none', 'important');
-        similarBlockFirst.classList.add('hidden-block');
-    }
-    
-    if (data.track_locked !== undefined) locks.track = data.track_locked;
-    if (data.car_locked !== undefined) locks.car = data.car_locked;
-    if (data.weather_locked !== undefined) locks.weather = data.weather_locked;
-    if (data.time_locked !== undefined) locks.time = data.time_locked;
-    if (data.tires_locked !== undefined) locks.tires = data.tires_locked;
-    if (data.fuel_locked !== undefined) locks.fuel = data.fuel_locked;
-    if (data.category_locked !== undefined) locks.category = data.category_locked;
-    
-    Object.keys(locks).forEach(param => {
-        document.querySelectorAll(`.lock-btn[data-param="${param}"], .settings-lock-btn[data-param="${param}"]`).forEach(btn => {
-            btn.innerText = locks[param] ? '🔒' : '🔓';
-            btn.setAttribute('data-state', locks[param] ? 'locked' : 'unlocked');
-        });
-    });
-    
-    const highlightField = (elementId) => {
-        const element = document.getElementById(elementId);
-        if (element) {
-            element.style.transition = 'background 0.3s';
-            element.style.background = 'rgba(34, 197, 94, 0.3)';
-            setTimeout(() => element.style.background = '', 500);
-        }
-    };
-    
-    if (!locks.car && data.car_name) {
-        const car = findCarByName(data.car_name);
-        if (car) {
-            document.getElementById('carValue').innerText = car.name;
-            const carIcon = document.getElementById('carIcon');
-            if (carIcon && car.icon) {
-                carIcon.src = car.icon;
-                carIcon.style.display = 'block';
-            }
-            const carIconFallback = document.getElementById('carIconFallback');
-            if (carIconFallback) carIconFallback.style.display = 'none';
-            if (typeof displaySimilarCars === 'function') displaySimilarCars(car);
-            highlightField('carValue');
-        } else {
-            document.getElementById('carValue').innerText = data.car_name;
-            highlightField('carValue');
-        }
-    }
-    
-    if (!locks.track && data.track_name) {
-        const track = findTrackByName(data.track_name);
-        const laps = data.laps || '5';
-        if (track) {
-            document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
-            const trackIcon = document.getElementById('trackIcon');
-            if (trackIcon) {
-                trackIcon.src = getTrackIcon(track.name);
-                trackIcon.style.display = 'block';
-            }
-            const trackIconFallback = document.getElementById('trackIconFallback');
-            if (trackIconFallback) trackIconFallback.style.display = 'none';
-            highlightField('trackValue');
-        }
-    }
-    
-    if (!locks.category && data.category_name) {
-        const cat = categories.find(c => c.name === data.category_name);
-        if (cat) {
-            document.getElementById('categoryValue').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
-        } else {
-            document.getElementById('categoryValue').innerHTML = data.category_name;
-        }
-        highlightField('categoryValue');
-    }
-    
-    if (!locks.weather && data.weather_name) {
-        const w = findWeatherByName(data.weather_name);
-        if (w) {
-            document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`;
-        } else {
-            document.getElementById('weatherValue').innerHTML = data.weather_name;
-        }
-        highlightField('weatherValue');
-    }
-    
-    if (!locks.time && data.time_name) {
-        const tm = findTimeByName(data.time_name);
-        const multiplier = data.time_multiplier || 'X1';
-        if (tm) {
-            document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${multiplier}</span>`;
-        } else {
-            document.getElementById('timeValue').innerHTML = `${data.time_name} <span class="time-x-badge">${multiplier}</span>`;
-        }
-        highlightField('timeValue');
-    }
-    
-    if (!locks.tires && data.tires_value) {
-        document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${data.tires_value}</span>`;
-        highlightField('tiresValue');
-    }
-    
-    if (!locks.fuel && data.fuel_value) {
-        document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${data.fuel_value}</span>`;
-        highlightField('fuelValue');
-    }
-    
-    const newDisplayMode = data.display_mode || 'all';
-    if (typeof updateVisibilityByDisplayMode === 'function') {
-        updateVisibilityByDisplayMode(newDisplayMode);
-    }
-    
-    const similarBlock = document.getElementById('similarContainer');
-    if (similarBlock) {
-        if (newDisplayMode === 'group_only') {
-            similarBlock.style.setProperty('display', 'none', 'important');
-            similarBlock.classList.add('hidden-block');
-        } else {
-            similarBlock.style.setProperty('display', 'block', 'important');
-            similarBlock.classList.remove('hidden-block');
-        }
-    }
-    
-    setTimeout(() => {
-        const similarBlockLast = document.getElementById('similarContainer');
-        if (similarBlockLast && displayMode === 'group_only') {
-            similarBlockLast.style.setProperty('display', 'none', 'important');
-            similarBlockLast.classList.add('hidden-block');
-        }
-    }, 50);
-}
-
-async function loadRace() {
-    console.log('🏁 loadRace вызвана');
-    
-    if (!userSyncEnabled) {
-        console.log('🎲 Синхронизация выключена - генерируем локальную гонку');
-        generateLocalRace();
-        return;
-    }
-    
-    const synced = await loadSyncedCombo();
-    
-    if (syncedModeActive && synced) {
-        console.log('🎯 ИСПОЛЬЗУЕМ АДМИНСКУЮ КОМБИНАЦИЮ');
-        const banner = document.getElementById('adminModeBanner');
-        if (banner) banner.style.display = 'block';
-        applySyncedCombo(synced);
-        return;
-    }
-    
-    console.log('🎲 НЕТ АКТИВНОЙ КОМБИНАЦИИ - ГЕНЕРИРУЕМ ЛОКАЛЬНУЮ ГОНКУ');
-    const banner = document.getElementById('adminModeBanner');
-    if (banner) banner.style.display = 'none';
-    generateLocalRace();
-}
-
-async function forceRefreshCombo() {
-    console.log('🔄 ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ ДАННЫХ...');
-    const btn = document.getElementById('forceRefreshBtn');
-    if (btn) {
-        const oldText = btn.innerHTML;
-        btn.innerHTML = '⏳ ОБНОВЛЕНИЕ...';
-        btn.disabled = true;
-    }
-    
-    const synced = await loadSyncedCombo(true);
-    
-    if (syncedModeActive && synced) {
-        applySyncedCombo(synced);
-        showRefreshIndicator();
-        if (btn) {
-            btn.innerHTML = '✅ ГОТОВО!';
-            setTimeout(() => {
-                btn.innerHTML = oldText;
-                btn.disabled = false;
-            }, 1500);
-        }
-    } else {
-        if (btn) {
-            btn.innerHTML = '❌ НЕТ ДАННЫХ';
-            setTimeout(() => {
-                btn.innerHTML = oldText;
-                btn.disabled = false;
-            }, 1500);
-        }
-    }
-}
-
-// ============================================
-// УПРАВЛЕНИЕ (ИСПРАВЛЕНО - УДАЛЕНЫ ЛИШНИЕ ФУНКЦИИ)
-// ============================================
-function toggleLock(param) {
-    locks[param] = !locks[param];
-    document.querySelectorAll(`.lock-btn[data-param="${param}"], .settings-lock-btn[data-param="${param}"]`).forEach(btn => {
-        btn.innerText = locks[param] ? '🔒' : '🔓';
-        btn.setAttribute('data-state', locks[param] ? 'locked' : 'unlocked');
-    });
-}
-
-// ФУНКЦИИ toggleSyncMode, shareResult, updateRandomButtonState - УДАЛЕНЫ
-
-// ============================================
-// СВОРАЧИВАНИЕ БЛОКОВ
-// ============================================
-let carsTrackExpanded = true, categoryExpanded = true, settingsExpanded = true, similarExpanded = true;
-let racesCalendarExpanded = true;
-
-function toggleCarsTrack() { carsTrackExpanded = !carsTrackExpanded; document.getElementById('carsTrackContent').classList.toggle('collapsed', !carsTrackExpanded); document.getElementById('carsTrackToggleIcon').innerHTML = carsTrackExpanded ? '▼' : '▶'; }
-function toggleCategory() { categoryExpanded = !categoryExpanded; document.getElementById('categoryContent').classList.toggle('collapsed', !categoryExpanded); document.getElementById('categoryToggleIcon').innerHTML = categoryExpanded ? '▼' : '▶'; }
-function toggleSettings() { settingsExpanded = !settingsExpanded; document.getElementById('settingsContent').classList.toggle('collapsed', !settingsExpanded); document.getElementById('settingsToggleIcon').innerHTML = settingsExpanded ? '▼' : '▶'; }
-function toggleSimilar() { similarExpanded = !similarExpanded; document.getElementById('similarContent').classList.toggle('collapsed', !similarExpanded); document.getElementById('similarToggleIcon').innerHTML = similarExpanded ? '▼' : '▶'; }
-function toggleRacesCalendar() {
-    racesCalendarExpanded = !racesCalendarExpanded;
-    const content = document.getElementById('racesCalendarContainer');
-    const icon = document.getElementById('racesToggleIcon');
-    if (content) {
-        content.classList.toggle('collapsed', !racesCalendarExpanded);
-        if (icon) icon.innerHTML = racesCalendarExpanded ? '▼' : '▶';
-    }
-}
-
-function updateVisibilityByDisplayMode(displayMode) {
+function updateVisibilityByDisplayMode(mode) {
     const carBlock = document.getElementById('carBlock');
-    const similarBlock = document.getElementById('similarContainer');
-    const groupMsg = document.getElementById('groupModeMessage');
-    const trackBlock = document.getElementById('trackBlock');
     const categoryBlock = document.getElementById('categoryContainer');
-    const paramsGrid = document.querySelector('.params-grid');
-    
-    if (displayMode === 'group_only') {
+    const similarBlock = document.getElementById('similarContainer');
+    if (mode === 'group_only') {
         if (carBlock) carBlock.classList.add('hidden-block');
-        if (similarBlock) {
-            similarBlock.classList.add('hidden-block');
-            similarBlock.style.setProperty('display', 'none', 'important');
-        }
-        if (categoryBlock) {
-            categoryBlock.classList.remove('hidden-block');
-            categoryBlock.style.setProperty('display', 'block', 'important');
-        }
-        if (groupMsg) groupMsg.style.display = 'block';
-        if (trackBlock) trackBlock.classList.add('track-centered');
-        if (paramsGrid) { 
-            paramsGrid.style.display = 'flex'; 
-            paramsGrid.style.justifyContent = 'center'; 
-        }
+        if (categoryBlock) categoryBlock.classList.remove('hidden-block');
+        if (similarBlock) similarBlock.classList.add('hidden-block');
     } else {
         if (carBlock) carBlock.classList.remove('hidden-block');
-        if (similarBlock) {
-            similarBlock.classList.remove('hidden-block');
-            similarBlock.style.setProperty('display', 'block', 'important');
-        }
-        if (categoryBlock) {
-            categoryBlock.classList.add('hidden-block');
-            categoryBlock.style.setProperty('display', 'none', 'important');
-        }
-        if (groupMsg) groupMsg.style.display = 'none';
-        if (trackBlock) trackBlock.classList.remove('track-centered');
-        if (paramsGrid) { 
-            paramsGrid.style.display = 'grid'; 
-            paramsGrid.style.justifyContent = 'normal'; 
-        }
+        if (categoryBlock) categoryBlock.classList.add('hidden-block');
+        if (similarBlock) similarBlock.classList.remove('hidden-block');
     }
 }
 
 function setDisplayMode(mode) {
     displayMode = mode;
     localStorage.setItem('gt7_display_mode', mode);
-    
     const allBtn = document.getElementById('modeAllBtn');
     const groupOnlyBtn = document.getElementById('modeGroupOnlyBtn');
     const modeText = document.getElementById('currentModeText');
-    const similarBlock = document.getElementById('similarContainer');
-    
     if (mode === 'all') {
         if (allBtn) allBtn.classList.add('active');
         if (groupOnlyBtn) groupOnlyBtn.classList.remove('active');
-        if (modeText) {
-            modeText.innerHTML = 'ВЕСЬ СПИСОК МАШИН 🚗';
-            modeText.style.color = '#3b82f6';
-        }
-        updateVisibilityByDisplayMode('all');
-        if (similarBlock) {
-            similarBlock.style.setProperty('display', 'block', 'important');
-            similarBlock.classList.remove('hidden-block');
-        }
+        if (modeText) modeText.innerHTML = 'ВЕСЬ СПИСОК МАШИН 🚗';
     } else {
         if (groupOnlyBtn) groupOnlyBtn.classList.add('active');
         if (allBtn) allBtn.classList.remove('active');
-        if (modeText) {
-            modeText.innerHTML = 'МАШИНЫ ГОНОЧНОГО КЛАССА GR 🏁';
-            modeText.style.color = '#8b5cf6';
-        }
-        updateVisibilityByDisplayMode('group_only');
-        if (similarBlock) {
-            similarBlock.style.setProperty('display', 'none', 'important');
-            similarBlock.classList.add('hidden-block');
-        }
+        if (modeText) modeText.innerHTML = 'МАШИНЫ ГОНОЧНОГО КЛАССА GR 🏁';
     }
+    updateVisibilityByDisplayMode(mode);
 }
 
-// ФУНКЦИЯ updateSyncBtn - УПРОЩЕНА (ничего не делает)
-function updateSyncBtn() {
-    return;
+function showStatusMessage(message, type) {
+    let statusDiv = document.getElementById('tempStatusMessage');
+    if (!statusDiv) {
+        statusDiv = document.createElement('div');
+        statusDiv.id = 'tempStatusMessage';
+        statusDiv.style.cssText = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.9); color:white; padding:10px 20px; border-radius:40px; font-size:14px; font-weight:bold; z-index:9999;';
+        document.body.appendChild(statusDiv);
+    }
+    const colors = { success: '#22c55e', warning: '#f59e0b', error: '#ef4444', info: '#3b82f6' };
+    statusDiv.style.background = colors[type] || colors.info;
+    statusDiv.innerHTML = message;
+    statusDiv.style.opacity = '1';
+    setTimeout(() => { statusDiv.style.opacity = '0'; setTimeout(() => { if (statusDiv.parentNode) statusDiv.parentNode.removeChild(statusDiv); }, 300); }, 3000);
 }
 
-async function loadAdmins() {
+async function loadAdminsFromGoogle() {
+    if (adminsLoaded) return;
     const select = document.getElementById('adminSelect');
     if (!select) return;
-    select.innerHTML = '<option value="">-- Выберите администратора --</option>';
-    
+    select.innerHTML = '<option value="">Загрузка...</option>';
     try {
-        const callbackName = 'jsonp_admins_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+        const callbackName = 'jsonp_admins_' + Date.now();
         const url = `${APPS_SCRIPT_URL}?action=getAdmins&callback=${callbackName}&t=${Date.now()}`;
-        
         const admins = await new Promise((resolve) => {
-            const timeout = setTimeout(() => {
-                if (window[callbackName]) delete window[callbackName];
-                resolve([]);
-            }, 10000);
-            
-            window[callbackName] = function(data) {
-                clearTimeout(timeout);
-                delete window[callbackName];
-                if (data && data.success && data.admins) {
-                    resolve(data.admins);
-                } else {
-                    resolve([]);
-                }
-            };
-            
-            const script = document.createElement('script');
-            script.src = url;
-            script.onerror = () => {
-                clearTimeout(timeout);
-                resolve([]);
-            };
-            document.body.appendChild(script);
+            const timeout = setTimeout(() => { delete window[callbackName]; resolve([]); }, 10000);
+            window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data?.admins || []); };
+            const script = document.createElement('script'); script.src = url; script.onerror = () => { clearTimeout(timeout); resolve([]); }; document.body.appendChild(script);
         });
-        
         if (admins.length > 0) {
-            admins.forEach(admin => {
-                select.innerHTML += `<option value="${admin.id}">${admin.name}</option>`;
-            });
-            console.log('✅ Загружены админы:', admins);
-        } else {
-            select.innerHTML += '<option value="admin1">admin1</option>';
-            select.innerHTML += '<option value="admin2">admin2</option>';
-            select.innerHTML += '<option value="admin3">admin3</option>';
-        }
-    } catch(e) {
-        console.error('Ошибка загрузки админов:', e);
-        select.innerHTML += '<option value="admin1">admin1</option>';
-        select.innerHTML += '<option value="admin2">admin2</option>';
-        select.innerHTML += '<option value="admin3">admin3</option>';
-    }
-}
-
-// Обновление видимости блоков
-function updateModeSelectorVisibility() {
-    const modeSelectorBlock = document.getElementById('modeSelectorBlock');
-    const adminSelectBlock = document.getElementById('adminSelectBlock');
-    const racesContainer = document.querySelector('.races-container');
-    const carsTrackContainer = document.getElementById('carsTrackContainer');
-    const categoryContainer = document.getElementById('categoryContainer');
-    const settingsContainer = document.getElementById('settingsContainer');
-    const similarContainer = document.getElementById('similarContainer');
-    
-    if (userSyncEnabled) {
-        if (adminSelectBlock) adminSelectBlock.style.setProperty('display', 'block', 'important');
-        if (carsTrackContainer) carsTrackContainer.style.setProperty('display', 'block', 'important');
-        if (categoryContainer) categoryContainer.style.setProperty('display', 'block', 'important');
-        if (settingsContainer) settingsContainer.style.setProperty('display', 'block', 'important');
-        if (racesContainer) racesContainer.style.setProperty('display', 'block', 'important');
-        if (modeSelectorBlock) modeSelectorBlock.style.setProperty('display', 'none', 'important');
-        
-        if (!currentAdminId) {
-            document.getElementById('carValue').innerHTML = '—';
-            document.getElementById('trackValue').innerHTML = '—';
-            document.getElementById('categoryValue').innerHTML = '—';
-            document.getElementById('weatherValue').innerHTML = '—';
-            document.getElementById('timeValue').innerHTML = '—';
-            document.getElementById('tiresValue').innerHTML = '—';
-            document.getElementById('fuelValue').innerHTML = '—';
-            
-            if (similarContainer) {
-                similarContainer.style.setProperty('display', 'none', 'important');
-                similarContainer.classList.add('hidden-block');
-            }
-            const groupMsg = document.getElementById('groupModeMessage');
-            if (groupMsg) groupMsg.style.setProperty('display', 'none', 'important');
-            
-            const carIcon = document.getElementById('carIcon');
-            if (carIcon) {
-                carIcon.src = '';
-                carIcon.style.display = 'none';
-            }
-            const carIconFallback = document.getElementById('carIconFallback');
-            if (carIconFallback) {
-                carIconFallback.style.display = 'none';
-                carIconFallback.innerHTML = '';
-            }
-            const trackIcon = document.getElementById('trackIcon');
-            if (trackIcon) {
-                trackIcon.src = '';
-                trackIcon.style.display = 'none';
-            }
-            const trackIconFallback = document.getElementById('trackIconFallback');
-            if (trackIconFallback) {
-                trackIconFallback.style.display = 'none';
-                trackIconFallback.innerHTML = '';
-            }
-        }
-    } else {
-        if (adminSelectBlock) adminSelectBlock.style.setProperty('display', 'none', 'important');
-        if (carsTrackContainer) carsTrackContainer.style.setProperty('display', 'none', 'important');
-        if (categoryContainer) categoryContainer.style.setProperty('display', 'none', 'important');
-        if (settingsContainer) settingsContainer.style.setProperty('display', 'none', 'important');
-        if (similarContainer) similarContainer.style.setProperty('display', 'none', 'important');
-        if (racesContainer) racesContainer.style.setProperty('display', 'none', 'important');
-        if (modeSelectorBlock) modeSelectorBlock.style.setProperty('display', 'none', 'important');
-
-        const groupMsg = document.getElementById('groupModeMessage');
-        if (groupMsg) groupMsg.style.setProperty('display', 'none', 'important');
-    }
-}
-
-// ============================================
-// ФУНКЦИИ КАЛЕНДАРЯ
-// ============================================
-
-async function getActiveRaces(adminId) {
-    if (!adminId) return [];
-    
-    try {
-        const userId = localStorage.getItem('gt7_user_id') || 'default';
-        const callbackName = 'jsonp_races_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=getUserRaces&userId=${userId}&adminId=${adminId}&callback=${callbackName}&t=${Date.now()}`;
-        
-        const races = await new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => {
-                if (window[callbackName]) delete window[callbackName];
-                reject(new Error('Таймаут загрузки'));
-            }, 10000);
-            
-            window[callbackName] = function(data) {
-                clearTimeout(timeout);
-                delete window[callbackName];
-                resolve(data.races || []);
-            };
-            
-            const script = document.createElement('script');
-            script.src = url;
-            script.onerror = () => reject(new Error('Ошибка соединения'));
-            document.body.appendChild(script);
-        });
-        
-        const now = new Date();
-        const activeRaces = races.filter(race => {
-            const raceDate = new Date(race.datetime);
-            return race.active === true && raceDate > now;
-        });
-        
-        return activeRaces;
-    } catch(e) {
-        console.error('Ошибка загрузки гонок:', e);
-        return [];
-    }
-}
-
-async function displayUserRaces(adminId) {
-    const currentAdminId = adminId || localStorage.getItem('gt7_selected_admin_id');
-    
-    console.log('displayUserRaces, currentAdminId:', currentAdminId);
-    
-    if (!currentAdminId) {
-        const container = document.getElementById('racesCalendarContainer');
-        if (container) {
-            container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">👑 Выберите администратора для просмотра гонок</div>';
-        }
-        return;
-    }
-    
-    const races = await getActiveRaces(currentAdminId);
-    const container = document.getElementById('racesCalendarContainer');
-    
-    if (!container) return;
-    
-    if (races.length === 0) {
-        container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">📭 Нет запланированных гонок</div>';
-        return;
-    }
-    
-    container.innerHTML = races.map(race => {
-        const raceDate = new Date(race.datetime);
-        const dateStr = raceDate.toLocaleString('ru-RU', {
-            day: '2-digit', month: '2-digit', year: 'numeric',
-            hour: '2-digit', minute: '2-digit'
-        });
-        
-        return `
-            <div class="race-card" data-race-id="${race.id}">
-                <div class="race-date">📅 ${dateStr}</div>
-                <div class="race-title">${race.title || '🏁 Гоночный заезд'}</div>
-                <div class="race-details">
-                    ${race.display_mode === 'group_only' ? 
-                        `<div>🏆 ${race.category_name || '—'}</div>` :
-                        `<div>🚗 ${race.car_name || '—'}</div>`
-                    }
-                    <div>${race.track_name || '—'}</div>
-                    <div>🌤️ ${race.weather_name || '—'}</div>
-                    <div>⏰ ${race.time_name || '—'} ${race.time_multiplier ? race.time_multiplier : ''}</div>
-                    <div>⚙️ ${race.tires_value || 'X1'}</div>
-                    <div>⛽ ${race.fuel_value || 'X1'}</div>
-                </div>
-                <button class="apply-race-btn" onclick="applyRaceToGame('${race.id}')">🏁 ПРИМЕНИТЬ ГОНКУ</button>
-            </div>
-        `;
-    }).join('');
-}
-
-async function applyRaceToGame(raceId) {
-    try {
-        const callbackName = 'jsonp_race_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=getRaceById&raceId=${raceId}&callback=${callbackName}&t=${Date.now()}`;
-        
-        const race = await new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => {
-                if (window[callbackName]) delete window[callbackName];
-                reject(new Error('Таймаут'));
-            }, 10000);
-            
-            window[callbackName] = function(data) {
-                clearTimeout(timeout);
-                delete window[callbackName];
-                resolve(data.race);
-            };
-            
-            const script = document.createElement('script');
-            script.src = url;
-            script.onerror = () => reject(new Error('Ошибка соединения'));
-            document.body.appendChild(script);
-        });
-        
-        if (race) {
-            applyRaceParameters(race);
-            showStatus('✅ Параметры гонки загружены!', 'success');
-        }
-    } catch(e) {
-        console.error('Ошибка загрузки гонки:', e);
-        showStatus('❌ Ошибка загрузки параметров гонки', 'error');
-    }
-}
-
-function applyRaceParameters(race) {
-    if (race.display_mode !== 'group_only') {
-        if (race.car_name) {
-            document.getElementById('carValue').innerHTML = race.car_name;
-            const car = carsDatabase.find(c => c.name === race.car_name);
-            if (car && car.icon) {
-                displayCarIcon(car.icon);
-            }
-        }
-    }
-    
-    if (race.track_name) {
-        document.getElementById('trackValue').innerHTML = race.track_name;
-        const trackIconUrl = getTrackIcon(race.track_name);
-        displayTrackIcon(trackIconUrl);
-    }
-    
-    if (race.category_name) document.getElementById('categoryValue').innerHTML = race.category_name;
-    if (race.weather_name) document.getElementById('weatherValue').innerHTML = race.weather_name;
-    
-    if (race.time_name) {
-        const multiplier = race.time_multiplier || 'X1';
-        document.getElementById('timeValue').innerHTML = `${race.time_name} <span class="time-x-badge">${multiplier}</span>`;
-    }
-    
-    if (race.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${race.tires_value}</span>`;
-    if (race.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${race.fuel_value}</span>`;
-    
-    if (race.display_mode) {
-        setDisplayMode(race.display_mode);
-    }
-    
-    localStorage.setItem('gt7_current_race', JSON.stringify(race));
-}
-
-function showStatus(message, type) {
-    const statusDiv = document.getElementById('status');
-    if (statusDiv) {
-        statusDiv.innerHTML = message;
-        statusDiv.className = `status ${type}`;
-        statusDiv.style.display = 'block';
-        setTimeout(() => {
-            if (statusDiv.innerHTML === message) {
-                statusDiv.style.display = 'none';
-            }
-        }, 3000);
-    }
-}
-
-// ============================================
-// ВЫБОР АДМИНИСТРАТОРА ДЛЯ ПРОСМОТРА ГОНОК
-// ============================================
-
-function selectAdmin(adminId) {
-    const container = document.getElementById('racesCalendarContainer');
-    
-    if (!adminId) {
-        localStorage.removeItem('gt7_selected_admin_id');
-        if (container) {
-            container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">👑 Выберите администратора</div>';
-        }
-        return;
-    }
-    
-    localStorage.setItem('gt7_selected_admin_id', adminId);
-    
-    if (container) {
-        container.innerHTML = '<div style="text-align: center; padding: 20px;">🔄 Загрузка гонок...</div>';
-    }
-    displayUserRaces(adminId);
-}
-
-async function loadUserAdmins() {
-    try {
-        const callbackName = 'jsonp_admins_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=getAdmins&callback=${callbackName}&t=${Date.now()}`;
-        
-        const admins = await new Promise((resolve) => {
-            const timeout = setTimeout(() => {
-                if (window[callbackName]) delete window[callbackName];
-                resolve([]);
-            }, 10000);
-            
-            window[callbackName] = function(data) {
-                clearTimeout(timeout);
-                delete window[callbackName];
-                if (data && data.success && data.admins) {
-                    resolve(data.admins);
-                } else {
-                    resolve([]);
-                }
-            };
-            
-            const script = document.createElement('script');
-            script.src = url;
-            script.onerror = () => {
-                clearTimeout(timeout);
-                resolve([]);
-            };
-            document.body.appendChild(script);
-        });
-        
-        const select = document.getElementById('userAdminSelect');
-        if (select) {
-            const savedAdminId = localStorage.getItem('gt7_selected_admin_id');
             select.innerHTML = '<option value="">-- Выберите администратора --</option>';
-            admins.forEach(admin => {
-                select.innerHTML += `<option value="${admin.id}" ${savedAdminId === admin.id ? 'selected' : ''}>${admin.name}</option>`;
-            });
-        }
-    } catch(e) {
-        console.error('Ошибка загрузки администраторов:', e);
-    }
+            admins.forEach(admin => { select.innerHTML += `<option value="${admin.id}">${admin.name}</option>`; });
+            adminsLoaded = true;
+        } else { select.innerHTML = '<option value="">-- Ошибка --</option>'; }
+    } catch(e) { console.error(e); select.innerHTML = '<option value="">-- Ошибка --</option>'; }
 }
 
-// ============================================
-// ИНИЦИАЛИЗАЦИЯ (ИСПРАВЛЕНА)
-// ============================================
+function showWelcomeScreen() {
+    document.getElementById('welcomeScreen').classList.remove('hidden');
+    document.getElementById('setupScreen').classList.add('hidden');
+    document.getElementById('mainApp').classList.add('hidden');
+}
+
+function showSetupScreen() {
+    document.getElementById('welcomeScreen').classList.add('hidden');
+    document.getElementById('setupScreen').classList.remove('hidden');
+    document.getElementById('mainApp').classList.add('hidden');
+    loadAdminsFromGoogle();
+}
+
+function showMainApp(autoGenerate = true) {
+    document.getElementById('welcomeScreen').classList.add('hidden');
+    document.getElementById('setupScreen').classList.add('hidden');
+    document.getElementById('mainApp').classList.remove('hidden');
+    const banner = document.getElementById('adminSyncBanner');
+    if (userSyncEnabled && currentAdminId) {
+        banner.classList.remove('hidden');
+        document.getElementById('adminName').innerHTML = currentAdminName || currentAdminId;
+    } else { banner.classList.add('hidden'); }
+    if (typeof init === 'function') init();
+    setTimeout(() => {
+        if (userSyncEnabled && currentAdminId) { generateLocalRace(); showStatusMessage('🎲 Случайная гонка готова!', 'info'); }
+        else if (autoGenerate) { generateLocalRace(); showStatusMessage('🎲 Случайная гонка готова!', 'info'); }
+    }, 100);
+}
+
+// Обработчики кнопок
+document.getElementById('closeWelcomeBtn').addEventListener('click', () => { localStorage.setItem('gt7_welcome_seen', 'true'); showSetupScreen(); });
+
+document.getElementById('continueToAdminBtn').addEventListener('click', () => {
+    const select = document.getElementById('adminSelect');
+    if (!select.value) { alert('⚠️ Выберите администратора!'); return; }
+    userSyncEnabled = true;
+    currentAdminId = select.value;
+    currentAdminName = select.options[select.selectedIndex].text;
+    showMainApp(false);
+    setTimeout(() => { showStatusMessage(`👑 Режим синхронизации: ${currentAdminName}`, 'success'); }, 100);
+});
+
+document.getElementById('localRaceFromSetupBtn').addEventListener('click', () => {
+    userSyncEnabled = false;
+    currentAdminId = null;
+    currentAdminName = null;
+    document.getElementById('mainApp').classList.add('local-mode');
+    showMainApp(true);
+});
+
+// Кнопка новой гонки в локальном режиме
+document.getElementById('newLocalRaceBtn').addEventListener('click', () => {
+    if (!userSyncEnabled) {
+        generateLocalRace();
+        showStatusMessage('🎲 Новая случайная гонка готова!', 'info');
+    }
+});
+
+// Инициализация
 function init() {
-    console.log('🚀 Инициализация приложения');
     loadShownCars();
-    
     document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
         const param = btn.getAttribute('data-param');
-        if (locks[param] === false) {
-            btn.setAttribute('data-state', 'unlocked');
-            btn.innerText = '🔓';
-        } else {
-            btn.setAttribute('data-state', 'locked');
-            btn.innerText = '🔒';
-        }
-        btn.addEventListener('click', (e) => { 
-            e.stopPropagation(); 
-            toggleLock(btn.getAttribute('data-param')); 
-        });
+        btn.addEventListener('click', (e) => { e.stopPropagation(); locks[param] = !locks[param]; btn.innerText = locks[param] ? '🔒' : '🔓'; btn.setAttribute('data-state', locks[param] ? 'locked' : 'unlocked'); });
     });
-    
-    const settingsHeader = document.getElementById('settingsHeader');
-    if (settingsHeader) settingsHeader.addEventListener('click', toggleSettings);
-    
-    const similarHeader = document.getElementById('similarHeader');
-    if (similarHeader) similarHeader.addEventListener('click', toggleSimilar);
-    
-    const carsTrackHeader = document.getElementById('carsTrackHeader');
-    if (carsTrackHeader) carsTrackHeader.addEventListener('click', toggleCarsTrack);
-    
-    const categoryHeader = document.getElementById('categoryHeader');
-    if (categoryHeader) categoryHeader.addEventListener('click', toggleCategory);
-    
-    const racesHeader = document.getElementById('racesHeader');
-    if (racesHeader) racesHeader.addEventListener('click', toggleRacesCalendar);
-    
-    const refreshBtn = document.getElementById('refreshSimilarBtn');
-    if (refreshBtn) refreshBtn.addEventListener('click', refreshSimilarCars);
-    
-    const resetBtn = document.getElementById('resetCarsBtn');
-    if (resetBtn) resetBtn.addEventListener('click', resetCarsHistory);
-    
-    const modeAllBtn = document.getElementById('modeAllBtn');
-    if (modeAllBtn) modeAllBtn.addEventListener('click', () => setDisplayMode('all'));
-    
-    const modeGroupBtn = document.getElementById('modeGroupOnlyBtn');
-    if (modeGroupBtn) modeGroupBtn.addEventListener('click', () => setDisplayMode('group_only'));
-    
-    window.selectCar = selectCar;
-    
+    document.getElementById('settingsHeader')?.addEventListener('click', () => { document.getElementById('settingsContent').classList.toggle('collapsed'); });
+    document.getElementById('similarHeader')?.addEventListener('click', () => { document.getElementById('similarContent').classList.toggle('collapsed'); });
+    document.getElementById('carsTrackHeader')?.addEventListener('click', () => { document.getElementById('carsTrackContent').classList.toggle('collapsed'); });
+    document.getElementById('categoryHeader')?.addEventListener('click', () => { document.getElementById('categoryContent').classList.toggle('collapsed'); });
+    document.getElementById('racesHeader')?.addEventListener('click', () => { document.getElementById('racesCalendarContainer').classList.toggle('collapsed'); });
+    document.getElementById('refreshSimilarBtn')?.addEventListener('click', () => { refreshSimilarCars(); });
+    document.getElementById('resetCarsBtn')?.addEventListener('click', () => { shownCars = []; saveShownCars(); alert('✅ История сброшена!'); });
+    document.getElementById('modeAllBtn')?.addEventListener('click', () => setDisplayMode('all'));
+    document.getElementById('modeGroupOnlyBtn')?.addEventListener('click', () => setDisplayMode('group_only'));
     setDisplayMode(displayMode);
-    updateModeSelectorVisibility();
-    
-    const savedAdminId = localStorage.getItem('gt7_selected_admin_id');
-    const adminSelectElement = document.getElementById('adminSelect');
-    
-    if (adminSelectElement && adminSelectElement.value === '') {
-        localStorage.removeItem('gt7_selected_admin_id');
-        const container = document.getElementById('racesCalendarContainer');
-        if (container) {
-            container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">👑 Выберите администратора</div>';
-        }
-    } else if (savedAdminId && adminSelectElement && adminSelectElement.value === savedAdminId) {
-        displayUserRaces(savedAdminId);
-    } else {
-        const container = document.getElementById('racesCalendarContainer');
-        if (container) {
-            container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">👑 Выберите администратора</div>';
-        }
-    }
-    
-    loadUserAdmins();
-    
-    setInterval(() => {
-        const selectedAdmin = localStorage.getItem('gt7_selected_admin_id');
-        if (selectedAdmin) {
-            displayUserRaces(selectedAdmin);
-        }
-    }, 60000);
-
-    updateModeSelectorVisibility();
-
-    const hasSeenWelcome = localStorage.getItem('gt7_welcome_seen');
-    if (!hasSeenWelcome) {
-        const welcomeMsg = document.getElementById('welcomeMessage');
-        if (welcomeMsg) {
-            welcomeMsg.style.display = 'flex';
-            const closeBtn = document.getElementById('closeWelcomeBtn');
-            if (closeBtn) {
-                closeBtn.addEventListener('click', () => {
-                    welcomeMsg.style.display = 'none';
-                    localStorage.setItem('gt7_welcome_seen', 'true');
-                });
-            }
-        }
-    }
+    if (localStorage.getItem('gt7_welcome_seen')) { showSetupScreen(); } else { showWelcomeScreen(); }
 }
 
-// Запуск приложения
 init();
 </script>
 </body>
