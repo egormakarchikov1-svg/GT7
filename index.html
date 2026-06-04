@@ -2653,42 +2653,48 @@ function startAutoRefresh() {
         if (userSyncEnabled && currentAdminId && !isApplyingUpdate) {
             console.log('🔄 Проверка обновлений у админа:', currentAdminId);
             
-            const synced = await loadSyncedCombo(true);
-            
-            if (syncedModeActive && synced) {
-                // Сохраняем хэш текущего состояния
-                const currentCar = document.getElementById('carValue')?.innerText || '';
-                const currentTrackHTML = document.getElementById('trackValue')?.innerHTML || '';
-                const currentWeather = document.getElementById('weatherValue')?.innerHTML || '';
-                const currentTime = document.getElementById('timeValue')?.innerHTML || '';
-                const currentTires = document.getElementById('tiresValue')?.innerHTML || '';
-                const currentFuel = document.getElementById('fuelValue')?.innerHTML || '';
+            try {
+                const synced = await loadSyncedCombo(true);
                 
-                const currentHash = `${currentCar}|${currentTrackHTML}|${currentWeather}|${currentTime}|${currentTires}|${currentFuel}`;
-                
-                // Формируем ожидаемый хэш от админа
-                const expectedLaps = synced.laps || '5';
-                const expectedTrackHTML = `${synced.track_name} <span class="time-x-badge">${expectedLaps} кругов</span>`;
-                const expectedHash = `${synced.car_name || ''}|${expectedTrackHTML}|${synced.weather_name || ''}|${synced.time_name || ''} <span class="time-x-badge">${synced.time_multiplier || 'X1'}</span>|<span class="time-x-badge">${synced.tires_value || 'X1'}</span>|<span class="time-x-badge">${synced.fuel_value || 'X1'}</span>`;
-                
-                if (currentHash !== expectedHash) {
-                    console.log('🔄 ПРИМЕНЯЕМ ОБНОВЛЕНИЯ ОТ АДМИНА!');
-                    isApplyingUpdate = true;
-                    applySyncedCombo(synced);
-                    showRefreshIndicator();
-                    showStatusMessage('🔄 Данные обновлены администратором!', 'success');
+                if (syncedModeActive && synced) {
+                    const currentTrackElement = document.getElementById('trackValue');
+                    const currentHTML = currentTrackElement ? currentTrackElement.innerHTML : '';
+                    const expectedLaps = synced.laps || '5';
+                    const expectedHTML = `${synced.track_name} <span class="time-x-badge">${expectedLaps} кругов</span>`;
                     
-                    setTimeout(() => {
-                        isApplyingUpdate = false;
-                    }, 2000);
-                } else {
-                    console.log('✅ Изменений нет');
+                    let hasChanges = false;
+                    
+                    if (!locks.track && currentHTML !== expectedHTML) {
+                        console.log('🔍 Обнаружены изменения в ТРАССЕ!');
+                        hasChanges = true;
+                    }
+                    
+                    if (!locks.car && synced.car_name) {
+                        const currentCar = document.getElementById('carValue')?.innerText || '';
+                        if (currentCar !== synced.car_name) {
+                            console.log('🔍 Обнаружены изменения в МАШИНЕ!');
+                            hasChanges = true;
+                        }
+                    }
+                    
+                    if (hasChanges) {
+                        isApplyingUpdate = true;
+                        console.log('🔄 ПРИМЕНЯЕМ ОБНОВЛЕНИЯ ОТ АДМИНА!');
+                        applySyncedCombo(synced);
+                        showRefreshIndicator();
+                        showStatusMessage('🔄 Данные обновлены администратором!', 'success');
+                        
+                        setTimeout(() => {
+                            isApplyingUpdate = false;
+                        }, 2000);
+                    }
                 }
+            } catch(e) {
+                console.error('❌ Ошибка при проверке обновлений:', e);
             }
         }
     }, 5000);
 }
-
 function stopAutoRefresh() {
     if (autoRefreshInterval) {
         clearInterval(autoRefreshInterval);
@@ -2714,9 +2720,9 @@ async function loadSyncedCombo(forceRefresh = false) {
         const url = `${APPS_SCRIPT_URL}?action=getCurrentCombo&adminId=${encodeURIComponent(currentAdminId)}&callback=${callbackName}&_=${timestamp}&force=${forceRefresh ? '1' : '0'}`;
         
         const timeout = setTimeout(() => {
+            console.log('⏰ Таймаут загрузки комбинации');
             if (window[callbackName]) {
                 delete window[callbackName];
-                if (script && script.parentNode) document.body.removeChild(script);
             }
             syncedModeActive = false;
             resolve(null);
@@ -2725,20 +2731,26 @@ async function loadSyncedCombo(forceRefresh = false) {
         window[callbackName] = function(data) {
             clearTimeout(timeout);
             delete window[callbackName];
-            if (script && script.parentNode) document.body.removeChild(script);
             
-            if (data && (data.active === 'TRUE' || data.active === true)) {
-                console.log('✅ Админская комбинация АКТИВНА!');
-                syncedModeActive = true;
-                syncedComboData = data;
-                const banner = document.getElementById('adminModeBanner');
-                if (banner) banner.style.display = 'block';
-                resolve(data);
-            } else {
+            try {
+                if (data && (data.active === 'TRUE' || data.active === true)) {
+                    console.log('✅ Админская комбинация АКТИВНА!');
+                    syncedModeActive = true;
+                    syncedComboData = data;
+                    const banner = document.getElementById('adminModeBanner');
+                    if (banner) banner.style.display = 'block';
+                    resolve(data);
+                } else {
+                    console.log('❌ Админская комбинация НЕ АКТИВНА');
+                    syncedModeActive = false;
+                    syncedComboData = null;
+                    const banner = document.getElementById('adminModeBanner');
+                    if (banner) banner.style.display = 'none';
+                    resolve(null);
+                }
+            } catch(e) {
+                console.error('Ошибка обработки данных:', e);
                 syncedModeActive = false;
-                syncedComboData = null;
-                const banner = document.getElementById('adminModeBanner');
-                if (banner) banner.style.display = 'none';
                 resolve(null);
             }
         };
@@ -2746,6 +2758,7 @@ async function loadSyncedCombo(forceRefresh = false) {
         const script = document.createElement('script');
         script.src = url;
         script.onerror = function() {
+            console.error('❌ Ошибка загрузки скрипта');
             clearTimeout(timeout);
             if (window[callbackName]) delete window[callbackName];
             syncedModeActive = false;
