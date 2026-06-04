@@ -2707,6 +2707,12 @@ function startAutoRefresh() {
             console.log('🔄 Проверка обновлений у админа:', currentAdminId);
             
             try {
+                // ОБНОВЛЯЕМ КАЛЕНДАРЬ ЗАПЛАНИРОВАННЫХ ГОНОК
+                if (typeof displayUserRaces === 'function') {
+                    displayUserRaces(currentAdminId);
+                    console.log('📅 Календарь гонок обновлён');
+                }
+                
                 const synced = await loadSyncedCombo(true);
                 
                 if (syncedModeActive && synced) {
