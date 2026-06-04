@@ -2649,16 +2649,22 @@ function startAutoRefresh() {
     console.log('🔄 ЗАПУСК АВТООБНОВЛЕНИЯ для админа:', currentAdminId);
     
     autoRefreshInterval = setInterval(async () => {
-        if (userSyncEnabled && currentAdminId) {
+        if (userSyncEnabled && currentAdminId && !isApplyingUpdate) {
             console.log('🔄 Проверка обновлений у админа:', currentAdminId);
             
-            // ВАЖНО: forceRefresh = true, чтобы игнорировать кэш
             const synced = await loadSyncedCombo(true);
             
             if (syncedModeActive && synced) {
-                // Сравниваем с текущими данными в UI
-                const currentCar = document.getElementById('carValue').innerText;
-                const currentTrack = document.getElementById('trackValue').innerText.split(' ')[0];
+                const currentCarElement = document.getElementById('carValue');
+                const currentTrackElement = document.getElementById('trackValue');
+                
+                let currentTrackName = '';
+                if (currentTrackElement) {
+                    const fullText = currentTrackElement.innerText;
+                    currentTrackName = fullText.split(' кругов')[0].split('кругов')[0].trim();
+                }
+                
+                const currentCar = currentCarElement ? currentCarElement.innerText : '';
                 
                 let hasChanges = false;
                 
@@ -2667,22 +2673,25 @@ function startAutoRefresh() {
                     hasChanges = true;
                 }
                 
-                if (!locks.track && synced.track_name && currentTrack !== synced.track_name) {
-                    console.log('🔍 Обнаружены изменения в ТРАССЕ:', currentTrack, '->', synced.track_name);
+                if (!locks.track && synced.track_name && currentTrackName !== synced.track_name) {
+                    console.log('🔍 Обнаружены изменения в ТРАССЕ:', currentTrackName, '->', synced.track_name);
                     hasChanges = true;
                 }
                 
                 if (hasChanges) {
+                    isApplyingUpdate = true;
                     console.log('🔄 ПРИМЕНЯЕМ ОБНОВЛЕНИЯ ОТ АДМИНА!');
                     applySyncedCombo(synced);
                     showRefreshIndicator();
                     showStatusMessage('🔄 Данные обновлены администратором!', 'success');
-                } else {
-                    console.log('✅ Изменений нет');
+                    
+                    setTimeout(() => {
+                        isApplyingUpdate = false;
+                    }, 1000);
                 }
             }
         }
-    }, 1000); // 5 секунд - можно уменьшить до 2000 для более частой проверки
+    }, 5000);
 }
 
 function stopAutoRefresh() {
