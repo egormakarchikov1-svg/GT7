@@ -1177,6 +1177,12 @@
         🔄 ПРИНУДИТЕЛЬНАЯ СИНХРОНИЗАЦИЯ
     </button>
 </div>
+
+     <div style="margin: 10px 0;">
+        <button id="generateRandomRaceBtn" style="background: linear-gradient(135deg, #ff4d4d, #cc0000); width: 100%; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 40px;">
+            🎲 СЛУЧАЙНАЯ ГОНКА
+        </button>
+    </div>
     
     <!-- Блок РЕЖИМ ЗАЕЗДА МАШИН -->
     <div class="cars-track-container" id="modeSelectorBlock" style="border-color: #8b5cf6;">
@@ -3532,14 +3538,6 @@ async function manualSync() {
     }
 }
 
-// Функция для очистки кэша синхронизации
-function resetSyncCache() {
-    lastSyncedData = null;
-    syncedModeActive = false;
-    syncedComboData = null;
-    console.log('🗑️ Кэш синхронизации очищен');
-}
-    
 function init() {
     console.log('🚀 Инициализация приложения');
     loadShownCars();
@@ -3641,6 +3639,47 @@ function init() {
         manualSyncBtn.addEventListener('click', manualSync);
         console.log('✅ Кнопка ручной синхронизации активирована');
     }
+
+    // ===== ДОБАВЬТЕ ЭТОТ БЛОК ЗДЕСЬ =====
+    // Обработчик кнопки генерации случайной гонки
+    const generateRandomRaceBtn = document.getElementById('generateRandomRaceBtn');
+    if (generateRandomRaceBtn) {
+        generateRandomRaceBtn.addEventListener('click', () => {
+            console.log('🎲 Генерация новой случайной гонки');
+            
+            // Сбрасываем флаг обновления
+            isApplyingUpdate = false;
+            
+            // Если в режиме синхронизации - выходим из него
+            if (userSyncEnabled) {
+                userSyncEnabled = false;
+                currentAdminId = null;
+                currentAdminName = null;
+                
+                // Скрываем баннер синхронизации
+                const banner = document.getElementById('adminSyncBanner');
+                if (banner) banner.classList.add('hidden');
+                
+                // Останавливаем автообновление
+                stopAutoRefresh();
+                
+                // Очищаем кэш
+                resetSyncCache();
+                
+                console.log('🔄 Выход из режима синхронизации, переход в локальный режим');
+            }
+            
+            // Генерируем новую гонку
+            setTimeout(() => {
+                if (typeof generateLocalRace === 'function') {
+                    generateLocalRace();
+                    showStatusMessage('🎲 Новая случайная гонка сгенерирована!', 'success');
+                }
+            }, 100);
+        });
+        console.log('✅ Кнопка генерации случайной гонки активирована');
+    }
+    // ===== КОНЕЦ ДОБАВЛЕННОГО БЛОКА =====
 }
 
 // Запуск приложения
