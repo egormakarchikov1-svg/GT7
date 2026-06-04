@@ -1138,6 +1138,7 @@
     </div>
 </div>
 
+
 <!-- ЭКРАН 2: ВЫБОР АДМИНИСТРАТОРА -->
 <div id="setupScreen" class="screen hidden">
     <div class="setup-card">
@@ -1500,6 +1501,7 @@ window.setExternalSettings = function(adminId, adminName, syncEnabled) {
 };
 
 // Проверяем, видел ли пользователь приветствие
+// Проверяем, видел ли пользователь приветствие
 const hasSeenWelcome = localStorage.getItem('gt7_welcome_seen');
 if (hasSeenWelcome) {
     showSetupScreen();
@@ -1507,47 +1509,18 @@ if (hasSeenWelcome) {
     showWelcomeScreen();
 }
 
-const welcomeLocalRaceBtn = document.getElementById('welcomeLocalRaceBtn');
-if (welcomeLocalRaceBtn) {
-    welcomeLocalRaceBtn.addEventListener('click', () => {
-        userSyncEnabled = false;
-        currentAdminId = null;
-        currentAdminName = null;
-        
-        console.log('🎲 Запуск локальной случайной гонки с приветственного экрана');
-        
-        document.getElementById('welcomeScreen').classList.add('hidden');
-        document.getElementById('setupScreen').classList.add('hidden');
-        document.getElementById('mainApp').classList.remove('hidden');
-        
-        const banner = document.getElementById('adminSyncBanner');
-        if (banner) banner.classList.add('hidden');
-        
-        if (typeof init === 'function') init();
-        
-        setTimeout(() => {
-            if (typeof generateLocalRace === 'function') {
-                generateLocalRace();
-                showStatusMessage('🎲 Случайная гонка готова!', 'info');
-            }
-            if (typeof updateModeSelectorVisibility === 'function') {
-                updateModeSelectorVisibility();
-            }
-        }, 100);
-    });
-}
-
-// Обработчик для кнопки "ВЫБОР АДМИНИСТРАТОРА" на приветственном экране
-const welcomeAdminBtn = document.getElementById('welcomeAdminBtn');
-if (welcomeAdminBtn) {
-    welcomeAdminBtn.addEventListener('click', () => {
+// Обработчик закрытия приветствия (кнопка СТАРТ)
+const closeWelcomeBtn = document.getElementById('closeWelcomeBtn');
+if (closeWelcomeBtn) {
+    closeWelcomeBtn.addEventListener('click', () => {
+        localStorage.setItem('gt7_welcome_seen', 'true');
         showSetupScreen();
     });
 }
 
 // ===== ОБРАБОТЧИКИ НА ЭКРАНЕ ВЫБОРА АДМИНИСТРАТОРА =====
 
-// Обработчик для кнопки "ПРОДОЛЖИТЬ С АДМИНИСТРАТОРОМ"
+// 1. Кнопка "ПРОДОЛЖИТЬ С АДМИНИСТРАТОРОМ"
 const continueToAdminBtn = document.getElementById('continueToAdminBtn');
 if (continueToAdminBtn) {
     continueToAdminBtn.addEventListener('click', () => {
@@ -1573,7 +1546,7 @@ if (continueToAdminBtn) {
     });
 }
 
-// Обработчик для кнопки "СЛУЧАЙНАЯ ГОНКА" на экране выбора админа
+// 2. Кнопка "СЛУЧАЙНАЯ ГОНКА" на экране выбора админа
 const localRaceFromSetupBtn = document.getElementById('localRaceFromSetupBtn');
 if (localRaceFromSetupBtn) {
     localRaceFromSetupBtn.addEventListener('click', () => {
@@ -1599,79 +1572,6 @@ if (localRaceFromSetupBtn) {
             }
             if (typeof updateModeSelectorVisibility === 'function') {
                 updateModeSelectorVisibility();
-            }
-        }, 100);
-    });
-}
-
-
-// Обработчик для кнопки "СЛУЧАЙНАЯ ГОНКА" на экране выбора админа
-const localRaceFromSetupBtn = document.getElementById('localRaceFromSetupBtn');
-if (localRaceFromSetupBtn) {
-    localRaceFromSetupBtn.addEventListener('click', () => {
-        // Локальный режим - синхронизация ВЫКЛ, админ не выбран
-        userSyncEnabled = false;
-        currentAdminId = null;
-        currentAdminName = null;
-        
-        console.log('🎲 Запуск в локальном режиме с экрана выбора админа');
-        
-        // Показываем главный экран
-        document.getElementById('welcomeScreen').classList.add('hidden');
-        document.getElementById('setupScreen').classList.add('hidden');
-        document.getElementById('mainApp').classList.remove('hidden');
-        
-        // Обновляем баннер (скрыт)
-        const banner = document.getElementById('adminSyncBanner');
-        if (banner) banner.classList.add('hidden');
-        
-        // Запускаем init
-        if (typeof init === 'function') init();
-        
-        // Сразу генерируем случайную гонку
-        setTimeout(() => {
-            if (typeof generateLocalRace === 'function') {
-                generateLocalRace();
-                showStatusMessage('🎲 Случайная гонка готова!', 'info');
-            }
-            if (typeof updateModeSelectorVisibility === 'function') {
-                updateModeSelectorVisibility();
-            }
-        }, 100);
-    });
-}
-
-// Кнопка "ВЫБОР АДМИНИСТРАТОРА" на приветственном экране
-const welcomeAdminBtn = document.getElementById('welcomeAdminBtn');
-if (welcomeAdminBtn) {
-    welcomeAdminBtn.addEventListener('click', () => {
-        showSetupScreen();  // Просто показываем экран выбора админа
-    });
-}
-
-// Кнопка "СЛУЧАЙНАЯ ГОНКА" на приветственном экране (оставляем как быстрый доступ)
-const welcomeLocalRaceBtn = document.getElementById('welcomeLocalRaceBtn');
-if (welcomeLocalRaceBtn) {
-    welcomeLocalRaceBtn.addEventListener('click', () => {
-        userSyncEnabled = false;
-        currentAdminId = null;
-        currentAdminName = null;
-        
-        console.log('🎲 Запуск локальной случайной гонки с приветственного экрана');
-        
-        document.getElementById('welcomeScreen').classList.add('hidden');
-        document.getElementById('setupScreen').classList.add('hidden');
-        document.getElementById('mainApp').classList.remove('hidden');
-        
-        const banner = document.getElementById('adminSyncBanner');
-        if (banner) banner.classList.add('hidden');
-        
-        if (typeof init === 'function') init();
-        
-        setTimeout(() => {
-            if (typeof generateLocalRace === 'function') {
-                generateLocalRace();
-                showStatusMessage('🎲 Случайная гонка готова!', 'info');
             }
         }, 100);
     });
