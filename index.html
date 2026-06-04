@@ -1377,7 +1377,7 @@ let currentAdminName = null;
 let userSyncEnabled = false;
 // Флаг для предотвращения двойной загрузки
 let adminsLoaded = false;
-    let manualModeActive = false;  // Флаг ручного режима (применена гонка из календаря)
+let manualModeActive = false;  // Флаг ручного режима (применена гонка из календаря)
 let manualModeTimer = null;     // Таймер для автоматического выхода из ручного режима
 
 // Загрузка админов из Google Sheets (JSONP) - ТОЛЬКО ОДИН РАЗ
@@ -2717,36 +2717,68 @@ function startAutoRefresh() {
     console.log('🔄 ЗАПУСК АВТООБНОВЛЕНИЯ для админа:', currentAdminId);
     
     autoRefreshInterval = setInterval(async () => {
-        // ПРОВЕРКА: если ручной режим активен - НЕ ОБНОВЛЯЕМ данные гонки
+        // ЕСЛИ РУЧНОЙ РЕЖИМ АКТИВЕН - НЕ ОБНОВЛЯЕМ ПАРАМЕТРЫ ГОНКИ
         if (manualModeActive) {
-            console.log('⏸️ Ручной режим активен, автообновление гонки приостановлено');
+            console.log('⏸️ Ручной режим активен, автообновление параметров гонки приостановлено');
             // Но календарь обновляем всегда
             if (typeof displayUserRaces === 'function' && userSyncEnabled && currentAdminId) {
                 displayUserRaces(currentAdminId);
             }
-            return;
+            return; // Выходим, не обновляем параметры
         }
         
         if (userSyncEnabled && currentAdminId && !isApplyingUpdate) {
             console.log('🔄 Проверка обновлений у админа:', currentAdminId);
             
             try {
-                // ОБНОВЛЯЕМ КАЛЕНДАРЬ ЗАПЛАНИРОВАННЫХ ГОНОК
+                // Обновляем календарь
                 if (typeof displayUserRaces === 'function') {
                     displayUserRaces(currentAdminId);
-                    console.log('📅 Календарь гонок обновлён');
                 }
                 
                 const synced = await loadSyncedCombo(true);
                 
                 if (syncedModeActive && synced) {
-                    // ... остальной код сравнения ...
+                    // Получаем текущие значения
+                    const currentTrackElement = document.getElementById('trackValue');
+                    let currentTrackName = '';
+                    if (currentTrackElement) {
+                        const fullText = currentTrackElement.innerText;
+                        currentTrackName = fullText.replace(/\d+\s*кругов/, '').trim();
+                    }
+                    
+                    const currentCar = document.getElementById('carValue')?.innerText || '';
+                    
+                    let hasChanges = false;
+                    
+                    // Проверяем изменения
+                    if (!locks.car && synced.car_name && currentCar !== synced.car_name) {
+                        console.log('🔍 Обнаружены изменения в МАШИНЕ:', currentCar, '->', synced.car_name);
+                        hasChanges = true;
+                    }
+                    
+                    if (!locks.track && synced.track_name && currentTrackName !== synced.track_name) {
+                        console.log('🔍 Обнаружены изменения в ТРАССЕ:', currentTrackName, '->', synced.track_name);
+                        hasChanges = true;
+                    }
+                    
+                    if (hasChanges) {
+                        isApplyingUpdate = true;
+                        console.log('🔄 ПРИМЕНЯЕМ ОБНОВЛЕНИЯ ОТ АДМИНА!');
+                        applySyncedCombo(synced);
+                        showRefreshIndicator();
+                        showStatusMessage('🔄 Данные обновлены администратором!', 'success');
+                        
+                        setTimeout(() => {
+                            isApplyingUpdate = false;
+                        }, 3000);
+                    }
                 }
             } catch(e) {
                 console.error('❌ Ошибка при проверке обновлений:', e);
             }
         }
-    }, 10000);
+    }, 10000); // Проверка каждые 10 секунд
 }
 
 function stopAutoRefresh() {
@@ -3405,30 +3437,29 @@ async function applyRaceToGame(raceId) {
 }
 
 function applyRaceParameters(race) {
-    // Включаем ручной режим - данные не будут перезаписываться синхронизацией
+    // Включаем ручной режим - данные НЕ будут перезаписываться синхронизацией
     manualModeActive = true;
     
     // Сбрасываем старый таймер
     if (manualModeTimer) clearTimeout(manualModeTimer);
     
-    // Автоматически выходим из ручного режима через 5 минут
+    // Устанавливаем таймер на 30 минут (1800000 мс) или 0 - бесконечно
+    // Чтобы отключить автосброс, закомментируйте этот блок
     manualModeTimer = setTimeout(() => {
         console.log('🕐 Ручной режим автоматически отключён');
         manualModeActive = false;
-        
-        // Скрываем кнопку выхода
         const exitManualModeBtn = document.getElementById('exitManualModeBtn');
         if (exitManualModeBtn) exitManualModeBtn.style.display = 'none';
-        
         showStatusMessage('🕐 Режим ручной гонки завершён, синхронизация возобновлена', 'info');
-    }, 300000); // 5 минут (300000 мс)
+    }, 1800000); // 30 минут
     
-    // ПОКАЗЫВАЕМ кнопку выхода из ручного режима
+    // ПОКАЗЫВАЕМ оранжевую кнопку выхода
     const exitManualModeBtn = document.getElementById('exitManualModeBtn');
     if (exitManualModeBtn) {
         exitManualModeBtn.style.display = 'block';
     }
     
+    // Применяем параметры гонки
     if (race.display_mode !== 'group_only') {
         if (race.car_name) {
             document.getElementById('carValue').innerHTML = race.car_name;
@@ -3462,7 +3493,7 @@ function applyRaceParameters(race) {
     
     localStorage.setItem('gt7_current_race', JSON.stringify(race));
     
-    showStatusMessage('🏁 Параметры гонки применены! Автообновление временно отключено', 'success');
+    showStatusMessage('🏁 Параметры гонки применены! Автообновление остановлено', 'success');
 }
 
 // ============================================
@@ -3550,7 +3581,7 @@ function backToMenu() {
     currentAdminName = null;
     resetSyncCache();
     
-    // Скрываем кнопку выхода из ручного режима
+    // Скрываем оранжевую кнопку
     const exitManualModeBtn = document.getElementById('exitManualModeBtn');
     if (exitManualModeBtn) exitManualModeBtn.style.display = 'none';
     
@@ -3678,14 +3709,14 @@ function init() {
         }
     }
 
-    // Обработчик кнопки возврата в меню (ВМЕСТО кнопки синхронизации)
+        // Обработчик кнопки возврата в меню (ВМЕСТО кнопки синхронизации)
     const backToMenuBtn = document.getElementById('backToMenuBtn');
     if (backToMenuBtn) {
         backToMenuBtn.addEventListener('click', backToMenu);
         console.log('✅ Кнопка возврата в меню активирована');
     }
 
-       // Обработчик кнопки генерации случайной гонки
+    // Обработчик кнопки генерации случайной гонки
     const generateRandomRaceBtn = document.getElementById('generateRandomRaceBtn');
     if (generateRandomRaceBtn) {
         generateRandomRaceBtn.addEventListener('click', () => {
@@ -3725,10 +3756,32 @@ function init() {
                     showStatusMessage('🎲 Новая случайная гонка сгенерирована!', 'success');
                 }
             }, 100);
-        });  // ← ЗДЕСЬ БЫЛА ЛИШНЯЯ СКОБКА ) - УДАЛИТЕ ЕЁ
+        });
         console.log('✅ Кнопка генерации случайной гонки активирована');
     }
-}  // ← Закрытие функции init()
+
+    // Обработчик кнопки выхода из ручного режима (оранжевая кнопка) - ВНУТРИ init()
+    const exitManualModeBtn = document.getElementById('exitManualModeBtn');
+    if (exitManualModeBtn) {
+        exitManualModeBtn.addEventListener('click', () => {
+            console.log('🔄 Выход из ручного режима, возобновление синхронизации');
+            manualModeActive = false;
+            if (manualModeTimer) clearTimeout(manualModeTimer);
+            exitManualModeBtn.style.display = 'none';
+            showStatusMessage('🔄 Синхронизация возобновлена', 'success');
+            
+            // Принудительно обновляем данные от администратора
+            if (userSyncEnabled && currentAdminId) {
+                loadSyncedCombo(true).then(synced => {
+                    if (syncedModeActive && synced) {
+                        applySyncedCombo(synced);
+                    }
+                });
+            }
+        });
+        console.log('✅ Кнопка выхода из ручного режима активирована');
+    }
+}
 
 // Запуск приложения
 init();
