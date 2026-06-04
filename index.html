@@ -2739,7 +2739,7 @@ function startAutoRefresh() {
                         
                         setTimeout(() => {
                             isApplyingUpdate = false;
-                        }, 2000);
+                        }, 3000);
                     } else {
                         console.log('✅ Изменений нет');
                     }
@@ -2748,7 +2748,7 @@ function startAutoRefresh() {
                 console.error('❌ Ошибка при проверке обновлений:', e);
             }
         }
-    }, 5000);
+    }, 10000); // Изменено с 5000 на 10000 мс (10 секунд)
 }
 function stopAutoRefresh() {
     if (autoRefreshInterval) {
@@ -2758,8 +2758,8 @@ function stopAutoRefresh() {
     }
 }
 
-async function loadSyncedCombo(forceRefresh = false) {
-    console.log('🔍 loadSyncedCombo вызвана, currentAdminId =', currentAdminId);
+async function loadSyncedCombo(forceRefresh = false, retryCount = 0) {
+    console.log('🔍 loadSyncedCombo вызвана, currentAdminId =', currentAdminId, 'попытка:', retryCount + 1);
     
     if (!userSyncEnabled || !currentAdminId) {
         console.log('❌ Синхронизация выключена или админ не выбран');
@@ -2779,9 +2779,18 @@ async function loadSyncedCombo(forceRefresh = false) {
             if (window[callbackName]) {
                 delete window[callbackName];
             }
-            syncedModeActive = false;
-            resolve(null);
-        }, 10000);
+            
+            // Повторная попытка при таймауте (максимум 3 раза)
+            if (retryCount < 3) {
+                console.log(`🔄 Повторная попытка ${retryCount + 1}/3 через 2 секунды...`);
+                setTimeout(() => {
+                    loadSyncedCombo(forceRefresh, retryCount + 1).then(resolve);
+                }, 2000);
+            } else {
+                syncedModeActive = false;
+                resolve(null);
+            }
+        }, 15000);
         
         window[callbackName] = function(data) {
             clearTimeout(timeout);
@@ -2816,8 +2825,17 @@ async function loadSyncedCombo(forceRefresh = false) {
             console.error('❌ Ошибка загрузки скрипта');
             clearTimeout(timeout);
             if (window[callbackName]) delete window[callbackName];
-            syncedModeActive = false;
-            resolve(null);
+            
+            // Повторная попытка при ошибке (максимум 3 раза)
+            if (retryCount < 3) {
+                console.log(`🔄 Повторная попытка ${retryCount + 1}/3 через 2 секунды...`);
+                setTimeout(() => {
+                    loadSyncedCombo(forceRefresh, retryCount + 1).then(resolve);
+                }, 2000);
+            } else {
+                syncedModeActive = false;
+                resolve(null);
+            }
         };
         document.body.appendChild(script);
     });
