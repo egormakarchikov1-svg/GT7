@@ -1173,8 +1173,8 @@
     <div id="adminModeBanner" style="display: none;"></div>
 
     <div style="margin: 10px 0;">
-    <button id="manualSyncBtn" style="background: #8b5cf6; width: 100%;">
-        🔄 ПРИНУДИТЕЛЬНАЯ СИНХРОНИЗАЦИЯ
+    <button id="backToMenuBtn" style="background: #6b7280; width: 100%; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 40px;">
+        🔙 НАЗАД В МЕНЮ
     </button>
 </div>
 
@@ -3530,6 +3530,37 @@ async function loadUserAdmins() {
 // ============================================
 // ИНИЦИАЛИЗАЦИЯ (ИСПРАВЛЕНА)
 // ============================================
+
+// Функция возврата в меню выбора - ВЫНЕСЕНА ИЗ manualSync
+function backToMenu() {
+    console.log('🔙 Возврат в меню выбора');
+    
+    // Останавливаем автообновление
+    stopAutoRefresh();
+    
+    // Сбрасываем флаг обновления
+    isApplyingUpdate = false;
+    
+    // Сбрасываем режим синхронизации
+    userSyncEnabled = false;
+    currentAdminId = null;
+    currentAdminName = null;
+    
+    // Очищаем кэш
+    resetSyncCache();
+    
+    // Скрываем главный экран
+    document.getElementById('mainApp').classList.add('hidden');
+    
+    // Показываем экран выбора администратора
+    document.getElementById('setupScreen').classList.remove('hidden');
+    
+    // Обновляем список администраторов (на всякий случай)
+    loadAdminsFromGoogle();
+    
+    showStatusMessage('🔙 Вы вернулись в меню выбора', 'info');
+}
+
 async function manualSync() {
     if (!userSyncEnabled || !currentAdminId) {
         showStatusMessage('❌ Режим синхронизации не активирован', 'warning');
@@ -3642,14 +3673,13 @@ function init() {
         }
     }
 
-    // Обработчик кнопки принудительной синхронизации
-    const manualSyncBtn = document.getElementById('manualSyncBtn');
-    if (manualSyncBtn) {
-        manualSyncBtn.addEventListener('click', manualSync);
-        console.log('✅ Кнопка ручной синхронизации активирована');
+    // Обработчик кнопки возврата в меню (ВМЕСТО кнопки синхронизации)
+    const backToMenuBtn = document.getElementById('backToMenuBtn');
+    if (backToMenuBtn) {
+        backToMenuBtn.addEventListener('click', backToMenu);
+        console.log('✅ Кнопка возврата в меню активирована');
     }
 
-    // ===== ДОБАВЬТЕ ЭТОТ БЛОК ЗДЕСЬ =====
     // Обработчик кнопки генерации случайной гонки
     const generateRandomRaceBtn = document.getElementById('generateRandomRaceBtn');
     if (generateRandomRaceBtn) {
@@ -3688,7 +3718,6 @@ function init() {
         });
         console.log('✅ Кнопка генерации случайной гонки активирована');
     }
-    // ===== КОНЕЦ ДОБАВЛЕННОГО БЛОКА =====
 }
 
 // Запуск приложения
