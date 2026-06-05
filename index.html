@@ -1701,6 +1701,25 @@ let lastSyncedData = null;
 let isFirstLoad = true;
 let isApplyingUpdate = false;
 
+// ===== ВСТАВЬТЕ СЮДА =====
+// Сохраняем состояние блокировок в localStorage
+function saveLocksToStorage() {
+    localStorage.setItem('gt7_locks', JSON.stringify(locks));
+}
+
+// Загружаем состояние блокировок из localStorage
+function loadLocksFromStorage() {
+    const savedLocks = localStorage.getItem('gt7_locks');
+    if (savedLocks) {
+        const loadedLocks = JSON.parse(savedLocks);
+        Object.keys(loadedLocks).forEach(key => {
+            if (locks.hasOwnProperty(key)) {
+                locks[key] = loadedLocks[key];
+            }
+        });
+    }
+}
+
 // ============================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 // ============================================
@@ -2692,8 +2711,21 @@ function generateLocalRace() {
     updateTires(); 
     updateFuel(); 
     updateCategory();
+    
+    // ===== ДОБАВЬТЕ ЭТОТ БЛОК - ОБНОВЛЯЕМ СОСТОЯНИЕ ЗАМКОВ =====
+    // Обновляем отображение всех кнопок-замков в соответствии с текущими блокировками
+    document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
+        const param = btn.getAttribute('data-param');
+        if (locks[param]) {
+            btn.innerText = '🔒';
+            btn.setAttribute('data-state', 'locked');
+        } else {
+            btn.innerText = '🔓';
+            btn.setAttribute('data-state', 'unlocked');
+        }
+    });
+    // ===== КОНЕЦ ДОБАВЛЕННОГО БЛОКА =====
 }
-
 // ============================================
 // СИНХРОНИЗАЦИЯ С GOOGLE SHEETS
 // ============================================
@@ -2897,11 +2929,16 @@ function applySyncedCombo(data) {
     if (data.fuel_locked !== undefined) locks.fuel = data.fuel_locked;
     if (data.category_locked !== undefined) locks.category = data.category_locked;
     
-    Object.keys(locks).forEach(param => {
-        document.querySelectorAll(`.lock-btn[data-param="${param}"], .settings-lock-btn[data-param="${param}"]`).forEach(btn => {
-            btn.innerText = locks[param] ? '🔒' : '🔓';
-            btn.setAttribute('data-state', locks[param] ? 'locked' : 'unlocked');
-        });
+    // Обновляем отображение всех кнопок-замков
+    document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
+        const param = btn.getAttribute('data-param');
+        if (locks[param]) {
+            btn.innerText = '🔒';
+            btn.setAttribute('data-state', 'locked');
+        } else {
+            btn.innerText = '🔓';
+            btn.setAttribute('data-state', 'unlocked');
+        }
     });
     
     const highlightField = (elementId) => {
@@ -3080,6 +3117,9 @@ function toggleLock(param) {
         btn.innerText = locks[param] ? '🔒' : '🔓';
         btn.setAttribute('data-state', locks[param] ? 'locked' : 'unlocked');
     });
+    
+    // Сохраняем состояние блокировок
+    saveLocksToStorage();
 }
 
 // ФУНКЦИИ toggleSyncMode, shareResult, updateRandomButtonState - УДАЛЕНЫ
