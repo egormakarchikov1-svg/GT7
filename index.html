@@ -3667,13 +3667,17 @@ function init() {
 // ============================================
 
 // Флаг для предотвращения двойной инициализации
+// ============================================
+// ИНИЦИАЛИЗАЦИЯ (ИСПРАВЛЕНА)
+// ============================================
+
+// Флаг для предотвращения двойной инициализации
 let isInitialized = false;
 
 // Функция возврата в меню выбора
 function backToMenu() {
     console.log('🔙 Возврат в меню выбора');
     
-    // Сбрасываем ручной режим
     manualModeActive = false;
     if (manualModeTimer) clearTimeout(manualModeTimer);
     
@@ -3684,7 +3688,6 @@ function backToMenu() {
     currentAdminName = null;
     resetSyncCache();
     
-    // Скрываем оранжевую кнопку
     const exitManualModeBtn = document.getElementById('exitManualModeBtn');
     if (exitManualModeBtn) exitManualModeBtn.style.display = 'none';
     
@@ -3718,7 +3721,6 @@ async function manualSync() {
 }
 
 function init() {
-    // Защита от двойной инициализации
     if (isInitialized) {
         console.log('⚠️ init уже была вызвана, пропускаем');
         return;
@@ -3820,14 +3822,12 @@ function init() {
         }
     }
 
-    // Обработчик кнопки возврата в меню
     const backToMenuBtn = document.getElementById('backToMenuBtn');
     if (backToMenuBtn) {
         backToMenuBtn.addEventListener('click', backToMenu);
         console.log('✅ Кнопка возврата в меню активирована');
     }
 
-    // Обработчик кнопки генерации случайной гонки
     const generateRandomRaceBtn = document.getElementById('generateRandomRaceBtn');
     if (generateRandomRaceBtn) {
         generateRandomRaceBtn.addEventListener('click', () => {
@@ -3863,9 +3863,7 @@ function init() {
         console.log('✅ Кнопка генерации случайной гонки активирована');
     }
 
-    // Обработчик кнопки выхода из ручного режима
-        // Обработчик кнопки выхода из ручного режима
-            const exitManualModeBtn = document.getElementById('exitManualModeBtn');
+    const exitManualModeBtn = document.getElementById('exitManualModeBtn');
     if (exitManualModeBtn) {
         exitManualModeBtn.addEventListener('click', () => {
             console.log('🔄 Выход из ручного режима, возобновление синхронизации');
@@ -3884,7 +3882,7 @@ function init() {
         });
         console.log('✅ Кнопка выхода из ручного режима активирована');
     }
-} // <-- ЭТА СКОБКА ЗАКРЫВАЕТ ФУНКЦИЮ init()
+}
 
 // Запуск приложения - ТОЛЬКО ОДИН РАЗ!
 init();
