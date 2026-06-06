@@ -3473,6 +3473,8 @@ async function displayUserRaces(adminId) {
 
 async function applyRaceToGame(raceId) {
     try {
+        showStatusMessage('🔄 Загрузка параметров гонки...', 'info');
+        
         const callbackName = 'jsonp_race_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         const url = `${APPS_SCRIPT_URL}?action=getRaceById&raceId=${raceId}&callback=${callbackName}&t=${Date.now()}`;
         
@@ -3495,31 +3497,35 @@ async function applyRaceToGame(raceId) {
         });
         
         if (race) {
+            console.log('📦 Получены данные гонки:', race); // Для отладки
             applyRaceParameters(race);
-            showStatusMessage('✅ Параметры гонки загружены!', 'success');  // ← ИСПРАВЛЕНО
+            showStatusMessage('✅ Параметры гонки загружены!', 'success');
+        } else {
+            showStatusMessage('❌ Гонка не найдена', 'error');
         }
     } catch(e) {
         console.error('Ошибка загрузки гонки:', e);
-        showStatusMessage('❌ Ошибка загрузки параметров гонки', 'error');  // ← ИСПРАВЛЕНО
+        showStatusMessage('❌ Ошибка загрузки параметров гонки', 'error');
     }
 }
 
 function applyRaceParameters(race) {
+    console.log('🎮 Применяем параметры гонки:', race);
+    
     // Включаем ручной режим - данные НЕ будут перезаписываться синхронизацией
     manualModeActive = true;
     
     // Сбрасываем старый таймер
     if (manualModeTimer) clearTimeout(manualModeTimer);
     
-    // Устанавливаем таймер на 30 минут (1800000 мс) или 0 - бесконечно
-    // Чтобы отключить автосброс, закомментируйте этот блок
+    // Устанавливаем таймер на 30 минут
     manualModeTimer = setTimeout(() => {
         console.log('🕐 Ручной режим автоматически отключён');
         manualModeActive = false;
         const exitManualModeBtn = document.getElementById('exitManualModeBtn');
         if (exitManualModeBtn) exitManualModeBtn.style.display = 'none';
         showStatusMessage('🕐 Режим ручной гонки завершён, синхронизация возобновлена', 'info');
-    }, 1800000); // 30 минут
+    }, 1800000);
     
     // ПОКАЗЫВАЕМ оранжевую кнопку выхода
     const exitManualModeBtn = document.getElementById('exitManualModeBtn');
@@ -3527,41 +3533,121 @@ function applyRaceParameters(race) {
         exitManualModeBtn.style.display = 'block';
     }
     
-    // Применяем параметры гонки
-    if (race.display_mode !== 'group_only') {
-        if (race.car_name) {
-            document.getElementById('carValue').innerHTML = race.car_name;
-            const car = carsDatabase.find(c => c.name === race.car_name);
-            if (car && car.icon) {
-                displayCarIcon(car.icon);
-            }
-        }
-    }
+    // Получаем количество кругов (из данных гонки)
+    const laps = race.laps || '5';
     
-    if (race.track_name) {
-        document.getElementById('trackValue').innerHTML = race.track_name;
-        const trackIconUrl = getTrackIcon(race.track_name);
-        displayTrackIcon(trackIconUrl);
-    }
-    
-    if (race.category_name) document.getElementById('categoryValue').innerHTML = race.category_name;
-    if (race.weather_name) document.getElementById('weatherValue').innerHTML = race.weather_name;
-    
-    if (race.time_name) {
-        const multiplier = race.time_multiplier || 'X1';
-        document.getElementById('timeValue').innerHTML = `${race.time_name} <span class="time-x-badge">${multiplier}</span>`;
-    }
-    
-    if (race.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${race.tires_value}</span>`;
-    if (race.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${race.fuel_value}</span>`;
-    
+    // 1. Устанавливаем режим отображения (group_only или all)
     if (race.display_mode) {
         setDisplayMode(race.display_mode);
     }
     
-    localStorage.setItem('gt7_current_race', JSON.stringify(race));
+    // 2. Применяем блокировки из данных гонки
+    if (race.car_locked !== undefined) locks.car = race.car_locked === true || race.car_locked === 'TRUE';
+    if (race.track_locked !== undefined) locks.track = race.track_locked === true || race.track_locked === 'TRUE';
+    if (race.weather_locked !== undefined) locks.weather = race.weather_locked === true || race.weather_locked === 'TRUE';
+    if (race.time_locked !== undefined) locks.time = race.time_locked === true || race.time_locked === 'TRUE';
+    if (race.tires_locked !== undefined) locks.tires = race.tires_locked === true || race.tires_locked === 'TRUE';
+    if (race.fuel_locked !== undefined) locks.fuel = race.fuel_locked === true || race.fuel_locked === 'TRUE';
+    if (race.category_locked !== undefined) locks.category = race.category_locked === true || race.category_locked === 'TRUE';
     
-    showStatusMessage('🏁 Параметры гонки применены! Автообновление остановлено', 'success');
+    // Обновляем отображение кнопок-замков
+    document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
+        const param = btn.getAttribute('data-param');
+        if (locks[param]) {
+            btn.innerText = '🔒';
+            btn.setAttribute('data-state', 'locked');
+        } else {
+            btn.innerText = '🔓';
+            btn.setAttribute('data-state', 'unlocked');
+        }
+    });
+    
+    // 3. Применяем параметры в зависимости от режима
+    if (race.display_mode === 'group_only') {
+        // Режим только GR классы - показываем категорию, скрываем машину
+        if (race.category_name) {
+            const cat = categories.find(c => c.name === race.category_name);
+            if (cat) {
+                document.getElementById('categoryValue').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
+            } else {
+                document.getElementById('categoryValue').innerHTML = race.category_name;
+            }
+        }
+        
+        // Скрываем блок с машиной
+        const carBlock = document.getElementById('carBlock');
+        if (carBlock) carBlock.classList.add('hidden-block');
+        
+        // Показываем блок категории
+        const categoryBlock = document.getElementById('categoryContainer');
+        if (categoryBlock) categoryBlock.classList.remove('hidden-block');
+        
+    } else {
+        // Режим все машины
+        if (race.car_name) {
+            const car = findCarByName(race.car_name);
+            if (car) {
+                document.getElementById('carValue').innerHTML = car.name;
+                if (car.icon) displayCarIcon(car.icon);
+                displaySimilarCars(car);
+            } else {
+                document.getElementById('carValue').innerHTML = race.car_name;
+            }
+        }
+        
+        // Скрываем блок категории
+        const categoryBlock = document.getElementById('categoryContainer');
+        if (categoryBlock) categoryBlock.classList.add('hidden-block');
+        
+        // Показываем блок с машиной
+        const carBlock = document.getElementById('carBlock');
+        if (carBlock) carBlock.classList.remove('hidden-block');
+    }
+    
+    // 4. ТРАССА С КРУГАМИ - ГЛАВНОЕ ИСПРАВЛЕНИЕ!
+    if (race.track_name) {
+        document.getElementById('trackValue').innerHTML = `${race.track_name} <span class="time-x-badge">${laps} кругов</span>`;
+        const trackIconUrl = getTrackIcon(race.track_name);
+        displayTrackIcon(trackIconUrl);
+    }
+    
+    // 5. Погода
+    if (race.weather_name) {
+        const w = findWeatherByName(race.weather_name);
+        if (w) {
+            document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`;
+        } else {
+            document.getElementById('weatherValue').innerHTML = race.weather_name;
+        }
+    }
+    
+    // 6. Время суток с множителем
+    if (race.time_name) {
+        const multiplier = race.time_multiplier || 'X1';
+        const tm = findTimeByName(race.time_name);
+        if (tm) {
+            document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${multiplier}</span>`;
+        } else {
+            document.getElementById('timeValue').innerHTML = `${race.time_name} <span class="time-x-badge">${multiplier}</span>`;
+        }
+    }
+    
+    // 7. Износ шин
+    if (race.tires_value) {
+        document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${race.tires_value}</span>`;
+    }
+    
+    // 8. Расход топлива
+    if (race.fuel_value) {
+        document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${race.fuel_value}</span>`;
+    }
+    
+    // Сохраняем в localStorage
+    localStorage.setItem('gt7_current_race', JSON.stringify(race));
+    saveLocksToStorage();
+    
+    // Показываем сообщение об успехе
+    showStatusMessage(`🏁 Гонка применена: ${race.track_name}, ${laps} кругов!`, 'success');
 }
 
 // ============================================
