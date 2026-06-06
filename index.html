@@ -1475,7 +1475,7 @@
 // ============================================
 // УПРАВЛЕНИЕ ЭКРАНАМИ И ЗАГРУЗКА АДМИНОВ
 // ============================================
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw9I15W01paDEQ7S_pk-2A3E5ReeR6-fXMi5f3TUtPa9HtTEYbB-QEuMv7DwqRiC3sIVQ/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzPkucHlLGUwZ4uR9d1Nk4wUViqgcsBjikCbsQNVB3NE1fjnF8YiGmpSJVQLWNK3Fz2Uw/exec';
 
 // Состояние для экрана выбора
 let currentAdminId = null;
@@ -3844,7 +3844,9 @@ async function loadUserAdmins() {
 
 let currentRegistrationRaceId = null;
 let currentRegistrationRaceInfo = null;
+let isLoadingParticipants = false;
 
+// Открыть форму записи
 // Открыть форму записи
 function openRegistration(raceId, trackName, title) {
     currentRegistrationRaceId = raceId;
@@ -3853,6 +3855,13 @@ function openRegistration(raceId, trackName, title) {
     const registrationBlock = document.getElementById('registrationBlock');
     const selectedRaceInfo = document.getElementById('selectedRaceInfo');
     const racerNameInput = document.getElementById('racerName');
+    const registerBtn = document.getElementById('confirmRegistrationBtn');
+    
+    // Сбрасываем состояние кнопки
+    if (registerBtn) {
+        registerBtn.disabled = false;
+        registerBtn.innerHTML = '✅ ЗАПИСАТЬСЯ';
+    }
     
     selectedRaceInfo.innerHTML = `
         <strong>🏁 ${currentRegistrationRaceInfo.title}</strong><br>
@@ -3877,8 +3886,13 @@ function closeRegistration() {
 }
 
     
+
 // Загрузить список участников
 async function loadParticipants(raceId) {
+    // Предотвращаем одновременные загрузки
+    if (isLoadingParticipants) return;
+    isLoadingParticipants = true;
+    
     try {
         const callbackName = 'jsonp_participants_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         const url = `${APPS_SCRIPT_URL}?action=getParticipants&raceId=${raceId}&callback=${callbackName}&t=${Date.now()}`;
@@ -3905,6 +3919,8 @@ async function loadParticipants(raceId) {
     } catch(e) {
         console.error('Ошибка загрузки участников:', e);
         document.getElementById('participantsList').innerHTML = '<div style="text-align: center; color: #ef4444; padding: 10px;">❌ Ошибка загрузки участников</div>';
+    } finally {
+        isLoadingParticipants = false;
     }
 }
         
@@ -3939,9 +3955,13 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Записаться на гонку
+
 // Записаться на гонку
 async function registerForRace() {
+    // Блокируем кнопку, чтобы предотвратить повторные нажатия
+    const registerBtn = document.getElementById('confirmRegistrationBtn');
+    if (registerBtn.disabled) return; // Если уже нажали - выходим
+    
     const racerName = document.getElementById('racerName').value.trim();
     
     if (!racerName) {
@@ -3954,15 +3974,21 @@ async function registerForRace() {
         return;
     }
 
+    // Проверяем, не записывался ли уже этот пользователь (по устройству)
     const alreadyRegistered = await checkUserAlreadyRegistered(currentRegistrationRaceId);
     if (alreadyRegistered) {
         showStatusMessage('❌ Вы уже записаны на эту гонку! Повторная запись невозможна.', 'error');
         return;
     }
     
+    // Блокируем кнопку и меняем текст
+    registerBtn.disabled = true;
+    const originalText = registerBtn.innerHTML;
+    registerBtn.innerHTML = '⏳ ОТПРАВКА...';
+    
     showStatusMessage('🔄 Отправка заявки...', 'info');
     
-    const deviceId = getUserDeviceId();  // ← ЭТА СТРОЧКА ДОЛЖНА БЫТЬ
+    const deviceId = getUserDeviceId();
     
     try {
         const callbackName = 'jsonp_register_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
@@ -3990,13 +4016,19 @@ async function registerForRace() {
             showStatusMessage(`✅ ${racerName}, вы успешно записались на гонку!`, 'success');
             document.getElementById('racerName').value = '';
             // Обновляем список участников
-            loadParticipants(currentRegistrationRaceId);
+            await loadParticipants(currentRegistrationRaceId);
         } else {
             showStatusMessage('❌ Ошибка: ' + (result.error || 'Не удалось записаться'), 'error');
         }
     } catch(e) {
         console.error('Ошибка записи:', e);
         showStatusMessage('❌ Ошибка при записи на гонку', 'error');
+    } finally {
+        // Разблокируем кнопку и возвращаем текст (только если форма ещё открыта)
+        if (document.getElementById('registrationBlock').style.display !== 'none') {
+            registerBtn.disabled = false;
+            registerBtn.innerHTML = originalText;
+        }
     }
 }
 
