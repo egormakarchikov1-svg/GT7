@@ -2941,6 +2941,9 @@ async function loadSyncedCombo(forceRefresh = false, retryCount = 0) {
 function applySyncedCombo(data) {
     if (!data) return;
     
+    console.log('📊 Применяем данные от админа:', data);
+    console.log('📊 Количество кругов (laps):', data.laps);
+    
     const similarBlockFirst = document.getElementById('similarContainer');
     if (similarBlockFirst) {
         similarBlockFirst.style.setProperty('display', 'none', 'important');
@@ -2955,7 +2958,6 @@ function applySyncedCombo(data) {
     if (data.fuel_locked !== undefined) locks.fuel = data.fuel_locked;
     if (data.category_locked !== undefined) locks.category = data.category_locked;
     
-    // Обновляем отображение всех кнопок-замков
     document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
         const param = btn.getAttribute('data-param');
         if (locks[param]) {
@@ -2995,9 +2997,11 @@ function applySyncedCombo(data) {
         }
     }
     
+    // ИСПРАВЛЕННЫЙ БЛОК ТРАССЫ С КРУГАМИ
     if (!locks.track && data.track_name) {
         const track = findTrackByName(data.track_name);
-        const laps = data.laps || '5';
+        const laps = data.laps || data.laps_count || '5';
+        
         if (track) {
             document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
             const trackIcon = document.getElementById('trackIcon');
@@ -3008,7 +3012,12 @@ function applySyncedCombo(data) {
             const trackIconFallback = document.getElementById('trackIconFallback');
             if (trackIconFallback) trackIconFallback.style.display = 'none';
             highlightField('trackValue');
+        } else {
+            document.getElementById('trackValue').innerHTML = `${data.track_name} <span class="time-x-badge">${laps} кругов</span>`;
+            highlightField('trackValue');
         }
+        
+        console.log(`✅ Трасса применена: ${data.track_name}, кругов: ${laps}`);
     }
     
     if (!locks.category && data.category_name) {
