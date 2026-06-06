@@ -3631,74 +3631,9 @@ async function loadUserAdmins() {
 }
 
 // ============================================
-// ИНИЦИАЛИЗАЦИЯ (ИСПРАВЛЕНА)
-// ============================================
-
-// Функция возврата в меню выбора - ВЫНЕСЕНА ИЗ manualSync
-function backToMenu() {
-    console.log('🔙 Возврат в меню выбора');
-    
-    // Сбрасываем ручной режим
-    manualModeActive = false;
-    if (manualModeTimer) clearTimeout(manualModeTimer);
-    
-    stopAutoRefresh();
-    isApplyingUpdate = false;
-    userSyncEnabled = false;
-    currentAdminId = null;
-    currentAdminName = null;
-    resetSyncCache();
-    
-    // Скрываем оранжевую кнопку
-    const exitManualModeBtn = document.getElementById('exitManualModeBtn');
-    if (exitManualModeBtn) exitManualModeBtn.style.display = 'none';
-    
-    const generateRandomRaceBtn = document.getElementById('generateRandomRaceBtn');
-    if (generateRandomRaceBtn) {
-        generateRandomRaceBtn.style.display = 'block';
-    }
-    
-    document.getElementById('mainApp').classList.add('hidden');
-    document.getElementById('setupScreen').classList.remove('hidden');
-    loadAdminsFromGoogle();
-    
-    showStatusMessage('🔙 Вы вернулись в меню выбора', 'info');
-}
-
-async function manualSync() {
-    if (!userSyncEnabled || !currentAdminId) {
-        showStatusMessage('❌ Режим синхронизации не активирован', 'warning');
-        return;
-    }
-    
-    showStatusMessage('🔄 Принудительная синхронизация...', 'info');
-    const synced = await loadSyncedCombo(true);
-    
-    if (syncedModeActive && synced) {
-        applySyncedCombo(synced);
-        showStatusMessage('✅ Данные принудительно синхронизированы!', 'success');
-    } else {
-        showStatusMessage('⚠️ Нет активных данных от администратора', 'warning');
-    }
-}
-
-function init() {
-    // Добавьте эту переменную в начало файла (после других переменных)
-// ============================================
-// ИНИЦИАЛИЗАЦИЯ (ИСПРАВЛЕНА)
-// ============================================
-
-// Флаг для предотвращения двойной инициализации
-// ============================================
-// ИНИЦИАЛИЗАЦИЯ (ИСПРАВЛЕНА)
-// ============================================
-
-// Флаг для предотвращения двойной инициализации
-// ============================================
 // ИНИЦИАЛИЗАЦИЯ
 // ============================================
 
-// Флаг для предотвращения двойной инициализации
 let isInitialized = false;
 
 function backToMenu() {
@@ -3843,7 +3778,7 @@ function init() {
     }
 }
 
-// Запуск
+// Запуск приложения
 init();
 
 </script>
