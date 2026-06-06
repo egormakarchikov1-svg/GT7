@@ -2998,27 +2998,32 @@ function applySyncedCombo(data) {
     }
     
     // ИСПРАВЛЕННЫЙ БЛОК ТРАССЫ С КРУГАМИ
-    if (!locks.track && data.track_name) {
-        const track = findTrackByName(data.track_name);
-        const laps = data.laps || data.laps_count || '5';
-        
-        if (track) {
-            document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
-            const trackIcon = document.getElementById('trackIcon');
-            if (trackIcon) {
-                trackIcon.src = getTrackIcon(track.name);
-                trackIcon.style.display = 'block';
-            }
-            const trackIconFallback = document.getElementById('trackIconFallback');
-            if (trackIconFallback) trackIconFallback.style.display = 'none';
-            highlightField('trackValue');
-        } else {
-            document.getElementById('trackValue').innerHTML = `${data.track_name} <span class="time-x-badge">${laps} кругов</span>`;
-            highlightField('trackValue');
+    // ИСПРАВЛЕННЫЙ БЛОК ТРАССЫ С КРУГАМИ
+if (!locks.track && data.track_name) {
+    const track = findTrackByName(data.track_name);
+    const laps = data.laps || '5';
+    
+    // Получаем элемент и принудительно обновляем его содержимое
+    const trackValueElement = document.getElementById('trackValue');
+    
+    if (track) {
+        trackValueElement.innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
+        const trackIcon = document.getElementById('trackIcon');
+        if (trackIcon) {
+            trackIcon.src = getTrackIcon(track.name);
+            trackIcon.style.display = 'block';
         }
-        
-        console.log(`✅ Трасса применена: ${data.track_name}, кругов: ${laps}`);
+        const trackIconFallback = document.getElementById('trackIconFallback');
+        if (trackIconFallback) trackIconFallback.style.display = 'none';
+        highlightField('trackValue');
+    } else {
+        trackValueElement.innerHTML = `${data.track_name} <span class="time-x-badge">${laps} кругов</span>`;
+        highlightField('trackValue');
     }
+    
+    console.log(`✅ Трасса применена: ${data.track_name}, кругов: ${laps}`);
+    console.log(`✅ trackValue.innerHTML теперь: ${trackValueElement.innerHTML}`);
+}
     
     if (!locks.category && data.category_name) {
         const cat = categories.find(c => c.name === data.category_name);
