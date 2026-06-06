@@ -3025,9 +3025,6 @@ function applySyncedCombo(data) {
 if (!locks.track && data.track_name) {
     const track = findTrackByName(data.track_name);
     const laps = data.laps || '5';
-    currentTrackLaps = laps;
-    
-    // Получаем элемент и принудительно обновляем его содержимое
     const trackValueElement = document.getElementById('trackValue');
     
     if (track) {
@@ -3046,7 +3043,6 @@ if (!locks.track && data.track_name) {
     }
     
     console.log(`✅ Трасса применена: ${data.track_name}, кругов: ${laps}`);
-    console.log(`✅ trackValue.innerHTML теперь: ${trackValueElement.innerHTML}`);
 }
     
     if (!locks.category && data.category_name) {
@@ -3113,7 +3109,20 @@ if (!locks.track && data.track_name) {
             similarBlockLast.classList.add('hidden-block');
         }
     }, 50);
+
+    // Принудительно добавляем круги, если их нет
+setTimeout(() => {
+    const trackValue = document.getElementById('trackValue');
+    if (trackValue && trackValue.innerHTML && !trackValue.innerHTML.includes('кругов')) {
+        const laps = data.laps || '5';
+        const trackName = data.track_name || trackValue.innerHTML.trim();
+        trackValue.innerHTML = `${trackName} <span class="time-x-badge">${laps} кругов</span>`;
+        console.log('🔧 Круги добавлены принудительно!');
+    }
+}, 100);
+
 }
+    
 
 async function loadRace() {
     console.log('🏁 loadRace вызвана');
