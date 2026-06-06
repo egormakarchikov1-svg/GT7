@@ -1475,7 +1475,7 @@
 // ============================================
 // УПРАВЛЕНИЕ ЭКРАНАМИ И ЗАГРУЗКА АДМИНОВ
 // ============================================
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzLPFdDLgbmVLKYEdI0b1KPhP-Ys5iea9If9RyoQL1vbne_SbrcHGDB8kvubXUAc1PSxg/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxf0gf5j1cJ08VQbHnOXzkXEQGt9hXwDLtuoJCJPs5qzVken-W6m7pN5t0Fc4QuMrZUWA/exec';
 
 // Состояние для экрана выбора
 let currentAdminId = null;
@@ -3933,6 +3933,7 @@ function escapeHtml(text) {
 }
 
 // Записаться на гонку
+// Записаться на гонку
 async function registerForRace() {
     const racerName = document.getElementById('racerName').value.trim();
     
@@ -3945,12 +3946,20 @@ async function registerForRace() {
         showStatusMessage('❌ Ошибка: гонка не выбрана', 'error');
         return;
     }
+
+    const alreadyRegistered = await checkUserAlreadyRegistered(currentRegistrationRaceId);
+    if (alreadyRegistered) {
+        showStatusMessage('❌ Вы уже записаны на эту гонку! Повторная запись невозможна.', 'error');
+        return;
+    }
     
     showStatusMessage('🔄 Отправка заявки...', 'info');
     
+    const deviceId = getUserDeviceId();  // ← ЭТА СТРОЧКА ДОЛЖНА БЫТЬ
+    
     try {
         const callbackName = 'jsonp_register_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=registerForRace&raceId=${currentRegistrationRaceId}&name=${encodeURIComponent(racerName)}&callback=${callbackName}&t=${Date.now()}`;
+        const url = `${APPS_SCRIPT_URL}?action=registerForRace&raceId=${currentRegistrationRaceId}&name=${encodeURIComponent(racerName)}&deviceId=${encodeURIComponent(deviceId)}&callback=${callbackName}&t=${Date.now()}`;
         
         const result = await new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
@@ -3988,6 +3997,48 @@ async function registerForRace() {
 function updateRaceCardWithRegisterButton(race) {
     // Эта функция вызывается внутри displayUserRaces
     // См. изменения выше в HTML карточки
+}
+
+    function getUserDeviceId() {
+    let deviceId = localStorage.getItem('gt7_device_id');
+    if (!deviceId) {
+        deviceId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 16);
+        localStorage.setItem('gt7_device_id', deviceId);
+    }
+    return deviceId;
+}
+
+// Проверить, записывался ли пользователь уже на эту гонку
+async function checkUserAlreadyRegistered(raceId) {
+    const deviceId = getUserDeviceId();
+    
+    try {
+        const callbackName = 'jsonp_check_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+        const url = `${APPS_SCRIPT_URL}?action=checkUserRegistered&raceId=${raceId}&deviceId=${encodeURIComponent(deviceId)}&callback=${callbackName}&t=${Date.now()}`;
+        
+        const result = await new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                if (window[callbackName]) delete window[callbackName];
+                reject(new Error('Таймаут'));
+            }, 10000);
+            
+            window[callbackName] = function(data) {
+                clearTimeout(timeout);
+                delete window[callbackName];
+                resolve(data);
+            };
+            
+            const script = document.createElement('script');
+            script.src = url;
+            script.onerror = () => reject(new Error('Ошибка соединения'));
+            document.body.appendChild(script);
+        });
+        
+        return result.registered === true;
+    } catch(e) {
+        console.error('Ошибка проверки:', e);
+        return false;
+    }
 }
 
 let isInitialized = false;
