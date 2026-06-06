@@ -1163,35 +1163,63 @@
         border: 2px solid rgba(255, 77, 77, 0.6) !important;
 
     }
+
+        /* Стили для центральных кнопок выбора режима */
+@media (max-width: 550px) {
+    .welcome-content {
+        padding: 20px 15px;
+    }
+    #welcomeLocalRaceBtn, #welcomeAdminBtn {
+        min-width: 180px !important;
+        padding: 12px 16px !important;
+        font-size: 16px !important;
+    }
+}
+
+#modeIndicator {
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+#modeIndicatorText {
+    transition: color 0.3s ease;
+}
     
     </style>
 </head>
 <body>
 <div class="container">
 
-    <!-- ЭКРАН 1: ПРИВЕТСТВИЕ С ВЫБОРОМ РЕЖИМА -->
+    <!-- ЭКРАН 1: ПРИВЕТСТВИЕ С ВЫБОРОМ РЕЖИМА (НОВЫЙ ДИЗАЙН) -->
 <div id="welcomeScreen" class="screen">
     <div id="welcomeMessage" class="welcome-message" style="display: flex;">
         <div class="welcome-content">
             <div class="welcome-icon">🏁</div>
             <h2>Добро пожаловать в GT7 Random Race!</h2>
             <p style="margin-bottom: 20px;">🎮 <strong>Выберите режим игры:</strong></p>
-            <div style="display: flex; flex-direction: column; gap: 15px;">
-                <button id="welcomeLocalRaceBtn" style="background: linear-gradient(135deg, #ff4d4d, #cc0000); padding: 16px; font-size: 18px; border: none; border-radius: 40px; color: white; font-weight: bold; cursor: pointer;">
+            
+            <!-- НОВЫЙ ЦЕНТРАЛЬНЫЙ БЛОК С КНОПКАМИ -->
+            <div style="display: flex; flex-direction: row; justify-content: center; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">
+                <button id="welcomeLocalRaceBtn" style="background: linear-gradient(135deg, #ff4d4d, #cc0000); padding: 16px 24px; font-size: 18px; border: none; border-radius: 60px; color: white; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 220px;">
                     🎲 СЛУЧАЙНАЯ ГОНКА
-                    <span style="display: block; font-size: 12px; opacity: 0.8;">Локальный режим без синхронизации</span>
+                    <span style="font-size: 12px; opacity: 0.8;">Локальный режим без синхронизации</span>
                 </button>
-                <button id="welcomeAdminBtn" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); padding: 16px; font-size: 18px; border: none; border-radius: 40px; color: white; font-weight: bold; cursor: pointer;">
+                
+                <button id="welcomeAdminBtn" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); padding: 16px 24px; font-size: 18px; border: none; border-radius: 60px; color: white; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 220px;">
                     👑 ВЫБОР АДМИНИСТРАТОРА
-                    <span style="display: block; font-size: 12px; opacity: 0.8;">Режим синхронизации</span>
+                    <span style="font-size: 12px; opacity: 0.8;">Режим синхронизации</span>
                 </button>
+            </div>
+            
+            <!-- ИНДИКАТОР ТЕКУЩЕГО РЕЖИМА -->
+            <div id="modeIndicator" style="margin-top: 20px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 40px; display: inline-block; width: auto; backdrop-filter: blur(4px);">
+                <span id="modeIndicatorText" style="color: #ff4d4d; font-weight: bold;">⚡ Выберите режим выше</span>
             </div>
         </div>
     </div>
 </div>
 
-
-<!-- ЭКРАН 2: ВЫБОР АДМИНИСТРАТОРА -->
+<!-- ЭКРАН 2: ВЫБОР АДМИНИСТРАТОРА (ОСТАЁТСЯ БЕЗ ИЗМЕНЕНИЙ, НО МОЖНО ОБНОВИТЬ ДИЗАЙН) -->
 <div id="setupScreen" class="screen hidden">
     <div class="setup-card">
         <h3>👑 ВЫБЕРИТЕ АДМИНИСТРАТОРА</h3>
@@ -1207,6 +1235,7 @@
     </div>
     
     <div class="setup-card" style="border-color: #ff4d4d;">
+        <h3 style="color: #ff4d4d;">🎲 НЕЗАВИСИМАЯ ГОНКА</h3>
         <button id="localRaceFromSetupBtn" class="setup-btn" style="background: linear-gradient(135deg, #ff4d4d, #cc0000); font-size: 18px; padding: 16px;">
             🎲 СЛУЧАЙНАЯ ГОНКА
         </button>
@@ -1404,7 +1433,33 @@ let adminsLoaded = false;
 let manualModeActive = false;  // Флаг ручного режима (применена гонка из календаря)
 let manualModeTimer = null;     // Таймер для автоматического выхода из ручного режима
 
-// Загрузка админов из Google Sheets (JSONP) - ТОЛЬКО ОДИН РАЗ
+// Функция обновления индикатора режима
+function updateModeIndicator(mode, adminName = null) {
+    const indicatorText = document.getElementById('modeIndicatorText');
+    if (!indicatorText) return;
+    
+    if (mode === 'admin' && adminName) {
+        indicatorText.innerHTML = `👑 Режим: АДМИНИСТРАТОР (${adminName})`;
+        indicatorText.style.color = '#8b5cf6';
+    } else if (mode === 'local') {
+        indicatorText.innerHTML = '🎲 Режим: СЛУЧАЙНАЯ ГОНКА';
+        indicatorText.style.color = '#ff4d4d';
+    } else {
+        indicatorText.innerHTML = '⚡ Выберите режим выше';
+        indicatorText.style.color = '#ff4d4d';
+    }
+}
+
+// Вызывайте эту функцию при входе в админку или запуске локальной гонки
+// Например, внутри showMainApp:
+//   if (userSyncEnabled && currentAdminId) {
+//       updateModeIndicator('admin', currentAdminName);
+//   } else {
+//       updateModeIndicator('local');
+//   }
+    
+    
+    // Загрузка админов из Google Sheets (JSONP) - ТОЛЬКО ОДИН РАЗ
 async function loadAdminsFromGoogle() {
     // Если уже загружали - не загружаем снова
     if (adminsLoaded) return;
@@ -1493,6 +1548,8 @@ function showMainApp(autoGenerate = true) {
     
     // Управление видимостью кнопки "Случайная гонка"
     const generateRandomRaceBtn = document.getElementById('generateRandomRaceBtn');
+
+    updateModeIndicator('admin', currentAdminName || currentAdminId);
     
     // Скрываем кнопку выхода из ручного режима при входе
     const exitManualModeBtn = document.getElementById('exitManualModeBtn');
@@ -1517,6 +1574,8 @@ function showMainApp(autoGenerate = true) {
         // В локальном режиме ПОКАЗЫВАЕМ кнопку "Случайная гонка"
         if (generateRandomRaceBtn) {
             generateRandomRaceBtn.style.display = 'block';
+
+            updateModeIndicator('local');
         }
     }
     
@@ -1589,6 +1648,7 @@ if (welcomeLocalRaceBtn) {
         userSyncEnabled = false;
         currentAdminId = null;
         currentAdminName = null;
+        updateModeIndicator('local');
         
         document.getElementById('welcomeScreen').classList.add('hidden');
         document.getElementById('mainApp').classList.remove('hidden');
@@ -3731,6 +3791,7 @@ function backToMenu() {
     currentAdminId = null;
     currentAdminName = null;
     resetSyncCache();
+    updateModeIndicator(null);
     
     const exitManualModeBtn = document.getElementById('exitManualModeBtn');
     if (exitManualModeBtn) exitManualModeBtn.style.display = 'none';
