@@ -1496,10 +1496,10 @@ function showMainApp(autoGenerate = true) {
         }
     }
     
-    // Запускаем init
-    if (typeof init === 'function') {
+    // Запускаем init ТОЛЬКО если не было инициализации
+    if (typeof init === 'function' && !window._gt7_initialized) {
         init();
-    } else if (typeof initializeApp === 'function') {
+    } else if (typeof initializeApp === 'function' && !window._gt7_initialized) {
         initializeApp();
     }
     
@@ -3661,7 +3661,70 @@ async function manualSync() {
 }
 
 function init() {
-    // ДОБАВЬТЕ ЭТУ СТРОКУ В НАЧАЛО ФУНКЦИИ
+    // Добавьте эту переменную в начало файла (после других переменных)
+// ============================================
+// ИНИЦИАЛИЗАЦИЯ (ИСПРАВЛЕНА)
+// ============================================
+
+// Флаг для предотвращения двойной инициализации
+let isInitialized = false;
+
+// Функция возврата в меню выбора
+function backToMenu() {
+    console.log('🔙 Возврат в меню выбора');
+    
+    // Сбрасываем ручной режим
+    manualModeActive = false;
+    if (manualModeTimer) clearTimeout(manualModeTimer);
+    
+    stopAutoRefresh();
+    isApplyingUpdate = false;
+    userSyncEnabled = false;
+    currentAdminId = null;
+    currentAdminName = null;
+    resetSyncCache();
+    
+    // Скрываем оранжевую кнопку
+    const exitManualModeBtn = document.getElementById('exitManualModeBtn');
+    if (exitManualModeBtn) exitManualModeBtn.style.display = 'none';
+    
+    const generateRandomRaceBtn = document.getElementById('generateRandomRaceBtn');
+    if (generateRandomRaceBtn) {
+        generateRandomRaceBtn.style.display = 'block';
+    }
+    
+    document.getElementById('mainApp').classList.add('hidden');
+    document.getElementById('setupScreen').classList.remove('hidden');
+    loadAdminsFromGoogle();
+    
+    showStatusMessage('🔙 Вы вернулись в меню выбора', 'info');
+}
+
+async function manualSync() {
+    if (!userSyncEnabled || !currentAdminId) {
+        showStatusMessage('❌ Режим синхронизации не активирован', 'warning');
+        return;
+    }
+    
+    showStatusMessage('🔄 Принудительная синхронизация...', 'info');
+    const synced = await loadSyncedCombo(true);
+    
+    if (syncedModeActive && synced) {
+        applySyncedCombo(synced);
+        showStatusMessage('✅ Данные принудительно синхронизированы!', 'success');
+    } else {
+        showStatusMessage('⚠️ Нет активных данных от администратора', 'warning');
+    }
+}
+
+function init() {
+    // Защита от двойной инициализации
+    if (isInitialized) {
+        console.log('⚠️ init уже была вызвана, пропускаем');
+        return;
+    }
+    isInitialized = true;
+    
     loadLocksFromStorage();
     console.log('🚀 Инициализация приложения');
     loadShownCars();
@@ -3757,7 +3820,7 @@ function init() {
         }
     }
 
-        // Обработчик кнопки возврата в меню (ВМЕСТО кнопки синхронизации)
+    // Обработчик кнопки возврата в меню
     const backToMenuBtn = document.getElementById('backToMenuBtn');
     if (backToMenuBtn) {
         backToMenuBtn.addEventListener('click', backToMenu);
@@ -3770,26 +3833,19 @@ function init() {
         generateRandomRaceBtn.addEventListener('click', () => {
             console.log('🎲 Генерация новой случайной гонки');
             
-            // Сбрасываем флаг обновления
             isApplyingUpdate = false;
             
-            // Если в режиме синхронизации - выходим из него
             if (userSyncEnabled) {
                 userSyncEnabled = false;
                 currentAdminId = null;
                 currentAdminName = null;
                 
-                // Скрываем баннер синхронизации
                 const banner = document.getElementById('adminSyncBanner');
                 if (banner) banner.classList.add('hidden');
                 
-                // Останавливаем автообновление
                 stopAutoRefresh();
-                
-                // Очищаем кэш
                 resetSyncCache();
                 
-                // ПОКАЗЫВАЕМ кнопку "Случайная гонка" при выходе из синхронизации
                 if (generateRandomRaceBtn) {
                     generateRandomRaceBtn.style.display = 'block';
                 }
@@ -3797,7 +3853,6 @@ function init() {
                 console.log('🔄 Выход из режима синхронизации, переход в локальный режим');
             }
             
-            // Генерируем новую гонку
             setTimeout(() => {
                 if (typeof generateLocalRace === 'function') {
                     generateLocalRace();
@@ -3808,7 +3863,7 @@ function init() {
         console.log('✅ Кнопка генерации случайной гонки активирована');
     }
 
-    // Обработчик кнопки выхода из ручного режима (оранжевая кнопка) - ВНУТРИ init()
+    // Обработчик кнопки выхода из ручного режима
     const exitManualModeBtn = document.getElementById('exitManualModeBtn');
     if (exitManualModeBtn) {
         exitManualModeBtn.addEventListener('click', () => {
@@ -3818,7 +3873,6 @@ function init() {
             exitManualModeBtn.style.display = 'none';
             showStatusMessage('🔄 Синхронизация возобновлена', 'success');
             
-            // Принудительно обновляем данные от администратора
             if (userSyncEnabled && currentAdminId) {
                 loadSyncedCombo(true).then(synced => {
                     if (syncedModeActive && synced) {
@@ -3831,8 +3885,10 @@ function init() {
     }
 }
 
-// Запуск приложения
+// Запуск приложения - ТОЛЬКО ОДИН РАЗ!
 init();
+
+// Запуск приложения
 </script>
 
 <style>
