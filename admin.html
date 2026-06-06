@@ -422,6 +422,14 @@
     font-weight: bold;
     display: inline-block;
 }
+
+        .race-actions button.synced-on {
+    background: rgba(34, 197, 94, 0.3) !important;
+}
+
+        .race-actions button.synced-off {
+    background: rgba(107, 114, 128, 0.3) !important;
+}
     
     </style>
 </head>
@@ -666,7 +674,7 @@
 // ============================================
 // КОНСТАНТЫ И ПЕРЕМЕННЫЕ
 // ============================================
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxU96nQC6o5Y_sM_1_lEKH5jdUShdx6BLkZSraI1YYg-noga_a6iK8Ggg9ZzNnL9SHxfQ/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxVyYSunGEABKWB70o24X0F-KXKaMzIJmmNKNlIptHF-cbJkvgMQwY7gzjFt_0RqL8x-g/exec';
 const GOOGLE_SHEETS_ID = '1YAJUPE73Nxwe1oEF1xZBHkGj_zg_uGdW7VkTyHtEOOE';
 const ADMIN_SECRET_KEY = '939030312';
 
@@ -2238,13 +2246,15 @@ function displayScheduledRaces(racesToShow = null) {
     <span>⛽ ${race.fuel_value || 'X1'}</span>
 </div>
                 <div class="race-actions">
-                    <button onclick="toggleRaceStatus('${race.id}')" class="status-toggle ${!isActive ? 'inactive' : ''}">
-                        ${isActive ? '🔒 ДЕАКТИВИРОВАТЬ' : '🔓 АКТИВИРОВАТЬ'}
-                    </button>
-                    <button onclick="editRace('${race.id}')">✏️ РЕДАКТИРОВАТЬ</button>
-                    <button onclick="deleteRace('${race.id}')">🗑️ УДАЛИТЬ</button>
-                    <button onclick="syncRaceToUsers('${race.id}')">🔄 СИНХР.</button>
-                </div>
+    <button onclick="toggleRaceStatus('${race.id}')" class="status-toggle ${!isActive ? 'inactive' : ''}">
+        ${isActive ? '🔒 ДЕАКТИВИРОВАТЬ' : '🔓 АКТИВИРОВАТЬ'}
+    </button>
+    <button onclick="editRace('${race.id}')">✏️ РЕДАКТИРОВАТЬ</button>
+    <button onclick="deleteRace('${race.id}')">🗑️ УДАЛИТЬ</button>
+    <button onclick="syncRaceToUsers('${race.id}')" style="background: ${race.synced ? 'rgba(34,197,94,0.3)' : 'rgba(107,114,128,0.3)'}">
+        ${race.synced ? '🔄 ОТКЛЮЧИТЬ СИНХР.' : '🔄 ВКЛЮЧИТЬ СИНХР.'}
+    </button>
+</div>
             </div>
         `;
     }).join('');
@@ -2634,8 +2644,18 @@ async function editRace(raceId) {
 }
 
 // Синхронизация конкретной гонки с пользователями
+// Синхронизация конкретной гонки с пользователями (переключатель)
 async function syncRaceToUsers(raceId) {
     try {
+        // Находим гонку в списке
+        const race = scheduledRaces.find(r => r.id === raceId);
+        if (!race) return;
+        
+        const newSyncedStatus = !race.synced;
+        const actionText = newSyncedStatus ? 'синхронизирована' : 'десинхронизирована';
+        
+        if (!confirm(`Вы уверены, что хотите ${actionText} эту гонку? Пользователи ${newSyncedStatus ? 'увидят' : 'НЕ увидят'} её в календаре.`)) return;
+        
         const callbackName = 'jsonp_sync_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         const result = await new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
@@ -2658,13 +2678,16 @@ async function syncRaceToUsers(raceId) {
         });
         
         if (result.success) {
-            showStatus('✅ Гонка синхронизирована с пользователями!', 'success');
+            // Обновляем статус в локальном массиве
+            race.synced = result.synced;
+            showStatus(`✅ Гонка ${result.synced ? 'синхронизирована' : 'десинхронизирована'}!`, 'success');
             await loadScheduledRaces();
         } else {
             showStatus('❌ Ошибка синхронизации', 'error');
         }
     } catch(e) {
         showStatus('❌ Ошибка при синхронизации', 'error');
+        console.error(e);
     }
 }
 
