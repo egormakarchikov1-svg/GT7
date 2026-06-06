@@ -1475,7 +1475,7 @@
 // ============================================
 // УПРАВЛЕНИЕ ЭКРАНАМИ И ЗАГРУЗКА АДМИНОВ
 // ============================================
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxf0gf5j1cJ08VQbHnOXzkXEQGt9hXwDLtuoJCJPs5qzVken-W6m7pN5t0Fc4QuMrZUWA/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw9I15W01paDEQ7S_pk-2A3E5ReeR6-fXMi5f3TUtPa9HtTEYbB-QEuMv7DwqRiC3sIVQ/exec';
 
 // Состояние для экрана выбора
 let currentAdminId = null;
@@ -3876,6 +3876,7 @@ function closeRegistration() {
     currentRegistrationRaceInfo = null;
 }
 
+    
 // Загрузить список участников
 async function loadParticipants(raceId) {
     try {
@@ -3906,22 +3907,28 @@ async function loadParticipants(raceId) {
         document.getElementById('participantsList').innerHTML = '<div style="text-align: center; color: #ef4444; padding: 10px;">❌ Ошибка загрузки участников</div>';
     }
 }
-
-// Отобразить список участников
+        
+        // Отобразить список участников
 function displayParticipants(participants) {
     const container = document.getElementById('participantsList');
+    const currentDeviceId = getUserDeviceId();
+    
     
     if (!participants || participants.length === 0) {
         container.innerHTML = '<div style="text-align: center; color: #aaa; padding: 10px;">👥 Пока нет участников. Будьте первым!</div>';
         return;
     }
     
-    container.innerHTML = participants.map((p, index) => `
-        <div class="participant-item">
-            <span class="participant-name">${index + 1}. ${escapeHtml(p.name)}</span>
-            <span class="participant-date">📅 ${new Date(p.registered_at).toLocaleString('ru-RU')}</span>
-        </div>
-    `).join('');
+    container.innerHTML = participants.map((p, index) => {
+        const isCurrentUser = (p.device_id === currentDeviceId);
+        return `
+            <div class="participant-item">
+                <span class="participant-name">${index + 1}. ${escapeHtml(p.name)}</span>
+                <span class="participant-date">📅 ${new Date(p.registered_at).toLocaleString('ru-RU')}</span>
+                ${isCurrentUser ? '<button onclick="cancelRegistration(\'' + currentRegistrationRaceId + '\')" style="background: #ef4444; border: none; border-radius: 20px; color: white; padding: 4px 12px; cursor: pointer; font-size: 11px;">❌ ОТКАЗАТЬСЯ</button>' : ''}
+            </div>
+        `;
+    }).join('');
 }
 
 // Простая функция экранирования HTML
@@ -3990,6 +3997,58 @@ async function registerForRace() {
     } catch(e) {
         console.error('Ошибка записи:', e);
         showStatusMessage('❌ Ошибка при записи на гонку', 'error');
+    }
+}
+
+    // Отказаться от участия
+async function cancelRegistration(raceId) {
+    if (!confirm('Вы уверены, что хотите отказаться от участия в гонке?')) {
+        return;
+    }
+    
+    const deviceId = getUserDeviceId();
+    
+    showStatusMessage('🔄 Отмена участия...', 'info');
+    
+    try {
+        const callbackName = 'jsonp_cancel_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+        const url = `${APPS_SCRIPT_URL}?action=cancelRegistration&raceId=${raceId}&deviceId=${encodeURIComponent(deviceId)}&callback=${callbackName}&t=${Date.now()}`;
+        
+        const result = await new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                if (window[callbackName]) delete window[callbackName];
+                reject(new Error('Таймаут'));
+            }, 10000);
+            
+            window[callbackName] = function(data) {
+                clearTimeout(timeout);
+                delete window[callbackName];
+                resolve(data);
+            };
+            
+            const script = document.createElement('script');
+            script.src = url;
+            script.onerror = () => reject(new Error('Ошибка соединения'));
+            document.body.appendChild(script);
+        });
+        
+        if (result.success) {
+            showStatusMessage('✅ Вы отказались от участия в гонке!', 'success');
+            // Обновляем список участников в форме записи
+            if (currentRegistrationRaceId === raceId) {
+                loadParticipants(raceId);
+            }
+            // Также обновляем список гонок в календаре (чтобы обновились кнопки)
+            const selectedAdmin = localStorage.getItem('gt7_selected_admin_id');
+            if (selectedAdmin) {
+                displayUserRaces(selectedAdmin);
+            }
+        } else {
+            showStatusMessage('❌ Ошибка: ' + (result.error || 'Не удалось отменить участие'), 'error');
+        }
+    } catch(e) {
+        console.error('Ошибка отмены:', e);
+        showStatusMessage('❌ Ошибка при отмене участия', 'error');
     }
 }
 
