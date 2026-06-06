@@ -3865,7 +3865,7 @@ function init() {
 
     // Обработчик кнопки выхода из ручного режима
         // Обработчик кнопки выхода из ручного режима
-        const exitManualModeBtn = document.getElementById('exitManualModeBtn');
+            const exitManualModeBtn = document.getElementById('exitManualModeBtn');
     if (exitManualModeBtn) {
         exitManualModeBtn.addEventListener('click', () => {
             console.log('🔄 Выход из ручного режима, возобновление синхронизации');
@@ -3884,6 +3884,7 @@ function init() {
         });
         console.log('✅ Кнопка выхода из ручного режима активирована');
     }
+} // <-- ЭТА СКОБКА ЗАКРЫВАЕТ ФУНКЦИЮ init()
 
 // Запуск приложения - ТОЛЬКО ОДИН РАЗ!
 init();
