@@ -1394,7 +1394,7 @@
 // ============================================
 // УПРАВЛЕНИЕ ЭКРАНАМИ И ЗАГРУЗКА АДМИНОВ
 // ============================================
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwQhNk9IS3CntoBoE9an1gD5ozbP7IoAov9BkBTDqUZf7ok_33ZVLb93Xp9TM6fAj54rQ/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyM9-j_X5R87hNBk0XK5zEb8EAIVJVi58-18-7MgoK7fV2ETJwM-x1MU3yJTteYKbGsww/exec';
 
 // Состояние для экрана выбора
 let currentTrackLaps = 5;  // Добавьте эту строку
@@ -3586,21 +3586,15 @@ function applyRaceParameters(race) {
     
     // БЛОК ТРАССЫ С КРУГАМИ (без highlightField)
     if (race.track_name) {
-    const laps = race.laps;
-    
-    if (!laps) {
-        console.error('❌ ОШИБКА: laps не передан в данных гонки!', race);
-        return;
+        const laps = race.laps || '5';
+        const trackValueElement = document.getElementById('trackValue');
+        trackValueElement.innerHTML = `${race.track_name} <span class="time-x-badge">${laps} кругов</span>`;
+        
+        const trackIconUrl = getTrackIcon(race.track_name);
+        displayTrackIcon(trackIconUrl);
+        
+        console.log(`✅ Трасса из календаря: ${race.track_name}, кругов: ${laps}`);
     }
-    
-    const trackValueElement = document.getElementById('trackValue');
-    trackValueElement.innerHTML = `${race.track_name} <span class="time-x-badge">${laps} кругов</span>`;
-    
-    const trackIconUrl = getTrackIcon(race.track_name);
-    displayTrackIcon(trackIconUrl);
-    
-    console.log(`✅ Трасса из календаря: ${race.track_name}, кругов: ${laps}`);
-}
     
     if (race.category_name) document.getElementById('categoryValue').innerHTML = race.category_name;
     if (race.weather_name) document.getElementById('weatherValue').innerHTML = race.weather_name;
