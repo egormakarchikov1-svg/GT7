@@ -1475,7 +1475,7 @@
 // ============================================
 // УПРАВЛЕНИЕ ЭКРАНАМИ И ЗАГРУЗКА АДМИНОВ
 // ============================================
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzPkucHlLGUwZ4uR9d1Nk4wUViqgcsBjikCbsQNVB3NE1fjnF8YiGmpSJVQLWNK3Fz2Uw/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxCXQnyEj2zLxjQdMMJ3rq8mYCa-qVwuDr3UYdj1lEfCVGluabnh6Dt50n7JvJWjyxdQw/exec';
 
 // Состояние для экрана выбора
 let currentAdminId = null;
@@ -3845,6 +3845,8 @@ async function loadUserAdmins() {
 let currentRegistrationRaceId = null;
 let currentRegistrationRaceInfo = null;
 let isLoadingParticipants = false;
+let isRegisteringInProgress = false;  // ← ДОБАВИТЬ
+let isCheckingInProgress = false;     // ← ДОБАВИТЬ
 
 // Открыть форму записи
 // Открыть форму записи
@@ -3958,9 +3960,14 @@ function escapeHtml(text) {
 
 // Записаться на гонку
 async function registerForRace() {
-    // Блокируем кнопку, чтобы предотвратить повторные нажатия
+    // Блокируем кнопку и предотвращаем параллельные вызовы
+    if (isRegisteringInProgress) {
+        console.log('⏳ Регистрация уже выполняется, пропускаем...');
+        return;
+    }
+    
     const registerBtn = document.getElementById('confirmRegistrationBtn');
-    if (registerBtn.disabled) return; // Если уже нажали - выходим
+    if (registerBtn.disabled) return;
     
     const racerName = document.getElementById('racerName').value.trim();
     
@@ -3974,23 +3981,25 @@ async function registerForRace() {
         return;
     }
 
-    // Проверяем, не записывался ли уже этот пользователь (по устройству)
-    const alreadyRegistered = await checkUserAlreadyRegistered(currentRegistrationRaceId);
-    if (alreadyRegistered) {
-        showStatusMessage('❌ Вы уже записаны на эту гонку! Повторная запись невозможна.', 'error');
-        return;
-    }
-    
-    // Блокируем кнопку и меняем текст
+    // Устанавливаем флаг, чтобы предотвратить повторные вызовы
+    isRegisteringInProgress = true;
     registerBtn.disabled = true;
     const originalText = registerBtn.innerHTML;
-    registerBtn.innerHTML = '⏳ ОТПРАВКА...';
-    
-    showStatusMessage('🔄 Отправка заявки...', 'info');
-    
-    const deviceId = getUserDeviceId();
+    registerBtn.innerHTML = '⏳ ПРОВЕРКА...';
     
     try {
+        // Проверяем, не записывался ли уже этот пользователь (по устройству)
+        const alreadyRegistered = await checkUserAlreadyRegistered(currentRegistrationRaceId);
+        if (alreadyRegistered) {
+            showStatusMessage('❌ Вы уже записаны на эту гонку! Повторная запись невозможна.', 'error');
+            return;
+        }
+        
+        registerBtn.innerHTML = '⏳ ОТПРАВКА...';
+        showStatusMessage('🔄 Отправка заявки...', 'info');
+        
+        const deviceId = getUserDeviceId();
+        
         const callbackName = 'jsonp_register_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         const url = `${APPS_SCRIPT_URL}?action=registerForRace&raceId=${currentRegistrationRaceId}&name=${encodeURIComponent(racerName)}&deviceId=${encodeURIComponent(deviceId)}&callback=${callbackName}&t=${Date.now()}`;
         
@@ -4015,7 +4024,6 @@ async function registerForRace() {
         if (result.success) {
             showStatusMessage(`✅ ${racerName}, вы успешно записались на гонку!`, 'success');
             document.getElementById('racerName').value = '';
-            // Обновляем список участников
             await loadParticipants(currentRegistrationRaceId);
         } else {
             showStatusMessage('❌ Ошибка: ' + (result.error || 'Не удалось записаться'), 'error');
@@ -4024,11 +4032,12 @@ async function registerForRace() {
         console.error('Ошибка записи:', e);
         showStatusMessage('❌ Ошибка при записи на гонку', 'error');
     } finally {
-        // Разблокируем кнопку и возвращаем текст (только если форма ещё открыта)
+        // Разблокируем только если форма ещё открыта
         if (document.getElementById('registrationBlock').style.display !== 'none') {
             registerBtn.disabled = false;
             registerBtn.innerHTML = originalText;
         }
+        isRegisteringInProgress = false;
     }
 }
 
@@ -4101,6 +4110,13 @@ function updateRaceCardWithRegisterButton(race) {
 
 // Проверить, записывался ли пользователь уже на эту гонку
 async function checkUserAlreadyRegistered(raceId) {
+    // Предотвращаем параллельные проверки
+    if (isCheckingInProgress) {
+        console.log('⏳ Проверка уже выполняется, пропускаем...');
+        return true; // Возвращаем true, чтобы заблокировать запись
+    }
+    
+    isCheckingInProgress = true;
     const deviceId = getUserDeviceId();
     
     try {
@@ -4129,6 +4145,8 @@ async function checkUserAlreadyRegistered(raceId) {
     } catch(e) {
         console.error('Ошибка проверки:', e);
         return false;
+    } finally {
+        isCheckingInProgress = false;
     }
 }
 
