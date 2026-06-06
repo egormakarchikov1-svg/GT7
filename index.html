@@ -1548,8 +1548,6 @@ function showMainApp(autoGenerate = true) {
     
     // Управление видимостью кнопки "Случайная гонка"
     const generateRandomRaceBtn = document.getElementById('generateRandomRaceBtn');
-
-    updateModeIndicator('admin', currentAdminName || currentAdminId);
     
     // Скрываем кнопку выхода из ручного режима при входе
     const exitManualModeBtn = document.getElementById('exitManualModeBtn');
@@ -1568,15 +1566,20 @@ function showMainApp(autoGenerate = true) {
         if (generateRandomRaceBtn) {
             generateRandomRaceBtn.style.display = 'none';
         }
+        
+        // 👇 ОБНОВЛЯЕМ ИНДИКАТОР - ТОЛЬКО ЗДЕСЬ, ОДИН РАЗ!
+        updateModeIndicator('admin', currentAdminName || currentAdminId);
+        
     } else {
         banner.classList.add('hidden');
         
         // В локальном режиме ПОКАЗЫВАЕМ кнопку "Случайная гонка"
         if (generateRandomRaceBtn) {
             generateRandomRaceBtn.style.display = 'block';
-
-            updateModeIndicator('local');
         }
+        
+        // 👇 ОБНОВЛЯЕМ ИНДИКАТОР - ТОЛЬКО ЗДЕСЬ, ОДИН РАЗ!
+        updateModeIndicator('local');
     }
     
     // Запускаем init ТОЛЬКО если не было инициализации
