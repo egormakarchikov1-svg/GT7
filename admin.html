@@ -2436,66 +2436,84 @@ async function scheduleRace() {
     // ✅ ДОБАВЛЕНО: проверяем режим отображения
     const isGroupMode = displayMode === 'group_only';
     
-    const currentCombo = {
-        // ✅ В групповом режиме НЕ сохраняем машину
-        car_name: isGroupMode ? '' : document.getElementById('carValue').innerHTML.split('<')[0].trim(),
-        track_name: document.getElementById('trackValue').innerHTML.split('<')[0].trim(),
-        category_name: document.getElementById('categoryText').innerHTML.split('<')[0].trim(),
-        weather_name: document.getElementById('weatherValue').innerHTML.split('<')[0].trim(),
-        time_name: timeName,
-        time_multiplier: timeMultiplier,
-        tires_value: document.getElementById('tiresValue').innerText,
-        fuel_value: document.getElementById('fuelValue').innerText,
-        display_mode: displayMode
-    };
     
-    // ✅ В групповом режиме НЕ добавляем похожие авто
-    if (!isGroupMode && currentRefCar) {
-        const similar = findSimilarCars(currentRefCar, 5, true);
-        for (let i = 0; i < similar.length; i++) {
-            currentCombo[`similar_car_${i+1}`] = similar[i].name;
+    const currentCombo = {
+    // ✅ В групповом режиме НЕ сохраняем машину
+    car_name: isGroupMode ? '' : document.getElementById('carValue').innerHTML.split('<')[0].trim(),
+    track_name: document.getElementById('trackValue').innerHTML.split('<')[0].trim(),
+    category_name: document.getElementById('categoryText').innerHTML.split('<')[0].trim(),
+    weather_name: document.getElementById('weatherValue').innerHTML.split('<')[0].trim(),
+    time_name: timeName,
+    time_multiplier: timeMultiplier,
+    tires_value: document.getElementById('tiresValue').innerText,
+    fuel_value: document.getElementById('fuelValue').innerText,
+    display_mode: displayMode,
+    laps: getCurrentLaps()
+};  // ← ТОЛЬКО ОДНА ЗАКРЫВАЮЩАЯ СКОБКА И ТОЧКА С ЗАПЯТОЙ!
+
+// Функция получения количества кругов
+function getCurrentLaps() {
+    const trackValue = document.getElementById('trackValue');
+    if (trackValue) {
+        const lapsSpan = trackValue.querySelector('.time-x-badge');
+        if (lapsSpan) {
+            const lapsText = lapsSpan.innerText;
+            const match = lapsText.match(/(\d+)/);
+            if (match) {
+                return parseInt(match[1], 10);
+            }
         }
     }
+    return 5;
+}
+
+// ✅ В групповом режиме НЕ добавляем похожие авто
+if (!isGroupMode && currentRefCar) {
+    const similar = findSimilarCars(currentRefCar, 5, true);
+    for (let i = 0; i < similar.length; i++) {
+        currentCombo[`similar_car_${i+1}`] = similar[i].name;
+    }
+}
+
+const datetime = `${date}T${time}:00`;
+
+try {
+    const callbackName = 'jsonp_schedule_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
     
-    const datetime = `${date}T${time}:00`;
+    const params = new URLSearchParams();
+    params.append('action', 'scheduleRace');
+    params.append('adminId', currentAdmin.id);
+    params.append('datetime', datetime);
+    params.append('title', title || '');
+    params.append('combo', JSON.stringify(currentCombo));
+    params.append('callback', callbackName);
+    params.append('t', Date.now());
     
-    try {
-        const callbackName = 'jsonp_schedule_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+    const url = `${APPS_SCRIPT_URL}?${params.toString()}`;
+    
+    const result = await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+            if (window[callbackName]) delete window[callbackName];
+            if (script && script.parentNode) document.body.removeChild(script);
+            reject(new Error('Таймаут'));
+        }, 10000);
         
-        const params = new URLSearchParams();
-        params.append('action', 'scheduleRace');
-        params.append('adminId', currentAdmin.id);
-        params.append('datetime', datetime);
-        params.append('title', title || '');
-        params.append('combo', JSON.stringify(currentCombo));
-        params.append('callback', callbackName);
-        params.append('t', Date.now());
+        window[callbackName] = function(data) {
+            clearTimeout(timeout);
+            delete window[callbackName];
+            if (script && script.parentNode) document.body.removeChild(script);
+            resolve(data);
+        };
         
-        const url = `${APPS_SCRIPT_URL}?${params.toString()}`;
-        
-        const result = await new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => {
-                if (window[callbackName]) delete window[callbackName];
-                if (script && script.parentNode) document.body.removeChild(script);
-                reject(new Error('Таймаут'));
-            }, 10000);
-            
-            window[callbackName] = function(data) {
-                clearTimeout(timeout);
-                delete window[callbackName];
-                if (script && script.parentNode) document.body.removeChild(script);
-                resolve(data);
-            };
-            
-            const script = document.createElement('script');
-            script.src = url;
-            script.onerror = () => {
-                clearTimeout(timeout);
-                if (window[callbackName]) delete window[callbackName];
-                reject(new Error('Ошибка соединения'));
-            };
-            document.body.appendChild(script);
-        });
+        const script = document.createElement('script');
+        script.src = url;
+        script.onerror = () => {
+            clearTimeout(timeout);
+            if (window[callbackName]) delete window[callbackName];
+            reject(new Error('Ошибка соединения'));
+        };
+        document.body.appendChild(script);
+    });
         
         if (result.success) {
             showStatus('✅ Гонка успешно назначена!', 'success');
