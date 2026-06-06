@@ -3558,15 +3558,14 @@ function applyRaceParameters(race) {
     // Сбрасываем старый таймер
     if (manualModeTimer) clearTimeout(manualModeTimer);
     
-    // Устанавливаем таймер на 30 минут (1800000 мс) или 0 - бесконечно
-    // Чтобы отключить автосброс, закомментируйте этот блок
+    // Устанавливаем таймер на 30 минут
     manualModeTimer = setTimeout(() => {
         console.log('🕐 Ручной режим автоматически отключён');
         manualModeActive = false;
         const exitManualModeBtn = document.getElementById('exitManualModeBtn');
         if (exitManualModeBtn) exitManualModeBtn.style.display = 'none';
         showStatusMessage('🕐 Режим ручной гонки завершён, синхронизация возобновлена', 'info');
-    }, 1800000); // 30 минут
+    }, 1800000);
     
     // ПОКАЗЫВАЕМ оранжевую кнопку выхода
     const exitManualModeBtn = document.getElementById('exitManualModeBtn');
@@ -3585,10 +3584,17 @@ function applyRaceParameters(race) {
         }
     }
     
+    // ИСПРАВЛЕННЫЙ БЛОК ТРАССЫ С КРУГАМИ
     if (race.track_name) {
-        document.getElementById('trackValue').innerHTML = race.track_name;
+        const laps = race.laps || '5';
+        const trackValueElement = document.getElementById('trackValue');
+        trackValueElement.innerHTML = `${race.track_name} <span class="time-x-badge">${laps} кругов</span>`;
+        
         const trackIconUrl = getTrackIcon(race.track_name);
         displayTrackIcon(trackIconUrl);
+        highlightField('trackValue');
+        
+        console.log(`✅ Трасса из календаря: ${race.track_name}, кругов: ${laps}`);
     }
     
     if (race.category_name) document.getElementById('categoryValue').innerHTML = race.category_name;
