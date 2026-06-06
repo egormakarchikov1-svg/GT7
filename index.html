@@ -2730,7 +2730,6 @@ function generateLocalRace() {
     
     updateVisibilityByDisplayMode(displayMode);
     
-    // Генерируем ТОЛЬКО для незаблокированных параметров
     if (!locks.car) updateCar();
     if (!locks.track) updateTrack();
     if (!locks.weather) updateWeather();
@@ -2739,7 +2738,6 @@ function generateLocalRace() {
     if (!locks.fuel) updateFuel();
     if (!locks.category) updateCategory();
     
-    // Обновляем отображение всех кнопок-замков
     document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
         const param = btn.getAttribute('data-param');
         if (locks[param]) {
@@ -2751,7 +2749,6 @@ function generateLocalRace() {
         }
     });
     
-    // Сохраняем состояние блокировок
     saveLocksToStorage();
 }
     // ===== КОНЕЦ ДОБАВЛЕННОГО БЛОКА =====
@@ -3704,13 +3701,10 @@ function init() {
 // Флаг для предотвращения двойной инициализации
 let isInitialized = false;
 
-// Функция возврата в меню выбора
 function backToMenu() {
     console.log('🔙 Возврат в меню выбора');
-    
     manualModeActive = false;
     if (manualModeTimer) clearTimeout(manualModeTimer);
-    
     stopAutoRefresh();
     isApplyingUpdate = false;
     userSyncEnabled = false;
@@ -3722,39 +3716,16 @@ function backToMenu() {
     if (exitManualModeBtn) exitManualModeBtn.style.display = 'none';
     
     const generateRandomRaceBtn = document.getElementById('generateRandomRaceBtn');
-    if (generateRandomRaceBtn) {
-        generateRandomRaceBtn.style.display = 'block';
-    }
+    if (generateRandomRaceBtn) generateRandomRaceBtn.style.display = 'block';
     
     document.getElementById('mainApp').classList.add('hidden');
     document.getElementById('setupScreen').classList.remove('hidden');
     loadAdminsFromGoogle();
-    
     showStatusMessage('🔙 Вы вернулись в меню выбора', 'info');
 }
 
-async function manualSync() {
-    if (!userSyncEnabled || !currentAdminId) {
-        showStatusMessage('❌ Режим синхронизации не активирован', 'warning');
-        return;
-    }
-    
-    showStatusMessage('🔄 Принудительная синхронизация...', 'info');
-    const synced = await loadSyncedCombo(true);
-    
-    if (syncedModeActive && synced) {
-        applySyncedCombo(synced);
-        showStatusMessage('✅ Данные принудительно синхронизированы!', 'success');
-    } else {
-        showStatusMessage('⚠️ Нет активных данных от администратора', 'warning');
-    }
-}
-
 function init() {
-    if (isInitialized) {
-        console.log('⚠️ init уже была вызвана, пропускаем');
-        return;
-    }
+    if (isInitialized) return;
     isInitialized = true;
     
     loadLocksFromStorage();
@@ -3804,7 +3775,6 @@ function init() {
     if (modeGroupBtn) modeGroupBtn.addEventListener('click', () => setDisplayMode('group_only'));
     
     window.selectCar = selectCar;
-    
     setDisplayMode(displayMode);
     updateModeSelectorVisibility();
     
@@ -3814,75 +3784,40 @@ function init() {
     if (adminSelectElement && adminSelectElement.value === '') {
         localStorage.removeItem('gt7_selected_admin_id');
         const container = document.getElementById('racesCalendarContainer');
-        if (container) {
-            container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">👑 Выберите администратора</div>';
-        }
+        if (container) container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">👑 Выберите администратора</div>';
     } else if (savedAdminId && adminSelectElement && adminSelectElement.value === savedAdminId) {
         displayUserRaces(savedAdminId);
     } else {
         const container = document.getElementById('racesCalendarContainer');
-        if (container) {
-            container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">👑 Выберите администратора</div>';
-        }
+        if (container) container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">👑 Выберите администратора</div>';
     }
     
     loadUserAdmins();
     
     setInterval(() => {
         const selectedAdmin = localStorage.getItem('gt7_selected_admin_id');
-        if (selectedAdmin) {
-            displayUserRaces(selectedAdmin);
-        }
+        if (selectedAdmin) displayUserRaces(selectedAdmin);
     }, 60000);
 
     updateModeSelectorVisibility();
 
-    const hasSeenWelcome = localStorage.getItem('gt7_welcome_seen');
-    if (!hasSeenWelcome) {
-        const welcomeMsg = document.getElementById('welcomeMessage');
-        if (welcomeMsg) {
-            welcomeMsg.style.display = 'flex';
-            const closeBtn = document.getElementById('closeWelcomeBtn');
-            if (closeBtn) {
-                closeBtn.addEventListener('click', () => {
-                    welcomeMsg.style.display = 'none';
-                    localStorage.setItem('gt7_welcome_seen', 'true');
-                });
-            }
-        }
-    }
-
     const backToMenuBtn = document.getElementById('backToMenuBtn');
-    if (backToMenuBtn) {
-        backToMenuBtn.addEventListener('click', backToMenu);
-        console.log('✅ Кнопка возврата в меню активирована');
-    }
+    if (backToMenuBtn) backToMenuBtn.addEventListener('click', backToMenu);
 
     const generateRandomRaceBtn = document.getElementById('generateRandomRaceBtn');
     if (generateRandomRaceBtn) {
         generateRandomRaceBtn.addEventListener('click', () => {
-            console.log('🎲 Генерация новой случайной гонки');
-            
             isApplyingUpdate = false;
-            
             if (userSyncEnabled) {
                 userSyncEnabled = false;
                 currentAdminId = null;
                 currentAdminName = null;
-                
                 const banner = document.getElementById('adminSyncBanner');
                 if (banner) banner.classList.add('hidden');
-                
                 stopAutoRefresh();
                 resetSyncCache();
-                
-                if (generateRandomRaceBtn) {
-                    generateRandomRaceBtn.style.display = 'block';
-                }
-                
-                console.log('🔄 Выход из режима синхронизации, переход в локальный режим');
+                if (generateRandomRaceBtn) generateRandomRaceBtn.style.display = 'block';
             }
-            
             setTimeout(() => {
                 if (typeof generateLocalRace === 'function') {
                     generateLocalRace();
@@ -3890,31 +3825,25 @@ function init() {
                 }
             }, 100);
         });
-        console.log('✅ Кнопка генерации случайной гонки активирована');
     }
 
     const exitManualModeBtn = document.getElementById('exitManualModeBtn');
     if (exitManualModeBtn) {
         exitManualModeBtn.addEventListener('click', () => {
-            console.log('🔄 Выход из ручного режима, возобновление синхронизации');
             manualModeActive = false;
             if (manualModeTimer) clearTimeout(manualModeTimer);
             exitManualModeBtn.style.display = 'none';
             showStatusMessage('🔄 Синхронизация возобновлена', 'success');
-            
             if (userSyncEnabled && currentAdminId) {
                 loadSyncedCombo(true).then(synced => {
-                    if (syncedModeActive && synced) {
-                        applySyncedCombo(synced);
-                    }
+                    if (syncedModeActive && synced) applySyncedCombo(synced);
                 });
             }
         });
-        console.log('✅ Кнопка выхода из ручного режима активирована');
     }
 }
 
-// Запуск приложения
+// Запуск
 init();
 
 </script>
