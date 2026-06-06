@@ -3584,7 +3584,7 @@ function applyRaceParameters(race) {
         }
     }
     
-    // ИСПРАВЛЕННЫЙ БЛОК ТРАССЫ С КРУГАМИ
+    // БЛОК ТРАССЫ С КРУГАМИ (без highlightField)
     if (race.track_name) {
         const laps = race.laps || '5';
         const trackValueElement = document.getElementById('trackValue');
@@ -3592,7 +3592,6 @@ function applyRaceParameters(race) {
         
         const trackIconUrl = getTrackIcon(race.track_name);
         displayTrackIcon(trackIconUrl);
-        highlightField('trackValue');
         
         console.log(`✅ Трасса из календаря: ${race.track_name}, кругов: ${laps}`);
     }
@@ -3615,6 +3614,16 @@ function applyRaceParameters(race) {
     localStorage.setItem('gt7_current_race', JSON.stringify(race));
     
     showStatusMessage('🏁 Параметры гонки применены! Автообновление остановлено', 'success');
+}
+
+    
+    function highlightField(elementId) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.style.transition = 'background 0.3s';
+        element.style.background = 'rgba(34, 197, 94, 0.3)';
+        setTimeout(() => element.style.background = '', 500);
+    }
 }
 
 // ============================================
