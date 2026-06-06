@@ -2704,16 +2704,17 @@ function generateLocalRace() {
     }
     
     updateVisibilityByDisplayMode(displayMode);
-    updateCar(); 
-    updateTrack(); 
-    updateWeather(); 
-    updateTime(); 
-    updateTires(); 
-    updateFuel(); 
-    updateCategory();
     
-    // ===== ДОБАВЬТЕ ЭТОТ БЛОК - ОБНОВЛЯЕМ СОСТОЯНИЕ ЗАМКОВ =====
-    // Обновляем отображение всех кнопок-замков в соответствии с текущими блокировками
+    // Генерируем ТОЛЬКО для незаблокированных параметров
+    if (!locks.car) updateCar();
+    if (!locks.track) updateTrack();
+    if (!locks.weather) updateWeather();
+    if (!locks.time) updateTime();
+    if (!locks.tires) updateTires();
+    if (!locks.fuel) updateFuel();
+    if (!locks.category) updateCategory();
+    
+    // Обновляем отображение всех кнопок-замков
     document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
         const param = btn.getAttribute('data-param');
         if (locks[param]) {
@@ -2724,6 +2725,10 @@ function generateLocalRace() {
             btn.setAttribute('data-state', 'unlocked');
         }
     });
+    
+    // Сохраняем состояние блокировок
+    saveLocksToStorage();
+};
     // ===== КОНЕЦ ДОБАВЛЕННОГО БЛОКА =====
 }
 // ============================================
@@ -3118,8 +3123,10 @@ function toggleLock(param) {
         btn.setAttribute('data-state', locks[param] ? 'locked' : 'unlocked');
     });
     
-    // Сохраняем состояние блокировок
+    // Сохраняем состояние блокировок в localStorage
     saveLocksToStorage();
+    
+    console.log(`🔒 Блокировка ${param}: ${locks[param] ? 'ЗАБЛОКИРОВАНА' : 'разблокирована'}`);
 }
 
 // ФУНКЦИИ toggleSyncMode, shareResult, updateRandomButtonState - УДАЛЕНЫ
@@ -3655,6 +3662,8 @@ async function manualSync() {
 }
 
 function init() {
+    // ДОБАВЬТЕ ЭТУ СТРОКУ В НАЧАЛО ФУНКЦИИ
+    loadLocksFromStorage();
     console.log('🚀 Инициализация приложения');
     loadShownCars();
     
