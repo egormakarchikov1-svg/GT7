@@ -1397,7 +1397,6 @@
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwCJv5sKYncJOWhGQ8W1YVU3xcSjGhS1bwITp6PTU60NF0N5PxVubmwnvI2bho_xi6t9w/exec';
 
 // Состояние для экрана выбора
-let currentTrackLaps = 5;  // Добавьте эту строку
 let currentAdminId = null;
 let currentAdminName = null;
 let userSyncEnabled = false;
@@ -2700,29 +2699,7 @@ function resetCarsHistory() { shownCars = []; saveShownCars(); alert('✅ Ист
 function getRandomLaps(trackLength) { return Math.floor(Math.random() * 15) + 5; }
 
 function updateCar() { if (!locks.car) { const c = getRandomCarWithoutRepeat(); document.getElementById('carValue').innerText = c.name; document.getElementById('carIcon').src = c.icon; document.getElementById('carIcon').style.display = 'block'; displaySimilarCars(c); } }
-function updateTrack() { 
-    if (!locks.track) { 
-        const t = getRandomItem(tracksData); 
-        currentTrack = t.name; 
-        document.getElementById('trackValue').innerHTML = `${t.name} <span class="time-x-badge">${getRandomLaps(t.length)} кругов</span>`; 
-        document.getElementById('trackIcon').src = getTrackIcon(t.name); 
-        document.getElementById('trackIcon').style.display = 'block'; 
-        if (!locks.weather) updateWeatherByTrack(t); 
-        if (!locks.time) updateTimeByTrack(t); 
-    } else {
-        // Если трек заблокирован, проверяем и добавляем круги
-        const trackValue = document.getElementById('trackValue');
-        const currentText = trackValue.innerText || trackValue.innerHTML;
-        
-        // Если нет слова "кругов", добавляем их
-        if (currentText && !currentText.includes('кругов')) {
-            const currentTrackName = currentText.split('←')[0].trim();
-            const laps = currentTrackLaps || '5';
-            trackValue.innerHTML = `${currentTrackName} <span class="time-x-badge">${laps} кругов</span>`;
-            console.log('🔧 Добавлены круги в заблокированную трассу');
-        }
-    }
-}
+function updateTrack() { if (!locks.track) { const t = getRandomItem(tracksData); currentTrack = t.name; document.getElementById('trackValue').innerHTML = `${t.name} <span class="time-x-badge">${getRandomLaps(t.length)} кругов</span>`; document.getElementById('trackIcon').src = getTrackIcon(t.name); document.getElementById('trackIcon').style.display = 'block'; if (!locks.weather) updateWeatherByTrack(t); if (!locks.time) updateTimeByTrack(t); } }
 function updateWeatherByTrack(track) { if (locks.weather) return; let avail = weathers; if (track.weather && track.weather[0] === 'dry') avail = weathers.filter(w => !w.name.includes('дождь') && !w.name.includes('Дождь')); const w = getRandomItem(avail); document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`; }
 function updateTimeByTrack(track) { if (locks.time) return; let avail = times; if (track.times && track.times.length) avail = times.filter(t => track.times.includes(t.name)); const tm = getRandomItem(avail); document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${getRandomXValue()}</span>`; }
 function updateWeather() { if (!locks.weather) { const w = getRandomItem(weathers); document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`; } }
@@ -2964,9 +2941,6 @@ async function loadSyncedCombo(forceRefresh = false, retryCount = 0) {
 function applySyncedCombo(data) {
     if (!data) return;
     
-    console.log('📊 Применяем данные от админа:', data);
-    console.log('📊 Количество кругов (laps):', data.laps);
-    
     const similarBlockFirst = document.getElementById('similarContainer');
     if (similarBlockFirst) {
         similarBlockFirst.style.setProperty('display', 'none', 'important');
@@ -2981,6 +2955,7 @@ function applySyncedCombo(data) {
     if (data.fuel_locked !== undefined) locks.fuel = data.fuel_locked;
     if (data.category_locked !== undefined) locks.category = data.category_locked;
     
+    // Обновляем отображение всех кнопок-замков
     document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
         const param = btn.getAttribute('data-param');
         if (locks[param]) {
@@ -3020,30 +2995,21 @@ function applySyncedCombo(data) {
         }
     }
     
-    // ИСПРАВЛЕННЫЙ БЛОК ТРАССЫ С КРУГАМИ
-    // ИСПРАВЛЕННЫЙ БЛОК ТРАССЫ С КРУГАМИ
-if (!locks.track && data.track_name) {
-    const track = findTrackByName(data.track_name);
-    const laps = data.laps || '5';
-    const trackValueElement = document.getElementById('trackValue');
-    
-    if (track) {
-        trackValueElement.innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
-        const trackIcon = document.getElementById('trackIcon');
-        if (trackIcon) {
-            trackIcon.src = getTrackIcon(track.name);
-            trackIcon.style.display = 'block';
+    if (!locks.track && data.track_name) {
+        const track = findTrackByName(data.track_name);
+        const laps = data.laps || '5';
+        if (track) {
+            document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
+            const trackIcon = document.getElementById('trackIcon');
+            if (trackIcon) {
+                trackIcon.src = getTrackIcon(track.name);
+                trackIcon.style.display = 'block';
+            }
+            const trackIconFallback = document.getElementById('trackIconFallback');
+            if (trackIconFallback) trackIconFallback.style.display = 'none';
+            highlightField('trackValue');
         }
-        const trackIconFallback = document.getElementById('trackIconFallback');
-        if (trackIconFallback) trackIconFallback.style.display = 'none';
-        highlightField('trackValue');
-    } else {
-        trackValueElement.innerHTML = `${data.track_name} <span class="time-x-badge">${laps} кругов</span>`;
-        highlightField('trackValue');
     }
-    
-    console.log(`✅ Трасса применена: ${data.track_name}, кругов: ${laps}`);
-}
     
     if (!locks.category && data.category_name) {
         const cat = categories.find(c => c.name === data.category_name);
@@ -3109,20 +3075,7 @@ if (!locks.track && data.track_name) {
             similarBlockLast.classList.add('hidden-block');
         }
     }, 50);
-
-    // Принудительно добавляем круги, если их нет
-setTimeout(() => {
-    const trackValue = document.getElementById('trackValue');
-    if (trackValue && trackValue.innerHTML && !trackValue.innerHTML.includes('кругов')) {
-        const laps = data.laps || '5';
-        const trackName = data.track_name || trackValue.innerHTML.trim();
-        trackValue.innerHTML = `${trackName} <span class="time-x-badge">${laps} кругов</span>`;
-        console.log('🔧 Круги добавлены принудительно!');
-    }
-}, 100);
-
 }
-    
 
 async function loadRace() {
     console.log('🏁 loadRace вызвана');
@@ -3558,14 +3511,15 @@ function applyRaceParameters(race) {
     // Сбрасываем старый таймер
     if (manualModeTimer) clearTimeout(manualModeTimer);
     
-    // Устанавливаем таймер на 30 минут
+    // Устанавливаем таймер на 30 минут (1800000 мс) или 0 - бесконечно
+    // Чтобы отключить автосброс, закомментируйте этот блок
     manualModeTimer = setTimeout(() => {
         console.log('🕐 Ручной режим автоматически отключён');
         manualModeActive = false;
         const exitManualModeBtn = document.getElementById('exitManualModeBtn');
         if (exitManualModeBtn) exitManualModeBtn.style.display = 'none';
         showStatusMessage('🕐 Режим ручной гонки завершён, синхронизация возобновлена', 'info');
-    }, 1800000);
+    }, 1800000); // 30 минут
     
     // ПОКАЗЫВАЕМ оранжевую кнопку выхода
     const exitManualModeBtn = document.getElementById('exitManualModeBtn');
@@ -3584,17 +3538,10 @@ function applyRaceParameters(race) {
         }
     }
     
-    // ИСПРАВЛЕННЫЙ БЛОК ТРАССЫ С КРУГАМИ
     if (race.track_name) {
-        const laps = race.laps || '5';
-        const trackValueElement = document.getElementById('trackValue');
-        trackValueElement.innerHTML = `${race.track_name} <span class="time-x-badge">${laps} кругов</span>`;
-        
+        document.getElementById('trackValue').innerHTML = race.track_name;
         const trackIconUrl = getTrackIcon(race.track_name);
         displayTrackIcon(trackIconUrl);
-        highlightField('trackValue');
-        
-        console.log(`✅ Трасса из календаря: ${race.track_name}, кругов: ${laps}`);
     }
     
     if (race.category_name) document.getElementById('categoryValue').innerHTML = race.category_name;
