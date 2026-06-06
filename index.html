@@ -1394,7 +1394,7 @@
 // ============================================
 // УПРАВЛЕНИЕ ЭКРАНАМИ И ЗАГРУЗКА АДМИНОВ
 // ============================================
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxZjSUNpHFQn_owMTWxVVH8asFjPTmkRhbs9X11tfDvHzPPyhAeB06ACjkwRKbrZIVzCw/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwQhNk9IS3CntoBoE9an1gD5ozbP7IoAov9BkBTDqUZf7ok_33ZVLb93Xp9TM6fAj54rQ/exec';
 
 // Состояние для экрана выбора
 let currentTrackLaps = 5;  // Добавьте эту строку
@@ -3586,18 +3586,10 @@ function applyRaceParameters(race) {
     
     // БЛОК ТРАССЫ С КРУГАМИ (без highlightField)
     if (race.track_name) {
-    // Берем laps ТОЛЬКО из данных гонки
-    let laps = race.laps;
+    const laps = race.laps;
     
-    // Если laps нет в данных гонки - берем из активной комбинации админа
-    if (!laps && syncedComboData && syncedComboData.laps) {
-        laps = syncedComboData.laps;
-        console.log(`🔄 laps взят из активной комбинации админа: ${laps}`);
-    }
-    
-    // Если всё еще нет laps - ошибка
     if (!laps) {
-        console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: laps не найден ни в гонке, ни у админа!');
+        console.error('❌ ОШИБКА: laps не передан в данных гонки!', race);
         return;
     }
     
