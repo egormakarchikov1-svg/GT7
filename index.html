@@ -1139,6 +1139,31 @@
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
     animation: fadeIn 0.3s ease;
 }
+    
+     #welcomeScreen .welcome-message {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        background: rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(30px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        z-index: 1000 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    #welcomeScreen .welcome-content {
+        background: transparent !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        border-radius: 28px !important;
+        border: 2px solid rgba(255, 77, 77, 0.6) !important;
+
+    }
+    
     </style>
 </head>
 <body>
@@ -3672,6 +3697,11 @@ function init() {
 // ============================================
 
 // Флаг для предотвращения двойной инициализации
+// ============================================
+// ИНИЦИАЛИЗАЦИЯ
+// ============================================
+
+// Флаг для предотвращения двойной инициализации
 let isInitialized = false;
 
 // Функция возврата в меню выбора
@@ -3884,35 +3914,9 @@ function init() {
     }
 }
 
-// Запуск приложения - ТОЛЬКО ОДИН РАЗ!
+// Запуск приложения
 init();
 
 </script>
-
-<style>
-    /* Полностью переопределяем стили приветственного экрана */
-    #welcomeScreen .welcome-message {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        background: rgba(0, 0, 0, 0.1);
-        backdrop-filter: blur(30px) !important;
-        -webkit-backdrop-filter: blur(10px) !important;
-        z-index: 1000 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }
-    
-    #welcomeScreen .welcome-content {
-        background: transparent !important;
-        backdrop-filter: blur(12px) !important;
-        -webkit-backdrop-filter: blur(12px) !important;
-        border-radius: 28px !important;
-        border: 2px solid rgba(255, 77, 77, 0.6) !important;
-    }
-</style>
 </body>
 </html>
