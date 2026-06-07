@@ -1611,6 +1611,8 @@ function showMainApp(autoGenerate = true) {
     if (userSyncEnabled && currentAdminId) {
         banner.classList.remove('hidden');
         adminNameSpan.innerHTML = currentAdminName || currentAdminId;
+
+        localStorage.setItem('gt7_selected_admin_id', currentAdminId);
         
         // ЗАПУСКАЕМ СИНХРОНИЗАЦИЮ ДЛЯ ВЫБРАННОГО АДМИНА
         startAutoRefresh();
@@ -1771,6 +1773,9 @@ if (continueToAdminBtn) {
         currentAdminId = selectedValue;
         const selectedOption = select.options[select.selectedIndex];
         currentAdminName = selectedOption ? selectedOption.text : currentAdminId;
+        
+        // 👇 СОХРАНЯЕМ АДМИНА В localStorage (ПРАВИЛЬНОЕ МЕСТО)
+        localStorage.setItem('gt7_selected_admin_id', currentAdminId);
         
         console.log('👑 Запуск в режиме синхронизации с админом:', currentAdminName);
         showMainApp(false);
@@ -4170,6 +4175,8 @@ function backToMenu() {
     currentAdminName = null;
     resetSyncCache();
     updateModeIndicator(null);
+
+    localStorage.removeItem('gt7_selected_admin_id');
     
     const exitManualModeBtn = document.getElementById('exitManualModeBtn');
     if (exitManualModeBtn) exitManualModeBtn.style.display = 'none';
@@ -4255,14 +4262,13 @@ function init() {
     
     // 👇 ДОБАВЬТЕ ЭТОТ НОВЫЙ setInterval 👇
     // Фоновое обновление календаря каждые 10 секунд (для синхронизации между устройствами)
-    setInterval(async () => {
-        const selectedAdmin = localStorage.getItem('gt7_selected_admin_id');
-        // Обновляем только если есть выбранный админ и форма записи не открыта
-        if (selectedAdmin && (!document.getElementById('registrationBlock') || document.getElementById('registrationBlock').style.display !== 'block')) {
-            console.log('🔄 Фоновое обновление календаря...');
-            await displayUserRaces(selectedAdmin);
-        }
-    }, 10000);
+setInterval(async () => {
+    // Используем currentAdminId (переменную) вместо localStorage
+    if (currentAdminId && (!document.getElementById('registrationBlock') || document.getElementById('registrationBlock').style.display !== 'block')) {
+        console.log('🔄 Фоновое обновление календаря для админа:', currentAdminId);
+        await displayUserRaces(currentAdminId);
+    }
+}, 10000);
 
     updateModeSelectorVisibility();
 
