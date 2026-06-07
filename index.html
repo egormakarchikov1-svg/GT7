@@ -4261,10 +4261,9 @@ function init() {
     loadUserAdmins();
     
     // 👇 ДОБАВЬТЕ ЭТОТ НОВЫЙ setInterval 👇
-    // Фоновое обновление календаря каждые 10 секунд (для синхронизации между устройствами)
+// Фоновое обновление календаря каждые 10 секунд
 setInterval(async () => {
-    // Используем currentAdminId (переменную) вместо localStorage
-    if (currentAdminId && (!document.getElementById('registrationBlock') || document.getElementById('registrationBlock').style.display !== 'block')) {
+    if (currentAdminId) {
         console.log('🔄 Фоновое обновление календаря для админа:', currentAdminId);
         await displayUserRaces(currentAdminId);
     }
