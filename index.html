@@ -1475,7 +1475,7 @@
 // ============================================
 // УПРАВЛЕНИЕ ЭКРАНАМИ И ЗАГРУЗКА АДМИНОВ
 // ============================================
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxCXQnyEj2zLxjQdMMJ3rq8mYCa-qVwuDr3UYdj1lEfCVGluabnh6Dt50n7JvJWjyxdQw/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxy_fBTaLlQaf56WlME5e0cbk2RlwPUoV8ZMOuZLYl2YskrgyPFDGZXZxLWXafUBBq0Cg/exec';
 
 // Состояние для экрана выбора
 let currentAdminId = null;
@@ -1609,33 +1609,31 @@ function showMainApp(autoGenerate = true) {
     }
     
     if (userSyncEnabled && currentAdminId) {
-        banner.classList.remove('hidden');
-        adminNameSpan.innerHTML = currentAdminName || currentAdminId;
-
-        localStorage.setItem('gt7_selected_admin_id', currentAdminId);
-        
-        // ЗАПУСКАЕМ СИНХРОНИЗАЦИЮ ДЛЯ ВЫБРАННОГО АДМИНА
-        startAutoRefresh();
-        
-        // В режиме синхронизации СКРЫВАЕМ кнопку "Случайная гонка"
-        if (generateRandomRaceBtn) {
-            generateRandomRaceBtn.style.display = 'none';
-        }
-        
-        // 👇 ОБНОВЛЯЕМ ИНДИКАТОР - ТОЛЬКО ЗДЕСЬ, ОДИН РАЗ!
-        updateModeIndicator('admin', currentAdminName || currentAdminId);
-        
-    } else {
-        banner.classList.add('hidden');
-        
-        // В локальном режиме ПОКАЗЫВАЕМ кнопку "Случайная гонка"
-        if (generateRandomRaceBtn) {
-            generateRandomRaceBtn.style.display = 'block';
-        }
-        
-        // 👇 ОБНОВЛЯЕМ ИНДИКАТОР - ТОЛЬКО ЗДЕСЬ, ОДИН РАЗ!
-        updateModeIndicator('local');
+    banner.classList.remove('hidden');
+    adminNameSpan.innerHTML = currentAdminName || currentAdminId;
+    localStorage.setItem('gt7_selected_admin_id', currentAdminId);
+    
+    startAutoRefresh();
+    
+    if (generateRandomRaceBtn) {
+        generateRandomRaceBtn.style.display = 'none';
     }
+    
+    updateModeIndicator('admin', currentAdminName || currentAdminId);
+    
+    setTimeout(() => {
+        loadUserRegistrations();
+    }, 500);
+    
+} else {
+    banner.classList.add('hidden');
+    
+    if (generateRandomRaceBtn) {
+        generateRandomRaceBtn.style.display = 'block';
+    }
+    
+    updateModeIndicator('local');
+}
     
     // Запускаем init ТОЛЬКО если не было инициализации
     if (typeof init === 'function' && !window._gt7_initialized) {
@@ -3587,7 +3585,9 @@ async function displayUserRaces(adminId) {
                 </div>
                 <div style="display: flex; gap: 8px; margin-top: 10px;">
                     <button class="apply-race-btn" onclick="applyRaceToGame('${race.id}')" style="background: #22c55e; flex: 1;">🏁 ПРИМЕНИТЬ</button>
-                    <button class="register-btn" onclick="openRegistration('${race.id}', '${escapeHtml(race.track_name || '')}', '${escapeHtml(race.title || '')}')" style="background: #3b82f6; flex: 1; border: none; border-radius: 30px; color: white; padding: 8px; cursor: pointer;">📝 ЗАПИСАТЬСЯ</button>
+                    <button class="register-btn" onclick="openRegistration('${race.id}', '${escapeHtml(race.track_name || '')}', '${escapeHtml(race.title || '')}')" style="background: ${userRegistrations[race.id] ? '#22c55e' : '#3b82f6'}; flex: 1; border: none; border-radius: 30px; color: white; padding: 8px; cursor: pointer;">
+    ${userRegistrations[race.id] ? '✅ ВЫ ЗАПИСАНЫ' : '📝 ЗАПИСАТЬСЯ'}
+</button>
                 </div>
             </div>
         `;
@@ -3855,6 +3855,45 @@ let isCheckingInProgress = false;     // ← ДОБАВИТЬ
 
 // 👇 СЮДА ДОБАВЬТЕ ЭТИ СТРОЧКИ 👇
 let lastParticipantsCount = {};
+let userRegistrations = {};
+
+    async function loadUserRegistrations() {
+    if (!currentAdminId) return;
+    
+    try {
+        const deviceId = getUserDeviceId();
+        const callbackName = 'jsonp_user_regs_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+        const url = `${APPS_SCRIPT_URL}?action=getUserRegistrations&adminId=${currentAdminId}&deviceId=${encodeURIComponent(deviceId)}&callback=${callbackName}&t=${Date.now()}`;
+        
+        const result = await new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                if (window[callbackName]) delete window[callbackName];
+                reject(new Error('Таймаут'));
+            }, 10000);
+            
+            window[callbackName] = function(data) {
+                clearTimeout(timeout);
+                delete window[callbackName];
+                resolve(data);
+            };
+            
+            const script = document.createElement('script');
+            script.src = url;
+            script.onerror = () => reject(new Error('Ошибка соединения'));
+            document.body.appendChild(script);
+        });
+        
+        if (result.success && result.races) {
+            userRegistrations = {};
+            result.races.forEach(raceId => {
+                userRegistrations[raceId] = true;
+            });
+            console.log('✅ Загружены записи пользователя:', Object.keys(userRegistrations));
+        }
+    } catch(e) {
+        console.error('Ошибка загрузки записей пользователя:', e);
+    }
+}
 
 async function checkForNewParticipants() {
     if (!currentAdminId || !currentRegistrationRaceId) return;
@@ -4078,6 +4117,7 @@ async function registerForRace() {
             showStatusMessage(`✅ ${racerName}, вы успешно записались на гонку!`, 'success');
             document.getElementById('racerName').value = '';
             await loadParticipants(currentRegistrationRaceId);
+            await loadUserRegistrations();
             
             // ОБНОВЛЯЕМ КАЛЕНДАРЬ, ЧТОБЫ ДРУГИЕ ПОЛЬЗОВАТЕЛИ ВИДЕЛИ ОБНОВЛЕНИЕ
             const selectedAdmin = localStorage.getItem('gt7_selected_admin_id');
@@ -4101,6 +4141,7 @@ async function registerForRace() {
 }
 
     // Отказаться от участия
+// Отказаться от участия
 async function cancelRegistration(raceId) {
     if (!confirm('Вы уверены, что хотите отказаться от участия в гонке?')) {
         return;
@@ -4138,6 +4179,8 @@ async function cancelRegistration(raceId) {
             if (currentRegistrationRaceId === raceId) {
                 loadParticipants(raceId);
             }
+            await loadUserRegistrations();
+            
             // Также обновляем список гонок в календаре (чтобы обновились кнопки)
             const selectedAdmin = localStorage.getItem('gt7_selected_admin_id');
             if (selectedAdmin) {
