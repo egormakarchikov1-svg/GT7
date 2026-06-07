@@ -3853,11 +3853,58 @@ let isLoadingParticipants = false;
 let isRegisteringInProgress = false;  // ← ДОБАВИТЬ
 let isCheckingInProgress = false;     // ← ДОБАВИТЬ
 
-// Открыть форму записи
+// 👇 СЮДА ДОБАВЬТЕ ЭТИ СТРОЧКИ 👇
+let lastParticipantsCount = {};
+
+async function checkForNewParticipants() {
+    if (!currentAdminId || !currentRegistrationRaceId) return;
+    
+    try {
+        const callbackName = 'jsonp_check_participants_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+        const url = `${APPS_SCRIPT_URL}?action=getParticipants&raceId=${currentRegistrationRaceId}&callback=${callbackName}&t=${Date.now()}`;
+        
+        const participants = await new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                if (window[callbackName]) delete window[callbackName];
+                reject(new Error('Таймаут'));
+            }, 5000);
+            
+            window[callbackName] = function(data) {
+                clearTimeout(timeout);
+                delete window[callbackName];
+                resolve(data.participants || []);
+            };
+            
+            const script = document.createElement('script');
+            script.src = url;
+            script.onerror = () => reject(new Error('Ошибка соединения'));
+            document.body.appendChild(script);
+        });
+        
+        const currentCount = participants.length;
+        const lastCount = lastParticipantsCount[currentRegistrationRaceId] || 0;
+        
+        if (currentCount !== lastCount) {
+            console.log(`👥 Количество участников изменилось: ${lastCount} → ${currentCount}`);
+            displayParticipants(participants);
+            lastParticipantsCount[currentRegistrationRaceId] = currentCount;
+            
+            const selectedAdmin = localStorage.getItem('gt7_selected_admin_id');
+            if (selectedAdmin) {
+                displayUserRaces(selectedAdmin);
+            }
+        }
+    } catch(e) {
+        console.error('Ошибка фоновой проверки участников:', e);
+    }
+}
+
 // Открыть форму записи
 function openRegistration(raceId, trackName, title) {
     currentRegistrationRaceId = raceId;
     currentRegistrationRaceInfo = { trackName, title: title || 'Гоночный заезд' };
+
+    lastParticipantsCount[raceId] = 0;
     
     const registrationBlock = document.getElementById('registrationBlock');
     const selectedRaceInfo = document.getElementById('selectedRaceInfo');
@@ -4263,11 +4310,10 @@ function init() {
     // 👇 ДОБАВЬТЕ ЭТОТ НОВЫЙ setInterval 👇
 // Фоновое обновление календаря каждые 10 секунд
 setInterval(async () => {
-    if (currentAdminId) {
-        console.log('🔄 Фоновое обновление календаря для админа:', currentAdminId);
-        await displayUserRaces(currentAdminId);
-    }
-}, 10000);
+        if (currentAdminId && currentRegistrationRaceId && document.getElementById('registrationBlock')?.style.display === 'block') {
+            await checkForNewParticipants();
+        }
+    }, 5000);
 
     updateModeSelectorVisibility();
 
