@@ -4253,10 +4253,16 @@ function init() {
     
     loadUserAdmins();
     
-    setInterval(() => {
+    // 👇 ДОБАВЬТЕ ЭТОТ НОВЫЙ setInterval 👇
+    // Фоновое обновление календаря каждые 10 секунд (для синхронизации между устройствами)
+    setInterval(async () => {
         const selectedAdmin = localStorage.getItem('gt7_selected_admin_id');
-        if (selectedAdmin) displayUserRaces(selectedAdmin);
-    }, 60000);
+        // Обновляем только если есть выбранный админ и форма записи не открыта
+        if (selectedAdmin && (!document.getElementById('registrationBlock') || document.getElementById('registrationBlock').style.display !== 'block')) {
+            console.log('🔄 Фоновое обновление календаря...');
+            await displayUserRaces(selectedAdmin);
+        }
+    }, 10000);
 
     updateModeSelectorVisibility();
 
