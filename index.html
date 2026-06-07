@@ -2890,19 +2890,29 @@ function startAutoRefresh() {
     console.log('🔄 ЗАПУСК АВТООБНОВЛЕНИЯ для админа:', currentAdminId);
     
     autoRefreshInterval = setInterval(async () => {
+        // ЕСЛИ РУЧНОЙ РЕЖИМ АКТИВЕН - НЕ ОБНОВЛЯЕМ ПАРАМЕТРЫ ГОНКИ
         if (manualModeActive) {
             console.log('⏸️ Ручной режим активен, автообновление параметров гонки приостановлено');
-            return;
+            // Но календарь обновляем всегда
+            if (typeof displayUserRaces === 'function' && userSyncEnabled && currentAdminId) {
+                displayUserRaces(currentAdminId);
+            }
+            return; // Выходим, не обновляем параметры
         }
         
         if (userSyncEnabled && currentAdminId && !isApplyingUpdate) {
             console.log('🔄 Проверка обновлений у админа:', currentAdminId);
             
             try {
-                // УБРАЛИ displayUserRaces - теперь только синхронизация комбинации
+                // Обновляем календарь
+                if (typeof displayUserRaces === 'function') {
+                    displayUserRaces(currentAdminId);
+                }
+                
                 const synced = await loadSyncedCombo(true);
                 
                 if (syncedModeActive && synced) {
+                    // Получаем текущие значения
                     const currentTrackElement = document.getElementById('trackValue');
                     let currentTrackName = '';
                     if (currentTrackElement) {
@@ -2914,6 +2924,7 @@ function startAutoRefresh() {
                     
                     let hasChanges = false;
                     
+                    // Проверяем изменения
                     if (!locks.car && synced.car_name && currentCar !== synced.car_name) {
                         console.log('🔍 Обнаружены изменения в МАШИНЕ:', currentCar, '->', synced.car_name);
                         hasChanges = true;
@@ -2940,7 +2951,7 @@ function startAutoRefresh() {
                 console.error('❌ Ошибка при проверке обновлений:', e);
             }
         }
-    }, 10000);
+    }, 10000); // Проверка каждые 10 секунд
 }
 
 function stopAutoRefresh() {
@@ -3537,12 +3548,8 @@ async function displayUserRaces(adminId) {
         return;
     }
     
-    const container = document.getElementById('racesCalendarContainer');
-    if (container) {
-        container.innerHTML = '<div style="text-align: center; padding: 20px;">🔄 Загрузка гонок...</div>';
-    }
-    
     const races = await getActiveRaces(currentAdminId);
+    const container = document.getElementById('racesCalendarContainer');
     
     if (!container) return;
     
@@ -3852,6 +3859,7 @@ function openRegistration(raceId, trackName, title) {
     const racerNameInput = document.getElementById('racerName');
     const registerBtn = document.getElementById('confirmRegistrationBtn');
     
+    // Сбрасываем состояние кнопки
     if (registerBtn) {
         registerBtn.disabled = false;
         registerBtn.innerHTML = '✅ ЗАПИСАТЬСЯ';
@@ -3865,10 +3873,10 @@ function openRegistration(raceId, trackName, title) {
     racerNameInput.value = '';
     registrationBlock.style.display = 'block';
     
+    // Загружаем список участников
     loadParticipants(raceId);
     
-    // УБРАЛИ обновление календаря здесь!
-    
+    // Прокручиваем к блоку
     registrationBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
@@ -4013,15 +4021,10 @@ async function registerForRace() {
             document.body.appendChild(script);
         });
         
-                if (result.success) {
+        if (result.success) {
             showStatusMessage(`✅ ${racerName}, вы успешно записались на гонку!`, 'success');
             document.getElementById('racerName').value = '';
             await loadParticipants(currentRegistrationRaceId);
-            
-            const selectedAdmin = localStorage.getItem('gt7_selected_admin_id');
-            if (selectedAdmin) {
-                await displayUserRaces(selectedAdmin);
-            }
         } else {
             showStatusMessage('❌ Ошибка: ' + (result.error || 'Не удалось записаться'), 'error');
         }
@@ -4039,8 +4042,6 @@ async function registerForRace() {
 }
 
     // Отказаться от участия
-// Отказаться от участия
-// Отказаться от участия
 async function cancelRegistration(raceId) {
     if (!confirm('Вы уверены, что хотите отказаться от участия в гонке?')) {
         return;
@@ -4074,16 +4075,14 @@ async function cancelRegistration(raceId) {
         
         if (result.success) {
             showStatusMessage('✅ Вы отказались от участия в гонке!', 'success');
-            
             // Обновляем список участников в форме записи
             if (currentRegistrationRaceId === raceId) {
-                await loadParticipants(raceId);
+                loadParticipants(raceId);
             }
-            
-            // Обновляем список гонок в календаре
+            // Также обновляем список гонок в календаре (чтобы обновились кнопки)
             const selectedAdmin = localStorage.getItem('gt7_selected_admin_id');
             if (selectedAdmin) {
-                await displayUserRaces(selectedAdmin);
+                displayUserRaces(selectedAdmin);
             }
         } else {
             showStatusMessage('❌ Ошибка: ' + (result.error || 'Не удалось отменить участие'), 'error');
@@ -4247,15 +4246,10 @@ function init() {
     
     loadUserAdmins();
     
-   // В функции init() замените этот блок:
-setInterval(() => {
-    const selectedAdmin = localStorage.getItem('gt7_selected_admin_id');
-    const registrationBlock = document.getElementById('registrationBlock');
-    // Обновляем только если форма записи закрыта и прошло больше времени
-    if (selectedAdmin && (!registrationBlock || registrationBlock.style.display === 'none')) {
-        displayUserRaces(selectedAdmin);
-    }
-}, 300000); // 5 минут вместо 1 минуты
+    setInterval(() => {
+        const selectedAdmin = localStorage.getItem('gt7_selected_admin_id');
+        if (selectedAdmin) displayUserRaces(selectedAdmin);
+    }, 60000);
 
     updateModeSelectorVisibility();
 
