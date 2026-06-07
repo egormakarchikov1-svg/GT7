@@ -3959,6 +3959,7 @@ function escapeHtml(text) {
 
 
 // Записаться на гонку
+// Записаться на гонку
 async function registerForRace() {
     // Блокируем кнопку и предотвращаем параллельные вызовы
     if (isRegisteringInProgress) {
@@ -4025,6 +4026,12 @@ async function registerForRace() {
             showStatusMessage(`✅ ${racerName}, вы успешно записались на гонку!`, 'success');
             document.getElementById('racerName').value = '';
             await loadParticipants(currentRegistrationRaceId);
+            
+            // ОБНОВЛЯЕМ КАЛЕНДАРЬ, ЧТОБЫ ДРУГИЕ ПОЛЬЗОВАТЕЛИ ВИДЕЛИ ОБНОВЛЕНИЕ
+            const selectedAdmin = localStorage.getItem('gt7_selected_admin_id');
+            if (selectedAdmin) {
+                await displayUserRaces(selectedAdmin);
+            }
         } else {
             showStatusMessage('❌ Ошибка: ' + (result.error || 'Не удалось записаться'), 'error');
         }
