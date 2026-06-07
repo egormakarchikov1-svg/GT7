@@ -2890,29 +2890,19 @@ function startAutoRefresh() {
     console.log('🔄 ЗАПУСК АВТООБНОВЛЕНИЯ для админа:', currentAdminId);
     
     autoRefreshInterval = setInterval(async () => {
-        // ЕСЛИ РУЧНОЙ РЕЖИМ АКТИВЕН - НЕ ОБНОВЛЯЕМ ПАРАМЕТРЫ ГОНКИ
         if (manualModeActive) {
             console.log('⏸️ Ручной режим активен, автообновление параметров гонки приостановлено');
-            // Но календарь обновляем всегда
-            if (typeof displayUserRaces === 'function' && userSyncEnabled && currentAdminId) {
-                displayUserRaces(currentAdminId);
-            }
-            return; // Выходим, не обновляем параметры
+            return;
         }
         
         if (userSyncEnabled && currentAdminId && !isApplyingUpdate) {
             console.log('🔄 Проверка обновлений у админа:', currentAdminId);
             
             try {
-                // Обновляем календарь
-                if (typeof displayUserRaces === 'function') {
-                    displayUserRaces(currentAdminId);
-                }
-                
+                // УБРАЛИ displayUserRaces - теперь только синхронизация комбинации
                 const synced = await loadSyncedCombo(true);
                 
                 if (syncedModeActive && synced) {
-                    // Получаем текущие значения
                     const currentTrackElement = document.getElementById('trackValue');
                     let currentTrackName = '';
                     if (currentTrackElement) {
@@ -2924,7 +2914,6 @@ function startAutoRefresh() {
                     
                     let hasChanges = false;
                     
-                    // Проверяем изменения
                     if (!locks.car && synced.car_name && currentCar !== synced.car_name) {
                         console.log('🔍 Обнаружены изменения в МАШИНЕ:', currentCar, '->', synced.car_name);
                         hasChanges = true;
@@ -2951,7 +2940,7 @@ function startAutoRefresh() {
                 console.error('❌ Ошибка при проверке обновлений:', e);
             }
         }
-    }, 10000); // Проверка каждые 10 секунд
+    }, 10000);
 }
 
 function stopAutoRefresh() {
@@ -3863,7 +3852,6 @@ function openRegistration(raceId, trackName, title) {
     const racerNameInput = document.getElementById('racerName');
     const registerBtn = document.getElementById('confirmRegistrationBtn');
     
-    // Сбрасываем состояние кнопки
     if (registerBtn) {
         registerBtn.disabled = false;
         registerBtn.innerHTML = '✅ ЗАПИСАТЬСЯ';
@@ -3877,16 +3865,10 @@ function openRegistration(raceId, trackName, title) {
     racerNameInput.value = '';
     registrationBlock.style.display = 'block';
     
-    // Загружаем список участников
     loadParticipants(raceId);
     
-    // ОБНОВЛЯЕМ КАЛЕНДАРЬ, ЧТОБЫ ОСВЕЖИТЬ КНОПКИ
-    const selectedAdmin = localStorage.getItem('gt7_selected_admin_id');
-    if (selectedAdmin) {
-        displayUserRaces(selectedAdmin);
-    }
+    // УБРАЛИ обновление календаря здесь!
     
-    // Прокручиваем к блоку
     registrationBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
@@ -4265,10 +4247,15 @@ function init() {
     
     loadUserAdmins();
     
-    setInterval(() => {
-        const selectedAdmin = localStorage.getItem('gt7_selected_admin_id');
-        if (selectedAdmin) displayUserRaces(selectedAdmin);
-    }, 60000);
+   // В функции init() замените этот блок:
+setInterval(() => {
+    const selectedAdmin = localStorage.getItem('gt7_selected_admin_id');
+    const registrationBlock = document.getElementById('registrationBlock');
+    // Обновляем только если форма записи закрыта и прошло больше времени
+    if (selectedAdmin && (!registrationBlock || registrationBlock.style.display === 'none')) {
+        displayUserRaces(selectedAdmin);
+    }
+}, 300000); // 5 минут вместо 1 минуты
 
     updateModeSelectorVisibility();
 
