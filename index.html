@@ -3118,7 +3118,8 @@ function applySyncedCombo(data) {
         const track = findTrackByName(data.track_name);
         const laps = data.laps || '5';
         if (track) {
-            document.getElementById('trackValue').innerHTML = `${track.name} <span class="time-x-badge">${laps} кругов</span>`;
+            document.getElementById('trackValue').innerHTML = `${t.name}`;  // Без кругов
+// + ' <span class="time-x-badge">' + getRandomLaps(t.length) + ' кругов</span>'  // Закомментировано
             const trackIcon = document.getElementById('trackIcon');
             if (trackIcon) {
                 trackIcon.src = getTrackIcon(track.name);
