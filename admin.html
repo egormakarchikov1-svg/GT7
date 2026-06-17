@@ -1644,7 +1644,109 @@ const times = [
 // ============================================
 function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-function getRandomXValue() { return `X${Math.floor(Math.random() * 20) + 1}`; }
+ // ============================================
+// УМНАЯ СИСТЕМА ВЫБОРА ЗНАЧЕНИЙ ДЛЯ ШИН И ТОПЛИВА
+// ============================================
+
+// Храним историю последних значений для каждого параметра
+let lastTiresValues = [];
+let lastFuelValues = [];
+const MAX_HISTORY = 5; // Запоминаем последние 5 значений
+
+// Диапазоны значений
+const RANGES = {
+    LOW: { min: 1, max: 7, label: 'Низкий' },
+    MEDIUM: { min: 8, max: 13, label: 'Средний' },
+    HIGH: { min: 14, max: 20, label: 'Высокий' }
+};
+
+// Получить диапазон для значения
+function getRange(value) {
+    if (value >= RANGES.LOW.min && value <= RANGES.LOW.max) return 'LOW';
+    if (value >= RANGES.MEDIUM.min && value <= RANGES.MEDIUM.max) return 'MEDIUM';
+    if (value >= RANGES.HIGH.min && value <= RANGES.HIGH.max) return 'HIGH';
+    return 'MEDIUM';
+}
+
+// Получить случайное значение в диапазоне
+function getRandomInRange(range) {
+    return Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
+}
+
+// Проверить, есть ли уже значение из этого диапазона в истории
+function hasRangeInHistory(history, range) {
+    return history.some(val => getRange(val) === range);
+}
+
+// Получить вес для диапазона на основе истории
+function getRangeWeight(range, history) {
+    const countInHistory = history.filter(val => getRange(val) === range).length;
+    // Чем меньше значений из этого диапазона в истории, тем выше вес
+    return Math.max(1, MAX_HISTORY - countInHistory);
+}
+
+// Основная функция получения значения с умным распределением
+function getSmartValue(history) {
+    // Определяем веса для каждого диапазона
+    const weights = {
+        LOW: getRangeWeight('LOW', history),
+        MEDIUM: getRangeWeight('MEDIUM', history),
+        HIGH: getRangeWeight('HIGH', history)
+    };
+    
+    // Если все диапазоны имеют одинаковый вес или история пуста,
+    // используем случайное распределение с небольшим смещением
+    const totalWeight = weights.LOW + weights.MEDIUM + weights.HIGH;
+    let random = Math.random() * totalWeight;
+    
+    let selectedRange;
+    if (random < weights.LOW) {
+        selectedRange = 'LOW';
+    } else if (random < weights.LOW + weights.MEDIUM) {
+        selectedRange = 'MEDIUM';
+    } else {
+        selectedRange = 'HIGH';
+    }
+    
+    // Получаем значение в выбранном диапазоне
+    let value = getRandomInRange(RANGES[selectedRange]);
+    
+    // Дополнительная проверка: если значение слишком часто встречается,
+    // пробуем взять другое из того же диапазона
+    let attempts = 0;
+    while (history.filter(v => v === value).length >= 2 && attempts < 10) {
+        value = getRandomInRange(RANGES[selectedRange]);
+        attempts++;
+    }
+    
+    return value;
+}
+
+// Функция для получения значения износа шин
+function getRandomTiresValue() {
+    const value = getSmartValue(lastTiresValues);
+    lastTiresValues.push(value);
+    if (lastTiresValues.length > MAX_HISTORY) {
+        lastTiresValues.shift();
+    }
+    return `X${value}`;
+}
+
+// Функция для получения значения расхода топлива
+function getRandomFuelValue() {
+    const value = getSmartValue(lastFuelValues);
+    lastFuelValues.push(value);
+    if (lastFuelValues.length > MAX_HISTORY) {
+        lastFuelValues.shift();
+    }
+    return `X${value}`;
+}
+
+// Старая функция оставляем для совместимости, но перенаправляем на новые
+function getRandomXValue() {
+    // Эта функция больше не используется напрямую
+    return `X${Math.floor(Math.random() * 20) + 1}`;
+}   
 function getRandomLaps() { return Math.floor(Math.random() * 23) + 3; }
 
 function getTrackIcon(trackName) {
@@ -2225,9 +2327,9 @@ async function generateAndSave() {
         }
         await sleep(200);
         
-        // 6. ИЗНОС ШИН
+     // 6. ИЗНОС ШИН
         if (shouldChangeTires) {
-            newCombo.tires_value = getRandomXValue();
+            newCombo.tires_value = getRandomTiresValue();  // <-- ЗАМЕНЕНО
         } else {
             const currentTiresText = document.getElementById('tiresValue').innerText;
             if (currentTiresText && currentTiresText !== '') {
@@ -2241,7 +2343,7 @@ async function generateAndSave() {
         
         // 7. РАСХОД ТОПЛИВА
         if (shouldChangeFuel) {
-            newCombo.fuel_value = getRandomXValue();
+            newCombo.fuel_value = getRandomFuelValue();  // <-- ЗАМЕНЕНО
         } else {
             const currentFuelText = document.getElementById('fuelValue').innerText;
             if (currentFuelText && currentFuelText !== '') {
@@ -2289,7 +2391,6 @@ async function generateAndSave() {
     }, 1000);
 }
 
-// Функция для отображения статуса генерации
 // Функция для отображения статуса генерации
 function showGenerationStatus(hasAnyLock) {
     const statusDiv = document.getElementById('status');
