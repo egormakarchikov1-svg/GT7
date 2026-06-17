@@ -1478,6 +1478,122 @@
 
 <script>
 // ============================================
+// ===== НОВЫЙ БЛОК: СТАТИСТИКА ТРАСС =====
+// ============================================
+
+// Переменные для статистики трасс
+let trackUsageCount = {};
+let trackLastUsed = {};
+
+// Настройки алгоритма
+const TRACK_ALGORITHM_CONFIG = {
+    forgetFactor: 3,
+    resetPeriodDays: 30,
+    randomMix: 0.2
+};
+
+// Сохранить статистику трасс
+function saveTrackStats() {
+    try {
+        const stats = {
+            usage: trackUsageCount,
+            lastUsed: trackLastUsed,
+            savedAt: Date.now()
+        };
+        localStorage.setItem('gt7_user_track_stats', JSON.stringify(stats));
+    } catch (e) {
+        console.warn('Не удалось сохранить статистику трасс:', e);
+    }
+}
+
+// Загрузить статистику трасс
+function loadTrackStats() {
+    try {
+        const saved = localStorage.getItem('gt7_user_track_stats');
+        if (saved) {
+            const stats = JSON.parse(saved);
+            const daysPassed = (Date.now() - stats.savedAt) / (1000 * 60 * 60 * 24);
+            
+            if (daysPassed < TRACK_ALGORITHM_CONFIG.resetPeriodDays) {
+                trackUsageCount = stats.usage || {};
+                trackLastUsed = stats.lastUsed || {};
+                console.log('✅ Загружена статистика трасс пользователя:', Object.keys(trackUsageCount).length, 'трасс');
+                return true;
+            } else {
+                console.log('🔄 Статистика трасс устарела. Сбрасываем.');
+                resetTrackStats();
+                return false;
+            }
+        }
+        return false;
+    } catch (e) {
+        console.warn('Не удалось загрузить статистику трасс:', e);
+        resetTrackStats();
+        return false;
+    }
+}
+
+// Сброс статистики трасс
+function resetTrackStats() {
+    trackUsageCount = {};
+    trackLastUsed = {};
+    saveTrackStats();
+    console.log('🗑️ Статистика трасс сброшена');
+}
+
+// Получить вес трассы
+function getTrackWeight(trackName) {
+    const usage = trackUsageCount[trackName] || 0;
+    const baseWeight = 100 / (usage + 1);
+    
+    const lastUsed = trackLastUsed[trackName] || 0;
+    const hoursSinceLastUse = (Date.now() - lastUsed) / (1000 * 60 * 60);
+    const timeBonus = Math.min(1, hoursSinceLastUse / 24);
+    
+    return baseWeight * (0.5 + 0.5 * timeBonus);
+}
+
+// Получить трассу с учётом статистики
+function getRandomTrackSmart() {
+    let availableTracks = [...tracksData];
+    
+    // Исключаем последние 2 трассы
+    const lastTwoTracks = Object.keys(trackLastUsed)
+        .sort((a, b) => trackLastUsed[b] - trackLastUsed[a])
+        .slice(0, 2);
+    
+    if (lastTwoTracks.length > 0 && availableTracks.length > 3) {
+        const filtered = availableTracks.filter(t => !lastTwoTracks.includes(t.name));
+        if (filtered.length > 0) {
+            availableTracks = filtered;
+        }
+    }
+    
+    const weightedTracks = availableTracks.map(track => {
+        const weight = getTrackWeight(track.name);
+        return { ...track, weight };
+    });
+    
+    const mix = TRACK_ALGORITHM_CONFIG.randomMix;
+    let random = Math.random();
+    
+    if (random < mix) {
+        return getRandomItem(availableTracks);
+    }
+    
+    const totalWeight = weightedTracks.reduce((sum, t) => sum + t.weight, 0);
+    random = Math.random() * totalWeight;
+    for (const track of weightedTracks) {
+        random -= track.weight;
+        if (random <= 0) {
+            return track;
+        }
+    }
+    
+    return weightedTracks[0] || getRandomItem(availableTracks);
+}
+
+// ============================================
 // УПРАВЛЕНИЕ ЭКРАНАМИ И ЗАГРУЗКА АДМИНОВ
 // ============================================
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxy_fBTaLlQaf56WlME5e0cbk2RlwPUoV8ZMOuZLYl2YskrgyPFDGZXZxLWXafUBBq0Cg/exec';
@@ -1508,14 +1624,6 @@ function updateModeIndicator(mode, adminName = null) {
     }
 }
 
-// Вызывайте эту функцию при входе в админку или запуске локальной гонки
-// Например, внутри showMainApp:
-//   if (userSyncEnabled && currentAdminId) {
-//       updateModeIndicator('admin', currentAdminName);
-//   } else {
-//       updateModeIndicator('local');
-//   }
-    
     
     // Загрузка админов из Google Sheets (JSONP) - ТОЛЬКО ОДИН РАЗ
 async function loadAdminsFromGoogle() {
@@ -1875,7 +1983,8 @@ function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]
 function getRandomXValue() { return `X${Math.floor(Math.random() * 20) + 1}`; }
 
 function getTrackIcon(trackName) {
-    return 'https://cdn-icons-png.flaticon.com/512/1998/1998626.png';
+    // Если у вас есть реальные иконки - используйте их
+    return 'track_icons/placeholder.png';
 }
 
 function showStatusMessage(message, type) {
@@ -2823,12 +2932,33 @@ function getRandomCarWithoutRepeat() {
 function resetCarsHistory() { shownCars = []; saveShownCars(); alert('✅ История машин сброшена!'); }
 
 // ============================================
-// ЛОКАЛЬНАЯ ГЕНЕРАЦИЯ
+// ===== ОБНОВЛЁННАЯ ФУНКЦИЯ updateTrack =====
 // ============================================
+
 function getRandomLaps(trackLength) { return Math.floor(Math.random() * 15) + 5; }
 
 function updateCar() { if (!locks.car) { const c = getRandomCarWithoutRepeat(); document.getElementById('carValue').innerText = c.name; document.getElementById('carIcon').src = c.icon; document.getElementById('carIcon').style.display = 'block'; displaySimilarCars(c); } }
-function updateTrack() { if (!locks.track) { const t = getRandomItem(tracksData); currentTrack = t.name; document.getElementById('trackValue').innerHTML = `${t.name} <span class="laps-badge">${getRandomLaps(t.length)} кругов</span>`; document.getElementById('trackIcon').src = getTrackIcon(t.name); document.getElementById('trackIcon').style.display = 'block'; if (!locks.weather) updateWeatherByTrack(t); if (!locks.time) updateTimeByTrack(t); } }
+
+function updateTrack() { 
+    if (!locks.track) { 
+        const t = getRandomTrackSmart();
+        currentTrack = t.name;
+        
+        // Обновляем статистику
+        trackUsageCount[t.name] = (trackUsageCount[t.name] || 0) + 1;
+        trackLastUsed[t.name] = Date.now();
+        saveTrackStats();
+        
+        document.getElementById('trackValue').innerHTML = `${t.name} <span class="laps-badge">${getRandomLaps(t.length)} кругов</span>`;
+        document.getElementById('trackIcon').src = getTrackIcon(t.name);
+        document.getElementById('trackIcon').style.display = 'block';
+        if (!locks.weather) updateWeatherByTrack(t);
+        if (!locks.time) updateTimeByTrack(t);
+        
+        console.log(`🏁 Выбрана трасса: ${t.name} (использована ${trackUsageCount[t.name] || 0} раз)`);
+    }
+}
+
 function updateWeatherByTrack(track) { if (locks.weather) return; let avail = weathers; if (track.weather && track.weather[0] === 'dry') avail = weathers.filter(w => !w.name.includes('дождь') && !w.name.includes('Дождь')); const w = getRandomItem(avail); document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`; }
 function updateTimeByTrack(track) { if (locks.time) return; let avail = times; if (track.times && track.times.length) avail = times.filter(t => track.times.includes(t.name)); const tm = getRandomItem(avail); document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${getRandomXValue()}</span>`; }
 function updateWeather() { if (!locks.weather) { const w = getRandomItem(weathers); document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`; } }
@@ -4295,6 +4425,9 @@ function init() {
     if (isInitialized) return;
     isInitialized = true;
     
+    // Загружаем статистику трасс
+    loadTrackStats();
+    
     loadLocksFromStorage();
     console.log('🚀 Инициализация приложения');
     loadShownCars();
@@ -4362,8 +4495,8 @@ function init() {
     loadUserAdmins();
     
     // 👇 ДОБАВЬТЕ ЭТОТ НОВЫЙ setInterval 👇
-// Фоновое обновление календаря каждые 10 секунд
-setInterval(async () => {
+    // Фоновое обновление календаря каждые 10 секунд
+    setInterval(async () => {
         if (currentAdminId && currentRegistrationRaceId && document.getElementById('registrationBlock')?.style.display === 'block') {
             await checkForNewParticipants();
         }
