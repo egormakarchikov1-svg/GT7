@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -797,9 +797,7 @@ function getRandomTrackSmart() {
     return weightedTracks[0] || getRandomItem(availableTracks);
 }
 
-    // ЗАПОМИНАНИЕ ПОСЛЕДНЕГО КЛАССА
-// ============================================
-let lastCategory = null;
+  let lastCategories = []; // Хранит последние 3 класса
 
 // ============================================
 // МОДИФИЦИРОВАННАЯ ФУНКЦИЯ ПОЛУЧЕНИЯ МАШИНЫ ДЛЯ ГРУППОВОГО РЕЖИМА
@@ -828,12 +826,26 @@ function getRandomCarForGroupMode() {
         carsByCategory[car.category].push(car);
     });
     
-    // Получаем список доступных классов (исключая последний использованный)
-    let availableCategories = Object.keys(carsByCategory);
+    // Получаем список всех доступных классов
+    let allCategories = Object.keys(carsByCategory);
     
-    // Если есть последний класс - исключаем его
-    if (lastCategory && availableCategories.length > 1) {
-        availableCategories = availableCategories.filter(cat => cat !== lastCategory);
+    // Исключаем последние 3 использованных класса
+    let availableCategories = allCategories.filter(cat => !lastCategories.includes(cat));
+    
+    // Если осталось слишком мало классов (0 или 1), разрешаем использовать все
+    if (availableCategories.length < 2) {
+        availableCategories = allCategories;
+    }
+    
+    // Если доступных классов всё ещё больше 1, но в lastCategories есть все,
+    // исключаем только самый последний класс
+    if (availableCategories.length === allCategories.length && lastCategories.length > 0) {
+        // Убираем только последний использованный класс
+        availableCategories = allCategories.filter(cat => cat !== lastCategories[lastCategories.length - 1]);
+        // Если после этого остался 1 класс или 0, берём все
+        if (availableCategories.length < 2) {
+            availableCategories = allCategories;
+        }
     }
     
     // Выбираем случайный класс из доступных
@@ -842,10 +854,14 @@ function getRandomCarForGroupMode() {
     // Выбираем случайную машину из выбранного класса
     const selectedCar = getRandomItem(carsByCategory[selectedCategory]);
     
-    // Запоминаем выбранный класс для следующего раза
-    lastCategory = selectedCategory;
+    // Запоминаем выбранный класс (храним последние 3)
+    lastCategories.push(selectedCategory);
+    if (lastCategories.length > 3) {
+        lastCategories.shift(); // Удаляем самый старый
+    }
     
     console.log(`🏁 Выбран класс: ${selectedCategory}, машина: ${selectedCar.name}`);
+    console.log(`📋 История классов: ${lastCategories.join(' → ')}`);
     
     return selectedCar;
 }
@@ -868,18 +884,18 @@ getRandomCarWithoutRepeat = function() {
 };
 
 // ============================================
-// ДОПОЛНИТЕЛЬНО: СБРОС ПОСЛЕДНЕГО КЛАССА
+// ДОПОЛНИТЕЛЬНО: СБРОС ПОСЛЕДНИХ КЛАССОВ
 // ============================================
-function resetLastCategory() {
-    lastCategory = null;
-    console.log('🔄 Сброс последнего класса');
+function resetLastCategories() {
+    lastCategories = [];
+    console.log('🔄 Сброс истории классов');
 }
 
 // Вызываем сброс при переключении режимов
 const originalSetDisplayMode = setDisplayMode;
 setDisplayMode = function(mode) {
     originalSetDisplayMode(mode);
-    resetLastCategory(); // Сбрасываем при смене режима
+    resetLastCategories(); // Сбрасываем при смене режима
 };
 
 // ============================================
