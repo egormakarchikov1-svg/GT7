@@ -652,6 +652,7 @@
         <!-- Кнопки управления -->
         <div class="button-group">
             <button id="generateBtn" class="btn-main">🎲 СЛУЧАЙНАЯ ГОНКА</button>
+            <button id="resetTrackStatsBtn" class="btn-similar" style="background: #f59e0b;">🔄 СБРОСИТЬ СТАТИСТИКУ ТРАСС</button>
         </div>
 
         <!-- Прогресс-бар -->
@@ -672,6 +673,131 @@
 
 <script>
 // ============================================
+// ===== НОВЫЙ БЛОК: СТАТИСТИКА ТРАСС =====
+// ============================================
+
+// Переменные для статистики трасс
+let trackUsageCount = {};
+let trackLastUsed = {};
+
+// Настройки алгоритма
+const TRACK_ALGORITHM_CONFIG = {
+    forgetFactor: 3,
+    resetPeriodDays: 30,
+    randomMix: 0.2
+};
+
+// Сохранить статистику трасс
+function saveTrackStats() {
+    try {
+        const stats = {
+            usage: trackUsageCount,
+            lastUsed: trackLastUsed,
+            savedAt: Date.now()
+        };
+        localStorage.setItem('gt7_admin_track_stats', JSON.stringify(stats));
+    } catch (e) {
+        console.warn('Не удалось сохранить статистику трасс:', e);
+    }
+}
+
+// Загрузить статистику трасс
+function loadTrackStats() {
+    try {
+        const saved = localStorage.getItem('gt7_admin_track_stats');
+        if (saved) {
+            const stats = JSON.parse(saved);
+            const daysPassed = (Date.now() - stats.savedAt) / (1000 * 60 * 60 * 24);
+            
+            if (daysPassed < TRACK_ALGORITHM_CONFIG.resetPeriodDays) {
+                trackUsageCount = stats.usage || {};
+                trackLastUsed = stats.lastUsed || {};
+                console.log('✅ Загружена статистика трасс админа:', Object.keys(trackUsageCount).length, 'трасс');
+                return true;
+            } else {
+                console.log('🔄 Статистика трасс устарела. Сбрасываем.');
+                resetTrackStats();
+                return false;
+            }
+        }
+        return false;
+    } catch (e) {
+        console.warn('Не удалось загрузить статистику трасс:', e);
+        resetTrackStats();
+        return false;
+    }
+}
+
+// Сброс статистики трасс
+function resetTrackStats() {
+    trackUsageCount = {};
+    trackLastUsed = {};
+    saveTrackStats();
+    console.log('🗑️ Статистика трасс сброшена');
+    
+    // Обновляем интерфейс
+    const statusDiv = document.getElementById('status');
+    if (statusDiv) {
+        statusDiv.innerHTML = '✅ Статистика трасс сброшена!';
+        statusDiv.className = 'status success';
+        statusDiv.style.display = 'block';
+        setTimeout(() => { statusDiv.style.display = 'none'; }, 3000);
+    }
+}
+
+// Получить вес трассы
+function getTrackWeight(trackName) {
+    const usage = trackUsageCount[trackName] || 0;
+    const baseWeight = 100 / (usage + 1);
+    
+    const lastUsed = trackLastUsed[trackName] || 0;
+    const hoursSinceLastUse = (Date.now() - lastUsed) / (1000 * 60 * 60);
+    const timeBonus = Math.min(1, hoursSinceLastUse / 24);
+    
+    return baseWeight * (0.5 + 0.5 * timeBonus);
+}
+
+// Получить трассу с учётом статистики
+function getRandomTrackSmart() {
+    let availableTracks = [...tracksData];
+    
+    // Исключаем последние 2 трассы
+    const lastTwoTracks = Object.keys(trackLastUsed)
+        .sort((a, b) => trackLastUsed[b] - trackLastUsed[a])
+        .slice(0, 2);
+    
+    if (lastTwoTracks.length > 0 && availableTracks.length > 3) {
+        const filtered = availableTracks.filter(t => !lastTwoTracks.includes(t.name));
+        if (filtered.length > 0) {
+            availableTracks = filtered;
+        }
+    }
+    
+    const weightedTracks = availableTracks.map(track => {
+        const weight = getTrackWeight(track.name);
+        return { ...track, weight };
+    });
+    
+    const mix = TRACK_ALGORITHM_CONFIG.randomMix;
+    let random = Math.random();
+    
+    if (random < mix) {
+        return getRandomItem(availableTracks);
+    }
+    
+    const totalWeight = weightedTracks.reduce((sum, t) => sum + t.weight, 0);
+    random = Math.random() * totalWeight;
+    for (const track of weightedTracks) {
+        random -= track.weight;
+        if (random <= 0) {
+            return track;
+        }
+    }
+    
+    return weightedTracks[0] || getRandomItem(availableTracks);
+}
+
+// ============================================
 // КОНСТАНТЫ И ПЕРЕМЕННЫЕ
 // ============================================
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxy_fBTaLlQaf56WlME5e0cbk2RlwPUoV8ZMOuZLYl2YskrgyPFDGZXZxLWXafUBBq0Cg/exec';
@@ -684,7 +810,7 @@ const CLASS_MAX_SPEED = {
     'Gr.2': 295,
     'Gr.3': 280,
     'Gr.4': 249,
-     'Super Formula': 298  // ← ДЛЯ РАЛЛИЙНЫХ АВТО
+     'Super Formula': 298
 };
 
 // Состояние блокировок
@@ -1633,24 +1759,21 @@ function setDisplayMode(mode) {
         modeText.style.color = '#8b5cf6';
     }
     
-    updateVisibilityByDisplayMode(mode);  // ← вызываем здесь
+    updateVisibilityByDisplayMode(mode);
 }
 
-
-    // ✅ ДОБАВЬ ЭТУ ФУНКЦИЮ СЮДА
 function updateVisibilityByDisplayMode(displayMode) {
     const carBlock = document.getElementById('carBlock');
     const similarBlock = document.getElementById('similarContainer');
     const groupMsg = document.getElementById('groupModeMessage');
     const trackBlock = document.getElementById('trackBlock');
-    const categoryBlock = document.getElementById('categoryContainer'); // ← ДОБАВИТЬ
+    const categoryBlock = document.getElementById('categoryContainer');
     const paramsGrid = document.querySelector('.params-grid');
     
     if (displayMode === 'group_only') {
-        // ГРУППОВОЙ РЕЖИМ: скрываем машину и похожие авто, показываем категорию
         if (carBlock) carBlock.classList.add('hidden-block');
         if (similarBlock) similarBlock.classList.add('hidden-block');
-        if (categoryBlock) categoryBlock.classList.remove('hidden-block'); // ← ПОКАЗАТЬ
+        if (categoryBlock) categoryBlock.classList.remove('hidden-block');
         if (groupMsg) groupMsg.style.display = 'block';
         if (trackBlock) trackBlock.classList.add('track-centered');
         if (paramsGrid) { 
@@ -1658,10 +1781,9 @@ function updateVisibilityByDisplayMode(displayMode) {
             paramsGrid.style.justifyContent = 'center'; 
         }
     } else {
-        // ОБЫЧНЫЙ РЕЖИМ: показываем всё, скрываем категорию
         if (carBlock) carBlock.classList.remove('hidden-block');
         if (similarBlock) similarBlock.classList.remove('hidden-block');
-        if (categoryBlock) categoryBlock.classList.add('hidden-block'); // ← СКРЫТЬ
+        if (categoryBlock) categoryBlock.classList.add('hidden-block');
         if (groupMsg) groupMsg.style.display = 'none';
         if (trackBlock) trackBlock.classList.remove('track-centered');
         if (paramsGrid) { 
@@ -1720,7 +1842,6 @@ function updateProgressBar(percent, stepText) {
 async function loadCurrentCombo() {
     if (!currentAdmin) return;
     try {
-        // Загружаем данные из листа с именем = currentAdmin.id
         const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_ID}/gviz/tq?sheet=${currentAdmin.id}&tqx=out:json`;
         const response = await fetch(url);
         const text = await response.text();
@@ -1776,6 +1897,29 @@ async function loadCurrentCombo() {
 }
 
 // ============================================
+// ===== ОБНОВЛЁННАЯ ФУНКЦИЯ updateTrack =====
+// ============================================
+function updateTrack() { 
+    if (!locks.track) { 
+        const t = getRandomTrackSmart();
+        currentTrack = t.name;
+        
+        // Обновляем статистику
+        trackUsageCount[t.name] = (trackUsageCount[t.name] || 0) + 1;
+        trackLastUsed[t.name] = Date.now();
+        saveTrackStats();
+        
+        document.getElementById('trackValue').innerHTML = `${t.name} <span class="time-x-badge">${declensionLaps(getRandomLaps())}</span>`;
+        const trackIconUrl = getTrackIcon(t.name);
+        displayTrackIcon(trackIconUrl);
+        if (!locks.weather) updateWeatherByTrack(t);
+        if (!locks.time) updateTimeByTrack(t);
+        
+        console.log(`🏁 Админ: выбрана трасса ${t.name} (использована ${trackUsageCount[t.name] || 0} раз)`);
+    }
+}
+
+// ============================================
 // ГЕНЕРАЦИЯ И СОХРАНЕНИЕ
 // ============================================
 async function generateAndSave() {
@@ -1826,9 +1970,14 @@ async function generateAndSave() {
         updateProgressBar(45, '🏆 Класс определён');
         await sleep(200);
         
-                if (!locks.track) {
-            selectedTrack = getRandomTrackWithoutRepeat();
+        if (!locks.track) {
+            selectedTrack = getRandomTrackSmart();
             newCombo.track_name = selectedTrack.name;
+            
+            // Обновляем статистику
+            trackUsageCount[selectedTrack.name] = (trackUsageCount[selectedTrack.name] || 0) + 1;
+            trackLastUsed[selectedTrack.name] = Date.now();
+            saveTrackStats();
             
             const optimalLaps = calculateOptimalLaps(selectedTrack.length, newCombo.category_name);
             newCombo.laps = optimalLaps;
@@ -1838,14 +1987,12 @@ async function generateAndSave() {
             updateProgressBar(60, '🛣️ Готово');
         } else {
             updateProgressBar(60, '🔒 Трасса заблокирована');
-            // Если трасса заблокирована, берем текущую из отображения
             const currentTrackText = document.getElementById('trackValue').innerHTML;
             let currentTrackName = currentTrackText.split('<span')[0].trim();
             if (currentTrackName && currentTrackName !== '—') {
                 selectedTrack = tracksData.find(t => t.name === currentTrackName);
                 if (selectedTrack) {
                     newCombo.track_name = selectedTrack.name;
-                    // Сохраняем существующие круги или вычисляем новые
                     const lapsMatch = currentTrackText.match(/<span[^>]*>([^<]+)<\/span>/);
                     if (lapsMatch && lapsMatch[1]) {
                         const lapsNumber = parseInt(lapsMatch[1].match(/\d+/)[0]);
@@ -1857,7 +2004,6 @@ async function generateAndSave() {
             }
         }
         await sleep(200);
-        
         
         if (!locks.weather) {
             let currentTrack = selectedTrack || tracksData.find(t => t.name === newCombo.track_name);
@@ -1921,7 +2067,6 @@ async function generateAndSave() {
             displayCarIcon(selectedCar.icon);
         }
         
-                // Исправлено: проверяем что track_name существует
         if (newCombo.track_name && newCombo.track_name !== 'undefined') {
             const lapsToShow = newCombo.laps || (selectedTrack?.length ? calculateOptimalLaps(selectedTrack.length, newCombo.category_name) : getRandomLaps());
             document.getElementById('trackValue').innerHTML = `${newCombo.track_name} <span class="time-x-badge">${declensionLaps(lapsToShow)}</span>`;
@@ -1954,7 +2099,6 @@ async function generateAndSave() {
         updateProgressBar(99, '📤 Сохранение комбинации...');
         await sleep(150);
         
-        // ✅ JSONP для POST запроса
         await saveComboViaJSONP(newCombo);
         
         updateProgressBar(100, '✅ Готово!');
@@ -2016,7 +2160,8 @@ function saveComboViaJSONP(data) {
     });
 }
 
-    // ФУНКЦИИ ДЛЯ РАБОТЫ С ЛОКАЛЬНЫМ ХРАНИЛИЩЕМ
+// ============================================
+// ФУНКЦИИ ДЛЯ РАБОТЫ С ЛОКАЛЬНЫМ ХРАНИЛИЩЕМ
 // ============================================
 function saveLogin(adminId, adminName) {
     localStorage.setItem('gt7_admin_logged_in', 'true');
@@ -2048,16 +2193,13 @@ function logout() {
     document.getElementById('adminPassword').value = '';
     currentAdmin = null;
     
-    // Показываем форму входа, скрываем админку
     document.getElementById('loginSection').style.display = 'block';
     document.getElementById('adminContent').style.display = 'none';
     
-    // Очищаем статус
     const loginStatus = document.getElementById('loginStatus');
     loginStatus.style.display = 'none';
     loginStatus.textContent = '';
     
-    // Очищаем отображаемые данные
     document.getElementById('carValue').innerHTML = '—';
     document.getElementById('trackValue').innerHTML = '—';
     document.getElementById('categoryText').innerHTML = '—';
@@ -2115,12 +2257,13 @@ async function checkAdmin(adminId, password) {
         document.body.appendChild(script);
     });
 }
+
 // ============================================
 // КАЛЕНДАРЬ И РАСПИСАНИЕ
 // ============================================
 let scheduledRaces = [];
 let calendarExpanded = true;
-let raceFilter = 'all'; // 'all', 'active', 'inactive'
+let raceFilter = 'all';
 
 function toggleCalendar() {
     const calendarContent = document.getElementById('calendarContent');
@@ -2138,7 +2281,6 @@ function toggleCalendar() {
     }
 }
 
-// Загрузка запланированных гонок
 async function loadScheduledRaces() {
     if (!currentAdmin) return;
     
@@ -2177,7 +2319,6 @@ async function loadScheduledRaces() {
     }
 }
 
-// Применение фильтра к гонкам
 function applyRaceFilter() {
     let filteredRaces = [...scheduledRaces];
     
@@ -2190,7 +2331,6 @@ function applyRaceFilter() {
     displayScheduledRaces(filteredRaces);
 }
 
-// Отображение списка гонок
 function displayScheduledRaces(racesToShow = null) {
     const container = document.getElementById('scheduledRacesList');
     if (!container) return;
@@ -2211,7 +2351,7 @@ function displayScheduledRaces(racesToShow = null) {
     container.innerHTML = sorted.map(race => {
         const raceDate = new Date(race.datetime);
         const isUpcoming = raceDate > now;
-        const isActive = race.active !== false; // по умолчанию true
+        const isActive = race.active !== false;
         const isPassed = !isUpcoming;
         
         let dateClass = '';
@@ -2219,13 +2359,13 @@ function displayScheduledRaces(racesToShow = null) {
         
         if (!isActive) {
     dateClass = 'inactive-date';
-    statusBadge = '<span class="inactive-badge">⛔ НЕАКТИВНА</span>';  // ← текст
+    statusBadge = '<span class="inactive-badge">⛔ НЕАКТИВНА</span>';
 } else if (isUpcoming) {
     dateClass = 'upcoming-date';
-    statusBadge = '<span class="active-badge">✅ АКТИВНА</span>';      // ← текст
+    statusBadge = '<span class="active-badge">✅ АКТИВНА</span>';
 } else {
     dateClass = 'passed-date';
-    statusBadge = '<span class="inactive-badge">📅 ПРОШЛА</span>';      // ← текст
+    statusBadge = '<span class="inactive-badge">📅 ПРОШЛА</span>';
 }
         
         const dateStr = raceDate.toLocaleString('ru-RU', {
@@ -2247,7 +2387,7 @@ function displayScheduledRaces(racesToShow = null) {
         `<span>🚗 ${race.car_name || '—'}</span>`
     }
     <span>🛣️ ${race.track_name || '—'}</span>
-    <span>🌤️ ${race.weather_name || '—'}</span>  <!-- без обрезания -->
+    <span>🌤️ ${race.weather_name || '—'}</span>
     <span>⏰ ${race.time_name || '—'} ${race.time_multiplier ? race.time_multiplier : ''}</span>
     <span>⚙️ ${race.tires_value || 'X1'}</span>
     <span>⛽ ${race.fuel_value || 'X1'}</span>
@@ -2267,7 +2407,6 @@ function displayScheduledRaces(racesToShow = null) {
     }).join('');
 }
 
-// Переключение статуса гонки (активна/неактивна)
 async function toggleRaceStatus(raceId) {
     const race = scheduledRaces.find(r => r.id === raceId);
     if (!race) return;
@@ -2311,7 +2450,6 @@ async function toggleRaceStatus(raceId) {
     }
 }
 
-// Массовая активация всех гонок
 async function batchActivateRaces() {
     if (!confirm('Активировать ВСЕ гонки в расписании?')) return;
     
@@ -2349,7 +2487,6 @@ async function batchActivateRaces() {
     }
 }
 
-// Массовая деактивация всех гонок
 async function batchDeactivateRaces() {
     if (!confirm('ДЕАКТИВИРОВАТЬ ВСЕ гонки в расписании? Пользователи их не увидят.')) return;
     
@@ -2387,7 +2524,6 @@ async function batchDeactivateRaces() {
     }
 }
 
-// Удаление прошедших гонок
 async function deleteOldRaces() {
     const passedRaces = scheduledRaces.filter(race => {
         const raceDate = new Date(race.datetime);
@@ -2434,7 +2570,7 @@ async function deleteOldRaces() {
         console.error(e);
     }
 }
-// Функция для отображения статуса
+
 function showStatus(message, type) {
     const statusDiv = document.getElementById('status');
     if (statusDiv) {
@@ -2448,8 +2584,10 @@ function showStatus(message, type) {
         }, 3000);
     }
 }
-// Назначение новой гонки
-// Назначение новой гонки
+
+// ============================================
+// НАЗНАЧЕНИЕ НОВОЙ ГОНКИ
+// ============================================
 async function scheduleRace() {
     if (!currentAdmin) {
         showStatus('⛔ Сначала войдите в систему!', 'error');
@@ -2465,93 +2603,87 @@ async function scheduleRace() {
         return;
     }
     
-    // Получаем множитель времени
     const timeValueHtml = document.getElementById('timeValue').innerHTML;
     const timeMultiplierMatch = timeValueHtml.match(/<span[^>]*>([^<]+)<\/span>/);
     const timeMultiplier = timeMultiplierMatch ? timeMultiplierMatch[1] : 'X1';
     const timeName = timeValueHtml.split('<')[0].trim();
     
-    // ✅ ДОБАВЛЕНО: проверяем режим отображения
     const isGroupMode = displayMode === 'group_only';
     
-    
     const currentCombo = {
-    // ✅ В групповом режиме НЕ сохраняем машину
-    car_name: isGroupMode ? '' : document.getElementById('carValue').innerHTML.split('<')[0].trim(),
-    track_name: document.getElementById('trackValue').innerHTML.split('<')[0].trim(),
-    category_name: document.getElementById('categoryText').innerHTML.split('<')[0].trim(),
-    weather_name: document.getElementById('weatherValue').innerHTML.split('<')[0].trim(),
-    time_name: timeName,
-    time_multiplier: timeMultiplier,
-    tires_value: document.getElementById('tiresValue').innerText,
-    fuel_value: document.getElementById('fuelValue').innerText,
-    display_mode: displayMode,
-    laps: getCurrentLaps()
-};  // ← ТОЛЬКО ОДНА ЗАКРЫВАЮЩАЯ СКОБКА И ТОЧКА С ЗАПЯТОЙ!
-
-// Функция получения количества кругов
-function getCurrentLaps() {
-    const trackValue = document.getElementById('trackValue');
-    if (trackValue) {
-        const lapsSpan = trackValue.querySelector('.time-x-badge');
-        if (lapsSpan) {
-            const lapsText = lapsSpan.innerText;
-            const match = lapsText.match(/(\d+)/);
-            if (match) {
-                return parseInt(match[1], 10);
+        car_name: isGroupMode ? '' : document.getElementById('carValue').innerHTML.split('<')[0].trim(),
+        track_name: document.getElementById('trackValue').innerHTML.split('<')[0].trim(),
+        category_name: document.getElementById('categoryText').innerHTML.split('<')[0].trim(),
+        weather_name: document.getElementById('weatherValue').innerHTML.split('<')[0].trim(),
+        time_name: timeName,
+        time_multiplier: timeMultiplier,
+        tires_value: document.getElementById('tiresValue').innerText,
+        fuel_value: document.getElementById('fuelValue').innerText,
+        display_mode: displayMode,
+        laps: getCurrentLaps()
+    };
+    
+    function getCurrentLaps() {
+        const trackValue = document.getElementById('trackValue');
+        if (trackValue) {
+            const lapsSpan = trackValue.querySelector('.time-x-badge');
+            if (lapsSpan) {
+                const lapsText = lapsSpan.innerText;
+                const match = lapsText.match(/(\d+)/);
+                if (match) {
+                    return parseInt(match[1], 10);
+                }
             }
         }
+        return 5;
     }
-    return 5;
-}
-
-// ✅ В групповом режиме НЕ добавляем похожие авто
-if (!isGroupMode && currentRefCar) {
-    const similar = findSimilarCars(currentRefCar, 5, true);
-    for (let i = 0; i < similar.length; i++) {
-        currentCombo[`similar_car_${i+1}`] = similar[i].name;
+    
+    if (!isGroupMode && currentRefCar) {
+        const similar = findSimilarCars(currentRefCar, 5, true);
+        for (let i = 0; i < similar.length; i++) {
+            currentCombo[`similar_car_${i+1}`] = similar[i].name;
+        }
     }
-}
-
-const datetime = `${date}T${time}:00`;
-
-try {
-    const callbackName = 'jsonp_schedule_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
     
-    const params = new URLSearchParams();
-    params.append('action', 'scheduleRace');
-    params.append('adminId', currentAdmin.id);
-    params.append('datetime', datetime);
-    params.append('title', title || '');
-    params.append('combo', JSON.stringify(currentCombo));
-    params.append('callback', callbackName);
-    params.append('t', Date.now());
+    const datetime = `${date}T${time}:00`;
     
-    const url = `${APPS_SCRIPT_URL}?${params.toString()}`;
-    
-    const result = await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-            if (window[callbackName]) delete window[callbackName];
-            if (script && script.parentNode) document.body.removeChild(script);
-            reject(new Error('Таймаут'));
-        }, 10000);
+    try {
+        const callbackName = 'jsonp_schedule_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         
-        window[callbackName] = function(data) {
-            clearTimeout(timeout);
-            delete window[callbackName];
-            if (script && script.parentNode) document.body.removeChild(script);
-            resolve(data);
-        };
+        const params = new URLSearchParams();
+        params.append('action', 'scheduleRace');
+        params.append('adminId', currentAdmin.id);
+        params.append('datetime', datetime);
+        params.append('title', title || '');
+        params.append('combo', JSON.stringify(currentCombo));
+        params.append('callback', callbackName);
+        params.append('t', Date.now());
         
-        const script = document.createElement('script');
-        script.src = url;
-        script.onerror = () => {
-            clearTimeout(timeout);
-            if (window[callbackName]) delete window[callbackName];
-            reject(new Error('Ошибка соединения'));
-        };
-        document.body.appendChild(script);
-    });
+        const url = `${APPS_SCRIPT_URL}?${params.toString()}`;
+        
+        const result = await new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                if (window[callbackName]) delete window[callbackName];
+                if (script && script.parentNode) document.body.removeChild(script);
+                reject(new Error('Таймаут'));
+            }, 10000);
+            
+            window[callbackName] = function(data) {
+                clearTimeout(timeout);
+                delete window[callbackName];
+                if (script && script.parentNode) document.body.removeChild(script);
+                resolve(data);
+            };
+            
+            const script = document.createElement('script');
+            script.src = url;
+            script.onerror = () => {
+                clearTimeout(timeout);
+                if (window[callbackName]) delete window[callbackName];
+                reject(new Error('Ошибка соединения'));
+            };
+            document.body.appendChild(script);
+        });
         
         if (result.success) {
             showStatus('✅ Гонка успешно назначена!', 'success');
@@ -2568,7 +2700,6 @@ try {
     }
 }
 
-// Удаление гонки
 async function deleteRace(raceId) {
     if (!confirm('Вы уверены, что хотите удалить эту гонку?')) return;
     
@@ -2605,7 +2736,6 @@ async function deleteRace(raceId) {
     }
 }
 
-// Редактирование гонки
 async function editRace(raceId) {
     const race = scheduledRaces.find(r => r.id === raceId);
     if (!race) return;
@@ -2650,11 +2780,8 @@ async function editRace(raceId) {
     }
 }
 
-// Синхронизация конкретной гонки с пользователями
-// Синхронизация конкретной гонки с пользователями (переключатель)
 async function syncRaceToUsers(raceId) {
     try {
-        // Находим гонку в списке
         const race = scheduledRaces.find(r => r.id === raceId);
         if (!race) return;
         
@@ -2685,7 +2812,6 @@ async function syncRaceToUsers(raceId) {
         });
         
         if (result.success) {
-            // Обновляем статус в локальном массиве
             race.synced = result.synced;
             showStatus(`✅ Гонка ${result.synced ? 'синхронизирована' : 'десинхронизирована'}!`, 'success');
             await loadScheduledRaces();
@@ -2698,7 +2824,6 @@ async function syncRaceToUsers(raceId) {
     }
 }
 
-// Полная синхронизация всего календаря
 async function syncFullCalendar() {
     if (!confirm('Отправить всё расписание всем пользователям?')) return;
     
@@ -2733,11 +2858,9 @@ async function syncFullCalendar() {
         showStatus('❌ Ошибка при синхронизации', 'error');
     }
 }
+
 // ============================================
 // ОБРАБОТЧИКИ СОБЫТИЙ
-// ============================================
-// ============================================
-// РАСКРЫТИЕ БЛОКОВ
 // ============================================
 let carsTrackExpanded = true, categoryExpanded = true, settingsExpanded = true, similarExpanded = true;
 
@@ -2764,9 +2887,8 @@ function toggleSimilar() {
     document.getElementById('similarContent').classList.toggle('collapsed', !similarExpanded); 
     document.getElementById('similarToggleIcon').innerHTML = similarExpanded ? '▼' : '▶'; 
 }
-    
-    
-    document.getElementById('loginBtn').addEventListener('click', async () => {
+
+document.getElementById('loginBtn').addEventListener('click', async () => {
     const adminId = document.getElementById('adminId').value.trim();
     const password = document.getElementById('adminPassword').value;
     const loginStatus = document.getElementById('loginStatus');
@@ -2798,17 +2920,17 @@ function toggleSimilar() {
 // ============================================
 // ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ
 // ============================================
-// Проверяем, есть ли сохранённый вход
+
+// Загружаем статистику трасс при запуске
+loadTrackStats();
+
 if (checkSavedLogin()) {
-    // Если есть - показываем админку
     showAdminInterface();
 } else {
-    // Если нет - показываем форму входа, скрываем админку
     document.getElementById('loginSection').style.display = 'block';
     document.getElementById('adminContent').style.display = 'none';
 }
 
-// Остальные инициализации (раскрытие блоков, кнопки и т.д.)
 document.getElementById('carsTrackHeader').addEventListener('click', toggleCarsTrack);
 document.getElementById('categoryHeader').addEventListener('click', toggleCategory);
 document.getElementById('settingsHeader').addEventListener('click', toggleSettings);
@@ -2819,6 +2941,14 @@ document.getElementById('modeGroupOnlyBtn').addEventListener('click', () => setD
 document.getElementById('refreshSimilarBtn').addEventListener('click', refreshSimilarCars);
 document.getElementById('resetCarsBtn').addEventListener('click', () => { shownCars = []; alert('✅ История машин сброшена!'); });
 
+// Кнопка сброса статистики трасс
+document.getElementById('resetTrackStatsBtn').addEventListener('click', () => {
+    if (confirm('Сбросить статистику трасс? Это позволит всем трассам снова иметь равные шансы.')) {
+        resetTrackStats();
+        showStatus('✅ Статистика трасс сброшена!', 'success');
+    }
+});
+
 document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
     btn.addEventListener('click', (e) => { e.stopPropagation(); toggleLock(btn.getAttribute('data-param')); });
 });
@@ -2828,25 +2958,21 @@ window.selectCar = selectCar;
 // ============================================
 // ОБРАБОТЧИКИ КАЛЕНДАРЯ
 // ============================================
-// Раскрытие/скрытие календаря
 const calendarHeader = document.getElementById('calendarHeader');
 if (calendarHeader) {
     calendarHeader.addEventListener('click', toggleCalendar);
 }
 
-// Назначение гонки
 const scheduleRaceBtn = document.getElementById('scheduleRaceBtn');
 if (scheduleRaceBtn) {
     scheduleRaceBtn.addEventListener('click', scheduleRace);
 }
 
-// Полная синхронизация
 const syncCalendarBtn = document.getElementById('syncCalendarBtn');
 if (syncCalendarBtn) {
     syncCalendarBtn.addEventListener('click', syncFullCalendar);
 }
 
-// Фильтры
 const showAllRacesBtn = document.getElementById('showAllRacesBtn');
 if (showAllRacesBtn) {
     showAllRacesBtn.addEventListener('click', () => {
@@ -2877,7 +3003,6 @@ if (showInactiveRacesBtn) {
     });
 }
 
-// Массовые операции
 const batchActivateBtn = document.getElementById('batchActivateBtn');
 if (batchActivateBtn) {
     batchActivateBtn.addEventListener('click', batchActivateRaces);
@@ -2891,7 +3016,7 @@ if (batchDeactivateBtn) {
 const deleteOldRacesBtn = document.getElementById('deleteOldRacesBtn');
 if (deleteOldRacesBtn) {
     deleteOldRacesBtn.addEventListener('click', deleteOldRaces);
-}    
+}
 </script>
 </body>
 </html>
