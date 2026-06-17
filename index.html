@@ -3092,14 +3092,30 @@ function generateLocalRace() {
     
     updateVisibilityByDisplayMode(displayMode);
     
-    if (!locks.car) updateCar();
-    if (!locks.track) updateTrack();
-    if (!locks.weather) updateWeather();
-    if (!locks.time) updateTime();
-    if (!locks.tires) updateTires();
-    if (!locks.fuel) updateFuel();
-    if (!locks.category) updateCategory();
+    // ===== НОВАЯ ЛОГИКА ЗАМКОВ =====
+    // Проверяем, есть ли хоть один заблокированный параметр
+    const hasAnyLock = locks.car || locks.track || locks.category || locks.weather || locks.time || locks.tires || locks.fuel;
     
+    // Если есть хоть один замок - меняем ТОЛЬКО заблокированные параметры
+    // Если замков нет - меняем ВСЕ параметры
+    const shouldChangeCar = hasAnyLock ? locks.car : true;
+    const shouldChangeTrack = hasAnyLock ? locks.track : true;
+    const shouldChangeCategory = hasAnyLock ? locks.category : true;
+    const shouldChangeWeather = hasAnyLock ? locks.weather : true;
+    const shouldChangeTime = hasAnyLock ? locks.time : true;
+    const shouldChangeTires = hasAnyLock ? locks.tires : true;
+    const shouldChangeFuel = hasAnyLock ? locks.fuel : true;
+    
+    // Применяем изменения только для нужных параметров
+    if (shouldChangeCar) updateCar();
+    if (shouldChangeTrack) updateTrack();
+    if (shouldChangeCategory) updateCategory();
+    if (shouldChangeWeather) updateWeather();
+    if (shouldChangeTime) updateTime();
+    if (shouldChangeTires) updateTires();
+    if (shouldChangeFuel) updateFuel();
+    
+    // Обновляем кнопки-замки
     document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
         const param = btn.getAttribute('data-param');
         if (locks[param]) {
@@ -3112,6 +3128,36 @@ function generateLocalRace() {
     });
     
     saveLocksToStorage();
+    
+    // Показываем статус генерации
+    if (!hasAnyLock) {
+        showStatusMessage('🎲 Сгенерированы ВСЕ новые параметры! (все замки открыты)', 'success');
+    } else {
+        const changedParams = [];
+        const paramNames = {
+            car: 'Машина',
+            track: 'Трасса',
+            category: 'Класс',
+            weather: 'Погода',
+            time: 'Время',
+            tires: 'Износ шин',
+            fuel: 'Расход топлива'
+        };
+        
+        if (locks.car) changedParams.push(paramNames.car);
+        if (locks.track) changedParams.push(paramNames.track);
+        if (locks.category) changedParams.push(paramNames.category);
+        if (locks.weather) changedParams.push(paramNames.weather);
+        if (locks.time) changedParams.push(paramNames.time);
+        if (locks.tires) changedParams.push(paramNames.tires);
+        if (locks.fuel) changedParams.push(paramNames.fuel);
+        
+        if (changedParams.length > 0) {
+            showStatusMessage(`🔄 Обновлены параметры: ${changedParams.join(', ')} (остальные зафиксированы)`, 'info');
+        } else {
+            showStatusMessage('🔒 Все параметры зафиксированы (ничего не изменилось)', 'warning');
+        }
+    }
 }
     // ===== КОНЕЦ ДОБАВЛЕННОГО БЛОКА =====
 // ============================================
@@ -3508,6 +3554,33 @@ function toggleLock(param) {
     
     // Сохраняем состояние блокировок в localStorage
     saveLocksToStorage();
+    
+    // Проверяем, сколько замков закрыто
+    const lockedCount = Object.values(locks).filter(v => v === true).length;
+    const totalParams = Object.keys(locks).length;
+    
+    const paramNames = {
+        car: 'Машина',
+        track: 'Трасса',
+        category: 'Класс',
+        weather: 'Погода',
+        time: 'Время',
+        tires: 'Износ шин',
+        fuel: 'Расход топлива'
+    };
+    
+    let message = '';
+    if (lockedCount === 0) {
+        message = '🔓 ВСЕ ЗАМКИ ОТКРЫТЫ - при генерации будут меняться ВСЕ параметры';
+    } else if (lockedCount === totalParams) {
+        message = '🔒 ВСЕ ЗАМКИ ЗАКРЫТЫ - при генерации будут меняться ВСЕ параметры';
+    } else {
+        const lockedNames = Object.keys(locks).filter(k => locks[k]).map(k => paramNames[k] || k);
+        const unlockedNames = Object.keys(locks).filter(k => !locks[k]).map(k => paramNames[k] || k);
+        message = `🔒 Будут меняться: ${lockedNames.join(', ')} | 🔓 Зафиксированы: ${unlockedNames.join(', ')}`;
+    }
+    
+    showStatusMessage(message, 'info');
     
     console.log(`🔒 Блокировка ${param}: ${locks[param] ? 'ЗАБЛОКИРОВАНА' : 'разблокирована'}`);
 }
