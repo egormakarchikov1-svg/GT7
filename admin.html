@@ -797,6 +797,107 @@ function getRandomTrackSmart() {
     return weightedTracks[0] || getRandomItem(availableTracks);
 }
 
+    // ============================================
+// ЗАПОМИНАНИЕ ПОСЛЕДНИХ КЛАССОВ (ПРОСТАЯ ВЕРСИЯ)
+// ============================================
+let lastCategories = []; // Хранит последние 3 класса
+
+// ============================================
+// МОДИФИЦИРОВАННАЯ ФУНКЦИЯ ПОЛУЧЕНИЯ МАШИНЫ ДЛЯ ГРУППОВОГО РЕЖИМА
+// ============================================
+function getRandomCarForGroupMode() {
+    // Получаем все машины с классами Gr.1, Gr.2, Gr.3, Gr.4, Super Formula
+    const groupCars = carsDatabase.filter(car => 
+        car.category === 'Gr.1' || 
+        car.category === 'Gr.2' || 
+        car.category === 'Gr.3' || 
+        car.category === 'Gr.4' || 
+        car.category === 'Super Formula'
+    );
+    
+    if (groupCars.length === 0) {
+        return getRandomItem(carsDatabase);
+    }
+    
+    // Группируем машины по классам
+    const carsByCategory = {};
+    groupCars.forEach(car => {
+        if (!carsByCategory[car.category]) {
+            carsByCategory[car.category] = [];
+        }
+        carsByCategory[car.category].push(car);
+    });
+    
+    // Получаем список всех доступных классов
+    let allCategories = Object.keys(carsByCategory);
+    
+    // Исключаем последние 3 использованных класса
+    let availableCategories = allCategories.filter(cat => !lastCategories.includes(cat));
+    
+    // Если осталось слишком мало классов, разрешаем использовать все
+    if (availableCategories.length < 2) {
+        availableCategories = allCategories;
+    }
+    
+    // Если доступных классов всё ещё больше 1, но в lastCategories есть все,
+    // исключаем только самый последний класс
+    if (availableCategories.length === allCategories.length && lastCategories.length > 0) {
+        availableCategories = allCategories.filter(cat => cat !== lastCategories[lastCategories.length - 1]);
+        if (availableCategories.length < 2) {
+            availableCategories = allCategories;
+        }
+    }
+    
+    // Выбираем случайный класс из доступных
+    const selectedCategory = getRandomItem(availableCategories);
+    
+    // Выбираем случайную машину из выбранного класса
+    const selectedCar = getRandomItem(carsByCategory[selectedCategory]);
+    
+    // Запоминаем выбранный класс (храним последние 3)
+    lastCategories.push(selectedCategory);
+    if (lastCategories.length > 3) {
+        lastCategories.shift();
+    }
+    
+    console.log(`🏁 Выбран класс: ${selectedCategory}, машина: ${selectedCar.name}`);
+    console.log(`📋 История классов: ${lastCategories.join(' → ')}`);
+    
+    return selectedCar;
+}
+
+// ============================================
+// ПЕРЕОПРЕДЕЛЯЕМ getRandomCarWithoutRepeat ДЛЯ ГРУППОВОГО РЕЖИМА
+// ============================================
+const originalGetRandomCarWithoutRepeat = getRandomCarWithoutRepeat;
+
+getRandomCarWithoutRepeat = function() {
+    if (displayMode === 'group_only') {
+        return getRandomCarForGroupMode();
+    } else {
+        return originalGetRandomCarWithoutRepeat();
+    }
+};
+
+// ============================================
+// СБРОС ИСТОРИИ ПРИ ПЕРЕКЛЮЧЕНИИ РЕЖИМА
+// ============================================
+function resetLastCategories() {
+    lastCategories = [];
+    console.log('🔄 Сброс истории классов');
+}
+
+const originalSetDisplayMode = setDisplayMode;
+setDisplayMode = function(mode) {
+    const currentMode = displayMode;
+    originalSetDisplayMode(mode);
+    
+    if (currentMode !== mode) {
+        resetLastCategories();
+        console.log(`🔄 Режим изменён с ${currentMode} на ${mode}`);
+    }
+};
+
 // ============================================
 // КОНСТАНТЫ И ПЕРЕМЕННЫЕ
 // ============================================
@@ -1606,6 +1707,8 @@ function calculateOptimalLaps(trackLengthKm, categoryName) {
     optimalLaps = Math.floor(optimalLaps * randomFactor);
     return Math.max(3, Math.min(optimalLaps, 25));
 }
+
+    
 
 function getRandomCarWithoutRepeat() {
     let availableCars = carsDatabase.filter(car => !shownCars.includes(car.name));
