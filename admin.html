@@ -797,7 +797,10 @@ function getRandomTrackSmart() {
     return weightedTracks[0] || getRandomItem(availableTracks);
 }
 
-  let lastCategories = []; // Хранит последние 3 класса
+ // ============================================
+// ЗАПОМИНАНИЕ ПОСЛЕДНИХ КЛАССОВ
+// ============================================
+let lastCategories = []; // Хранит последние 3 класса
 
 // ============================================
 // МОДИФИЦИРОВАННАЯ ФУНКЦИЯ ПОЛУЧЕНИЯ МАШИНЫ ДЛЯ ГРУППОВОГО РЕЖИМА
@@ -813,7 +816,6 @@ function getRandomCarForGroupMode() {
     );
     
     if (groupCars.length === 0) {
-        // Если нет машин с классами, берём любую
         return getRandomItem(carsDatabase);
     }
     
@@ -832,7 +834,7 @@ function getRandomCarForGroupMode() {
     // Исключаем последние 3 использованных класса
     let availableCategories = allCategories.filter(cat => !lastCategories.includes(cat));
     
-    // Если осталось слишком мало классов (0 или 1), разрешаем использовать все
+    // Если осталось слишком мало классов, разрешаем использовать все
     if (availableCategories.length < 2) {
         availableCategories = allCategories;
     }
@@ -840,9 +842,7 @@ function getRandomCarForGroupMode() {
     // Если доступных классов всё ещё больше 1, но в lastCategories есть все,
     // исключаем только самый последний класс
     if (availableCategories.length === allCategories.length && lastCategories.length > 0) {
-        // Убираем только последний использованный класс
         availableCategories = allCategories.filter(cat => cat !== lastCategories[lastCategories.length - 1]);
-        // Если после этого остался 1 класс или 0, берём все
         if (availableCategories.length < 2) {
             availableCategories = allCategories;
         }
@@ -857,7 +857,7 @@ function getRandomCarForGroupMode() {
     // Запоминаем выбранный класс (храним последние 3)
     lastCategories.push(selectedCategory);
     if (lastCategories.length > 3) {
-        lastCategories.shift(); // Удаляем самый старый
+        lastCategories.shift();
     }
     
     console.log(`🏁 Выбран класс: ${selectedCategory}, машина: ${selectedCar.name}`);
@@ -869,22 +869,18 @@ function getRandomCarForGroupMode() {
 // ============================================
 // МОДИФИЦИРУЕМ ФУНКЦИЮ getRandomCarWithoutRepeat
 // ============================================
-// Сохраняем оригинальную функцию
 const originalGetRandomCarWithoutRepeat = getRandomCarWithoutRepeat;
 
-// Переопределяем для группового режима
 getRandomCarWithoutRepeat = function() {
-    // Проверяем, включён ли групповой режим
     if (displayMode === 'group_only') {
         return getRandomCarForGroupMode();
     } else {
-        // Используем оригинальную логику для обычного режима
         return originalGetRandomCarWithoutRepeat();
     }
 };
 
 // ============================================
-// ДОПОЛНИТЕЛЬНО: СБРОС ПОСЛЕДНИХ КЛАССОВ
+// СБРОС ПОСЛЕДНИХ КЛАССОВ ПРИ ПЕРЕКЛЮЧЕНИИ РЕЖИМА
 // ============================================
 function resetLastCategories() {
     lastCategories = [];
@@ -893,129 +889,12 @@ function resetLastCategories() {
 
 const originalSetDisplayMode = setDisplayMode;
 setDisplayMode = function(mode) {
-    // Проверяем, действительно ли изменился режим
-    if (displayMode !== mode) {
-        originalSetDisplayMode(mode);
-        resetLastCategories(); // Сбрасываем ТОЛЬКО при ручном переключении
-    } else {
-        originalSetDisplayMode(mode);
-        // Не сбрасываем, если режим не изменился
-    }
-};
-
- // ============================================
-// ДОПОЛНИТЕЛЬНАЯ ЗАЩИТА ОТ ПОВТОРОВ
-// ============================================
-// Сохраняем оригинальную функцию generateAndSave
-// ============================================
-// ДОПОЛНИТЕЛЬНАЯ ЗАЩИТА ОТ ПОВТОРОВ
-// ============================================
-// Сохраняем оригинальную функцию generateAndSave
-const originalGenerateAndSave = generateAndSave;
-
-// Флаг, чтобы предотвратить двойную генерацию
-let isGenerating = false;
-
-// Переопределяем generateAndSave с принудительной проверкой
-generateAndSave = async function() {
-    // Предотвращаем двойной вызов
-    if (isGenerating) {
-        console.log('⚠️ Генерация уже выполняется, пропускаем...');
-        return;
-    }
+    const currentMode = displayMode;
+    originalSetDisplayMode(mode);
     
-    isGenerating = true;
-    
-    try {
-        // Если мы в групповом режиме
-        if (displayMode === 'group_only') {
-            // Проверяем, не выбран ли уже класс из истории
-            const currentCategoryText = document.getElementById('categoryText')?.innerText || '';
-            let currentCategory = null;
-            
-            // Определяем текущий класс
-            for (const cat of ['Gr.1', 'Gr.2', 'Gr.3', 'Gr.4', 'Super Formula']) {
-                if (currentCategoryText.includes(cat)) {
-                    currentCategory = cat;
-                    break;
-                }
-            }
-            
-            // Если текущий класс есть в истории
-            if (currentCategory && lastCategories.includes(currentCategory) && lastCategories.length > 1) {
-                console.log(`🔄 Класс ${currentCategory} уже был в истории, принудительно меняем...`);
-                
-                // Получаем все доступные классы
-                const allCategories = ['Gr.1', 'Gr.2', 'Gr.3', 'Gr.4', 'Super Formula'];
-                
-                // Исключаем последние 3 класса из истории
-                let availableCategories = allCategories.filter(cat => !lastCategories.includes(cat));
-                
-                // Если осталось мало классов, исключаем только последний
-                if (availableCategories.length < 2) {
-                    const lastCategory = lastCategories[lastCategories.length - 1];
-                    availableCategories = allCategories.filter(cat => cat !== lastCategory);
-                }
-                
-                // Если всё ещё мало, исключаем текущий
-                if (availableCategories.length < 2) {
-                    availableCategories = allCategories.filter(cat => cat !== currentCategory);
-                }
-                
-                // Выбираем новый класс
-                const newCategory = getRandomItem(availableCategories);
-                console.log(`🔄 Новый класс: ${newCategory}`);
-                
-                // Находим машину из нового класса
-                const groupCars = carsDatabase.filter(car => car.category === newCategory);
-                
-                if (groupCars.length > 0) {
-                    const newCar = getRandomItem(groupCars);
-                    console.log(`🔄 Новая машина: ${newCar.name}`);
-                    
-                    // Обновляем историю: добавляем новый класс, удаляем старый
-                    lastCategories = lastCategories.filter(cat => cat !== currentCategory);
-                    lastCategories.push(newCategory);
-                    if (lastCategories.length > 3) {
-                        lastCategories.shift();
-                    }
-                    
-                    // Обновляем интерфейс
-                    const categoryObj = categories.find(c => c.name === newCategory);
-                    if (categoryObj) {
-                        document.getElementById('categoryText').innerHTML = `${categoryObj.icon} ${newCategory} (${categoryObj.description})`;
-                    } else {
-                        document.getElementById('categoryText').innerHTML = newCategory;
-                    }
-                    
-                    document.getElementById('carValue').textContent = newCar.name;
-                    displayCarIcon(newCar.icon);
-                    displaySimilarCars(newCar);
-                    currentRefCar = newCar;
-                    
-                    // Обновляем блокировки
-                    if (!locks.car) {
-                        // Машина не заблокирована, обновляем
-                    }
-                    
-                    console.log(`📋 Обновлённая история: ${lastCategories.join(' → ')}`);
-                    
-                    // ВЫХОДИМ, чтобы не было двойной генерации
-                    isGenerating = false;
-                    return;
-                }
-            }
-        }
-        
-        // Вызываем оригинальную функцию
-        const result = await originalGenerateAndSave.apply(this, arguments);
-        isGenerating = false;
-        return result;
-        
-    } catch (error) {
-        console.error('Ошибка в generateAndSave:', error);
-        isGenerating = false;
-        throw error;
+    if (currentMode !== mode) {
+        resetLastCategories();
+        console.log(`🔄 Режим изменён с ${currentMode} на ${mode}`);
     }
 };
 
