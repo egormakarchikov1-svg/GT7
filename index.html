@@ -3219,7 +3219,8 @@ function generateLocalRace() {
     }
 }
 
-        const exitManualModeBtn = document.getElementById('exitManualModeBtn');
+          // Кнопка выхода из ручного режима
+    const exitManualModeBtn = document.getElementById('exitManualModeBtn');
     if (exitManualModeBtn) {
         exitManualModeBtn.addEventListener('click', () => {
             manualModeActive = false;
@@ -3244,7 +3245,7 @@ function generateLocalRace() {
     if (confirmRegistrationBtn) {
         confirmRegistrationBtn.addEventListener('click', registerForRace);
     }
-}  // ← ЗДЕСЬ ЗАКРЫВАЕТСЯ ФУНКЦИЯ init()
+}  // ← ЭТО ЗАКРЫВАЕТ ФУНКЦИЮ init()
 
 // Запуск приложения
 init();
