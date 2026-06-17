@@ -891,11 +891,16 @@ function resetLastCategories() {
     console.log('🔄 Сброс истории классов');
 }
 
-// Вызываем сброс при переключении режимов
 const originalSetDisplayMode = setDisplayMode;
 setDisplayMode = function(mode) {
-    originalSetDisplayMode(mode);
-    resetLastCategories(); // Сбрасываем при смене режима
+    // Проверяем, действительно ли изменился режим
+    if (displayMode !== mode) {
+        originalSetDisplayMode(mode);
+        resetLastCategories(); // Сбрасываем ТОЛЬКО при ручном переключении
+    } else {
+        originalSetDisplayMode(mode);
+        // Не сбрасываем, если режим не изменился
+    }
 };
 
  // ============================================
