@@ -863,6 +863,38 @@ function getRandomCarForGroupMode() {
     console.log(`🏁 Выбран класс: ${selectedCategory}, машина: ${selectedCar.name}`);
     console.log(`📋 История классов: ${lastCategories.join(' → ')}`);
     
+    // ============================================
+    // ↓↓↓ ОБНОВЛЯЕМ ИНТЕРФЕЙС ↓↓↓
+    // ============================================
+    
+    // 1. Обновляем категорию
+    const categoryObj = categories.find(c => c.name === selectedCategory);
+    const categoryText = document.getElementById('categoryText');
+    if (categoryText) {
+        if (categoryObj) {
+            categoryText.innerHTML = `${categoryObj.icon} ${selectedCategory} (${categoryObj.description})`;
+        } else {
+            categoryText.innerHTML = selectedCategory;
+        }
+    }
+    
+    // 2. Обновляем машину
+    const carValue = document.getElementById('carValue');
+    if (carValue) {
+        carValue.textContent = selectedCar.name;
+    }
+    
+    // 3. Обновляем иконку машины
+    displayCarIcon(selectedCar.icon);
+    
+    // 4. Обновляем похожие авто
+    displaySimilarCars(selectedCar);
+    currentRefCar = selectedCar;
+    
+    // ============================================
+    // ↑↑↑ КОНЕЦ ОБНОВЛЕНИЯ ИНТЕРФЕЙСА ↑↑↑
+    // ============================================
+    
     return selectedCar;
 }
 
