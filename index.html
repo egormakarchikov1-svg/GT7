@@ -3219,7 +3219,126 @@ function generateLocalRace() {
     }
 }
 
-          // Кнопка выхода из ручного режима
+// ============================================
+// ИНИЦИАЛИЗАЦИЯ
+// ============================================
+
+let isInitialized = false;
+
+function init() {
+    if (isInitialized) return;
+    isInitialized = true;
+    
+    // Загружаем статистику трасс
+    loadTrackStats();
+    
+    loadLocksFromStorage();
+    console.log('🚀 Инициализация приложения');
+    loadShownCars();
+    
+    // Инициализация замков
+    document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
+        const param = btn.getAttribute('data-param');
+        if (locks[param] === false) {
+            btn.setAttribute('data-state', 'unlocked');
+            btn.innerText = '🔓';
+        } else {
+            btn.setAttribute('data-state', 'locked');
+            btn.innerText = '🔒';
+        }
+        btn.addEventListener('click', (e) => { 
+            e.stopPropagation(); 
+            toggleLock(btn.getAttribute('data-param')); 
+        });
+    });
+    
+    // Заголовки для сворачивания
+    const settingsHeader = document.getElementById('settingsHeader');
+    if (settingsHeader) settingsHeader.addEventListener('click', toggleSettings);
+    
+    const similarHeader = document.getElementById('similarHeader');
+    if (similarHeader) similarHeader.addEventListener('click', toggleSimilar);
+    
+    const carsTrackHeader = document.getElementById('carsTrackHeader');
+    if (carsTrackHeader) carsTrackHeader.addEventListener('click', toggleCarsTrack);
+    
+    const categoryHeader = document.getElementById('categoryHeader');
+    if (categoryHeader) categoryHeader.addEventListener('click', toggleCategory);
+    
+    const racesHeader = document.getElementById('racesHeader');
+    if (racesHeader) racesHeader.addEventListener('click', toggleRacesCalendar);
+    
+    // Кнопки
+    const refreshBtn = document.getElementById('refreshSimilarBtn');
+    if (refreshBtn) refreshBtn.addEventListener('click', refreshSimilarCars);
+    
+    const resetBtn = document.getElementById('resetCarsBtn');
+    if (resetBtn) resetBtn.addEventListener('click', resetCarsHistory);
+    
+    const modeAllBtn = document.getElementById('modeAllBtn');
+    if (modeAllBtn) modeAllBtn.addEventListener('click', () => setDisplayMode('all'));
+    
+    const modeGroupBtn = document.getElementById('modeGroupOnlyBtn');
+    if (modeGroupBtn) modeGroupBtn.addEventListener('click', () => setDisplayMode('group_only'));
+    
+    window.selectCar = selectCar;
+    setDisplayMode(displayMode);
+    updateModeSelectorVisibility();
+    
+    const savedAdminId = localStorage.getItem('gt7_selected_admin_id');
+    const adminSelectElement = document.getElementById('adminSelect');
+    
+    if (adminSelectElement && adminSelectElement.value === '') {
+        localStorage.removeItem('gt7_selected_admin_id');
+        const container = document.getElementById('racesCalendarContainer');
+        if (container) container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">👑 Выберите администратора</div>';
+    } else if (savedAdminId && adminSelectElement && adminSelectElement.value === savedAdminId) {
+        displayUserRaces(savedAdminId);
+    } else {
+        const container = document.getElementById('racesCalendarContainer');
+        if (container) container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">👑 Выберите администратора</div>';
+    }
+    
+    loadUserAdmins();
+    
+    // Фоновое обновление календаря
+    setInterval(async () => {
+        if (currentAdminId && currentRegistrationRaceId && document.getElementById('registrationBlock')?.style.display === 'block') {
+            await checkForNewParticipants();
+        }
+    }, 5000);
+
+    updateModeSelectorVisibility();
+
+    // Кнопка "Назад в меню"
+    const backToMenuBtn = document.getElementById('backToMenuBtn');
+    if (backToMenuBtn) backToMenuBtn.addEventListener('click', backToMenu);
+
+    // Кнопка "Случайная гонка"
+    const generateRandomRaceBtn = document.getElementById('generateRandomRaceBtn');
+    if (generateRandomRaceBtn) {
+        generateRandomRaceBtn.addEventListener('click', () => {
+            isApplyingUpdate = false;
+            if (userSyncEnabled) {
+                userSyncEnabled = false;
+                currentAdminId = null;
+                currentAdminName = null;
+                const banner = document.getElementById('adminSyncBanner');
+                if (banner) banner.classList.add('hidden');
+                stopAutoRefresh();
+                resetSyncCache();
+                if (generateRandomRaceBtn) generateRandomRaceBtn.style.display = 'block';
+            }
+            setTimeout(() => {
+                if (typeof generateLocalRace === 'function') {
+                    generateLocalRace();
+                    showStatusMessage('🎲 Новая случайная гонка сгенерирована!', 'success');
+                }
+            }, 100);
+        });
+    }
+
+    // Кнопка выхода из ручного режима
     const exitManualModeBtn = document.getElementById('exitManualModeBtn');
     if (exitManualModeBtn) {
         exitManualModeBtn.addEventListener('click', () => {
@@ -3245,7 +3364,7 @@ function generateLocalRace() {
     if (confirmRegistrationBtn) {
         confirmRegistrationBtn.addEventListener('click', registerForRace);
     }
-}  // ← ЭТО ЗАКРЫВАЕТ ФУНКЦИЮ init()
+}
 
 // Запуск приложения
 init();
