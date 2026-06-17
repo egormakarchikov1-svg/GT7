@@ -928,13 +928,54 @@ generateAndSave = async function() {
         // Если текущий класс есть в истории (кроме случая, когда он один)
         if (currentCategory && lastCategories.includes(currentCategory) && lastCategories.length > 0) {
             console.log(`🔄 Класс ${currentCategory} уже был в истории, принудительно меняем...`);
-            // Принудительно сбрасываем последний класс, чтобы выбрать новый
-            // Удаляем текущий класс из истории, если он там есть
+            
+            // 1. Удаляем текущий класс из истории
             lastCategories = lastCategories.filter(cat => cat !== currentCategory);
-            // Добавляем фиктивный класс, чтобы исключить текущий
-            lastCategories.push(currentCategory);
+            
+            // 2. Получаем все доступные классы
+            const allCategories = ['Gr.1', 'Gr.2', 'Gr.3', 'Gr.4', 'Super Formula'];
+            
+            // 3. Исключаем последние 3 класса из истории
+            let availableCategories = allCategories.filter(cat => !lastCategories.includes(cat));
+            
+            // 4. Если осталось мало классов, берём все, кроме текущего
+            if (availableCategories.length < 2) {
+                availableCategories = allCategories.filter(cat => cat !== currentCategory);
+            }
+            
+            // 5. Выбираем новый класс
+            const newCategory = getRandomItem(availableCategories);
+            console.log(`🔄 Новый класс: ${newCategory}`);
+            
+            // 6. Обновляем историю: добавляем новый класс
+            lastCategories.push(newCategory);
             if (lastCategories.length > 3) {
                 lastCategories.shift();
+            }
+            
+            // 7. Находим машину из нового класса
+            const groupCars = carsDatabase.filter(car => 
+                car.category === newCategory
+            );
+            
+            if (groupCars.length > 0) {
+                const newCar = getRandomItem(groupCars);
+                console.log(`🔄 Новая машина: ${newCar.name}`);
+                
+                // 8. Обновляем интерфейс
+                document.getElementById('categoryText').innerHTML = `${newCategory}`;
+                document.getElementById('carValue').textContent = newCar.name;
+                displayCarIcon(newCar.icon);
+                displaySimilarCars(newCar);
+                currentRefCar = newCar;
+                
+                // 9. Обновляем текущий класс в комбо
+                if (typeof currentCombo !== 'undefined') {
+                    currentCombo.category_name = newCategory;
+                    currentCombo.car_name = newCar.name;
+                }
+                
+                console.log(`📋 Обновлённая история: ${lastCategories.join(' → ')}`);
             }
         }
     }
