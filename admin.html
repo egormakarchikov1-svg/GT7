@@ -1992,6 +1992,23 @@ async function loadCurrentCombo() {
         }
         
         if (tableData.active === 'TRUE') {
+            // Проверяем, был ли выбран новый класс в этой сессии
+            // Если мы в групповом режиме и есть lastCategories - не перезаписываем
+            const isGroupMode = displayMode === 'group_only';
+            const hasHistory = lastCategories.length > 0;
+            
+            // Если мы в групповом режиме и есть история - НЕ перезаписываем интерфейс
+            if (isGroupMode && hasHistory) {
+                console.log('🔄 Групповой режим с историей, пропускаем перезапись интерфейса');
+                // Обновляем только режим отображения
+                if (tableData.display_mode) {
+                    // Не вызываем setDisplayMode, чтобы не сбросить историю
+                    displayMode = tableData.display_mode;
+                    updateVisibilityByDisplayMode(displayMode);
+                }
+                return;
+            }
+            
             if (tableData.display_mode) setDisplayMode(tableData.display_mode);
             
             const car = carsDatabase.find(c => c.name === tableData.car_name);
