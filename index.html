@@ -1980,6 +1980,94 @@ function loadLocksFromStorage() {
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 // ============================================
 function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+// ============================================
+// УМНАЯ СИСТЕМА ВЫБОРА ЗНАЧЕНИЙ ДЛЯ ШИН И ТОПЛИВА
+// ============================================
+
+// Храним историю последних значений для каждого параметра
+let lastTiresValues = [];
+let lastFuelValues = [];
+const MAX_HISTORY = 5; // Запоминаем последние 5 значений
+
+// Диапазоны значений
+const RANGES = {
+    LOW: { min: 1, max: 7, label: 'Низкий' },
+    MEDIUM: { min: 8, max: 13, label: 'Средний' },
+    HIGH: { min: 14, max: 20, label: 'Высокий' }
+};
+
+// Получить диапазон для значения
+function getRange(value) {
+    if (value >= RANGES.LOW.min && value <= RANGES.LOW.max) return 'LOW';
+    if (value >= RANGES.MEDIUM.min && value <= RANGES.MEDIUM.max) return 'MEDIUM';
+    if (value >= RANGES.HIGH.min && value <= RANGES.HIGH.max) return 'HIGH';
+    return 'MEDIUM';
+}
+
+// Получить случайное значение в диапазоне
+function getRandomInRange(range) {
+    return Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
+}
+
+// Получить вес для диапазона на основе истории
+function getRangeWeight(range, history) {
+    const countInHistory = history.filter(val => getRange(val) === range).length;
+    return Math.max(1, MAX_HISTORY - countInHistory);
+}
+
+// Основная функция получения значения с умным распределением
+function getSmartValue(history) {
+    const weights = {
+        LOW: getRangeWeight('LOW', history),
+        MEDIUM: getRangeWeight('MEDIUM', history),
+        HIGH: getRangeWeight('HIGH', history)
+    };
+    
+    const totalWeight = weights.LOW + weights.MEDIUM + weights.HIGH;
+    let random = Math.random() * totalWeight;
+    
+    let selectedRange;
+    if (random < weights.LOW) {
+        selectedRange = 'LOW';
+    } else if (random < weights.LOW + weights.MEDIUM) {
+        selectedRange = 'MEDIUM';
+    } else {
+        selectedRange = 'HIGH';
+    }
+    
+    let value = getRandomInRange(RANGES[selectedRange]);
+    
+    let attempts = 0;
+    while (history.filter(v => v === value).length >= 2 && attempts < 10) {
+        value = getRandomInRange(RANGES[selectedRange]);
+        attempts++;
+    }
+    
+    return value;
+}
+
+// Функция для получения значения износа шин
+function getRandomTiresValue() {
+    const value = getSmartValue(lastTiresValues);
+    lastTiresValues.push(value);
+    if (lastTiresValues.length > MAX_HISTORY) {
+        lastTiresValues.shift();
+    }
+    return `X${value}`;
+}
+
+// Функция для получения значения расхода топлива
+function getRandomFuelValue() {
+    const value = getSmartValue(lastFuelValues);
+    lastFuelValues.push(value);
+    if (lastFuelValues.length > MAX_HISTORY) {
+        lastFuelValues.shift();
+    }
+    return `X${value}`;
+}
+
+// Функция для случайного множителя времени (оставляем простую)
 function getRandomXValue() { return `X${Math.floor(Math.random() * 20) + 1}`; }
 
 function getTrackIcon(trackName) {
@@ -2929,7 +3017,13 @@ function getRandomCarWithoutRepeat() {
     addToShownCars(car.name);
     return car;
 }
-function resetCarsHistory() { shownCars = []; saveShownCars(); alert('✅ История машин сброшена!'); }
+function resetCarsHistory() { 
+    shownCars = []; 
+    lastTiresValues = [];
+    lastFuelValues = [];
+    saveShownCars(); 
+    alert('✅ История машин и значений (шин/топлива) сброшена!'); 
+}
 
 // ============================================
 // ===== ОБНОВЛЁННАЯ ФУНКЦИЯ updateTrack =====
@@ -2963,8 +3057,17 @@ function updateWeatherByTrack(track) { if (locks.weather) return; let avail = we
 function updateTimeByTrack(track) { if (locks.time) return; let avail = times; if (track.times && track.times.length) avail = times.filter(t => track.times.includes(t.name)); const tm = getRandomItem(avail); document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${getRandomXValue()}</span>`; }
 function updateWeather() { if (!locks.weather) { const w = getRandomItem(weathers); document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`; } }
 function updateTime() { if (!locks.time) { const t = getRandomItem(times); document.getElementById('timeValue').innerHTML = `${t.icon} ${t.name} <span class="time-x-badge">${getRandomXValue()}</span>`; } }
-function updateTires() { if (!locks.tires) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${getRandomXValue()}</span>`; }
-function updateFuel() { if (!locks.fuel) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${getRandomXValue()}</span>`; }
+function updateTires() { 
+    if (!locks.tires) {
+        document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${getRandomTiresValue()}</span>`;
+    } 
+}
+
+function updateFuel() { 
+    if (!locks.fuel) {
+        document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${getRandomFuelValue()}</span>`;
+    } 
+}
 function updateCategory() { if (!locks.category) { const c = getRandomItem(categories); document.getElementById('categoryValue').innerHTML = `${c.icon} ${c.name} (${c.description})`; } }
 
 function generateLocalRace() {
