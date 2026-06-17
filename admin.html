@@ -1904,14 +1904,49 @@ function toggleLock(param) {
             btn.classList.remove('unlocked');
             btn.classList.add('locked');
             btn.innerHTML = '🔒';
+            btn.title = 'ЗАКРЫТО - параметр будет меняться при генерации';
         } else {
             btn.classList.remove('locked');
             btn.classList.add('unlocked');
             btn.innerHTML = '🔓';
+            btn.title = 'ОТКРЫТО - параметр НЕ будет меняться';
         }
     });
+    
+    // Проверяем, сколько замков закрыто
+    const lockedCount = Object.values(locks).filter(v => v === true).length;
+    const totalParams = Object.keys(locks).length;
+    
+    // Показываем статус
+    const statusDiv = document.getElementById('status');
+    if (statusDiv) {
+        const paramNames = {
+            car: 'Машина',
+            track: 'Трасса',
+            category: 'Класс',
+            weather: 'Погода',
+            time: 'Время',
+            tires: 'Износ шин',
+            fuel: 'Расход топлива'
+        };
+        
+        let message = '';
+        if (lockedCount === 0) {
+            message = '🔓 ВСЕ ЗАМКИ ОТКРЫТЫ - при генерации будут меняться ВСЕ параметры';
+        } else if (lockedCount === totalParams) {
+            message = '🔒 ВСЕ ЗАМКИ ЗАКРЫТЫ - при генерации будут меняться ВСЕ параметры';
+        } else {
+            const lockedNames = Object.keys(locks).filter(k => locks[k]).map(k => paramNames[k]);
+            const unlockedNames = Object.keys(locks).filter(k => !locks[k]).map(k => paramNames[k]);
+            message = `🔒 Будут меняться: ${lockedNames.join(', ')} | 🔓 Зафиксированы: ${unlockedNames.join(', ')}`;
+        }
+        
+        statusDiv.innerHTML = message;
+        statusDiv.className = 'status info';
+        statusDiv.style.display = 'block';
+        setTimeout(() => { statusDiv.style.display = 'none'; }, 3000);
+    }
 }
-
 // ============================================
 // ПРОГРЕСС-БАР
 // ============================================
@@ -2039,7 +2074,21 @@ async function generateAndSave() {
         newCombo.admin_id = currentAdmin.id;
         newCombo.display_mode = displayMode;
         
-        if (!locks.car) {
+        // Проверяем, есть ли хоть один заблокированный параметр
+        const hasAnyLock = locks.car || locks.track || locks.category || locks.weather || locks.time || locks.tires || locks.fuel;
+        
+        // Если есть хоть один замок - меняем ТОЛЬКО заблокированные параметры
+        // Если замков нет - меняем ВСЕ параметры
+        const shouldChangeCar = hasAnyLock ? locks.car : true;
+        const shouldChangeTrack = hasAnyLock ? locks.track : true;
+        const shouldChangeCategory = hasAnyLock ? locks.category : true;
+        const shouldChangeWeather = hasAnyLock ? locks.weather : true;
+        const shouldChangeTime = hasAnyLock ? locks.time : true;
+        const shouldChangeTires = hasAnyLock ? locks.tires : true;
+        const shouldChangeFuel = hasAnyLock ? locks.fuel : true;
+        
+        // 1. МАШИНА
+        if (shouldChangeCar) {
             const car = getRandomCarWithoutRepeat();
             newCombo.car_name = car.name;
             updateProgressBar(15, '🚗 Машина выбрана');
@@ -2055,25 +2104,38 @@ async function generateAndSave() {
             updateProgressBar(40, '🔍 Похожие авто найдены');
             displaySimilarCars(car);
         } else {
-            updateProgressBar(40, '🔒 Машина заблокирована');
+            // Не меняем - берем текущее значение
+            const currentCarName = document.getElementById('carValue').textContent;
+            if (currentCarName && currentCarName !== '—') {
+                newCombo.car_name = currentCarName;
+                const currentCar = carsDatabase.find(c => c.name === currentCarName);
+                if (currentCar) {
+                    currentRefCar = currentCar;
+                }
+            }
+            updateProgressBar(40, '🔓 Машина зафиксирована');
         }
         await sleep(200);
         
+        // 2. КАТЕГОРИЯ
         let selectedCategory = null;
-        let selectedTrack = null;
-        
-        if (!locks.category) {
+        if (shouldChangeCategory) {
             selectedCategory = getRandomItem(categories);
             newCombo.category_name = selectedCategory.name;
         } else {
-            const currentCategoryText = document.getElementById('categoryText').innerText;
-            selectedCategory = categories.find(c => currentCategoryText.includes(c.name));
-            if (selectedCategory) newCombo.category_name = selectedCategory.name;
+            const currentCategoryText = document.getElementById('categoryText').innerHTML;
+            const catMatch = currentCategoryText.match(/(Gr\.\d|Super Formula)/);
+            if (catMatch) {
+                selectedCategory = categories.find(c => c.name === catMatch[1]);
+                if (selectedCategory) newCombo.category_name = selectedCategory.name;
+            }
         }
         updateProgressBar(45, '🏆 Класс определён');
         await sleep(200);
         
-        if (!locks.track) {
+        // 3. ТРАССА
+        let selectedTrack = null;
+        if (shouldChangeTrack) {
             selectedTrack = getRandomTrackSmart();
             newCombo.track_name = selectedTrack.name;
             
@@ -2089,7 +2151,6 @@ async function generateAndSave() {
             await sleep(150);
             updateProgressBar(60, '🛣️ Готово');
         } else {
-            updateProgressBar(60, '🔒 Трасса заблокирована');
             const currentTrackText = document.getElementById('trackValue').innerHTML;
             let currentTrackName = currentTrackText.split('<span')[0].trim();
             if (currentTrackName && currentTrackName !== '—') {
@@ -2105,10 +2166,12 @@ async function generateAndSave() {
                     }
                 }
             }
+            updateProgressBar(60, '🔓 Трасса зафиксирована');
         }
         await sleep(200);
         
-        if (!locks.weather) {
+        // 4. ПОГОДА
+        if (shouldChangeWeather) {
             let currentTrack = selectedTrack || tracksData.find(t => t.name === newCombo.track_name);
             let availableWeathers = weathers;
             if (currentTrack && currentTrack.weather && currentTrack.weather.length > 0) {
@@ -2126,11 +2189,17 @@ async function generateAndSave() {
             await sleep(150);
             updateProgressBar(70, '🌤️ Готово');
         } else {
-            updateProgressBar(70, '🔒 Погода заблокирована');
+            const currentWeatherText = document.getElementById('weatherValue').innerHTML;
+            const weatherName = currentWeatherText.split('<')[0].trim();
+            if (weatherName && weatherName !== '—') {
+                newCombo.weather_name = weatherName;
+            }
+            updateProgressBar(70, '🔓 Погода зафиксирована');
         }
         await sleep(200);
         
-        if (!locks.time) {
+        // 5. ВРЕМЯ
+        if (shouldChangeTime) {
             let currentTrack = selectedTrack || tracksData.find(t => t.name === newCombo.track_name);
             let availableTimes = times;
             if (currentTrack && currentTrack.times && currentTrack.times.length > 0) {
@@ -2143,54 +2212,48 @@ async function generateAndSave() {
             await sleep(150);
             updateProgressBar(80, '⏰ Готово');
         } else {
-            updateProgressBar(80, '🔒 Время заблокировано');
+            const currentTimeHtml = document.getElementById('timeValue').innerHTML;
+            const timeName = currentTimeHtml.split('<')[0].trim();
+            if (timeName && timeName !== '—') {
+                newCombo.time_name = timeName;
+                const multiplierMatch = currentTimeHtml.match(/<span[^>]*>([^<]+)<\/span>/);
+                if (multiplierMatch) {
+                    newCombo.time_multiplier = multiplierMatch[1];
+                }
+            }
+            updateProgressBar(80, '🔓 Время зафиксировано');
         }
         await sleep(200);
         
-        if (!locks.tires) newCombo.tires_value = getRandomXValue();
+        // 6. ИЗНОС ШИН
+        if (shouldChangeTires) {
+            newCombo.tires_value = getRandomXValue();
+        } else {
+            const currentTiresText = document.getElementById('tiresValue').innerText;
+            if (currentTiresText && currentTiresText !== '') {
+                newCombo.tires_value = currentTiresText;
+            }
+        }
         updateProgressBar(86, '🛞 Износ шин рассчитан');
         await sleep(150);
         updateProgressBar(88, '🛞 Готово');
         await sleep(200);
         
-        if (!locks.fuel) newCombo.fuel_value = getRandomXValue();
+        // 7. РАСХОД ТОПЛИВА
+        if (shouldChangeFuel) {
+            newCombo.fuel_value = getRandomXValue();
+        } else {
+            const currentFuelText = document.getElementById('fuelValue').innerText;
+            if (currentFuelText && currentFuelText !== '') {
+                newCombo.fuel_value = currentFuelText;
+            }
+        }
         updateProgressBar(93, '⛽ Расход топлива рассчитан');
         await sleep(150);
         updateProgressBar(94, '⛽ Готово');
         await sleep(200);
         
-        updateProgressBar(97, '🏆 Финальная подготовка');
-        await sleep(150);
-        updateProgressBar(98, '🏆 Готово');
-        await sleep(200);
-        
-        const selectedCar = carsDatabase.find(c => c.name === newCombo.car_name);
-        if (selectedCar) {
-            document.getElementById('carValue').textContent = selectedCar.name;
-            displayCarIcon(selectedCar.icon);
-        }
-        
-        if (newCombo.track_name && newCombo.track_name !== 'undefined') {
-            const lapsToShow = newCombo.laps || (selectedTrack?.length ? calculateOptimalLaps(selectedTrack.length, newCombo.category_name) : getRandomLaps());
-            document.getElementById('trackValue').innerHTML = `${newCombo.track_name} <span class="time-x-badge">${declensionLaps(lapsToShow)}</span>`;
-            const trackIconUrl = getTrackIcon(newCombo.track_name);
-            displayTrackIcon(trackIconUrl);
-        } else {
-            document.getElementById('trackValue').innerHTML = '—';
-        }
-        
-        const cat = categories.find(c => c.name === newCombo.category_name);
-        if (cat) document.getElementById('categoryText').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
-        
-        const weatherObj = weathers.find(w => w.name === newCombo.weather_name);
-        if (weatherObj) document.getElementById('weatherValue').innerHTML = `${weatherObj.icon} ${weatherObj.name}`;
-        
-        const timeObj = times.find(t => t.name === newCombo.time_name);
-        if (timeObj) document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name} <span class="time-x-badge">${newCombo.time_multiplier || 'X1'}</span>`;
-        
-        if (newCombo.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${newCombo.tires_value}</span>`;
-        if (newCombo.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${newCombo.fuel_value}</span>`;
-
+        // Сохраняем состояния замков
         newCombo.car_locked = locks.car;
         newCombo.track_locked = locks.track;
         newCombo.weather_locked = locks.weather;
@@ -2202,11 +2265,17 @@ async function generateAndSave() {
         updateProgressBar(99, '📤 Сохранение комбинации...');
         await sleep(150);
         
+        // Обновляем отображение
+        updateDisplay(newCombo, hasAnyLock);
+        
         await saveComboViaJSONP(newCombo);
         
         updateProgressBar(100, '✅ Готово!');
         await sleep(200);
         setTimeout(() => loadCurrentCombo(), 500);
+        
+        // Показываем статус с информацией о том, что менялось
+        showGenerationStatus(hasAnyLock);
         
     } catch(e) {
         updateProgressBar(100, '❌ Ошибка генерации!');
@@ -2217,9 +2286,100 @@ async function generateAndSave() {
     
     setTimeout(() => {
         hideProgress();
-        document.getElementById('status').innerHTML = '✅ Новая комбинация сохранена! Все пользователи увидят её в течение 1-2 минут.';
-        document.getElementById('status').className = 'status success';
     }, 1000);
+}
+
+// Функция для отображения статуса генерации
+// Функция для отображения статуса генерации
+function showGenerationStatus(hasAnyLock) {
+    const statusDiv = document.getElementById('status');
+    if (!statusDiv) return;
+    
+    if (!hasAnyLock) {
+        statusDiv.innerHTML = '✅ Сгенерированы ВСЕ новые параметры! (все замки открыты)';
+    } else {
+        const changedParams = [];
+        const paramNames = {
+            car: 'Машина',
+            track: 'Трасса',
+            category: 'Класс',
+            weather: 'Погода',
+            time: 'Время',
+            tires: 'Износ шин',
+            fuel: 'Расход топлива'
+        };
+        
+        if (locks.car) changedParams.push(paramNames.car);
+        if (locks.track) changedParams.push(paramNames.track);
+        if (locks.category) changedParams.push(paramNames.category);
+        if (locks.weather) changedParams.push(paramNames.weather);
+        if (locks.time) changedParams.push(paramNames.time);
+        if (locks.tires) changedParams.push(paramNames.tires);
+        if (locks.fuel) changedParams.push(paramNames.fuel);
+        
+        statusDiv.innerHTML = `✅ Обновлены параметры: ${changedParams.join(', ')} (остальные зафиксированы)`;
+    }
+    statusDiv.className = 'status success';
+    statusDiv.style.display = 'block';
+}
+
+// Функция обновления отображения
+function updateDisplay(newCombo, hasAnyLock) {
+    // Обновляем только те параметры, которые менялись
+    const shouldChangeCar = hasAnyLock ? locks.car : true;
+    const shouldChangeTrack = hasAnyLock ? locks.track : true;
+    const shouldChangeCategory = hasAnyLock ? locks.category : true;
+    const shouldChangeWeather = hasAnyLock ? locks.weather : true;
+    const shouldChangeTime = hasAnyLock ? locks.time : true;
+    const shouldChangeTires = hasAnyLock ? locks.tires : true;
+    const shouldChangeFuel = hasAnyLock ? locks.fuel : true;
+    
+    // Обновляем машину
+    if (shouldChangeCar && newCombo.car_name) {
+        const selectedCar = carsDatabase.find(c => c.name === newCombo.car_name);
+        if (selectedCar) {
+            document.getElementById('carValue').textContent = selectedCar.name;
+            displayCarIcon(selectedCar.icon);
+        }
+    }
+    
+    // Обновляем трассу
+    if (shouldChangeTrack && newCombo.track_name) {
+        const lapsToShow = newCombo.laps || getRandomLaps();
+        document.getElementById('trackValue').innerHTML = `${newCombo.track_name} <span class="time-x-badge">${declensionLaps(lapsToShow)}</span>`;
+        const trackIconUrl = getTrackIcon(newCombo.track_name);
+        displayTrackIcon(trackIconUrl);
+    }
+    
+    // Обновляем категорию
+    if (shouldChangeCategory && newCombo.category_name) {
+        const cat = categories.find(c => c.name === newCombo.category_name);
+        if (cat) document.getElementById('categoryText').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
+    }
+    
+    // Обновляем погоду
+    if (shouldChangeWeather && newCombo.weather_name) {
+        const weatherObj = weathers.find(w => w.name === newCombo.weather_name);
+        if (weatherObj) document.getElementById('weatherValue').innerHTML = `${weatherObj.icon} ${weatherObj.name}`;
+    }
+    
+    // Обновляем время
+    if (shouldChangeTime && newCombo.time_name) {
+        const timeObj = times.find(t => t.name === newCombo.time_name);
+        if (timeObj) {
+            document.getElementById('timeValue').innerHTML = `${timeObj.icon} ${timeObj.name} <span class="time-x-badge">${newCombo.time_multiplier || 'X1'}</span>`;
+        }
+    }
+    
+    // Обновляем износ шин
+    if (shouldChangeTires && newCombo.tires_value) {
+        document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${newCombo.tires_value}</span>`;
+    }
+    
+    // Обновляем расход топлива
+    if (shouldChangeFuel && newCombo.fuel_value) {
+        document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${newCombo.fuel_value}</span>`;
+    }
 }
 
 // ✅ НОВАЯ ФУНКЦИЯ ДЛЯ СОХРАНЕНИЯ ЧЕРЕЗ JSONP
