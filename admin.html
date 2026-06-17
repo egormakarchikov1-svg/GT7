@@ -898,6 +898,46 @@ setDisplayMode = function(mode) {
     resetLastCategories(); // Сбрасываем при смене режима
 };
 
+ // ============================================
+// ДОПОЛНИТЕЛЬНАЯ ЗАЩИТА ОТ ПОВТОРОВ
+// ============================================
+// Сохраняем оригинальную функцию generateAndSave
+const originalGenerateAndSave = generateAndSave;
+
+// Переопределяем generateAndSave с принудительной проверкой
+generateAndSave = async function() {
+    // Если мы в групповом режиме, принудительно обновляем класс
+    if (displayMode === 'group_only') {
+        // Проверяем, не выбран ли уже класс из истории
+        const currentCategoryText = document.getElementById('categoryText')?.innerText || '';
+        let currentCategory = null;
+        
+        // Определяем текущий класс
+        for (const cat of ['Gr.1', 'Gr.2', 'Gr.3', 'Gr.4', 'Super Formula']) {
+            if (currentCategoryText.includes(cat)) {
+                currentCategory = cat;
+                break;
+            }
+        }
+        
+        // Если текущий класс есть в истории (кроме случая, когда он один)
+        if (currentCategory && lastCategories.includes(currentCategory) && lastCategories.length > 0) {
+            console.log(`🔄 Класс ${currentCategory} уже был в истории, принудительно меняем...`);
+            // Принудительно сбрасываем последний класс, чтобы выбрать новый
+            // Удаляем текущий класс из истории, если он там есть
+            lastCategories = lastCategories.filter(cat => cat !== currentCategory);
+            // Добавляем фиктивный класс, чтобы исключить текущий
+            lastCategories.push(currentCategory);
+            if (lastCategories.length > 3) {
+                lastCategories.shift();
+            }
+        }
+    }
+    
+    // Вызываем оригинальную функцию
+    return originalGenerateAndSave.apply(this, arguments);
+};
+
 // ============================================
 // КОНСТАНТЫ И ПЕРЕМЕННЫЕ
 // ============================================
