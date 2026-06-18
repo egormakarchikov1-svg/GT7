@@ -1908,8 +1908,94 @@ function getRandomFuelValue() {
     return `X${value}`;
 }
 
+// ============================================
+// ИСПРАВЛЕННАЯ ФУНКЦИЯ getTrackIcon
+// ============================================
 function getTrackIcon(trackName) {
-    return 'track_icons/placeholder.png';
+    // Проверяем, есть ли иконка для этой трассы
+    const iconMap = {
+        "Alsace": "track_icons/bbe708-D-n15MKA.png",
+        "Lago Maggiore": "track_icons/39f155-Dg_fFdVS.png",
+        "Monza": "track_icons/f8bd64-VsJVPuq0.png",
+        "Interlagos": "track_icons/fe330b-CkMt1pQe.png",
+        "Autopolis": "track_icons/8d9953-CpR-SgHS.png",
+        "Blue Moon": "track_icons/971481-BdMNGGxX.png",
+        "Brands Hatch": "track_icons/f3d2aa-Bznbpc1M.png",
+        "Circuit Gilles": "track_icons/4b2a08-Ba_IZ90g.png",
+        "Barcelona": "track_icons/083de2-BAGcmPUI.png",
+        "Sainte-Croix": "track_icons/a768c9-D5wwglAF.png",
+        "Spa": "track_icons/000971-B75flT8v.png",
+        "Daytona": "track_icons/d1f17e-BDsRccUh.png",
+        "Deep Forest": "track_icons/c81494-mSWpEt3H.png",
+        "Dragon Trail": "track_icons/08df62-C045_y3b.png",
+        "Eiger": "track_icons/678583-Clq7km73.png",
+        "Fuji": "track_icons/664e17-DkicWsJ5.png",
+        "Grand Valley": "track_icons/df54ec-BTV8E4Ol.png",
+        "Le Mans": "track_icons/1d5980-BtTwZ0Sf.png",
+        "Heures": "track_icons/1d5980-BtTwZ0Sf.png",
+        "High Speed Ring": "track_icons/9a42fb-ctw1_rUB.png",
+        "Kyoto": "track_icons/16ccbf-HZopm0Jc.png",
+        "Road Atlanta": "track_icons/051834-BK1vS4TT.png",
+        "Mount Panorama": "track_icons/28b64f-DwW557Cx.png",
+        "Nürburgring": "track_icons/246f6d-B2a8UX0a.png",
+        "Red Bull Ring": "track_icons/f99788-CkF30Q0q.png",
+        "Sardegna": "track_icons/748156-BVeffrVD.png",
+        "Suzuka": "track_icons/fd167d-J52xhRm4.png",
+        "Tokyo Expressway": "track_icons/e9dd33-B7sGBTmw.png",
+        "Trial Mountain": "track_icons/e60841-DkNFRL37.png",
+        "Tsukuba": "track_icons/c5de8a-DX9dzSPz.png",
+        "Watkins Glen": "track_icons/e6ef89-CkruxU9Z.png",
+        "Laguna Seca": "track_icons/c75e61-DBxJ7RQM.png",
+        "Willow Springs": "track_icons/fb6d1f-DDZuZmtt.png",
+        "Yas Marina": "track_icons/27adb9-DCBqBoAB.png"
+    };
+    
+    for (const [key, value] of Object.entries(iconMap)) {
+        if (trackName.includes(key)) {
+            return value;
+        }
+    }
+    
+    // Если иконка не найдена — возвращаем пустую строку, чтобы скрыть изображение
+    return '';
+}
+
+// ============================================
+// ИСПРАВЛЕННАЯ ФУНКЦИЯ updateTrack
+// ============================================
+function updateTrack(forceUpdate = false) { 
+    if (forceUpdate) { 
+        const t = getRandomTrackSmart();
+        currentTrack = t.name;
+        trackUsageCount[t.name] = (trackUsageCount[t.name] || 0) + 1;
+        trackLastUsed[t.name] = Date.now();
+        saveTrackStats();
+        document.getElementById('trackValue').innerHTML = `${t.name} <span class="laps-badge">${getRandomLaps(t.length)} кругов</span>`;
+        
+        // Получаем иконку
+        const iconUrl = getTrackIcon(t.name);
+        const trackIcon = document.getElementById('trackIcon');
+        const trackIconFallback = document.getElementById('trackIconFallback');
+        
+        if (iconUrl && iconUrl !== '') {
+            // Если есть иконка — показываем её
+            trackIcon.src = iconUrl;
+            trackIcon.style.display = 'block';
+            if (trackIconFallback) trackIconFallback.style.display = 'none';
+        } else {
+            // Если иконки нет — скрываем изображение и показываем эмодзи
+            trackIcon.style.display = 'none';
+            if (trackIconFallback) {
+                trackIconFallback.style.display = 'flex';
+                trackIconFallback.innerHTML = '🏁'; // Эмодзи флага
+            }
+        }
+        
+        if (forceUpdate) {
+            updateWeatherByTrack(t);
+            updateTimeByTrack(t);
+        }
+    }
 }
 
 function showStatusMessage(message, type) {
