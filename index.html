@@ -3096,28 +3096,44 @@ function generateLocalRace() {
     
     updateVisibilityByDisplayMode(displayMode);
     
-    // ===== НОВАЯ ЛОГИКА ЗАМКОВ =====
-    // Проверяем, есть ли хоть один заблокированный параметр
-    const hasAnyLock = locks.car || locks.track || locks.category || locks.weather || locks.time || locks.tires || locks.fuel;
+    // ===== ИСПРАВЛЕННАЯ ЛОГИКА ЗАМКОВ =====
+    // Если замок ЗАБЛОКИРОВАН (true) - меняем параметр
+    // Если замок РАЗБЛОКИРОВАН (false) - НЕ меняем параметр
     
-    // Если есть хоть один замок - меняем ТОЛЬКО заблокированные параметры
-    // Если замков нет - меняем ВСЕ параметры
-    const shouldChangeCar = hasAnyLock ? locks.car : true;
-    const shouldChangeTrack = hasAnyLock ? locks.track : true;
-    const shouldChangeCategory = hasAnyLock ? locks.category : true;
-    const shouldChangeWeather = hasAnyLock ? locks.weather : true;
-    const shouldChangeTime = hasAnyLock ? locks.time : true;
-    const shouldChangeTires = hasAnyLock ? locks.tires : true;
-    const shouldChangeFuel = hasAnyLock ? locks.fuel : true;
+    // Машина - меняется если ЗАБЛОКИРОВАНА
+    if (locks.car) {
+        updateCar();
+    }
     
-    // Применяем изменения только для нужных параметров
-    if (shouldChangeCar) updateCar();
-    if (shouldChangeTrack) updateTrack();
-    if (shouldChangeCategory) updateCategory();
-    if (shouldChangeWeather) updateWeather();
-    if (shouldChangeTime) updateTime();
-    if (shouldChangeTires) updateTires();
-    if (shouldChangeFuel) updateFuel();
+    // Трасса - меняется если ЗАБЛОКИРОВАНА
+    if (locks.track) {
+        updateTrack();
+    }
+    
+    // Категория - меняется если ЗАБЛОКИРОВАНА
+    if (locks.category) {
+        updateCategory();
+    }
+    
+    // Погода - меняется если ЗАБЛОКИРОВАНА
+    if (locks.weather) {
+        updateWeather();
+    }
+    
+    // Время - меняется если ЗАБЛОКИРОВАНО
+    if (locks.time) {
+        updateTime();
+    }
+    
+    // Износ шин - меняется если ЗАБЛОКИРОВАН
+    if (locks.tires) {
+        updateTires();
+    }
+    
+    // Расход топлива - меняется если ЗАБЛОКИРОВАН
+    if (locks.fuel) {
+        updateFuel();
+    }
     
     // Обновляем кнопки-замки
     document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
@@ -3133,9 +3149,15 @@ function generateLocalRace() {
     
     saveLocksToStorage();
     
+    // Проверяем, сколько замков закрыто
+    const lockedCount = Object.values(locks).filter(v => v === true).length;
+    const totalParams = Object.keys(locks).length;
+    
     // Показываем статус генерации
-    if (!hasAnyLock) {
-        showStatusMessage('🎲 Сгенерированы ВСЕ новые параметры! (все замки открыты)', 'success');
+    if (lockedCount === 0) {
+        showStatusMessage('🔓 Все замки открыты - ничего не изменилось', 'warning');
+    } else if (lockedCount === totalParams) {
+        showStatusMessage('🔒 Все замки закрыты - обновлены ВСЕ параметры!', 'success');
     } else {
         const changedParams = [];
         const paramNames = {
@@ -3156,11 +3178,7 @@ function generateLocalRace() {
         if (locks.tires) changedParams.push(paramNames.tires);
         if (locks.fuel) changedParams.push(paramNames.fuel);
         
-        if (changedParams.length > 0) {
-            showStatusMessage(`🔄 Обновлены параметры: ${changedParams.join(', ')} (остальные зафиксированы)`, 'info');
-        } else {
-            showStatusMessage('🔒 Все параметры зафиксированы (ничего не изменилось)', 'warning');
-        }
+        showStatusMessage(`🔒 Обновлены параметры: ${changedParams.join(', ')}`, 'info');
     }
 }
     // ===== КОНЕЦ ДОБАВЛЕННОГО БЛОКА =====
@@ -3556,10 +3574,8 @@ function toggleLock(param) {
         btn.setAttribute('data-state', locks[param] ? 'locked' : 'unlocked');
     });
     
-    // Сохраняем состояние блокировок в localStorage
     saveLocksToStorage();
     
-    // Проверяем, сколько замков закрыто
     const lockedCount = Object.values(locks).filter(v => v === true).length;
     const totalParams = Object.keys(locks).length;
     
@@ -3575,9 +3591,9 @@ function toggleLock(param) {
     
     let message = '';
     if (lockedCount === 0) {
-        message = '🔓 ВСЕ ЗАМКИ ОТКРЫТЫ - при генерации будут меняться ВСЕ параметры';
+        message = '🔓 ВСЕ ЗАМКИ ОТКРЫТЫ - при генерации НИЧЕГО не изменится';
     } else if (lockedCount === totalParams) {
-        message = '🔒 ВСЕ ЗАМКИ ЗАКРЫТЫ - при генерации будут меняться ВСЕ параметры';
+        message = '🔒 ВСЕ ЗАМКИ ЗАКРЫТЫ - при генерации изменятся ВСЕ параметры';
     } else {
         const lockedNames = Object.keys(locks).filter(k => locks[k]).map(k => paramNames[k] || k);
         const unlockedNames = Object.keys(locks).filter(k => !locks[k]).map(k => paramNames[k] || k);
@@ -3585,8 +3601,7 @@ function toggleLock(param) {
     }
     
     showStatusMessage(message, 'info');
-    
-    console.log(`🔒 Блокировка ${param}: ${locks[param] ? 'ЗАБЛОКИРОВАНА' : 'разблокирована'}`);
+    console.log(`🔒 Блокировка ${param}: ${locks[param] ? 'ЗАБЛОКИРОВАНА (будет меняться)' : 'разблокирована (НЕ будет меняться)'}`);
 }
 
 // ФУНКЦИИ toggleSyncMode, shareResult, updateRandomButtonState - УДАЛЕНЫ
