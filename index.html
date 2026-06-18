@@ -3030,49 +3030,98 @@ function resetCarsHistory() {
 }
 
 // ============================================
-// ===== ОБНОВЛЁННАЯ ФУНКЦИЯ updateTrack =====
+// ===== ОБНОВЛЁННЫЕ ФУНКЦИИ =====
 // ============================================
 
 function getRandomLaps(trackLength) { return Math.floor(Math.random() * 15) + 5; }
 
-function updateCar() { if (!locks.car) { const c = getRandomCarWithoutRepeat(); document.getElementById('carValue').innerText = c.name; document.getElementById('carIcon').src = c.icon; document.getElementById('carIcon').style.display = 'block'; displaySimilarCars(c); } }
-
-function updateTrack() { 
-    if (!locks.track) { 
-        const t = getRandomTrackSmart();
-        currentTrack = t.name;
-        
-        // Обновляем статистику
-        trackUsageCount[t.name] = (trackUsageCount[t.name] || 0) + 1;
-        trackLastUsed[t.name] = Date.now();
-        saveTrackStats();
-        
-        document.getElementById('trackValue').innerHTML = `${t.name} <span class="laps-badge">${getRandomLaps(t.length)} кругов</span>`;
-        document.getElementById('trackIcon').src = getTrackIcon(t.name);
-        document.getElementById('trackIcon').style.display = 'block';
-        if (!locks.weather) updateWeatherByTrack(t);
-        if (!locks.time) updateTimeByTrack(t);
-        
-        console.log(`🏁 Выбрана трасса: ${t.name} (использована ${trackUsageCount[t.name] || 0} раз)`);
+// Убираем проверку !locks.car - generateLocalRace уже проверяет
+function updateCar() { 
+    const c = getRandomCarWithoutRepeat(); 
+    document.getElementById('carValue').innerText = c.name; 
+    const carIcon = document.getElementById('carIcon');
+    if (carIcon && c.icon) {
+        carIcon.src = c.icon;
+        carIcon.style.display = 'block';
     }
+    const carIconFallback = document.getElementById('carIconFallback');
+    if (carIconFallback) carIconFallback.style.display = 'none';
+    displaySimilarCars(c); 
 }
 
-function updateWeatherByTrack(track) { if (locks.weather) return; let avail = weathers; if (track.weather && track.weather[0] === 'dry') avail = weathers.filter(w => !w.name.includes('дождь') && !w.name.includes('Дождь')); const w = getRandomItem(avail); document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`; }
-function updateTimeByTrack(track) { if (locks.time) return; let avail = times; if (track.times && track.times.length) avail = times.filter(t => track.times.includes(t.name)); const tm = getRandomItem(avail); document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${getRandomXValue()}</span>`; }
-function updateWeather() { if (!locks.weather) { const w = getRandomItem(weathers); document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`; } }
-function updateTime() { if (!locks.time) { const t = getRandomItem(times); document.getElementById('timeValue').innerHTML = `${t.icon} ${t.name} <span class="time-x-badge">${getRandomXValue()}</span>`; } }
+// Убираем проверку !locks.track - generateLocalRace уже проверяет
+function updateTrack() { 
+    const t = getRandomTrackSmart();
+    currentTrack = t.name;
+    
+    // Обновляем статистику
+    trackUsageCount[t.name] = (trackUsageCount[t.name] || 0) + 1;
+    trackLastUsed[t.name] = Date.now();
+    saveTrackStats();
+    
+    const laps = getRandomLaps(t.length) || 5;
+    document.getElementById('trackValue').innerHTML = `${t.name} <span class="laps-badge">${laps} кругов</span>`;
+    const trackIcon = document.getElementById('trackIcon');
+    if (trackIcon) {
+        trackIcon.src = getTrackIcon(t.name);
+        trackIcon.style.display = 'block';
+    }
+    const trackIconFallback = document.getElementById('trackIconFallback');
+    if (trackIconFallback) trackIconFallback.style.display = 'none';
+    
+    if (!locks.weather) updateWeatherByTrack(t);
+    if (!locks.time) updateTimeByTrack(t);
+    
+    console.log(`🏁 Выбрана трасса: ${t.name} (использована ${trackUsageCount[t.name] || 0} раз)`);
+}
+
+function updateWeatherByTrack(track) { 
+    if (locks.weather) return; 
+    let avail = weathers; 
+    if (track.weather && track.weather[0] === 'dry') {
+        avail = weathers.filter(w => !w.name.includes('дождь') && !w.name.includes('Дождь'));
+    }
+    const w = getRandomItem(avail); 
+    document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`; 
+}
+
+function updateTimeByTrack(track) { 
+    if (locks.time) return; 
+    let avail = times; 
+    if (track.times && track.times.length) {
+        avail = times.filter(t => track.times.includes(t.name));
+    }
+    const tm = getRandomItem(avail); 
+    document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${getRandomXValue()}</span>`; 
+}
+
+// Убираем проверку !locks.weather - generateLocalRace уже проверяет
+function updateWeather() { 
+    const w = getRandomItem(weathers); 
+    document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`; 
+}
+
+// Убираем проверку !locks.time - generateLocalRace уже проверяет
+function updateTime() { 
+    const t = getRandomItem(times); 
+    document.getElementById('timeValue').innerHTML = `${t.icon} ${t.name} <span class="time-x-badge">${getRandomXValue()}</span>`; 
+}
+
+// Убираем проверку !locks.tires - generateLocalRace уже проверяет
 function updateTires() { 
-    if (!locks.tires) {
-        document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${getRandomTiresValue()}</span>`;
-    } 
+    document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${getRandomTiresValue()}</span>`;
 }
 
+// Убираем проверку !locks.fuel - generateLocalRace уже проверяет
 function updateFuel() { 
-    if (!locks.fuel) {
-        document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${getRandomFuelValue()}</span>`;
-    } 
+    document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${getRandomFuelValue()}</span>`;
 }
-function updateCategory() { if (!locks.category) { const c = getRandomItem(categories); document.getElementById('categoryValue').innerHTML = `${c.icon} ${c.name} (${c.description})`; } }
+
+// Убираем проверку !locks.category - generateLocalRace уже проверяет
+function updateCategory() { 
+    const c = getRandomItem(categories); 
+    document.getElementById('categoryValue').innerHTML = `${c.icon} ${c.name} (${c.description})`; 
+}
 
 function generateLocalRace() {
     console.log('🎲 generateLocalRace вызвана!');
@@ -3102,7 +3151,7 @@ function generateLocalRace() {
     
     updateVisibilityByDisplayMode(displayMode);
     
-    // ===== ИСПРАВЛЕННАЯ ЛОГИКА ЗАМКОВ =====
+    // ===== НОВАЯ ЛОГИКА ЗАМКОВ =====
     // Если замок ЗАБЛОКИРОВАН (true) - меняем параметр
     // Если замок РАЗБЛОКИРОВАН (false) - НЕ меняем параметр
     
