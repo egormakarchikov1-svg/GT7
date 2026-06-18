@@ -3072,6 +3072,9 @@ function updateFuel() {
 function updateCategory() { if (!locks.category) { const c = getRandomItem(categories); document.getElementById('categoryValue').innerHTML = `${c.icon} ${c.name} (${c.description})`; } }
 
 function generateLocalRace() {
+    console.log('🎲 generateLocalRace вызвана!');
+    console.log('Текущие замки:', locks);
+    
     // Показываем блоки
     document.getElementById('carsTrackContainer').style.setProperty('display', 'block', 'important');
     document.getElementById('settingsContainer').style.setProperty('display', 'block', 'important');
@@ -3102,36 +3105,43 @@ function generateLocalRace() {
     
     // Машина - меняется если ЗАБЛОКИРОВАНА
     if (locks.car) {
+        console.log('🔄 Меняем МАШИНУ');
         updateCar();
     }
     
     // Трасса - меняется если ЗАБЛОКИРОВАНА
     if (locks.track) {
+        console.log('🔄 Меняем ТРАССУ');
         updateTrack();
     }
     
     // Категория - меняется если ЗАБЛОКИРОВАНА
     if (locks.category) {
+        console.log('🔄 Меняем КАТЕГОРИЮ');
         updateCategory();
     }
     
     // Погода - меняется если ЗАБЛОКИРОВАНА
     if (locks.weather) {
+        console.log('🔄 Меняем ПОГОДУ');
         updateWeather();
     }
     
     // Время - меняется если ЗАБЛОКИРОВАНО
     if (locks.time) {
+        console.log('🔄 Меняем ВРЕМЯ');
         updateTime();
     }
     
     // Износ шин - меняется если ЗАБЛОКИРОВАН
     if (locks.tires) {
+        console.log('🔄 Меняем ИЗНОС ШИН');
         updateTires();
     }
     
     // Расход топлива - меняется если ЗАБЛОКИРОВАН
     if (locks.fuel) {
+        console.log('🔄 Меняем РАСХОД ТОПЛИВА');
         updateFuel();
     }
     
@@ -4703,27 +4713,36 @@ function init() {
     if (backToMenuBtn) backToMenuBtn.addEventListener('click', backToMenu);
 
     const generateRandomRaceBtn = document.getElementById('generateRandomRaceBtn');
-    if (generateRandomRaceBtn) {
-        generateRandomRaceBtn.addEventListener('click', () => {
-            isApplyingUpdate = false;
-            if (userSyncEnabled) {
-                userSyncEnabled = false;
-                currentAdminId = null;
-                currentAdminName = null;
-                const banner = document.getElementById('adminSyncBanner');
-                if (banner) banner.classList.add('hidden');
-                stopAutoRefresh();
-                resetSyncCache();
-                if (generateRandomRaceBtn) generateRandomRaceBtn.style.display = 'block';
+if (generateRandomRaceBtn) {
+    generateRandomRaceBtn.addEventListener('click', () => {
+        console.log('🎯 Кнопка "СЛУЧАЙНАЯ ГОНКА" нажата!');
+        console.log('userSyncEnabled:', userSyncEnabled);
+        console.log('Текущие замки:', locks);
+        
+        isApplyingUpdate = false;
+        if (userSyncEnabled) {
+            console.log('🔄 Режим синхронизации - переключаем в локальный');
+            userSyncEnabled = false;
+            currentAdminId = null;
+            currentAdminName = null;
+            const banner = document.getElementById('adminSyncBanner');
+            if (banner) banner.classList.add('hidden');
+            stopAutoRefresh();
+            resetSyncCache();
+            if (generateRandomRaceBtn) generateRandomRaceBtn.style.display = 'block';
+        }
+        setTimeout(() => {
+            if (typeof generateLocalRace === 'function') {
+                console.log('🎲 Вызываем generateLocalRace');
+                generateLocalRace();
+                showStatusMessage('🎲 Новая случайная гонка сгенерирована!', 'success');
+            } else {
+                console.error('❌ generateLocalRace НЕ ОПРЕДЕЛЕНА!');
+                showStatusMessage('❌ Ошибка: функция generateLocalRace не найдена', 'error');
             }
-            setTimeout(() => {
-                if (typeof generateLocalRace === 'function') {
-                    generateLocalRace();
-                    showStatusMessage('🎲 Новая случайная гонка сгенерирована!', 'success');
-                }
-            }, 100);
-        });
-    }
+        }, 100);
+    });
+}
 
         const exitManualModeBtn = document.getElementById('exitManualModeBtn');
     if (exitManualModeBtn) {
