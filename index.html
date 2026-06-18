@@ -1397,6 +1397,11 @@ function updateTimeByTrack(track) {
 // ============================================
 
 // Функция обновления погоды - НЕ ЗАВИСИТ от трассы
+// ============================================
+// ИСПРАВЛЕННЫЕ ФУНКЦИИ ДЛЯ ПОГОДЫ И ВРЕМЕНИ
+// ============================================
+
+// Функция обновления погоды - НЕ ЗАВИСИТ от трассы
 function updateWeather(force) {
     if (force) {
         const w = getRandomItem(weathers);
@@ -1475,8 +1480,8 @@ function generateLocalRace() {
     // ★★★ ОБНОВЛЯЕМ КАЖДЫЙ ПАРАМЕТР ОТДЕЛЬНО ★★★
     if (paramsToUpdate.includes('car')) updateCar(true);
     if (paramsToUpdate.includes('track')) updateTrack(true);
-    if (paramsToUpdate.includes('weather')) updateWeather(true);  // ← РАБОТАЕТ ОТДЕЛЬНО
-    if (paramsToUpdate.includes('time')) updateTime(true);        // ← РАБОТАЕТ ОТДЕЛЬНО
+    if (paramsToUpdate.includes('weather')) updateWeather(true);
+    if (paramsToUpdate.includes('time')) updateTime(true);
     if (paramsToUpdate.includes('tires')) updateTires(true);
     if (paramsToUpdate.includes('fuel')) updateFuel(true);
     if (paramsToUpdate.includes('category')) updateCategory(true);
