@@ -1728,8 +1728,10 @@ function showMainApp(autoGenerate = true) {
     
     startAutoRefresh();
     
+    // КНОПКА НЕ СКРЫВАЕТСЯ, а остается видимой
     if (generateRandomRaceBtn) {
-        generateRandomRaceBtn.style.display = 'none';
+        generateRandomRaceBtn.style.display = 'block';
+        generateRandomRaceBtn.innerHTML = '🎲 СЛУЧАЙНАЯ ГОНКА (локально)';
     }
     
     updateModeIndicator('admin', currentAdminName || currentAdminId);
@@ -1743,6 +1745,7 @@ function showMainApp(autoGenerate = true) {
     
     if (generateRandomRaceBtn) {
         generateRandomRaceBtn.style.display = 'block';
+        generateRandomRaceBtn.innerHTML = '🎲 СЛУЧАЙНАЯ ГОНКА';
     }
     
     updateModeIndicator('local');
@@ -4728,18 +4731,8 @@ if (generateRandomRaceBtn) {
         console.log('userSyncEnabled:', userSyncEnabled);
         console.log('Текущие замки:', locks);
         
-        isApplyingUpdate = false;
-        if (userSyncEnabled) {
-            console.log('🔄 Режим синхронизации - переключаем в локальный');
-            userSyncEnabled = false;
-            currentAdminId = null;
-            currentAdminName = null;
-            const banner = document.getElementById('adminSyncBanner');
-            if (banner) banner.classList.add('hidden');
-            stopAutoRefresh();
-            resetSyncCache();
-            if (generateRandomRaceBtn) generateRandomRaceBtn.style.display = 'block';
-        }
+        // НЕ ОТКЛЮЧАЕМ СИНХРОНИЗАЦИЮ ПРИ НАЖАТИИ
+        // Просто генерируем локальную гонку
         setTimeout(() => {
             if (typeof generateLocalRace === 'function') {
                 console.log('🎲 Вызываем generateLocalRace');
