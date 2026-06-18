@@ -1392,6 +1392,11 @@ function updateTimeByTrack(track) {
     document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${getRandomXValue()}</span>`;
 }
 
+// ============================================
+// ИСПРАВЛЕННЫЕ ФУНКЦИИ ДЛЯ ПОГОДЫ И ВРЕМЕНИ
+// ============================================
+
+// Функция обновления погоды - НЕ ЗАВИСИТ от трассы
 function updateWeather(force) {
     if (force) {
         const w = getRandomItem(weathers);
@@ -1399,6 +1404,7 @@ function updateWeather(force) {
     }
 }
 
+// Функция обновления времени - НЕ ЗАВИСИТ от трассы
 function updateTime(force) {
     if (force) {
         const t = getRandomItem(times);
@@ -1406,33 +1412,25 @@ function updateTime(force) {
     }
 }
 
-function updateTires(force) {
+// Функция обновления трассы - НЕ ТРОГАЕТ погоду и время
+function updateTrack(force) {
     if (force) {
-        document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${getRandomTiresValue()}</span>`;
-    }
-}
-
-function updateFuel(force) {
-    if (force) {
-        document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${getRandomFuelValue()}</span>`;
-    }
-}
-
-function updateCategory(force) {
-    if (force) {
-        const c = getRandomItem(categories);
-        document.getElementById('categoryValue').innerHTML = `${c.icon} ${c.name} (${c.description})`;
+        const t = getRandomTrackSmart();
+        currentTrack = t.name;
+        trackUsageCount[t.name] = (trackUsageCount[t.name] || 0) + 1;
+        trackLastUsed[t.name] = Date.now();
+        saveTrackStats();
+        document.getElementById('trackValue').innerHTML = `${t.name}`;
+        document.getElementById('trackIcon').style.display = 'none';
+        document.getElementById('trackIconFallback').style.display = 'flex';
+        document.getElementById('trackIconFallback').innerHTML = '🏁';
+        // Убираем вызовы погоды и времени отсюда!
     }
 }
 
 // ============================================
-// ════════════════════════════════════════════════════════════
-//  ПРАВИЛЬНАЯ ЛОГИКА РАБОТЫ ЗАМКОВ
-// ════════════════════════════════════════════════════════════
-// 1. Если ВСЕ замки открыты ИЛИ ВСЕ замки закрыты → обновляются ВСЕ параметры
-// 2. Если закрыты ТОЛЬКО НЕКОТОРЫЕ замки → обновляются ТОЛЬКО ЗАБЛОКИРОВАННЫЕ (🔒)
-// ════════════════════════════════════════════════════════════
-
+// ИСПРАВЛЕННАЯ generateLocalRace
+// ============================================
 function generateLocalRace() {
     document.getElementById('carsTrackContainer').style.setProperty('display', 'block', 'important');
     document.getElementById('settingsContainer').style.setProperty('display', 'block', 'important');
@@ -1456,7 +1454,6 @@ function generateLocalRace() {
     updateVisibilityByDisplayMode(displayMode);
     
     // ★★★ ПРАВИЛЬНАЯ ЛОГИКА ★★★
-    // Проверяем, есть ли хоть один ЗАКРЫТЫЙ замок
     const hasLocked = Object.values(locks).some(value => value === true);
     
     let paramsToUpdate = [];
@@ -1468,14 +1465,18 @@ function generateLocalRace() {
     } else {
         // Есть замки → обновляем ТОЛЬКО ЗАБЛОКИРОВАННЫЕ (🔒)
         paramsToUpdate = Object.keys(locks).filter(key => locks[key] === true);
+        if (paramsToUpdate.length === 0) {
+            showStatusMessage(`⚠️ Нет заблокированных параметров для обновления`, 'warning');
+            return;
+        }
         showStatusMessage(`🔒 Обновляем только ЗАБЛОКИРОВАННЫЕ: ${paramsToUpdate.join(', ')}`, 'info');
     }
     
-    // Обновляем выбранные параметры
+    // ★★★ ОБНОВЛЯЕМ КАЖДЫЙ ПАРАМЕТР ОТДЕЛЬНО ★★★
     if (paramsToUpdate.includes('car')) updateCar(true);
     if (paramsToUpdate.includes('track')) updateTrack(true);
-    if (paramsToUpdate.includes('weather')) updateWeather(true);
-    if (paramsToUpdate.includes('time')) updateTime(true);
+    if (paramsToUpdate.includes('weather')) updateWeather(true);  // ← РАБОТАЕТ ОТДЕЛЬНО
+    if (paramsToUpdate.includes('time')) updateTime(true);        // ← РАБОТАЕТ ОТДЕЛЬНО
     if (paramsToUpdate.includes('tires')) updateTires(true);
     if (paramsToUpdate.includes('fuel')) updateFuel(true);
     if (paramsToUpdate.includes('category')) updateCategory(true);
