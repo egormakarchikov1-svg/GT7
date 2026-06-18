@@ -831,15 +831,20 @@
     </div>
 
     <div class="category-container hidden-block" id="categoryContainer">
-        <div class="category-header-clickable" id="categoryHeader">
-            <div style="width: 30px;"></div>
-            <div class="category-title">🏆 ГОНОЧНЫЙ КЛАСС 🏆</div>
-            <div class="category-toggle-icon" id="categoryToggleIcon">▼</div>
-        </div>
-        <div class="category-content" id="categoryContent">
-            <div class="category-value" id="categoryValue">—</div>
-        </div>
+    <div class="category-header-clickable" id="categoryHeader">
+        <div style="width: 30px;"></div>
+        <div class="category-title">🏆 ГОНОЧНЫЙ КЛАСС 🏆</div>
+        <div class="category-toggle-icon" id="categoryToggleIcon">▼</div>
     </div>
+    <div class="category-content" id="categoryContent">
+        <!-- ★★★ ДОБАВИТЬ ЗАМОК ★★★ -->
+        <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 10px;">
+            <button class="lock-btn" data-param="category" data-state="unlocked" style="position: static;">🔓</button>
+            <span style="color: #ff4d4d; font-size: 14px; font-weight: bold;">ЗАБЛОКИРОВАТЬ КЛАСС</span>
+        </div>
+        <div class="category-value" id="categoryValue">—</div>
+    </div>
+</div>
 
     <div class="settings-container" id="settingsContainer">
         <div class="settings-header-clickable" id="settingsHeader">
