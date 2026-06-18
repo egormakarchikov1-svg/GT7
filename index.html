@@ -1392,6 +1392,7 @@ function updateTimeByTrack(track) {
     document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${getRandomXValue()}</span>`;
 }
 
+// Функция обновления погоды - НЕ ЗАВИСИТ от трассы
 function updateWeather(force) {
     if (force) {
         const w = getRandomItem(weathers);
@@ -1406,7 +1407,6 @@ function updateTime(force) {
         document.getElementById('timeValue').innerHTML = `${t.icon} ${t.name} <span class="time-x-badge">${getRandomXValue()}</span>`;
     }
 }
-
 // Функция обновления трассы - НЕ ТРОГАЕТ погоду и время
 function updateTrack(force) {
     if (force) {
@@ -1419,6 +1419,7 @@ function updateTrack(force) {
         document.getElementById('trackIcon').style.display = 'none';
         document.getElementById('trackIconFallback').style.display = 'flex';
         document.getElementById('trackIconFallback').innerHTML = '🏁';
+        // ★★★ УБИРАЕМ ВЫЗОВЫ ПОГОДЫ И ВРЕМЕНИ ★★★
     }
 }
 
@@ -1456,11 +1457,9 @@ function generateLocalRace() {
     let paramsToUpdate = [];
     
     if (!hasLocked) {
-        // Нет замков (все открыты) → обновляем ВСЕ параметры
         paramsToUpdate = ['car', 'track', 'weather', 'time', 'tires', 'fuel', 'category'];
         showStatusMessage(`🔄 Все замки открыты — обновляем ВСЕ!`, 'info');
     } else {
-        // Есть замки → обновляем ТОЛЬКО ЗАБЛОКИРОВАННЫЕ (🔒)
         paramsToUpdate = Object.keys(locks).filter(key => locks[key] === true);
         if (paramsToUpdate.length === 0) {
             showStatusMessage(`⚠️ Нет заблокированных параметров для обновления`, 'warning');
@@ -1474,12 +1473,10 @@ function generateLocalRace() {
     if (paramsToUpdate.includes('track')) updateTrack(true);
     if (paramsToUpdate.includes('weather')) updateWeather(true);
     if (paramsToUpdate.includes('time')) updateTime(true);
-    // ★★★ ВАШИ ФУНКЦИИ ДЛЯ ШИН И ТОПЛИВА ★★★
-    if (paramsToUpdate.includes('tires')) updateTiresValue(true);
-    if (paramsToUpdate.includes('fuel')) updateFuelValue(true);
+    if (paramsToUpdate.includes('tires')) updateTires(true);  // ← ВАШЕ НАЗВАНИЕ
+    if (paramsToUpdate.includes('fuel')) updateFuel(true);    // ← ВАШЕ НАЗВАНИЕ
     if (paramsToUpdate.includes('category')) updateCategory(true);
     
-    // Обновляем отображение замков
     document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
         const param = btn.getAttribute('data-param');
         if (locks[param]) {
