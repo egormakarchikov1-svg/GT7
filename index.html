@@ -1352,6 +1352,7 @@ function updateCar(force) {
     }
 }
 
+// ★★★ ИСПРАВЛЕННАЯ updateTrack - НЕ ТРОГАЕТ ПОГОДУ И ВРЕМЯ ★★★
 function updateTrack(force) {
     if (force) {
         const t = getRandomTrackSmart();
@@ -1363,36 +1364,14 @@ function updateTrack(force) {
         document.getElementById('trackIcon').style.display = 'none';
         document.getElementById('trackIconFallback').style.display = 'flex';
         document.getElementById('trackIconFallback').innerHTML = '🏁';
-        
-        // ★★★ ИСПРАВЛЕНИЕ ★★★
-        // Погода и время обновляются ТОЛЬКО если замок на трассе ЗАКРЫТ (locks.track === true)
-        // ИЛИ если force = true (принудительное обновление)
-        if (locks.track || force) {
-            updateWeatherByTrack(t);
-            updateTimeByTrack(t);
-        }
+        // ★★★ УБРАЛ ВЫЗОВЫ ПОГОДЫ И ВРЕМЕНИ ★★★
     }
 }
 
-function updateWeatherByTrack(track) {
-    let avail = weathers;
-    if (track.weather && track.weather[0] === 'dry') {
-        avail = weathers.filter(w => !w.name.includes('дождь') && !w.name.includes('Дождь'));
-    }
-    const w = getRandomItem(avail);
-    document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`;
-}
+// ★★★ updateWeatherByTrack - УДАЛИТЬ, ОНА НЕ НУЖНА ★★★
+// ★★★ updateTimeByTrack - УДАЛИТЬ, ОНА НЕ НУЖНА ★★★
 
-function updateTimeByTrack(track) {
-    let avail = times;
-    if (track.times && track.times.length) {
-        avail = times.filter(t => track.times.includes(t.name));
-    }
-    const tm = getRandomItem(avail);
-    document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${getRandomXValue()}</span>`;
-}
-
-// Функция обновления погоды - НЕ ЗАВИСИТ от трассы
+// Функция обновления погоды - РАБОТАЕТ ОТДЕЛЬНО
 function updateWeather(force) {
     if (force) {
         const w = getRandomItem(weathers);
@@ -1400,35 +1379,15 @@ function updateWeather(force) {
     }
 }
 
-// Функция обновления времени - НЕ ЗАВИСИТ от трассы
+// Функция обновления времени - РАБОТАЕТ ОТДЕЛЬНО
 function updateTime(force) {
     if (force) {
         const t = getRandomItem(times);
         document.getElementById('timeValue').innerHTML = `${t.icon} ${t.name} <span class="time-x-badge">${getRandomXValue()}</span>`;
     }
 }
-// Функция обновления трассы - НЕ ТРОГАЕТ погоду и время
-function updateTrack(force) {
-    if (force) {
-        const t = getRandomTrackSmart();
-        currentTrack = t.name;
-        trackUsageCount[t.name] = (trackUsageCount[t.name] || 0) + 1;
-        trackLastUsed[t.name] = Date.now();
-        saveTrackStats();
-        document.getElementById('trackValue').innerHTML = `${t.name}`;
-        document.getElementById('trackIcon').style.display = 'none';
-        document.getElementById('trackIconFallback').style.display = 'flex';
-        document.getElementById('trackIconFallback').innerHTML = '🏁';
-        // ★★★ УБИРАЕМ ВЫЗОВЫ ПОГОДЫ И ВРЕМЕНИ ★★★
-    }
-}
 
-// ★★★ ВАШИ ФУНКЦИИ ДЛЯ ШИН И ТОПЛИВА ★★★
-// Они уже есть в вашем коде, я просто их вызываю
-
-// ============================================
-// ИСПРАВЛЕННАЯ generateLocalRace
-// ============================================
+// ★★★ ИСПРАВЛЕННАЯ generateLocalRace ★★★
 function generateLocalRace() {
     document.getElementById('carsTrackContainer').style.setProperty('display', 'block', 'important');
     document.getElementById('settingsContainer').style.setProperty('display', 'block', 'important');
@@ -1457,9 +1416,11 @@ function generateLocalRace() {
     let paramsToUpdate = [];
     
     if (!hasLocked) {
+        // Все замки открыты → обновляем ВСЕ
         paramsToUpdate = ['car', 'track', 'weather', 'time', 'tires', 'fuel', 'category'];
         showStatusMessage(`🔄 Все замки открыты — обновляем ВСЕ!`, 'info');
     } else {
+        // Есть закрытые замки → обновляем ТОЛЬКО ЗАБЛОКИРОВАННЫЕ
         paramsToUpdate = Object.keys(locks).filter(key => locks[key] === true);
         if (paramsToUpdate.length === 0) {
             showStatusMessage(`⚠️ Нет заблокированных параметров для обновления`, 'warning');
@@ -1473,8 +1434,8 @@ function generateLocalRace() {
     if (paramsToUpdate.includes('track')) updateTrack(true);
     if (paramsToUpdate.includes('weather')) updateWeather(true);
     if (paramsToUpdate.includes('time')) updateTime(true);
-    if (paramsToUpdate.includes('tires')) updateTires(true);  // ← ВАШЕ НАЗВАНИЕ
-    if (paramsToUpdate.includes('fuel')) updateFuel(true);    // ← ВАШЕ НАЗВАНИЕ
+    if (paramsToUpdate.includes('tires')) updateTiresValue(true);
+    if (paramsToUpdate.includes('fuel')) updateFuelValue(true);
     if (paramsToUpdate.includes('category')) updateCategory(true);
     
     document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
