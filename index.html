@@ -1455,39 +1455,27 @@ function generateLocalRace() {
     
     updateVisibilityByDisplayMode(displayMode);
     
-    // ★★★ ОСНОВНАЯ ЛОГИКА ★★★
-    const lockValues = Object.values(locks);
-    const allSame = lockValues.every(v => v === lockValues[0]);
+    // ★★★ ПРАВИЛЬНАЯ ЛОГИКА ★★★
+    // Проверяем, есть ли хоть один ЗАКРЫТЫЙ замок
+    const hasLocked = Object.values(locks).some(value => value === true);
     
     let paramsToUpdate = [];
     
-    if (allSame) {
-        // Все замки в одном состоянии → обновляем ВСЕ параметры
+    if (!hasLocked) {
+        // Нет замков (все открыты) → обновляем ВСЕ параметры
         paramsToUpdate = ['car', 'track', 'weather', 'time', 'tires', 'fuel', 'category'];
-        showStatusMessage(`🔄 Все замки ${lockValues[0] ? 'ЗАКРЫТЫ' : 'ОТКРЫТЫ'} — обновляем ВСЕ!`, 'info');
+        showStatusMessage(`🔄 Все замки открыты — обновляем ВСЕ!`, 'info');
     } else {
-        // Замки в разных состояниях → обновляем ТОЛЬКО ЗАБЛОКИРОВАННЫЕ (🔒)
+        // Есть замки → обновляем ТОЛЬКО ЗАБЛОКИРОВАННЫЕ (🔒)
         paramsToUpdate = Object.keys(locks).filter(key => locks[key] === true);
-        if (paramsToUpdate.length === 0) {
-            showStatusMessage(`⚠️ Нет заблокированных параметров для обновления`, 'warning');
-            return;
-        }
         showStatusMessage(`🔒 Обновляем только ЗАБЛОКИРОВАННЫЕ: ${paramsToUpdate.join(', ')}`, 'info');
     }
     
-    // ★★★ ИСПРАВЛЕНИЕ: погода и время обновляются только когда обновляется трасса ★★★
-    // Обновляем машину
+    // Обновляем выбранные параметры
     if (paramsToUpdate.includes('car')) updateCar(true);
-    
-    // Обновляем трассу
-    if (paramsToUpdate.includes('track')) {
-        updateTrack(true);
-        // Если трасса обновляется → обновляем погоду и время
-        updateWeather(true);
-        updateTime(true);
-    }
-    
-    // Обновляем остальные параметры
+    if (paramsToUpdate.includes('track')) updateTrack(true);
+    if (paramsToUpdate.includes('weather')) updateWeather(true);
+    if (paramsToUpdate.includes('time')) updateTime(true);
     if (paramsToUpdate.includes('tires')) updateTires(true);
     if (paramsToUpdate.includes('fuel')) updateFuel(true);
     if (paramsToUpdate.includes('category')) updateCategory(true);
