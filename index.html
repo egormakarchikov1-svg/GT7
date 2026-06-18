@@ -3578,7 +3578,12 @@ async function forceRefreshCombo() {
 // УПРАВЛЕНИЕ (ИСПРАВЛЕНО - УДАЛЕНЫ ЛИШНИЕ ФУНКЦИИ)
 // ============================================
 function toggleLock(param) {
+    console.log('🔄 toggleLock вызвана для:', param, 'текущее состояние:', locks[param]);
+    
     locks[param] = !locks[param];
+    
+    console.log('🔄 Новое состояние:', locks[param]);
+    
     document.querySelectorAll(`.lock-btn[data-param="${param}"], .settings-lock-btn[data-param="${param}"]`).forEach(btn => {
         btn.innerText = locks[param] ? '🔒' : '🔓';
         btn.setAttribute('data-state', locks[param] ? 'locked' : 'unlocked');
@@ -3612,6 +3617,7 @@ function toggleLock(param) {
     
     showStatusMessage(message, 'info');
     console.log(`🔒 Блокировка ${param}: ${locks[param] ? 'ЗАБЛОКИРОВАНА (будет меняться)' : 'разблокирована (НЕ будет меняться)'}`);
+    console.log('📋 Текущие замки:', locks);
 }
 
 // ФУНКЦИИ toggleSyncMode, shareResult, updateRandomButtonState - УДАЛЕНЫ
@@ -4637,20 +4643,23 @@ function init() {
     console.log('🚀 Инициализация приложения');
     loadShownCars();
     
-    document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
-        const param = btn.getAttribute('data-param');
-        if (locks[param] === false) {
-            btn.setAttribute('data-state', 'unlocked');
-            btn.innerText = '🔓';
-        } else {
-            btn.setAttribute('data-state', 'locked');
-            btn.innerText = '🔒';
-        }
-        btn.addEventListener('click', (e) => { 
-            e.stopPropagation(); 
-            toggleLock(btn.getAttribute('data-param')); 
-        });
+   document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
+    const param = btn.getAttribute('data-param');
+    console.log('🔧 Инициализация замка:', param, 'состояние:', locks[param]);
+    
+    if (locks[param] === false) {
+        btn.setAttribute('data-state', 'unlocked');
+        btn.innerText = '🔓';
+    } else {
+        btn.setAttribute('data-state', 'locked');
+        btn.innerText = '🔒';
+    }
+    btn.addEventListener('click', (e) => { 
+        e.stopPropagation(); 
+        console.log('👆 Нажат замок:', param);
+        toggleLock(btn.getAttribute('data-param')); 
     });
+});
     
     const settingsHeader = document.getElementById('settingsHeader');
     if (settingsHeader) settingsHeader.addEventListener('click', toggleSettings);
