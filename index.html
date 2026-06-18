@@ -1728,10 +1728,8 @@ function showMainApp(autoGenerate = true) {
     
     startAutoRefresh();
     
-    // КНОПКА НЕ СКРЫВАЕТСЯ, а остается видимой
     if (generateRandomRaceBtn) {
-        generateRandomRaceBtn.style.display = 'block';
-        generateRandomRaceBtn.innerHTML = '🎲 СЛУЧАЙНАЯ ГОНКА (локально)';
+        generateRandomRaceBtn.style.display = 'none';
     }
     
     updateModeIndicator('admin', currentAdminName || currentAdminId);
@@ -1745,7 +1743,6 @@ function showMainApp(autoGenerate = true) {
     
     if (generateRandomRaceBtn) {
         generateRandomRaceBtn.style.display = 'block';
-        generateRandomRaceBtn.innerHTML = '🎲 СЛУЧАЙНАЯ ГОНКА';
     }
     
     updateModeIndicator('local');
@@ -3030,109 +3027,55 @@ function resetCarsHistory() {
 }
 
 // ============================================
-// ===== ОБНОВЛЁННЫЕ ФУНКЦИИ =====
+// ===== ОБНОВЛЁННАЯ ФУНКЦИЯ updateTrack =====
 // ============================================
 
 function getRandomLaps(trackLength) { return Math.floor(Math.random() * 15) + 5; }
 
-// Убираем проверку !locks.car - generateLocalRace уже проверяет
-function updateCar() { 
-    const c = getRandomCarWithoutRepeat(); 
-    document.getElementById('carValue').innerText = c.name; 
-    const carIcon = document.getElementById('carIcon');
-    if (carIcon && c.icon) {
-        carIcon.src = c.icon;
-        carIcon.style.display = 'block';
-    }
-    const carIconFallback = document.getElementById('carIconFallback');
-    if (carIconFallback) carIconFallback.style.display = 'none';
-    displaySimilarCars(c); 
-}
+function updateCar() { if (!locks.car) { const c = getRandomCarWithoutRepeat(); document.getElementById('carValue').innerText = c.name; document.getElementById('carIcon').src = c.icon; document.getElementById('carIcon').style.display = 'block'; displaySimilarCars(c); } }
 
-// Убираем проверку !locks.track - generateLocalRace уже проверяет
 function updateTrack() { 
-    const t = getRandomTrackSmart();
-    currentTrack = t.name;
-    
-    // Обновляем статистику
-    trackUsageCount[t.name] = (trackUsageCount[t.name] || 0) + 1;
-    trackLastUsed[t.name] = Date.now();
-    saveTrackStats();
-    
-    const laps = getRandomLaps(t.length) || 5;
-    document.getElementById('trackValue').innerHTML = `${t.name} <span class="laps-badge">${laps} кругов</span>`;
-    const trackIcon = document.getElementById('trackIcon');
-    if (trackIcon) {
-        trackIcon.src = getTrackIcon(t.name);
-        trackIcon.style.display = 'block';
+    if (!locks.track) { 
+        const t = getRandomTrackSmart();
+        currentTrack = t.name;
+        
+        // Обновляем статистику
+        trackUsageCount[t.name] = (trackUsageCount[t.name] || 0) + 1;
+        trackLastUsed[t.name] = Date.now();
+        saveTrackStats();
+        
+        document.getElementById('trackValue').innerHTML = `${t.name} <span class="laps-badge">${getRandomLaps(t.length)} кругов</span>`;
+        document.getElementById('trackIcon').src = getTrackIcon(t.name);
+        document.getElementById('trackIcon').style.display = 'block';
+        if (!locks.weather) updateWeatherByTrack(t);
+        if (!locks.time) updateTimeByTrack(t);
+        
+        console.log(`🏁 Выбрана трасса: ${t.name} (использована ${trackUsageCount[t.name] || 0} раз)`);
     }
-    const trackIconFallback = document.getElementById('trackIconFallback');
-    if (trackIconFallback) trackIconFallback.style.display = 'none';
-    
-    if (!locks.weather) updateWeatherByTrack(t);
-    if (!locks.time) updateTimeByTrack(t);
-    
-    console.log(`🏁 Выбрана трасса: ${t.name} (использована ${trackUsageCount[t.name] || 0} раз)`);
 }
 
-function updateWeatherByTrack(track) { 
-    if (locks.weather) return; 
-    let avail = weathers; 
-    if (track.weather && track.weather[0] === 'dry') {
-        avail = weathers.filter(w => !w.name.includes('дождь') && !w.name.includes('Дождь'));
-    }
-    const w = getRandomItem(avail); 
-    document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`; 
-}
-
-function updateTimeByTrack(track) { 
-    if (locks.time) return; 
-    let avail = times; 
-    if (track.times && track.times.length) {
-        avail = times.filter(t => track.times.includes(t.name));
-    }
-    const tm = getRandomItem(avail); 
-    document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${getRandomXValue()}</span>`; 
-}
-
-// Убираем проверку !locks.weather - generateLocalRace уже проверяет
-function updateWeather() { 
-    const w = getRandomItem(weathers); 
-    document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`; 
-}
-
-// Убираем проверку !locks.time - generateLocalRace уже проверяет
-function updateTime() { 
-    const t = getRandomItem(times); 
-    document.getElementById('timeValue').innerHTML = `${t.icon} ${t.name} <span class="time-x-badge">${getRandomXValue()}</span>`; 
-}
-
-// Убираем проверку !locks.tires - generateLocalRace уже проверяет
+function updateWeatherByTrack(track) { if (locks.weather) return; let avail = weathers; if (track.weather && track.weather[0] === 'dry') avail = weathers.filter(w => !w.name.includes('дождь') && !w.name.includes('Дождь')); const w = getRandomItem(avail); document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`; }
+function updateTimeByTrack(track) { if (locks.time) return; let avail = times; if (track.times && track.times.length) avail = times.filter(t => track.times.includes(t.name)); const tm = getRandomItem(avail); document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${getRandomXValue()}</span>`; }
+function updateWeather() { if (!locks.weather) { const w = getRandomItem(weathers); document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`; } }
+function updateTime() { if (!locks.time) { const t = getRandomItem(times); document.getElementById('timeValue').innerHTML = `${t.icon} ${t.name} <span class="time-x-badge">${getRandomXValue()}</span>`; } }
 function updateTires() { 
-    document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${getRandomTiresValue()}</span>`;
+    if (!locks.tires) {
+        document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${getRandomTiresValue()}</span>`;
+    } 
 }
 
-// Убираем проверку !locks.fuel - generateLocalRace уже проверяет
 function updateFuel() { 
-    document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${getRandomFuelValue()}</span>`;
+    if (!locks.fuel) {
+        document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${getRandomFuelValue()}</span>`;
+    } 
 }
-
-// Убираем проверку !locks.category - generateLocalRace уже проверяет
-function updateCategory() { 
-    const c = getRandomItem(categories); 
-    document.getElementById('categoryValue').innerHTML = `${c.icon} ${c.name} (${c.description})`; 
-}
+function updateCategory() { if (!locks.category) { const c = getRandomItem(categories); document.getElementById('categoryValue').innerHTML = `${c.icon} ${c.name} (${c.description})`; } }
 
 function generateLocalRace() {
-    console.log('🎲 generateLocalRace вызвана!');
-    console.log('Текущие замки:', locks);
-    
-    // Показываем блоки
     document.getElementById('carsTrackContainer').style.setProperty('display', 'block', 'important');
     document.getElementById('settingsContainer').style.setProperty('display', 'block', 'important');
     document.getElementById('modeSelectorBlock').style.setProperty('display', 'block', 'important');
 
-    // Групповой режим
     const groupMsg = document.getElementById('groupModeMessage');
     if (displayMode === 'group_only') {
         groupMsg.style.setProperty('display', 'block', 'important');
@@ -3140,7 +3083,6 @@ function generateLocalRace() {
         groupMsg.style.setProperty('display', 'none', 'important');
     }
     
-    // Блок похожих авто
     if (displayMode !== 'group_only') {
         document.getElementById('similarContainer').style.setProperty('display', 'block', 'important');
         document.getElementById('similarContainer').classList.remove('hidden-block');
@@ -3151,53 +3093,14 @@ function generateLocalRace() {
     
     updateVisibilityByDisplayMode(displayMode);
     
-    // ===== НОВАЯ ЛОГИКА ЗАМКОВ =====
-    // Если замок ЗАБЛОКИРОВАН (true) - меняем параметр
-    // Если замок РАЗБЛОКИРОВАН (false) - НЕ меняем параметр
+    if (!locks.car) updateCar();
+    if (!locks.track) updateTrack();
+    if (!locks.weather) updateWeather();
+    if (!locks.time) updateTime();
+    if (!locks.tires) updateTires();
+    if (!locks.fuel) updateFuel();
+    if (!locks.category) updateCategory();
     
-    // Машина - меняется если ЗАБЛОКИРОВАНА
-    if (locks.car) {
-        console.log('🔄 Меняем МАШИНУ');
-        updateCar();
-    }
-    
-    // Трасса - меняется если ЗАБЛОКИРОВАНА
-    if (locks.track) {
-        console.log('🔄 Меняем ТРАССУ');
-        updateTrack();
-    }
-    
-    // Категория - меняется если ЗАБЛОКИРОВАНА
-    if (locks.category) {
-        console.log('🔄 Меняем КАТЕГОРИЮ');
-        updateCategory();
-    }
-    
-    // Погода - меняется если ЗАБЛОКИРОВАНА
-    if (locks.weather) {
-        console.log('🔄 Меняем ПОГОДУ');
-        updateWeather();
-    }
-    
-    // Время - меняется если ЗАБЛОКИРОВАНО
-    if (locks.time) {
-        console.log('🔄 Меняем ВРЕМЯ');
-        updateTime();
-    }
-    
-    // Износ шин - меняется если ЗАБЛОКИРОВАН
-    if (locks.tires) {
-        console.log('🔄 Меняем ИЗНОС ШИН');
-        updateTires();
-    }
-    
-    // Расход топлива - меняется если ЗАБЛОКИРОВАН
-    if (locks.fuel) {
-        console.log('🔄 Меняем РАСХОД ТОПЛИВА');
-        updateFuel();
-    }
-    
-    // Обновляем кнопки-замки
     document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
         const param = btn.getAttribute('data-param');
         if (locks[param]) {
@@ -3210,38 +3113,6 @@ function generateLocalRace() {
     });
     
     saveLocksToStorage();
-    
-    // Проверяем, сколько замков закрыто
-    const lockedCount = Object.values(locks).filter(v => v === true).length;
-    const totalParams = Object.keys(locks).length;
-    
-    // Показываем статус генерации
-    if (lockedCount === 0) {
-        showStatusMessage('🔓 Все замки открыты - ничего не изменилось', 'warning');
-    } else if (lockedCount === totalParams) {
-        showStatusMessage('🔒 Все замки закрыты - обновлены ВСЕ параметры!', 'success');
-    } else {
-        const changedParams = [];
-        const paramNames = {
-            car: 'Машина',
-            track: 'Трасса',
-            category: 'Класс',
-            weather: 'Погода',
-            time: 'Время',
-            tires: 'Износ шин',
-            fuel: 'Расход топлива'
-        };
-        
-        if (locks.car) changedParams.push(paramNames.car);
-        if (locks.track) changedParams.push(paramNames.track);
-        if (locks.category) changedParams.push(paramNames.category);
-        if (locks.weather) changedParams.push(paramNames.weather);
-        if (locks.time) changedParams.push(paramNames.time);
-        if (locks.tires) changedParams.push(paramNames.tires);
-        if (locks.fuel) changedParams.push(paramNames.fuel);
-        
-        showStatusMessage(`🔒 Обновлены параметры: ${changedParams.join(', ')}`, 'info');
-    }
 }
     // ===== КОНЕЦ ДОБАВЛЕННОГО БЛОКА =====
 // ============================================
@@ -3630,46 +3501,16 @@ async function forceRefreshCombo() {
 // УПРАВЛЕНИЕ (ИСПРАВЛЕНО - УДАЛЕНЫ ЛИШНИЕ ФУНКЦИИ)
 // ============================================
 function toggleLock(param) {
-    console.log('🔄 toggleLock вызвана для:', param, 'текущее состояние:', locks[param]);
-    
     locks[param] = !locks[param];
-    
-    console.log('🔄 Новое состояние:', locks[param]);
-    
     document.querySelectorAll(`.lock-btn[data-param="${param}"], .settings-lock-btn[data-param="${param}"]`).forEach(btn => {
         btn.innerText = locks[param] ? '🔒' : '🔓';
         btn.setAttribute('data-state', locks[param] ? 'locked' : 'unlocked');
     });
     
+    // Сохраняем состояние блокировок в localStorage
     saveLocksToStorage();
     
-    const lockedCount = Object.values(locks).filter(v => v === true).length;
-    const totalParams = Object.keys(locks).length;
-    
-    const paramNames = {
-        car: 'Машина',
-        track: 'Трасса',
-        category: 'Класс',
-        weather: 'Погода',
-        time: 'Время',
-        tires: 'Износ шин',
-        fuel: 'Расход топлива'
-    };
-    
-    let message = '';
-    if (lockedCount === 0) {
-        message = '🔓 ВСЕ ЗАМКИ ОТКРЫТЫ - при генерации НИЧЕГО не изменится';
-    } else if (lockedCount === totalParams) {
-        message = '🔒 ВСЕ ЗАМКИ ЗАКРЫТЫ - при генерации изменятся ВСЕ параметры';
-    } else {
-        const lockedNames = Object.keys(locks).filter(k => locks[k]).map(k => paramNames[k] || k);
-        const unlockedNames = Object.keys(locks).filter(k => !locks[k]).map(k => paramNames[k] || k);
-        message = `🔒 Будут меняться: ${lockedNames.join(', ')} | 🔓 Зафиксированы: ${unlockedNames.join(', ')}`;
-    }
-    
-    showStatusMessage(message, 'info');
-    console.log(`🔒 Блокировка ${param}: ${locks[param] ? 'ЗАБЛОКИРОВАНА (будет меняться)' : 'разблокирована (НЕ будет меняться)'}`);
-    console.log('📋 Текущие замки:', locks);
+    console.log(`🔒 Блокировка ${param}: ${locks[param] ? 'ЗАБЛОКИРОВАНА' : 'разблокирована'}`);
 }
 
 // ФУНКЦИИ toggleSyncMode, shareResult, updateRandomButtonState - УДАЛЕНЫ
@@ -4695,23 +4536,20 @@ function init() {
     console.log('🚀 Инициализация приложения');
     loadShownCars();
     
-   document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
-    const param = btn.getAttribute('data-param');
-    console.log('🔧 Инициализация замка:', param, 'состояние:', locks[param]);
-    
-    if (locks[param] === false) {
-        btn.setAttribute('data-state', 'unlocked');
-        btn.innerText = '🔓';
-    } else {
-        btn.setAttribute('data-state', 'locked');
-        btn.innerText = '🔒';
-    }
-    btn.addEventListener('click', (e) => { 
-        e.stopPropagation(); 
-        console.log('👆 Нажат замок:', param);
-        toggleLock(btn.getAttribute('data-param')); 
+    document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
+        const param = btn.getAttribute('data-param');
+        if (locks[param] === false) {
+            btn.setAttribute('data-state', 'unlocked');
+            btn.innerText = '🔓';
+        } else {
+            btn.setAttribute('data-state', 'locked');
+            btn.innerText = '🔒';
+        }
+        btn.addEventListener('click', (e) => { 
+            e.stopPropagation(); 
+            toggleLock(btn.getAttribute('data-param')); 
+        });
     });
-});
     
     const settingsHeader = document.getElementById('settingsHeader');
     if (settingsHeader) settingsHeader.addEventListener('click', toggleSettings);
@@ -4774,26 +4612,27 @@ function init() {
     if (backToMenuBtn) backToMenuBtn.addEventListener('click', backToMenu);
 
     const generateRandomRaceBtn = document.getElementById('generateRandomRaceBtn');
-if (generateRandomRaceBtn) {
-    generateRandomRaceBtn.addEventListener('click', () => {
-        console.log('🎯 Кнопка "СЛУЧАЙНАЯ ГОНКА" нажата!');
-        console.log('userSyncEnabled:', userSyncEnabled);
-        console.log('Текущие замки:', locks);
-        
-        // НЕ ОТКЛЮЧАЕМ СИНХРОНИЗАЦИЮ ПРИ НАЖАТИИ
-        // Просто генерируем локальную гонку
-        setTimeout(() => {
-            if (typeof generateLocalRace === 'function') {
-                console.log('🎲 Вызываем generateLocalRace');
-                generateLocalRace();
-                showStatusMessage('🎲 Новая случайная гонка сгенерирована!', 'success');
-            } else {
-                console.error('❌ generateLocalRace НЕ ОПРЕДЕЛЕНА!');
-                showStatusMessage('❌ Ошибка: функция generateLocalRace не найдена', 'error');
+    if (generateRandomRaceBtn) {
+        generateRandomRaceBtn.addEventListener('click', () => {
+            isApplyingUpdate = false;
+            if (userSyncEnabled) {
+                userSyncEnabled = false;
+                currentAdminId = null;
+                currentAdminName = null;
+                const banner = document.getElementById('adminSyncBanner');
+                if (banner) banner.classList.add('hidden');
+                stopAutoRefresh();
+                resetSyncCache();
+                if (generateRandomRaceBtn) generateRandomRaceBtn.style.display = 'block';
             }
-        }, 100);
-    });
-}
+            setTimeout(() => {
+                if (typeof generateLocalRace === 'function') {
+                    generateLocalRace();
+                    showStatusMessage('🎲 Новая случайная гонка сгенерирована!', 'success');
+                }
+            }, 100);
+        });
+    }
 
         const exitManualModeBtn = document.getElementById('exitManualModeBtn');
     if (exitManualModeBtn) {
