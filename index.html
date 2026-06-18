@@ -1392,16 +1392,6 @@ function updateTimeByTrack(track) {
     document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${getRandomXValue()}</span>`;
 }
 
-// ============================================
-// ИСПРАВЛЕННЫЕ ФУНКЦИИ ДЛЯ ПОГОДЫ И ВРЕМЕНИ
-// ============================================
-
-// Функция обновления погоды - НЕ ЗАВИСИТ от трассы
-// ============================================
-// ИСПРАВЛЕННЫЕ ФУНКЦИИ ДЛЯ ПОГОДЫ И ВРЕМЕНИ
-// ============================================
-
-// Функция обновления погоды - НЕ ЗАВИСИТ от трассы
 function updateWeather(force) {
     if (force) {
         const w = getRandomItem(weathers);
@@ -1429,9 +1419,11 @@ function updateTrack(force) {
         document.getElementById('trackIcon').style.display = 'none';
         document.getElementById('trackIconFallback').style.display = 'flex';
         document.getElementById('trackIconFallback').innerHTML = '🏁';
-        // Убираем вызовы погоды и времени отсюда!
     }
 }
+
+// ★★★ ВАШИ ФУНКЦИИ ДЛЯ ШИН И ТОПЛИВА ★★★
+// Они уже есть в вашем коде, я просто их вызываю
 
 // ============================================
 // ИСПРАВЛЕННАЯ generateLocalRace
@@ -1482,8 +1474,9 @@ function generateLocalRace() {
     if (paramsToUpdate.includes('track')) updateTrack(true);
     if (paramsToUpdate.includes('weather')) updateWeather(true);
     if (paramsToUpdate.includes('time')) updateTime(true);
-    if (paramsToUpdate.includes('tires')) updateTires(true);
-    if (paramsToUpdate.includes('fuel')) updateFuel(true);
+    // ★★★ ВАШИ ФУНКЦИИ ДЛЯ ШИН И ТОПЛИВА ★★★
+    if (paramsToUpdate.includes('tires')) updateTiresValue(true);
+    if (paramsToUpdate.includes('fuel')) updateFuelValue(true);
     if (paramsToUpdate.includes('category')) updateCategory(true);
     
     // Обновляем отображение замков
