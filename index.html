@@ -1475,26 +1475,19 @@ function generateLocalRace() {
         showStatusMessage(`🔒 Обновляем только ЗАБЛОКИРОВАННЫЕ: ${paramsToUpdate.join(', ')}`, 'info');
     }
     
-    // ★★★ ИСПРАВЛЕНИЕ: погода и время обновляются вместе с трассой ★★★
-    // Если обновляется трасса → обновляем погоду и время
-    // Если погода или время заблокированы отдельно → тоже обновляем
-    
-    let shouldUpdateWeather = false;
-    let shouldUpdateTime = false;
-    
-    // Проверяем, нужно ли обновлять погоду и время
-    if (paramsToUpdate.includes('weather') || paramsToUpdate.includes('track')) {
-        shouldUpdateWeather = true;
-    }
-    if (paramsToUpdate.includes('time') || paramsToUpdate.includes('track')) {
-        shouldUpdateTime = true;
-    }
-    
-    // Обновляем параметры
+    // ★★★ ИСПРАВЛЕНИЕ: погода и время обновляются только когда обновляется трасса ★★★
+    // Обновляем машину
     if (paramsToUpdate.includes('car')) updateCar(true);
-    if (paramsToUpdate.includes('track')) updateTrack(true);
-    if (shouldUpdateWeather) updateWeather(true);
-    if (shouldUpdateTime) updateTime(true);
+    
+    // Обновляем трассу
+    if (paramsToUpdate.includes('track')) {
+        updateTrack(true);
+        // Если трасса обновляется → обновляем погоду и время
+        updateWeather(true);
+        updateTime(true);
+    }
+    
+    // Обновляем остальные параметры
     if (paramsToUpdate.includes('tires')) updateTires(true);
     if (paramsToUpdate.includes('fuel')) updateFuel(true);
     if (paramsToUpdate.includes('category')) updateCategory(true);
