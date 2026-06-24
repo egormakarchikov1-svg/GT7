@@ -689,25 +689,8 @@
         .participant-date { font-size: 11px; color: #aaa; }
         
         .laps-badge { display: none !important; }
-        
-        /* Стили для скрытия замков в режиме синхронизации */
-        .sync-mode .lock-btn,
-        .sync-mode .settings-lock-btn,
-        .sync-mode .lock-btn-container {
+        #adminSelectBlock, #carsTrackContainer, #categoryContainer, #settingsContainer, #similarContainer, .races-container, #modeSelectorBlock {
             display: none !important;
-        }
-        
-        /* Центрирование заголовков в режиме синхронизации */
-        .sync-mode .param-header {
-            justify-content: center !important;
-        }
-        
-        .sync-mode .settings-header {
-            justify-content: center !important;
-        }
-        
-        .sync-mode .param-label {
-            margin: 0 auto !important;
         }
         
         @media (max-width: 480px) {
@@ -854,6 +837,7 @@
         <div class="category-toggle-icon" id="categoryToggleIcon">▼</div>
     </div>
     <div class="category-content" id="categoryContent">
+        <!-- ★★★ ДОБАВИТЬ ЗАМОК ★★★ -->
         <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 10px;">
             <button class="lock-btn" data-param="category" data-state="unlocked" style="position: static;">🔓</button>
             <span style="color: #ff4d4d; font-size: 14px; font-weight: bold;">ЗАБЛОКИРОВАТЬ КЛАСС</span>
@@ -1102,7 +1086,7 @@ const tracksData = [
     { name: "Бразилия Autódromo de Interlagos", weather: ["dry"], times: ["Рассвет","Восход","День","Вечер","Закат"], length: 4.903 },
     { name: "Япония Autopolis International Racing Course", weather: ["dry"], times: ["Рассвет","Восход","День","Вечер","Закат","Ночь"], length: 4.674 },
     { name: "Великобритания Brands Hatch - Grand Prix Circuit", weather: ["dry"], times: ["День","Вечер","Закат"], length: 3.946 },
-    { name: "Канада Circuit Gilles-Villeneuve", weather: ["dry"], times: ["День","Вечер","Закат"], length: 4.361 },
+    { name: "Канада Circuit Gilles-Villeneuve", weather: ["both"], times: ["День","Вечер","Закат"], length: 4.361 },
     { name: "Испания Circuit de Barcelona-Catalunya", weather: ["dry"], times: ["День","Вечер","Закат"], length: 4.655 },
     { name: "Франция Circuit de Sainte-Croix - A", weather: ["dry"], times: ["Восход","День","Вечер","Закат","Ночь"], length: 9.477 },
     { name: "Бельгия Spa (24 часа)", weather: ["both"], times: ["Рассвет","Восход","День","Вечер","Закат","Ночь"], length: 7.004 },
@@ -2167,12 +2151,8 @@ function updateModeSelectorVisibility() {
     const settingsContainer = document.getElementById('settingsContainer');
     const similarContainer = document.getElementById('similarContainer');
     const racesContainer = document.querySelector('.races-container');
-    const mainApp = document.getElementById('mainApp');
     
     if (userSyncEnabled) {
-        // Добавляем класс sync-mode для скрытия замков через CSS
-        if (mainApp) mainApp.classList.add('sync-mode');
-        
         if (carsTrackContainer) carsTrackContainer.style.setProperty('display', 'block', 'important');
         if (categoryContainer) categoryContainer.style.setProperty('display', 'block', 'important');
         if (settingsContainer) settingsContainer.style.setProperty('display', 'block', 'important');
@@ -2197,9 +2177,6 @@ function updateModeSelectorVisibility() {
             document.getElementById('trackIconFallback').style.display = 'none';
         }
     } else {
-        // Убираем класс sync-mode
-        if (mainApp) mainApp.classList.remove('sync-mode');
-        
         if (carsTrackContainer) carsTrackContainer.style.setProperty('display', 'none', 'important');
         if (categoryContainer) categoryContainer.style.setProperty('display', 'none', 'important');
         if (settingsContainer) settingsContainer.style.setProperty('display', 'none', 'important');
