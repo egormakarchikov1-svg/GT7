@@ -1717,31 +1717,35 @@ function applySyncedCombo(data) {
     });
     
     if (!locks.car && data.car_name) {
-        const car = findCarByName(data.car_name);
-        if (car) {
-            document.getElementById('carValue').innerText = car.name;
-            document.getElementById('carIcon').src = car.icon;
-            document.getElementById('carIcon').style.display = 'block';
-            document.getElementById('carIconFallback').style.display = 'none';
-            displaySimilarCars(car);
-        } else {
-            document.getElementById('carValue').innerText = data.car_name;
-        }
+    const car = findCarByName(data.car_name);
+    if (car) {
+        document.getElementById('carValue').innerText = car.name;
+        
+        // ★★★ ДОБАВЛЯЕМ УНИКАЛЬНЫЙ ПАРАМЕТР ДЛЯ СБРОСА КЭША ★★★
+        const iconUrl = car.icon;
+        // Добавляем timestamp, чтобы браузер не кэшировал
+        const cacheBuster = '?t=' + Date.now();
+        document.getElementById('carIcon').src = iconUrl + cacheBuster;
+        
+        document.getElementById('carIcon').style.display = 'block';
+        document.getElementById('carIconFallback').style.display = 'none';
+        displaySimilarCars(car);
+    } else {
+        document.getElementById('carValue').innerText = data.car_name;
     }
+}
     if (!locks.track && data.track_name) {
-    // Обновляем название
     document.getElementById('trackValue').innerHTML = data.track_name;
     
-    // ★★★ ЗАГРУЗКА ИКОНКИ ТРАССЫ ★★★
     const trackName = data.track_name;
     const trackIcon = document.getElementById('trackIcon');
     const trackIconFallback = document.getElementById('trackIconFallback');
     
-    // Используем существующую функцию getTrackIcon()
     const iconUrl = getTrackIcon(trackName);
     
     if (iconUrl && iconUrl !== '') {
-        trackIcon.src = iconUrl;
+        // ★★★ ДОБАВЛЯЕМ CACHE-BUSTER ★★★
+        trackIcon.src = iconUrl + '?t=' + Date.now();
         trackIcon.style.display = 'block';
         trackIconFallback.style.display = 'none';
     } else {
