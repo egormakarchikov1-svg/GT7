@@ -2703,10 +2703,12 @@ function updateModeSelectorVisibility() {
     
     if (userSyncEnabled) {
         if (carsTrackContainer) carsTrackContainer.style.setProperty('display', 'block', 'important');
-        if (categoryContainer) categoryContainer.style.setProperty('display', 'block', 'important');
+        // ★★★ УБИРАЕМ ПРИНУДИТЕЛЬНОЕ ПОКАЗАНИЕ КАТЕГОРИИ ★★★
+        // Теперь категория управляется через классы в updateVisibilityByDisplayMode
         if (settingsContainer) settingsContainer.style.setProperty('display', 'block', 'important');
         if (racesContainer) racesContainer.style.setProperty('display', 'block', 'important');
         if (modeSelectorBlock) modeSelectorBlock.style.setProperty('display', 'none', 'important');
+        
         if (!currentAdminId) {
             document.getElementById('carValue').innerHTML = '—';
             document.getElementById('trackValue').innerHTML = '—';
@@ -2818,11 +2820,10 @@ function showMainApp(autoGenerate = true) {
     if (userSyncEnabled && currentAdminId) {
         mainApp.classList.add('sync-mode');
         
-        // ★★★ ПРИНУДИТЕЛЬНО СКРЫВАЕМ КАТЕГОРИЮ ПРИ ПЕРВОЙ ЗАГРУЗКЕ ★★★
+        // ★★★ ТОЛЬКО ДОБАВЛЯЕМ КЛАСС, НЕ ТРОГАЕМ STYLE ★★★
         const categoryContainer = document.getElementById('categoryContainer');
         if (categoryContainer) {
             categoryContainer.classList.add('hidden-block');
-            categoryContainer.style.setProperty('display', 'none', 'important');
         }
         
         banner.classList.remove('hidden');
