@@ -694,6 +694,26 @@
             .params-grid { grid-template-columns: 1fr !important; }
             .settings-items { grid-template-columns: 1fr !important; }
         }
+
+        /* Стили для скрытия замков в режиме синхронизации */
+.sync-mode .lock-btn,
+.sync-mode .settings-lock-btn,
+.sync-mode .lock-btn-container {
+    display: none !important;
+}
+
+/* Центрирование заголовков в режиме синхронизации */
+.sync-mode .param-header {
+    justify-content: center !important;
+}
+
+.sync-mode .settings-header {
+    justify-content: center !important;
+}
+
+.sync-mode .param-label {
+    margin: 0 auto !important;
+}
     </style>
 </head>
 <body>
