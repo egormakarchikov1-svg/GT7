@@ -2986,6 +2986,7 @@ document.getElementById('welcomeLocalRaceBtn').addEventListener('click', functio
     updateModeIndicator('local');
     document.getElementById('welcomeScreen').classList.add('hidden');
     document.getElementById('mainApp').classList.remove('hidden');
+    document.getElementById('mainApp').classList.remove('sync-mode');
     document.getElementById('adminSyncBanner').classList.add('hidden');
     stopAutoRefresh();
     resetSyncCache();
@@ -3028,6 +3029,7 @@ document.getElementById('localRaceFromSetupBtn').addEventListener('click', funct
     currentAdminName = null;
     document.getElementById('setupScreen').classList.add('hidden');
     document.getElementById('mainApp').classList.remove('hidden');
+    document.getElementById('mainApp').classList.remove('sync-mode');
     document.getElementById('adminSyncBanner').classList.add('hidden');
     document.getElementById('generateRandomRaceBtn').style.display = 'block';
     stopAutoRefresh();
