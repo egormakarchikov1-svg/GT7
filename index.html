@@ -2172,8 +2172,8 @@ function startAutoRefresh() {
                     if (currentTrackEl) currentTrackName = currentTrackEl.innerText.replace(/\d+\s*кругов/, '').trim();
                     const currentCar = document.getElementById('carValue')?.innerText || '';
                     let hasChanges = false;
-                    if (!locks.car && synced.car_name && currentCar !== synced.car_name) hasChanges = true;
-                    if (!locks.track && synced.track_name && currentTrackName !== synced.track_name) hasChanges = true;
+                    if (locks.car && synced.car_name && currentCar !== synced.car_name) hasChanges = true;
+                    if (locks.track && synced.track_name && currentTrackName !== synced.track_name) hasChanges = true;
                     if (hasChanges) {
                         isApplyingUpdate = true;
                         applySyncedCombo(synced);
@@ -2266,7 +2266,7 @@ function applySyncedCombo(data) {
         document.getElementById('carValue').innerText = data.car_name;
     }
 }
-    if (!locks.track && data.track_name) {
+    if (locks.track && data.track_name) {
     document.getElementById('trackValue').innerHTML = data.track_name;
     
     const trackName = data.track_name;
@@ -2286,7 +2286,7 @@ function applySyncedCombo(data) {
         trackIconFallback.innerHTML = '🏁';
     }
 }
-    if (!locks.category && data.category_name) {
+    if (locks.category && data.category_name) {
         const cat = categories.find(c => c.name === data.category_name);
         if (cat) {
             document.getElementById('categoryValue').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
@@ -2294,21 +2294,21 @@ function applySyncedCombo(data) {
             document.getElementById('categoryValue').innerHTML = data.category_name;
         }
     }
-    if (!locks.weather && data.weather_name) {
+    if (locks.weather && data.weather_name) {
         const w = findWeatherByName(data.weather_name);
         if (w) document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`;
         else document.getElementById('weatherValue').innerHTML = data.weather_name;
     }
-    if (!locks.time && data.time_name) {
+    if (locks.time && data.time_name) {
         const tm = findTimeByName(data.time_name);
         const mult = data.time_multiplier || 'X1';
         if (tm) document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${mult}</span>`;
         else document.getElementById('timeValue').innerHTML = `${data.time_name} <span class="time-x-badge">${mult}</span>`;
     }
-    if (!locks.tires && data.tires_value) {
+    if (locks.tires && data.tires_value) {
         document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${data.tires_value}</span>`;
     }
-    if (!locks.fuel && data.fuel_value) {
+    if (locks.fuel && data.fuel_value) {
         document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${data.fuel_value}</span>`;
     }
     const newMode = data.display_mode || 'all';
