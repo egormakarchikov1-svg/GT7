@@ -1255,32 +1255,73 @@ function makeJsonpRequest(url, callbackName, timeoutMs = 5000) {
             delete window[callbackName];
         }
         
+        let resolved = false;
+        
         // Устанавливаем таймаут
         const timeout = setTimeout(() => {
-            // Удаляем скрипт если он был добавлен
-            const scripts = document.querySelectorAll(`script[src*="${callbackName}"]`);
-            scripts.forEach(s => s.remove());
-            if (window[callbackName]) delete window[callbackName];
-            resolve(null);
+            if (!resolved) {
+                resolved = true;
+                // Удаляем скрипт если он был добавлен
+                const scripts = document.querySelectorAll(`script[src*="${callbackName}"]`);
+                scripts.forEach(s => s.remove());
+                if (window[callbackName]) delete window[callbackName];
+                resolve(null);
+            }
         }, timeoutMs);
         
         // Определяем callback
         window[callbackName] = function(data) {
-            clearTimeout(timeout);
-            // Удаляем скрипт
-            const scripts = document.querySelectorAll(`script[src*="${callbackName}"]`);
-            scripts.forEach(s => s.remove());
-            delete window[callbackName];
-            resolve(data);
+            if (!resolved) {
+                resolved = true;
+                clearTimeout(timeout);
+                // Удаляем скрипт
+                const scripts = document.querySelectorAll(`script[src*="${callbackName}"]`);
+                scripts.forEach(s => s.remove());
+                delete window[callbackName];
+                resolve(data);
+            }
         };
         
         // Создаем и добавляем скрипт
         const script = document.createElement('script');
         script.src = url;
+        script.onload = function() {
+            // Если callback не был вызван (сервер вернул обычный JSON без обертки)
+            setTimeout(() => {
+                if (!resolved) {
+                    // Пробуем получить данные через fetch как запасной вариант
+                    fetch(url.split('&callback=')[0])
+                        .then(response => response.json())
+                        .then(data => {
+                            if (!resolved) {
+                                resolved = true;
+                                clearTimeout(timeout);
+                                delete window[callbackName];
+                                resolve(data);
+                            }
+                        })
+                        .catch(() => {
+                            if (!resolved) {
+                                resolved = true;
+                                clearTimeout(timeout);
+                                delete window[callbackName];
+                                resolve(null);
+                            }
+                        });
+                }
+            }, 100);
+        };
         script.onerror = function() {
-            clearTimeout(timeout);
-            if (window[callbackName]) delete window[callbackName];
-            resolve(null);
+            if (!resolved) {
+                resolved = true;
+                clearTimeout(timeout);
+                if (window[callbackName]) delete window[callbackName];
+                // Пробуем через fetch
+                fetch(url.split('&callback=')[0])
+                    .then(response => response.json())
+                    .then(data => resolve(data))
+                    .catch(() => resolve(null));
+            }
         };
         document.body.appendChild(script);
     });
