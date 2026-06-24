@@ -2167,17 +2167,17 @@ function startAutoRefresh() {
                 if (typeof displayUserRaces === 'function') displayUserRaces(currentAdminId);
                 const synced = await loadSyncedCombo(true);
                 if (syncedModeActive && synced) {
+                    // ★★★ ПРОСТО ПРИМЕНЯЕМ ДАННЫЕ, ЕСЛИ ОНИ ИЗМЕНИЛИСЬ ★★★
+                    const currentCar = document.getElementById('carValue')?.innerText || '';
                     const currentTrackEl = document.getElementById('trackValue');
                     let currentTrackName = '';
                     if (currentTrackEl) currentTrackName = currentTrackEl.innerText.replace(/\d+\s*кругов/, '').trim();
-                    const currentCar = document.getElementById('carValue')?.innerText || '';
-                    let hasChanges = false;
                     
-                    // ★★★ МЕНЯЕМ, ЕСЛИ НЕ ЗАБЛОКИРОВАНО ★★★
-                    if (!locks.car && synced.car_name && currentCar !== synced.car_name) hasChanges = true;
-                    if (!locks.track && synced.track_name && currentTrackName !== synced.track_name) hasChanges = true;
+                    // Проверяем, изменились ли данные
+                    const dataChanged = (synced.car_name && currentCar !== synced.car_name) ||
+                                       (synced.track_name && currentTrackName !== synced.track_name);
                     
-                    if (hasChanges) {
+                    if (dataChanged) {
                         isApplyingUpdate = true;
                         applySyncedCombo(synced);
                         showStatusMessage('🔄 Данные обновлены администратором!', 'success');
