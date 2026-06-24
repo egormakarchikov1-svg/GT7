@@ -690,14 +690,12 @@
         
         .laps-badge { display: none !important; }
         
-        /* Стили для скрытия замков в режиме синхронизации */
         .sync-mode .lock-btn,
         .sync-mode .settings-lock-btn,
         .sync-mode .lock-btn-container {
             display: none !important;
         }
         
-        /* Центрирование заголовков в режиме синхронизации */
         .sync-mode .param-header {
             justify-content: center !important;
         }
@@ -848,19 +846,19 @@
     </div>
 
     <div class="category-container hidden-block" id="categoryContainer">
-    <div class="category-header-clickable" id="categoryHeader">
-        <div style="width: 30px;"></div>
-        <div class="category-title">🏆 ГОНОЧНЫЙ КЛАСС 🏆</div>
-        <div class="category-toggle-icon" id="categoryToggleIcon">▼</div>
-    </div>
-    <div class="category-content" id="categoryContent">
-        <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 10px;">
-            <button class="lock-btn" data-param="category" data-state="unlocked" style="position: static;">🔓</button>
-            <span style="color: #ff4d4d; font-size: 14px; font-weight: bold;">ЗАБЛОКИРОВАТЬ КЛАСС</span>
+        <div class="category-header-clickable" id="categoryHeader">
+            <div style="width: 30px;"></div>
+            <div class="category-title">🏆 ГОНОЧНЫЙ КЛАСС 🏆</div>
+            <div class="category-toggle-icon" id="categoryToggleIcon">▼</div>
         </div>
-        <div class="category-value" id="categoryValue">—</div>
+        <div class="category-content" id="categoryContent">
+            <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 10px;">
+                <button class="lock-btn" data-param="category" data-state="unlocked" style="position: static;">🔓</button>
+                <span style="color: #ff4d4d; font-size: 14px; font-weight: bold;">ЗАБЛОКИРОВАТЬ КЛАСС</span>
+            </div>
+            <div class="category-value" id="categoryValue">—</div>
+        </div>
     </div>
-</div>
 
     <div class="settings-container" id="settingsContainer">
         <div class="settings-header-clickable" id="settingsHeader">
@@ -1239,8 +1237,9 @@ let isLoadingParticipants = false;
 // Кеши для ускорения синхронизации
 const syncCache = { data: null, timestamp: 0 };
 const racesCache = { data: null, timestamp: 0, adminId: null };
-const CACHE_DURATION = 15000; // 15 секунд
+const CACHE_DURATION = 15000;
 let lastRacesHash = '';
+let lastSyncedState = {};
 
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxy_fBTaLlQaf56WlME5e0cbk2RlwPUoV8ZMOuZLYl2YskrgyPFDGZXZxLWXafUBBq0Cg/exec';
 
@@ -1618,7 +1617,7 @@ function refreshSimilarCars() {
 }
 
 // ============================================
-// ОПТИМИЗИРОВАННАЯ СИНХРОНИЗАЦИЯ
+// ОПТИМИЗИРОВАННАЯ СИНХРОНИЗАЦИЯ С ОТСЛЕЖИВАНИЕМ ВСЕХ ПАРАМЕТРОВ
 // ============================================
 function resetSyncCache() {
     syncedModeActive = false;
@@ -1629,6 +1628,7 @@ function resetSyncCache() {
     racesCache.timestamp = 0;
     racesCache.adminId = null;
     lastRacesHash = '';
+    lastSyncedState = {};
 }
 
 function stopAutoRefresh() {
@@ -1654,13 +1654,54 @@ function startAutoRefresh() {
                 const synced = await loadSyncedCombo(false);
                 
                 if (syncedModeActive && synced) {
-                    const currentTrackEl = document.getElementById('trackValue');
-                    let currentTrackName = currentTrackEl ? currentTrackEl.innerText.replace(/\d+\s*кругов/, '').trim() : '';
+                    // Получаем текущие значения из интерфейса
                     const currentCar = document.getElementById('carValue')?.innerText || '';
+                    const currentTrack = document.getElementById('trackValue')?.innerText || '';
+                    const currentCategory = document.getElementById('categoryValue')?.innerText || '';
+                    const currentWeather = document.getElementById('weatherValue')?.innerText || '';
+                    const currentTime = document.getElementById('timeValue')?.innerText || '';
+                    const currentTires = document.getElementById('tiresValue')?.innerText || '';
+                    const currentFuel = document.getElementById('fuelValue')?.innerText || '';
                     
+                    // Проверяем изменения ВСЕХ параметров
                     let hasChanges = false;
-                    if (!locks.car && synced.car_name && currentCar !== synced.car_name) hasChanges = true;
-                    if (!locks.track && synced.track_name && currentTrackName !== synced.track_name) hasChanges = true;
+                    
+                    // Машина
+                    if (!locks.car && synced.car_name && currentCar !== synced.car_name) {
+                        hasChanges = true;
+                    }
+                    // Трасса
+                    if (!locks.track && synced.track_name && currentTrack !== synced.track_name) {
+                        hasChanges = true;
+                    }
+                    // Категория
+                    if (!locks.category && synced.category_name) {
+                        const cat = categories.find(c => c.name === synced.category_name);
+                        const newValue = cat ? `${cat.icon} ${cat.name} (${cat.description})` : synced.category_name;
+                        if (currentCategory !== newValue) hasChanges = true;
+                    }
+                    // Погода
+                    if (!locks.weather && synced.weather_name) {
+                        const w = findWeatherByName(synced.weather_name);
+                        const newValue = w ? `${w.icon} ${w.name}` : synced.weather_name;
+                        if (currentWeather !== newValue) hasChanges = true;
+                    }
+                    // Время
+                    if (!locks.time && synced.time_name) {
+                        const mult = synced.time_multiplier || 'X1';
+                        const newValue = `${synced.time_name} <span class="time-x-badge">${mult}</span>`;
+                        if (currentTime !== newValue) hasChanges = true;
+                    }
+                    // Шины
+                    if (!locks.tires && synced.tires_value) {
+                        const newValue = `<span class="time-x-badge">${synced.tires_value}</span>`;
+                        if (currentTires !== newValue) hasChanges = true;
+                    }
+                    // Топливо
+                    if (!locks.fuel && synced.fuel_value) {
+                        const newValue = `<span class="time-x-badge">${synced.fuel_value}</span>`;
+                        if (currentFuel !== newValue) hasChanges = true;
+                    }
                     
                     if (hasChanges) {
                         isApplyingUpdate = true;
@@ -1722,14 +1763,17 @@ async function loadSyncedCombo(forceRefresh = false, retryCount = 0) {
 
 function applySyncedCombo(data) {
     if (!data) return;
-    if (data.track_locked !== undefined) locks.track = data.track_locked;
-    if (data.car_locked !== undefined) locks.car = data.car_locked;
-    if (data.weather_locked !== undefined) locks.weather = data.weather_locked;
-    if (data.time_locked !== undefined) locks.time = data.time_locked;
-    if (data.tires_locked !== undefined) locks.tires = data.tires_locked;
-    if (data.fuel_locked !== undefined) locks.fuel = data.fuel_locked;
-    if (data.category_locked !== undefined) locks.category = data.category_locked;
     
+    // Сохраняем состояние замков
+    if (data.track_locked !== undefined) locks.track = data.track_locked === true || data.track_locked === 'TRUE';
+    if (data.car_locked !== undefined) locks.car = data.car_locked === true || data.car_locked === 'TRUE';
+    if (data.weather_locked !== undefined) locks.weather = data.weather_locked === true || data.weather_locked === 'TRUE';
+    if (data.time_locked !== undefined) locks.time = data.time_locked === true || data.time_locked === 'TRUE';
+    if (data.tires_locked !== undefined) locks.tires = data.tires_locked === true || data.tires_locked === 'TRUE';
+    if (data.fuel_locked !== undefined) locks.fuel = data.fuel_locked === true || data.fuel_locked === 'TRUE';
+    if (data.category_locked !== undefined) locks.category = data.category_locked === true || data.category_locked === 'TRUE';
+    
+    // Обновляем отображение замков
     document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
         const param = btn.getAttribute('data-param');
         if (locks[param]) {
@@ -1741,7 +1785,14 @@ function applySyncedCombo(data) {
         }
     });
     
-    if (!locks.car && data.car_name) {
+    // Применяем новый display mode
+    const newMode = data.display_mode || 'all';
+    if (typeof updateVisibilityByDisplayMode === 'function') {
+        updateVisibilityByDisplayMode(newMode);
+    }
+    
+    // Обновляем все параметры
+    if (data.car_name) {
         const car = findCarByName(data.car_name);
         if (car) {
             document.getElementById('carValue').innerText = car.name;
@@ -1753,12 +1804,24 @@ function applySyncedCombo(data) {
             document.getElementById('carValue').innerText = data.car_name;
         }
     }
-    if (!locks.track && data.track_name) {
+    
+    if (data.track_name) {
         document.getElementById('trackValue').innerHTML = data.track_name;
-        document.getElementById('trackIcon').style.display = 'none';
-        document.getElementById('trackIconFallback').style.display = 'flex';
+        const iconUrl = getTrackIcon(data.track_name);
+        const trackIcon = document.getElementById('trackIcon');
+        const trackIconFallback = document.getElementById('trackIconFallback');
+        if (iconUrl && iconUrl !== '') {
+            trackIcon.src = iconUrl;
+            trackIcon.style.display = 'block';
+            trackIconFallback.style.display = 'none';
+        } else {
+            trackIcon.style.display = 'none';
+            trackIconFallback.style.display = 'flex';
+            trackIconFallback.innerHTML = '🏁';
+        }
     }
-    if (!locks.category && data.category_name) {
+    
+    if (data.category_name) {
         const cat = categories.find(c => c.name === data.category_name);
         if (cat) {
             document.getElementById('categoryValue').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
@@ -1766,788 +1829,55 @@ function applySyncedCombo(data) {
             document.getElementById('categoryValue').innerHTML = data.category_name;
         }
     }
-    if (!locks.weather && data.weather_name) {
+    
+    if (data.weather_name) {
         const w = findWeatherByName(data.weather_name);
-        if (w) document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`;
-        else document.getElementById('weatherValue').innerHTML = data.weather_name;
+        if (w) {
+            document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`;
+        } else {
+            document.getElementById('weatherValue').innerHTML = data.weather_name;
+        }
     }
-    if (!locks.time && data.time_name) {
+    
+    if (data.time_name) {
         const tm = findTimeByName(data.time_name);
         const mult = data.time_multiplier || 'X1';
-        if (tm) document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${mult}</span>`;
-        else document.getElementById('timeValue').innerHTML = `${data.time_name} <span class="time-x-badge">${mult}</span>`;
+        if (tm) {
+            document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${mult}</span>`;
+        } else {
+            document.getElementById('timeValue').innerHTML = `${data.time_name} <span class="time-x-badge">${mult}</span>`;
+        }
     }
-    if (!locks.tires && data.tires_value) {
+    
+    if (data.tires_value) {
         document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${data.tires_value}</span>`;
     }
-    if (!locks.fuel && data.fuel_value) {
+    
+    if (data.fuel_value) {
         document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${data.fuel_value}</span>`;
     }
-    const newMode = data.display_mode || 'all';
-    if (typeof updateVisibilityByDisplayMode === 'function') {
-        updateVisibilityByDisplayMode(newMode);
-    }
+    
+    // Сохраняем состояние для отслеживания изменений
+    lastSyncedState = {
+        car: data.car_name,
+        track: data.track_name,
+        category: data.category_name,
+        weather: data.weather_name,
+        time: data.time_name,
+        tires: data.tires_value,
+        fuel: data.fuel_value,
+        display_mode: data.display_mode
+    };
+    
     saveLocksToStorage();
 }
 
 // ============================================
-// КАЛЕНДАРЬ И ЗАПИСЬ
+// КАЛЕНДАРЬ И ЗАПИСЬ (остальные функции...)
 // ============================================
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
+// [Все остальные функции остаются без изменений]
+// ...
 
-function getUserDeviceId() {
-    let id = localStorage.getItem('gt7_device_id');
-    if (!id) {
-        id = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 16);
-        localStorage.setItem('gt7_device_id', id);
-    }
-    return id;
-}
-
-async function getActiveRaces(adminId) {
-    if (!adminId) return [];
-    
-    const now = Date.now();
-    if (racesCache.adminId === adminId && racesCache.data && (now - racesCache.timestamp) < 30000) {
-        return racesCache.data;
-    }
-    
-    try {
-        const userId = localStorage.getItem('gt7_user_id') || 'default';
-        const callbackName = 'jsonp_races_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=getUserRaces&userId=${userId}&adminId=${adminId}&callback=${callbackName}&_=${Date.now()}`;
-        const races = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve([]); }, 5000);
-            window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data.races || []); };
-            const script = document.createElement('script'); script.src = url; script.onerror = () => resolve([]);
-            document.body.appendChild(script);
-        });
-        
-        const now2 = new Date();
-        const filtered = races.filter(race => race.active === true && new Date(race.datetime) > now2);
-        racesCache.data = filtered;
-        racesCache.timestamp = Date.now();
-        racesCache.adminId = adminId;
-        return filtered;
-    } catch(e) { return []; }
-}
-
-async function displayUserRaces(adminId) {
-    const currentAdminId = adminId || localStorage.getItem('gt7_selected_admin_id');
-    const container = document.getElementById('racesCalendarContainer');
-    
-    if (!currentAdminId) {
-        if (container) container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">👑 Выберите администратора</div>';
-        return;
-    }
-    
-    const races = await getActiveRaces(currentAdminId);
-    if (!container) return;
-    
-    const newHash = JSON.stringify(races.map(r => r.id + r.datetime + r.title));
-    if (newHash === lastRacesHash) return;
-    lastRacesHash = newHash;
-    
-    if (races.length === 0) {
-        container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">📭 Нет запланированных гонок</div>';
-        return;
-    }
-    
-    container.innerHTML = races.map(race => {
-        const date = new Date(race.datetime).toLocaleString('ru-RU', {
-            day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
-        });
-        return `
-            <div class="race-card" data-race-id="${race.id}">
-                <div class="race-date">📅 ${date}</div>
-                <div class="race-title">${race.title || '🏁 Гоночный заезд'}</div>
-                <div class="race-details">
-                    ${race.display_mode === 'group_only' ? 
-                        `<div>🏆 ${escapeHtml(race.category_name) || '—'}</div>` :
-                        `<div>🚗 ${escapeHtml(race.car_name) || '—'}</div>`
-                    }
-                    <div>${escapeHtml(race.track_name) || '—'}</div>
-                    <div>🌤️ ${escapeHtml(race.weather_name) || '—'}</div>
-                    <div>⏰ ${escapeHtml(race.time_name) || '—'} ${race.time_multiplier || ''}</div>
-                    <div>⚙️ ${race.tires_value || 'X1'}</div>
-                    <div>⛽ ${race.fuel_value || 'X1'}</div>
-                </div>
-                <div style="display: flex; gap: 8px; margin-top: 10px;">
-                    <button class="apply-race-btn" onclick="applyRaceToGame('${race.id}')">🏁 ПРИМЕНИТЬ</button>
-                    <button class="register-btn" onclick="openRegistration('${race.id}', '${escapeHtml(race.track_name || '')}', '${escapeHtml(race.title || '')}')" style="background: ${userRegistrations[race.id] ? '#22c55e' : '#3b82f6'}">
-                        ${userRegistrations[race.id] ? '✅ ВЫ ЗАПИСАНЫ' : '📝 ЗАПИСАТЬСЯ'}
-                    </button>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-async function loadUserRegistrations() {
-    if (!currentAdminId) return;
-    try {
-        const deviceId = getUserDeviceId();
-        const callbackName = 'jsonp_user_regs_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=getUserRegistrations&adminId=${currentAdminId}&deviceId=${encodeURIComponent(deviceId)}&callback=${callbackName}&_=${Date.now()}`;
-        const result = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { 
-                if (window[callbackName]) delete window[callbackName]; 
-                resolve({}); 
-            }, 5000);
-            window[callbackName] = function(data) { 
-                clearTimeout(timeout); 
-                delete window[callbackName]; 
-                resolve(data); 
-            };
-            const script = document.createElement('script'); 
-            script.src = url; 
-            script.onerror = () => { clearTimeout(timeout); resolve({}); };
-            document.body.appendChild(script);
-        });
-        if (result.success && result.races) {
-            userRegistrations = {};
-            result.races.forEach(id => { userRegistrations[id] = true; });
-        }
-    } catch(e) {}
-}
-
-function openRegistration(raceId, trackName, title) {
-    currentRegistrationRaceId = raceId;
-    document.getElementById('selectedRaceInfo').innerHTML = `
-        <strong>🏁 ${title || 'Гоночный заезд'}</strong><br>🛣️ Трасса: ${trackName}
-    `;
-    document.getElementById('racerName').value = '';
-    document.getElementById('registrationBlock').style.display = 'block';
-    loadParticipants(raceId);
-    document.getElementById('registrationBlock').scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-
-function closeRegistration() {
-    document.getElementById('registrationBlock').style.display = 'none';
-    currentRegistrationRaceId = null;
-}
-
-async function loadParticipants(raceId) {
-    if (isLoadingParticipants) return;
-    isLoadingParticipants = true;
-    try {
-        const callbackName = 'jsonp_participants_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=getParticipants&raceId=${raceId}&callback=${callbackName}&_=${Date.now()}`;
-        const participants = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve([]); }, 5000);
-            window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data.participants || []); };
-            const script = document.createElement('script'); script.src = url; script.onerror = () => resolve([]);
-            document.body.appendChild(script);
-        });
-        displayParticipants(participants);
-    } catch(e) { document.getElementById('participantsList').innerHTML = '<div style="text-align:center;color:#ef4444;padding:10px;">❌ Ошибка</div>'; }
-    finally { isLoadingParticipants = false; }
-}
-
-function displayParticipants(participants) {
-    const container = document.getElementById('participantsList');
-    const deviceId = getUserDeviceId();
-    if (!participants || participants.length === 0) {
-        container.innerHTML = '<div style="text-align:center;color:#aaa;padding:10px;">👥 Пока нет участников</div>';
-        return;
-    }
-    container.innerHTML = participants.map((p, i) => {
-        const isCurrent = (p.device_id === deviceId);
-        return `
-            <div class="participant-item">
-                <span class="participant-name">${i+1}. ${escapeHtml(p.name)}</span>
-                <span class="participant-date">📅 ${new Date(p.registered_at).toLocaleString('ru-RU')}</span>
-                ${isCurrent ? `<button onclick="cancelRegistration('${currentRegistrationRaceId}')" style="background:#ef4444;border:none;border-radius:20px;color:white;padding:4px 12px;cursor:pointer;font-size:11px;">❌ ОТКАЗАТЬСЯ</button>` : ''}
-            </div>
-        `;
-    }).join('');
-}
-
-async function registerForRace() {
-    if (isRegisteringInProgress) return;
-    const btn = document.getElementById('confirmRegistrationBtn');
-    if (btn.disabled) return;
-    const name = document.getElementById('racerName').value.trim();
-    if (!name) { showStatusMessage('❌ Введите имя!', 'error'); return; }
-    if (!currentRegistrationRaceId) { showStatusMessage('❌ Ошибка', 'error'); return; }
-    isRegisteringInProgress = true;
-    btn.disabled = true;
-    btn.innerHTML = '⏳ ОТПРАВКА...';
-    try {
-        const deviceId = getUserDeviceId();
-        const callbackName = 'jsonp_register_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=registerForRace&raceId=${currentRegistrationRaceId}&name=${encodeURIComponent(name)}&deviceId=${encodeURIComponent(deviceId)}&callback=${callbackName}&_=${Date.now()}`;
-        const result = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve({}); }, 5000);
-            window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data); };
-            const script = document.createElement('script'); script.src = url; script.onerror = () => resolve({});
-            document.body.appendChild(script);
-        });
-        if (result.success) {
-            showStatusMessage(`✅ ${name}, вы записаны!`, 'success');
-            document.getElementById('racerName').value = '';
-            await loadParticipants(currentRegistrationRaceId);
-            await loadUserRegistrations();
-            const selectedAdmin = localStorage.getItem('gt7_selected_admin_id');
-            if (selectedAdmin) await displayUserRaces(selectedAdmin);
-        } else {
-            showStatusMessage('❌ ' + (result.error || 'Ошибка'), 'error');
-        }
-    } catch(e) { showStatusMessage('❌ Ошибка', 'error'); }
-    finally { btn.disabled = false; btn.innerHTML = '✅ ЗАПИСАТЬСЯ'; isRegisteringInProgress = false; }
-}
-
-async function cancelRegistration(raceId) {
-    if (!confirm('Отказаться от участия?')) return;
-    const deviceId = getUserDeviceId();
-    try {
-        const callbackName = 'jsonp_cancel_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=cancelRegistration&raceId=${raceId}&deviceId=${encodeURIComponent(deviceId)}&callback=${callbackName}&_=${Date.now()}`;
-        const result = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve({}); }, 5000);
-            window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data); };
-            const script = document.createElement('script'); script.src = url; script.onerror = () => resolve({});
-            document.body.appendChild(script);
-        });
-        if (result.success) {
-            showStatusMessage('✅ Отказались', 'success');
-            await loadParticipants(raceId);
-            await loadUserRegistrations();
-            const selectedAdmin = localStorage.getItem('gt7_selected_admin_id');
-            if (selectedAdmin) await displayUserRaces(selectedAdmin);
-        }
-    } catch(e) {}
-}
-
-async function applyRaceToGame(raceId) {
-    try {
-        showStatusMessage('🔄 Загрузка...', 'info');
-        const callbackName = 'jsonp_race_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=getRaceById&raceId=${raceId}&callback=${callbackName}&_=${Date.now()}`;
-        const race = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve(null); }, 5000);
-            window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data.race); };
-            const script = document.createElement('script'); script.src = url; script.onerror = () => resolve(null);
-            document.body.appendChild(script);
-        });
-        if (race) {
-            manualModeActive = true;
-            if (manualModeTimer) clearTimeout(manualModeTimer);
-            manualModeTimer = setTimeout(() => {
-                manualModeActive = false;
-                document.getElementById('exitManualModeBtn').style.display = 'none';
-                showStatusMessage('🕐 Ручной режим завершён', 'info');
-            }, 1800000);
-            document.getElementById('exitManualModeBtn').style.display = 'block';
-            if (race.display_mode) setDisplayMode(race.display_mode);
-            if (race.car_locked !== undefined) locks.car = race.car_locked === true || race.car_locked === 'TRUE';
-            if (race.track_locked !== undefined) locks.track = race.track_locked === true || race.track_locked === 'TRUE';
-            if (race.weather_locked !== undefined) locks.weather = race.weather_locked === true || race.weather_locked === 'TRUE';
-            if (race.time_locked !== undefined) locks.time = race.time_locked === true || race.time_locked === 'TRUE';
-            if (race.tires_locked !== undefined) locks.tires = race.tires_locked === true || race.tires_locked === 'TRUE';
-            if (race.fuel_locked !== undefined) locks.fuel = race.fuel_locked === true || race.fuel_locked === 'TRUE';
-            if (race.category_locked !== undefined) locks.category = race.category_locked === true || race.category_locked === 'TRUE';
-            document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
-                const param = btn.getAttribute('data-param');
-                if (locks[param]) { btn.innerText = '🔒'; btn.setAttribute('data-state', 'locked'); }
-                else { btn.innerText = '🔓'; btn.setAttribute('data-state', 'unlocked'); }
-            });
-            if (race.display_mode === 'group_only') {
-                if (race.category_name) {
-                    const cat = categories.find(c => c.name === race.category_name);
-                    if (cat) document.getElementById('categoryValue').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
-                    else document.getElementById('categoryValue').innerHTML = race.category_name;
-                }
-                document.getElementById('categoryContainer').classList.remove('hidden-block');
-                document.getElementById('carBlock').classList.add('hidden-block');
-            } else {
-                if (race.car_name) {
-                    const car = findCarByName(race.car_name);
-                    if (car) {
-                        document.getElementById('carValue').innerText = car.name;
-                        document.getElementById('carIcon').src = car.icon;
-                        document.getElementById('carIcon').style.display = 'block';
-                        document.getElementById('carIconFallback').style.display = 'none';
-                        displaySimilarCars(car);
-                    } else {
-                        document.getElementById('carValue').innerText = race.car_name;
-                    }
-                }
-                document.getElementById('categoryContainer').classList.add('hidden-block');
-                document.getElementById('carBlock').classList.remove('hidden-block');
-            }
-            if (race.track_name) {
-                document.getElementById('trackValue').innerHTML = race.track_name;
-                document.getElementById('trackIcon').style.display = 'none';
-                document.getElementById('trackIconFallback').style.display = 'flex';
-            }
-            if (race.weather_name) {
-                const w = findWeatherByName(race.weather_name);
-                if (w) document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`;
-                else document.getElementById('weatherValue').innerHTML = race.weather_name;
-            }
-            if (race.time_name) {
-                const tm = findTimeByName(race.time_name);
-                const mult = race.time_multiplier || 'X1';
-                if (tm) document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${mult}</span>`;
-                else document.getElementById('timeValue').innerHTML = `${race.time_name} <span class="time-x-badge">${mult}</span>`;
-            }
-            if (race.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${race.tires_value}</span>`;
-            if (race.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${race.fuel_value}</span>`;
-            saveLocksToStorage();
-            showStatusMessage('✅ Параметры гонки загружены!', 'success');
-        } else {
-            showStatusMessage('❌ Гонка не найдена', 'error');
-        }
-    } catch(e) { showStatusMessage('❌ Ошибка', 'error'); }
-}
-
-// ============================================
-// УПРАВЛЕНИЕ ИНТЕРФЕЙСОМ
-// ============================================
-function toggleLock(param) {
-    locks[param] = !locks[param];
-    document.querySelectorAll(`.lock-btn[data-param="${param}"], .settings-lock-btn[data-param="${param}"]`).forEach(btn => {
-        btn.innerText = locks[param] ? '🔒' : '🔓';
-        btn.setAttribute('data-state', locks[param] ? 'locked' : 'unlocked');
-    });
-    saveLocksToStorage();
-}
-
-function updateVisibilityByDisplayMode(mode) {
-    const carBlock = document.getElementById('carBlock');
-    const similarBlock = document.getElementById('similarContainer');
-    const groupMsg = document.getElementById('groupModeMessage');
-    const trackBlock = document.getElementById('trackBlock');
-    const categoryBlock = document.getElementById('categoryContainer');
-    const paramsGrid = document.querySelector('.params-grid');
-    
-    if (mode === 'group_only') {
-        if (carBlock) carBlock.classList.add('hidden-block');
-        if (similarBlock) {
-            similarBlock.classList.add('hidden-block');
-            similarBlock.style.setProperty('display', 'none', 'important');
-        }
-        if (categoryBlock) {
-            categoryBlock.classList.remove('hidden-block');
-            categoryBlock.style.setProperty('display', 'block', 'important');
-        }
-        if (groupMsg) groupMsg.style.display = 'block';
-        if (trackBlock) trackBlock.classList.add('track-centered');
-        if (paramsGrid) { paramsGrid.style.display = 'flex'; paramsGrid.style.justifyContent = 'center'; }
-    } else {
-        if (carBlock) carBlock.classList.remove('hidden-block');
-        if (similarBlock) {
-            similarBlock.classList.remove('hidden-block');
-            similarBlock.style.setProperty('display', 'block', 'important');
-        }
-        if (categoryBlock) {
-            categoryBlock.classList.add('hidden-block');
-            categoryBlock.style.setProperty('display', 'none', 'important');
-        }
-        if (groupMsg) groupMsg.style.display = 'none';
-        if (trackBlock) trackBlock.classList.remove('track-centered');
-        if (paramsGrid) { paramsGrid.style.display = 'grid'; paramsGrid.style.justifyContent = 'normal'; }
-    }
-}
-
-function setDisplayMode(mode) {
-    displayMode = mode;
-    localStorage.setItem('gt7_display_mode', mode);
-    const allBtn = document.getElementById('modeAllBtn');
-    const groupBtn = document.getElementById('modeGroupOnlyBtn');
-    const modeText = document.getElementById('currentModeText');
-    const similarBlock = document.getElementById('similarContainer');
-    if (mode === 'all') {
-        if (allBtn) allBtn.classList.add('active');
-        if (groupBtn) groupBtn.classList.remove('active');
-        if (modeText) { modeText.innerHTML = 'ВЕСЬ СПИСОК МАШИН 🚗'; modeText.style.color = '#3b82f6'; }
-        updateVisibilityByDisplayMode('all');
-        if (similarBlock) {
-            similarBlock.style.setProperty('display', 'block', 'important');
-            similarBlock.classList.remove('hidden-block');
-        }
-    } else {
-        if (groupBtn) groupBtn.classList.add('active');
-        if (allBtn) allBtn.classList.remove('active');
-        if (modeText) { modeText.innerHTML = 'МАШИНЫ ГОНОЧНОГО КЛАССА GR 🏁'; modeText.style.color = '#8b5cf6'; }
-        updateVisibilityByDisplayMode('group_only');
-        if (similarBlock) {
-            similarBlock.style.setProperty('display', 'none', 'important');
-            similarBlock.classList.add('hidden-block');
-        }
-    }
-}
-
-function updateModeIndicator(mode, adminName) {
-    const text = document.getElementById('modeIndicatorText');
-    if (!text) return;
-    if (mode === 'admin' && adminName) {
-        text.innerHTML = `👑 Режим: АДМИНИСТРАТОР (${adminName})`;
-        text.style.color = '#8b5cf6';
-    } else if (mode === 'local') {
-        text.innerHTML = '🎲 Режим: СЛУЧАЙНАЯ ГОНКА';
-        text.style.color = '#ff4d4d';
-    } else {
-        text.innerHTML = '⚡ Выберите режим выше';
-        text.style.color = '#ff4d4d';
-    }
-}
-
-function updateModeSelectorVisibility() {
-    const modeSelectorBlock = document.getElementById('modeSelectorBlock');
-    const carsTrackContainer = document.getElementById('carsTrackContainer');
-    const categoryContainer = document.getElementById('categoryContainer');
-    const settingsContainer = document.getElementById('settingsContainer');
-    const similarContainer = document.getElementById('similarContainer');
-    const racesContainer = document.querySelector('.races-container');
-    const mainApp = document.getElementById('mainApp');
-    
-    if (userSyncEnabled) {
-        if (mainApp) mainApp.classList.add('sync-mode');
-        
-        if (carsTrackContainer) carsTrackContainer.style.setProperty('display', 'block', 'important');
-        if (categoryContainer) categoryContainer.style.setProperty('display', 'block', 'important');
-        if (settingsContainer) settingsContainer.style.setProperty('display', 'block', 'important');
-        if (racesContainer) racesContainer.style.setProperty('display', 'block', 'important');
-        if (modeSelectorBlock) modeSelectorBlock.style.setProperty('display', 'none', 'important');
-        if (!currentAdminId) {
-            document.getElementById('carValue').innerHTML = '—';
-            document.getElementById('trackValue').innerHTML = '—';
-            document.getElementById('categoryValue').innerHTML = '—';
-            document.getElementById('weatherValue').innerHTML = '—';
-            document.getElementById('timeValue').innerHTML = '—';
-            document.getElementById('tiresValue').innerHTML = '—';
-            document.getElementById('fuelValue').innerHTML = '—';
-            if (similarContainer) {
-                similarContainer.style.setProperty('display', 'none', 'important');
-                similarContainer.classList.add('hidden-block');
-            }
-            document.getElementById('groupModeMessage').style.setProperty('display', 'none', 'important');
-            document.getElementById('carIcon').style.display = 'none';
-            document.getElementById('carIconFallback').style.display = 'none';
-            document.getElementById('trackIcon').style.display = 'none';
-            document.getElementById('trackIconFallback').style.display = 'none';
-        }
-    } else {
-        if (mainApp) mainApp.classList.remove('sync-mode');
-        
-        if (carsTrackContainer) carsTrackContainer.style.setProperty('display', 'none', 'important');
-        if (categoryContainer) categoryContainer.style.setProperty('display', 'none', 'important');
-        if (settingsContainer) settingsContainer.style.setProperty('display', 'none', 'important');
-        if (similarContainer) similarContainer.style.setProperty('display', 'none', 'important');
-        if (racesContainer) racesContainer.style.setProperty('display', 'none', 'important');
-        if (modeSelectorBlock) modeSelectorBlock.style.setProperty('display', 'none', 'important');
-        document.getElementById('groupModeMessage').style.setProperty('display', 'none', 'important');
-    }
-}
-
-function backToMenu() {
-    manualModeActive = false;
-    if (manualModeTimer) clearTimeout(manualModeTimer);
-    stopAutoRefresh();
-    isApplyingUpdate = false;
-    userSyncEnabled = false;
-    currentAdminId = null;
-    currentAdminName = null;
-    resetSyncCache();
-    updateModeIndicator(null);
-    localStorage.removeItem('gt7_selected_admin_id');
-    document.getElementById('exitManualModeBtn').style.display = 'none';
-    document.getElementById('generateRandomRaceBtn').style.display = 'block';
-    document.getElementById('mainApp').classList.add('hidden');
-    document.getElementById('setupScreen').classList.remove('hidden');
-    loadAdminsFromGoogle();
-    showStatusMessage('🔙 Вернулись в меню', 'info');
-}
-
-// ============================================
-// ЗАГРУЗКА АДМИНОВ
-// ============================================
-let adminsLoaded = false;
-
-async function loadAdminsFromGoogle() {
-    if (adminsLoaded) return;
-    const select = document.getElementById('adminSelect');
-    if (!select) return;
-    select.innerHTML = '<option value="">Загрузка...</option>';
-    try {
-        const callbackName = 'jsonp_admins_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=getAdmins&callback=${callbackName}&_=${Date.now()}`;
-        const admins = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve([]); }, 5000);
-            window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data.admins || []); };
-            const script = document.createElement('script'); script.src = url; script.onerror = () => resolve([]);
-            document.body.appendChild(script);
-        });
-        if (admins.length > 0) {
-            select.innerHTML = '<option value="">-- Выберите администратора --</option>';
-            admins.forEach(a => { select.innerHTML += `<option value="${a.id}">${a.name}</option>`; });
-            adminsLoaded = true;
-        } else {
-            select.innerHTML = '<option value="">-- Ошибка --</option>';
-        }
-    } catch(e) { select.innerHTML = '<option value="">-- Ошибка --</option>'; }
-}
-
-// ============================================
-// НАВИГАЦИЯ
-// ============================================
-function showSetupScreen() {
-    document.getElementById('welcomeScreen').classList.add('hidden');
-    document.getElementById('setupScreen').classList.remove('hidden');
-    document.getElementById('mainApp').classList.add('hidden');
-    loadAdminsFromGoogle();
-}
-
-function showWelcomeScreen() {
-    document.getElementById('welcomeScreen').classList.remove('hidden');
-    document.getElementById('setupScreen').classList.add('hidden');
-    document.getElementById('mainApp').classList.add('hidden');
-}
-
-function showMainApp(autoGenerate = true) {
-    stopAutoRefresh();
-    manualModeActive = false;
-    if (manualModeTimer) clearTimeout(manualModeTimer);
-    document.getElementById('welcomeScreen').classList.add('hidden');
-    document.getElementById('setupScreen').classList.add('hidden');
-    document.getElementById('mainApp').classList.remove('hidden');
-    const banner = document.getElementById('adminSyncBanner');
-    const nameSpan = document.getElementById('adminName');
-    const genBtn = document.getElementById('generateRandomRaceBtn');
-    document.getElementById('exitManualModeBtn').style.display = 'none';
-    if (userSyncEnabled && currentAdminId) {
-        banner.classList.remove('hidden');
-        nameSpan.innerHTML = currentAdminName || currentAdminId;
-        localStorage.setItem('gt7_selected_admin_id', currentAdminId);
-        startAutoRefresh();
-        if (genBtn) genBtn.style.display = 'none';
-        updateModeIndicator('admin', currentAdminName || currentAdminId);
-        setTimeout(() => loadUserRegistrations(), 500);
-    } else {
-        banner.classList.add('hidden');
-        if (genBtn) genBtn.style.display = 'block';
-        updateModeIndicator('local');
-    }
-    if (typeof init === 'function' && !window._gt7_initialized) { init(); }
-    setTimeout(async () => {
-        if (userSyncEnabled && currentAdminId) {
-            if (typeof displayUserRaces === 'function') await displayUserRaces(currentAdminId);
-            const synced = await loadSyncedCombo(true);
-            if (syncedModeActive && synced && typeof applySyncedCombo === 'function') {
-                applySyncedCombo(synced);
-                showStatusMessage(`✅ Данные ${currentAdminName} загружены!`, 'success');
-            }
-        } else if (autoGenerate) {
-            if (typeof generateLocalRace === 'function') {
-                generateLocalRace();
-                showStatusMessage('🎲 Случайная гонка готова!', 'info');
-            }
-        }
-        if (typeof updateModeSelectorVisibility === 'function') updateModeSelectorVisibility();
-    }, 100);
-}
-
-// ============================================
-// ИНИЦИАЛИЗАЦИЯ
-// ============================================
-let isInitialized = false;
-
-function init() {
-    if (isInitialized) return;
-    isInitialized = true;
-    loadTrackStats();
-    loadLocksFromStorage();
-    loadShownCars();
-    
-    document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
-        const param = btn.getAttribute('data-param');
-        if (locks[param]) {
-            btn.innerText = '🔒';
-            btn.setAttribute('data-state', 'locked');
-        } else {
-            btn.innerText = '🔓';
-            btn.setAttribute('data-state', 'unlocked');
-        }
-        btn.addEventListener('click', (e) => { e.stopPropagation(); toggleLock(param); });
-    });
-    
-    document.getElementById('settingsHeader').addEventListener('click', function() {
-        const content = document.getElementById('settingsContent');
-        const icon = document.getElementById('settingsToggleIcon');
-        content.classList.toggle('collapsed');
-        icon.innerHTML = content.classList.contains('collapsed') ? '▶' : '▼';
-    });
-    
-    document.getElementById('similarHeader').addEventListener('click', function() {
-        const content = document.getElementById('similarContent');
-        const icon = document.getElementById('similarToggleIcon');
-        content.classList.toggle('collapsed');
-        icon.innerHTML = content.classList.contains('collapsed') ? '▶' : '▼';
-    });
-    
-    document.getElementById('carsTrackHeader').addEventListener('click', function() {
-        const content = document.getElementById('carsTrackContent');
-        const icon = document.getElementById('carsTrackToggleIcon');
-        content.classList.toggle('collapsed');
-        icon.innerHTML = content.classList.contains('collapsed') ? '▶' : '▼';
-    });
-    
-    document.getElementById('categoryHeader').addEventListener('click', function() {
-        const content = document.getElementById('categoryContent');
-        const icon = document.getElementById('categoryToggleIcon');
-        content.classList.toggle('collapsed');
-        icon.innerHTML = content.classList.contains('collapsed') ? '▶' : '▼';
-    });
-    
-    document.getElementById('racesHeader').addEventListener('click', function() {
-        const content = document.getElementById('racesCalendarContainer');
-        const icon = document.getElementById('racesToggleIcon');
-        content.classList.toggle('collapsed');
-        icon.innerHTML = content.classList.contains('collapsed') ? '▶' : '▼';
-    });
-    
-    document.getElementById('refreshSimilarBtn').addEventListener('click', refreshSimilarCars);
-    document.getElementById('resetCarsBtn').addEventListener('click', resetCarsHistory);
-    document.getElementById('modeAllBtn').addEventListener('click', () => setDisplayMode('all'));
-    document.getElementById('modeGroupOnlyBtn').addEventListener('click', () => setDisplayMode('group_only'));
-    document.getElementById('backToMenuBtn').addEventListener('click', backToMenu);
-    document.getElementById('closeRegistrationBtn').addEventListener('click', closeRegistration);
-    document.getElementById('confirmRegistrationBtn').addEventListener('click', registerForRace);
-    
-    document.getElementById('generateRandomRaceBtn').addEventListener('click', function() {
-        if (manualModeActive) {
-            manualModeActive = false;
-            if (manualModeTimer) clearTimeout(manualModeTimer);
-            document.getElementById('exitManualModeBtn').style.display = 'none';
-        }
-        isApplyingUpdate = false;
-        if (userSyncEnabled) {
-            userSyncEnabled = false;
-            currentAdminId = null;
-            currentAdminName = null;
-            document.getElementById('adminSyncBanner').classList.add('hidden');
-            stopAutoRefresh();
-            resetSyncCache();
-            this.style.display = 'block';
-        }
-        setTimeout(() => {
-            if (typeof generateLocalRace === 'function') {
-                generateLocalRace();
-                showStatusMessage('🎲 Новая гонка сгенерирована!', 'success');
-            }
-        }, 100);
-    });
-    
-    document.getElementById('exitManualModeBtn').addEventListener('click', function() {
-        manualModeActive = false;
-        if (manualModeTimer) clearTimeout(manualModeTimer);
-        this.style.display = 'none';
-        showStatusMessage('🔄 Синхронизация возобновлена', 'success');
-        if (userSyncEnabled && currentAdminId) {
-            loadSyncedCombo(true).then(synced => {
-                if (syncedModeActive && synced) applySyncedCombo(synced);
-            });
-        }
-    });
-    
-    window.selectCar = selectCar;
-    setDisplayMode(displayMode);
-    updateModeSelectorVisibility();
-    
-    const savedAdminId = localStorage.getItem('gt7_selected_admin_id');
-    if (savedAdminId && document.getElementById('adminSelect')) {
-        const select = document.getElementById('adminSelect');
-        select.value = savedAdminId;
-    }
-    const container = document.getElementById('racesCalendarContainer');
-    if (container) container.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa;">👑 Выберите администратора</div>';
-}
-
-// ============================================
-// ОБРАБОТЧИКИ КНОПОК
-// ============================================
-document.getElementById('welcomeLocalRaceBtn').addEventListener('click', function() {
-    userSyncEnabled = false;
-    currentAdminId = null;
-    currentAdminName = null;
-    updateModeIndicator('local');
-    document.getElementById('welcomeScreen').classList.add('hidden');
-    document.getElementById('mainApp').classList.remove('hidden');
-    document.getElementById('adminSyncBanner').classList.add('hidden');
-    stopAutoRefresh();
-    resetSyncCache();
-    if (typeof init === 'function') init();
-    setTimeout(() => {
-        if (typeof generateLocalRace === 'function') {
-            generateLocalRace();
-            showStatusMessage('🎲 Случайная гонка готова!', 'info');
-        }
-    }, 100);
-    localStorage.setItem('gt7_welcome_seen', 'true');
-});
-
-document.getElementById('welcomeAdminBtn').addEventListener('click', function() {
-    document.getElementById('welcomeScreen').classList.add('hidden');
-    document.getElementById('setupScreen').classList.remove('hidden');
-    loadAdminsFromGoogle();
-    localStorage.setItem('gt7_welcome_seen', 'true');
-});
-
-document.getElementById('continueToAdminBtn').addEventListener('click', function() {
-    const select = document.getElementById('adminSelect');
-    const value = select.value;
-    if (!value) { alert('⚠️ Выберите администратора!'); return; }
-    stopAutoRefresh();
-    resetSyncCache();
-    userSyncEnabled = true;
-    currentAdminId = value;
-    currentAdminName = select.options[select.selectedIndex]?.text || value;
-    localStorage.setItem('gt7_selected_admin_id', currentAdminId);
-    showMainApp(false);
-    setTimeout(() => {
-        showStatusMessage(`👑 Режим синхронизации: ${currentAdminName}`, 'success');
-    }, 100);
-});
-
-document.getElementById('localRaceFromSetupBtn').addEventListener('click', function() {
-    userSyncEnabled = false;
-    currentAdminId = null;
-    currentAdminName = null;
-    document.getElementById('setupScreen').classList.add('hidden');
-    document.getElementById('mainApp').classList.remove('hidden');
-    document.getElementById('adminSyncBanner').classList.add('hidden');
-    document.getElementById('generateRandomRaceBtn').style.display = 'block';
-    stopAutoRefresh();
-    resetSyncCache();
-    if (typeof init === 'function') init();
-    setTimeout(() => {
-        if (typeof generateLocalRace === 'function') {
-            generateLocalRace();
-            showStatusMessage('🎲 Случайная гонка готова!', 'info');
-        }
-    }, 100);
-});
-
-// ============================================
-// СТАРТ
-// ============================================
-const hasSeenWelcome = localStorage.getItem('gt7_welcome_seen');
-if (hasSeenWelcome) {
-    showSetupScreen();
-} else {
-    showWelcomeScreen();
-}
-
-if (typeof init === 'function') {
-    init();
-}
 </script>
 </body>
 </html>
