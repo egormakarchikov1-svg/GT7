@@ -2203,17 +2203,23 @@ async function loadSyncedCombo(forceRefresh = false, retryCount = 0) {
                 resolve(null);
             }
         }, 10000);
+        
         window[callbackName] = function(data) {
             clearTimeout(timeout);
             delete window[callbackName];
+            
+            // ★★★ СОХРАНЯЕМ ДАННЫЕ В ГЛОБАЛЬНУЮ ПЕРЕМЕННУЮ ★★★
             if (data && (data.active === 'TRUE' || data.active === true)) {
                 syncedModeActive = true;
+                window.lastSyncedData = data;  // ← ЭТОЙ СТРОКИ НЕ ХВАТАЕТ
                 resolve(data);
             } else {
                 syncedModeActive = false;
+                window.lastSyncedData = null;  // ← И ЭТОЙ
                 resolve(null);
             }
         };
+        
         const script = document.createElement('script');
         script.src = url;
         script.onerror = () => { clearTimeout(timeout); if (window[callbackName]) delete window[callbackName]; resolve(null); };
