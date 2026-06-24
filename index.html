@@ -2785,11 +2785,19 @@ function showMainApp(autoGenerate = true) {
     document.getElementById('welcomeScreen').classList.add('hidden');
     document.getElementById('setupScreen').classList.add('hidden');
     document.getElementById('mainApp').classList.remove('hidden');
+    
+    // ★★★ ДОБАВИТЬ ЭТО ★★★
+    const mainApp = document.getElementById('mainApp');
+    
     const banner = document.getElementById('adminSyncBanner');
     const nameSpan = document.getElementById('adminName');
     const genBtn = document.getElementById('generateRandomRaceBtn');
     document.getElementById('exitManualModeBtn').style.display = 'none';
+    
     if (userSyncEnabled && currentAdminId) {
+        // ★★★ ДОБАВИТЬ: Добавляем класс sync-mode ★★★
+        mainApp.classList.add('sync-mode');
+        
         banner.classList.remove('hidden');
         nameSpan.innerHTML = currentAdminName || currentAdminId;
         localStorage.setItem('gt7_selected_admin_id', currentAdminId);
@@ -2798,6 +2806,9 @@ function showMainApp(autoGenerate = true) {
         updateModeIndicator('admin', currentAdminName || currentAdminId);
         setTimeout(() => loadUserRegistrations(), 500);
     } else {
+        // ★★★ ДОБАВИТЬ: Удаляем класс sync-mode ★★★
+        mainApp.classList.remove('sync-mode');
+        
         banner.classList.add('hidden');
         if (genBtn) genBtn.style.display = 'block';
         updateModeIndicator('local');
@@ -2889,28 +2900,30 @@ function init() {
     document.getElementById('confirmRegistrationBtn').addEventListener('click', registerForRace);
     
     document.getElementById('generateRandomRaceBtn').addEventListener('click', function() {
-        if (manualModeActive) {
-            manualModeActive = false;
-            if (manualModeTimer) clearTimeout(manualModeTimer);
-            document.getElementById('exitManualModeBtn').style.display = 'none';
+    if (manualModeActive) {
+        manualModeActive = false;
+        if (manualModeTimer) clearTimeout(manualModeTimer);
+        document.getElementById('exitManualModeBtn').style.display = 'none';
+    }
+    isApplyingUpdate = false;
+    if (userSyncEnabled) {
+        userSyncEnabled = false;
+        currentAdminId = null;
+        currentAdminName = null;
+        document.getElementById('adminSyncBanner').classList.add('hidden');
+        // ★★★ УДАЛЯЕМ КЛАСС ★★★
+        document.getElementById('mainApp').classList.remove('sync-mode');
+        stopAutoRefresh();
+        resetSyncCache();
+        this.style.display = 'block';
+    }
+    setTimeout(() => {
+        if (typeof generateLocalRace === 'function') {
+            generateLocalRace();
+            showStatusMessage('🎲 Новая гонка сгенерирована!', 'success');
         }
-        isApplyingUpdate = false;
-        if (userSyncEnabled) {
-            userSyncEnabled = false;
-            currentAdminId = null;
-            currentAdminName = null;
-            document.getElementById('adminSyncBanner').classList.add('hidden');
-            stopAutoRefresh();
-            resetSyncCache();
-            this.style.display = 'block';
-        }
-        setTimeout(() => {
-            if (typeof generateLocalRace === 'function') {
-                generateLocalRace();
-                showStatusMessage('🎲 Новая гонка сгенерирована!', 'success');
-            }
-        }, 100);
-    });
+    }, 100);
+});
     
     document.getElementById('exitManualModeBtn').addEventListener('click', function() {
         manualModeActive = false;
