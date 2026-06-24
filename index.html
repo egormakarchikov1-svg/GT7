@@ -1160,6 +1160,7 @@ const times = [
     { name: "Сумерки", icon: "🌙" },
     { name: "Ночь", icon: "🌚" }
 ];
+
 // ============================================
 // ФУНКЦИЯ ПОЛУЧЕНИЯ ИКОНКИ ТРАССЫ
 // ============================================
@@ -1207,9 +1208,9 @@ function getTrackIcon(trackName) {
         }
     }
     
-    // Если иконка не найдена — возвращаем пустую строку
     return '';
 }
+
 // ============================================
 // СОСТОЯНИЕ
 // ============================================
@@ -1233,9 +1234,13 @@ let trackLastUsed = {};
 let userRegistrations = {};
 let currentRegistrationRaceId = null;
 let isRegisteringInProgress = false;
-let isCheckingInProgress = false;
 let isLoadingParticipants = false;
-let lastParticipantsCount = {};
+
+// Кеши для ускорения синхронизации
+const syncCache = { data: null, timestamp: 0 };
+const racesCache = { data: null, timestamp: 0, adminId: null };
+const CACHE_DURATION = 15000; // 15 секунд
+let lastRacesHash = '';
 
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxy_fBTaLlQaf56WlME5e0cbk2RlwPUoV8ZMOuZLYl2YskrgyPFDGZXZxLWXafUBBq0Cg/exec';
 
@@ -1255,8 +1260,6 @@ function getRandomFuelValue() {
     const val = Math.floor(Math.random() * 20) + 1;
     return `X${val}`;
 }
-
-function getRandomLaps() { return Math.floor(Math.random() * 15) + 5; }
 
 function showStatusMessage(message, type) {
     let statusDiv = document.getElementById('tempStatusMessage');
@@ -1409,10 +1412,8 @@ function getRandomTrackSmart() {
 }
 
 // ============================================
-// ФУНКЦИИ ОБНОВЛЕНИЯ ПАРАМЕТРОВ (НЕЗАВИСИМЫЕ)
+// ФУНКЦИИ ОБНОВЛЕНИЯ ПАРАМЕТРОВ
 // ============================================
-
-// Обновление машины
 function updateCar(force) {
     if (force) {
         const c = getRandomCarWithoutRepeat();
@@ -1424,7 +1425,6 @@ function updateCar(force) {
     }
 }
 
-// Обновление трассы (НЕ ТРОГАЕТ погоду и время)
 function updateTrack(force) {
     if (force) {
         const t = getRandomTrackSmart();
@@ -1434,7 +1434,6 @@ function updateTrack(force) {
         saveTrackStats();
         document.getElementById('trackValue').innerHTML = `${t.name}`;
         
-        // ★★★ ЗАГРУЗКА ИКОНКИ ТРАССЫ ★★★
         const iconUrl = getTrackIcon(t.name);
         const trackIcon = document.getElementById('trackIcon');
         const trackIconFallback = document.getElementById('trackIconFallback');
@@ -1451,7 +1450,6 @@ function updateTrack(force) {
     }
 }
 
-// Обновление погоды (НЕ ЗАВИСИТ от трассы)
 function updateWeather(force) {
     if (force) {
         const w = getRandomItem(weathers);
@@ -1459,7 +1457,6 @@ function updateWeather(force) {
     }
 }
 
-// Обновление времени (НЕ ЗАВИСИТ от трассы)
 function updateTime(force) {
     if (force) {
         const t = getRandomItem(times);
@@ -1467,21 +1464,18 @@ function updateTime(force) {
     }
 }
 
-// Обновление износа шин
 function updateTiresValue(force) {
     if (force) {
         document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${getRandomTiresValue()}</span>`;
     }
 }
 
-// Обновление расхода топлива
 function updateFuelValue(force) {
     if (force) {
         document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${getRandomFuelValue()}</span>`;
     }
 }
 
-// Обновление категории
 function updateCategory(force) {
     if (force) {
         const c = getRandomItem(categories);
@@ -1490,7 +1484,7 @@ function updateCategory(force) {
 }
 
 // ============================================
-// generateLocalRace - НЕЗАВИСИМЫЕ ЗАМКИ
+// generateLocalRace
 // ============================================
 function generateLocalRace() {
     document.getElementById('carsTrackContainer').style.setProperty('display', 'block', 'important');
@@ -1514,7 +1508,6 @@ function generateLocalRace() {
     
     updateVisibilityByDisplayMode(displayMode);
     
-    // ★★★ НЕЗАВИСИМАЯ ЛОГИКА ЗАМКОВ ★★★
     const hasLocked = Object.values(locks).some(value => value === true);
     
     let paramsToUpdate = [];
@@ -1531,7 +1524,6 @@ function generateLocalRace() {
         showStatusMessage(`🔒 Обновляем только ЗАБЛОКИРОВАННЫЕ: ${paramsToUpdate.join(', ')}`, 'info');
     }
     
-    // ★★★ КАЖДЫЙ ПАРАМЕТР ОБНОВЛЯЕТСЯ НЕЗАВИСИМО ★★★
     if (paramsToUpdate.includes('car')) updateCar(true);
     if (paramsToUpdate.includes('track')) updateTrack(true);
     if (paramsToUpdate.includes('weather')) updateWeather(true);
@@ -1540,7 +1532,6 @@ function generateLocalRace() {
     if (paramsToUpdate.includes('fuel')) updateFuelValue(true);
     if (paramsToUpdate.includes('category')) updateCategory(true);
     
-    // Обновляем отображение замков
     document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
         const param = btn.getAttribute('data-param');
         if (locks[param]) {
@@ -1627,11 +1618,17 @@ function refreshSimilarCars() {
 }
 
 // ============================================
-// СИНХРОНИЗАЦИЯ С GOOGLE SHEETS
+// ОПТИМИЗИРОВАННАЯ СИНХРОНИЗАЦИЯ
 // ============================================
 function resetSyncCache() {
     syncedModeActive = false;
     window.lastSyncedData = null;
+    syncCache.data = null;
+    syncCache.timestamp = 0;
+    racesCache.data = null;
+    racesCache.timestamp = 0;
+    racesCache.adminId = null;
+    lastRacesHash = '';
 }
 
 function stopAutoRefresh() {
@@ -1643,58 +1640,71 @@ function stopAutoRefresh() {
 
 function startAutoRefresh() {
     if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+    
     autoRefreshInterval = setInterval(async () => {
         if (manualModeActive) {
-            if (typeof displayUserRaces === 'function' && userSyncEnabled && currentAdminId) {
-                displayUserRaces(currentAdminId);
+            if (userSyncEnabled && currentAdminId) {
+                await displayUserRaces(currentAdminId);
             }
             return;
         }
+        
         if (userSyncEnabled && currentAdminId && !isApplyingUpdate) {
             try {
-                if (typeof displayUserRaces === 'function') displayUserRaces(currentAdminId);
-                const synced = await loadSyncedCombo(true);
+                const synced = await loadSyncedCombo(false);
+                
                 if (syncedModeActive && synced) {
                     const currentTrackEl = document.getElementById('trackValue');
-                    let currentTrackName = '';
-                    if (currentTrackEl) currentTrackName = currentTrackEl.innerText.replace(/\d+\s*кругов/, '').trim();
+                    let currentTrackName = currentTrackEl ? currentTrackEl.innerText.replace(/\d+\s*кругов/, '').trim() : '';
                     const currentCar = document.getElementById('carValue')?.innerText || '';
+                    
                     let hasChanges = false;
                     if (!locks.car && synced.car_name && currentCar !== synced.car_name) hasChanges = true;
                     if (!locks.track && synced.track_name && currentTrackName !== synced.track_name) hasChanges = true;
+                    
                     if (hasChanges) {
                         isApplyingUpdate = true;
                         applySyncedCombo(synced);
-                        showStatusMessage('🔄 Данные обновлены администратором!', 'success');
-                        setTimeout(() => { isApplyingUpdate = false; }, 3000);
+                        showStatusMessage('🔄 Данные обновлены!', 'success');
+                        setTimeout(() => { isApplyingUpdate = false; }, 1000);
                     }
                 }
-            } catch(e) { console.error('Ошибка обновления:', e); }
+            } catch(e) { console.error('Ошибка:', e); }
         }
-    }, 10000);
+    }, 15000);
 }
 
 async function loadSyncedCombo(forceRefresh = false, retryCount = 0) {
+    const now = Date.now();
+    if (!forceRefresh && syncCache.data && (now - syncCache.timestamp) < CACHE_DURATION) {
+        return syncCache.data;
+    }
+    
     if (!userSyncEnabled || !currentAdminId) {
         syncedModeActive = false;
         return null;
     }
+    
     return new Promise((resolve) => {
         const callbackName = 'jsonp_combo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=getCurrentCombo&adminId=${encodeURIComponent(currentAdminId)}&callback=${callbackName}&_=${Date.now()}&force=${forceRefresh ? '1' : '0'}`;
+        const url = `${APPS_SCRIPT_URL}?action=getCurrentCombo&adminId=${encodeURIComponent(currentAdminId)}&callback=${callbackName}&_=${Date.now()}`;
         const timeout = setTimeout(() => {
             if (window[callbackName]) delete window[callbackName];
-            if (retryCount < 3) {
-                setTimeout(() => loadSyncedCombo(forceRefresh, retryCount + 1).then(resolve), 2000);
+            if (retryCount < 2) {
+                setTimeout(() => loadSyncedCombo(forceRefresh, retryCount + 1).then(resolve), 500);
             } else {
                 syncedModeActive = false;
                 resolve(null);
             }
-        }, 10000);
+        }, 3000);
+        
         window[callbackName] = function(data) {
             clearTimeout(timeout);
             delete window[callbackName];
+            
             if (data && (data.active === 'TRUE' || data.active === true)) {
+                syncCache.data = data;
+                syncCache.timestamp = Date.now();
                 syncedModeActive = true;
                 resolve(data);
             } else {
@@ -1702,6 +1712,7 @@ async function loadSyncedCombo(forceRefresh = false, retryCount = 0) {
                 resolve(null);
             }
         };
+        
         const script = document.createElement('script');
         script.src = url;
         script.onerror = () => { clearTimeout(timeout); if (window[callbackName]) delete window[callbackName]; resolve(null); };
@@ -1800,34 +1811,53 @@ function getUserDeviceId() {
 
 async function getActiveRaces(adminId) {
     if (!adminId) return [];
+    
+    const now = Date.now();
+    if (racesCache.adminId === adminId && racesCache.data && (now - racesCache.timestamp) < 30000) {
+        return racesCache.data;
+    }
+    
     try {
         const userId = localStorage.getItem('gt7_user_id') || 'default';
         const callbackName = 'jsonp_races_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         const url = `${APPS_SCRIPT_URL}?action=getUserRaces&userId=${userId}&adminId=${adminId}&callback=${callbackName}&_=${Date.now()}`;
         const races = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve([]); }, 10000);
+            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve([]); }, 5000);
             window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data.races || []); };
             const script = document.createElement('script'); script.src = url; script.onerror = () => resolve([]);
             document.body.appendChild(script);
         });
-        const now = new Date();
-        return races.filter(race => race.active === true && new Date(race.datetime) > now);
+        
+        const now2 = new Date();
+        const filtered = races.filter(race => race.active === true && new Date(race.datetime) > now2);
+        racesCache.data = filtered;
+        racesCache.timestamp = Date.now();
+        racesCache.adminId = adminId;
+        return filtered;
     } catch(e) { return []; }
 }
 
 async function displayUserRaces(adminId) {
     const currentAdminId = adminId || localStorage.getItem('gt7_selected_admin_id');
     const container = document.getElementById('racesCalendarContainer');
+    
     if (!currentAdminId) {
         if (container) container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">👑 Выберите администратора</div>';
         return;
     }
+    
     const races = await getActiveRaces(currentAdminId);
     if (!container) return;
+    
+    const newHash = JSON.stringify(races.map(r => r.id + r.datetime + r.title));
+    if (newHash === lastRacesHash) return;
+    lastRacesHash = newHash;
+    
     if (races.length === 0) {
         container.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">📭 Нет запланированных гонок</div>';
         return;
     }
+    
     container.innerHTML = races.map(race => {
         const date = new Date(race.datetime).toLocaleString('ru-RU', {
             day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
@@ -1865,9 +1895,18 @@ async function loadUserRegistrations() {
         const callbackName = 'jsonp_user_regs_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         const url = `${APPS_SCRIPT_URL}?action=getUserRegistrations&adminId=${currentAdminId}&deviceId=${encodeURIComponent(deviceId)}&callback=${callbackName}&_=${Date.now()}`;
         const result = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve({}); }, 10000);
-            window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data); };
-            const script = document.createElement('script'); script.src = url; script.onerror = () => resolve({});
+            const timeout = setTimeout(() => { 
+                if (window[callbackName]) delete window[callbackName]; 
+                resolve({}); 
+            }, 5000);
+            window[callbackName] = function(data) { 
+                clearTimeout(timeout); 
+                delete window[callbackName]; 
+                resolve(data); 
+            };
+            const script = document.createElement('script'); 
+            script.src = url; 
+            script.onerror = () => { clearTimeout(timeout); resolve({}); };
             document.body.appendChild(script);
         });
         if (result.success && result.races) {
@@ -1900,7 +1939,7 @@ async function loadParticipants(raceId) {
         const callbackName = 'jsonp_participants_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         const url = `${APPS_SCRIPT_URL}?action=getParticipants&raceId=${raceId}&callback=${callbackName}&_=${Date.now()}`;
         const participants = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve([]); }, 10000);
+            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve([]); }, 5000);
             window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data.participants || []); };
             const script = document.createElement('script'); script.src = url; script.onerror = () => resolve([]);
             document.body.appendChild(script);
@@ -1944,7 +1983,7 @@ async function registerForRace() {
         const callbackName = 'jsonp_register_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         const url = `${APPS_SCRIPT_URL}?action=registerForRace&raceId=${currentRegistrationRaceId}&name=${encodeURIComponent(name)}&deviceId=${encodeURIComponent(deviceId)}&callback=${callbackName}&_=${Date.now()}`;
         const result = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve({}); }, 10000);
+            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve({}); }, 5000);
             window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data); };
             const script = document.createElement('script'); script.src = url; script.onerror = () => resolve({});
             document.body.appendChild(script);
@@ -1970,7 +2009,7 @@ async function cancelRegistration(raceId) {
         const callbackName = 'jsonp_cancel_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         const url = `${APPS_SCRIPT_URL}?action=cancelRegistration&raceId=${raceId}&deviceId=${encodeURIComponent(deviceId)}&callback=${callbackName}&_=${Date.now()}`;
         const result = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve({}); }, 10000);
+            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve({}); }, 5000);
             window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data); };
             const script = document.createElement('script'); script.src = url; script.onerror = () => resolve({});
             document.body.appendChild(script);
@@ -1991,7 +2030,7 @@ async function applyRaceToGame(raceId) {
         const callbackName = 'jsonp_race_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         const url = `${APPS_SCRIPT_URL}?action=getRaceById&raceId=${raceId}&callback=${callbackName}&_=${Date.now()}`;
         const race = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve(null); }, 10000);
+            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve(null); }, 5000);
             window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data.race); };
             const script = document.createElement('script'); script.src = url; script.onerror = () => resolve(null);
             document.body.appendChild(script);
@@ -2170,7 +2209,6 @@ function updateModeSelectorVisibility() {
     const mainApp = document.getElementById('mainApp');
     
     if (userSyncEnabled) {
-        // Добавляем класс sync-mode для скрытия замков через CSS
         if (mainApp) mainApp.classList.add('sync-mode');
         
         if (carsTrackContainer) carsTrackContainer.style.setProperty('display', 'block', 'important');
@@ -2197,7 +2235,6 @@ function updateModeSelectorVisibility() {
             document.getElementById('trackIconFallback').style.display = 'none';
         }
     } else {
-        // Убираем класс sync-mode
         if (mainApp) mainApp.classList.remove('sync-mode');
         
         if (carsTrackContainer) carsTrackContainer.style.setProperty('display', 'none', 'important');
@@ -2243,7 +2280,7 @@ async function loadAdminsFromGoogle() {
         const callbackName = 'jsonp_admins_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         const url = `${APPS_SCRIPT_URL}?action=getAdmins&callback=${callbackName}&_=${Date.now()}`;
         const admins = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve([]); }, 10000);
+            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve([]); }, 5000);
             window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data.admins || []); };
             const script = document.createElement('script'); script.src = url; script.onerror = () => resolve([]);
             document.body.appendChild(script);
@@ -2508,7 +2545,6 @@ if (hasSeenWelcome) {
     showWelcomeScreen();
 }
 
-// Запускаем init после загрузки
 if (typeof init === 'function') {
     init();
 }
