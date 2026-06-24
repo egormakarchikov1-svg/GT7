@@ -2808,7 +2808,6 @@ function showMainApp(autoGenerate = true) {
     document.getElementById('setupScreen').classList.add('hidden');
     document.getElementById('mainApp').classList.remove('hidden');
     
-    // ★★★ ДОБАВИТЬ ЭТО ★★★
     const mainApp = document.getElementById('mainApp');
     
     const banner = document.getElementById('adminSyncBanner');
@@ -2817,8 +2816,14 @@ function showMainApp(autoGenerate = true) {
     document.getElementById('exitManualModeBtn').style.display = 'none';
     
     if (userSyncEnabled && currentAdminId) {
-        // ★★★ ДОБАВИТЬ: Добавляем класс sync-mode ★★★
         mainApp.classList.add('sync-mode');
+        
+        // ★★★ ПРИНУДИТЕЛЬНО СКРЫВАЕМ КАТЕГОРИЮ ПРИ ПЕРВОЙ ЗАГРУЗКЕ ★★★
+        const categoryContainer = document.getElementById('categoryContainer');
+        if (categoryContainer) {
+            categoryContainer.classList.add('hidden-block');
+            categoryContainer.style.setProperty('display', 'none', 'important');
+        }
         
         banner.classList.remove('hidden');
         nameSpan.innerHTML = currentAdminName || currentAdminId;
@@ -2828,9 +2833,7 @@ function showMainApp(autoGenerate = true) {
         updateModeIndicator('admin', currentAdminName || currentAdminId);
         setTimeout(() => loadUserRegistrations(), 500);
     } else {
-        // ★★★ ДОБАВИТЬ: Удаляем класс sync-mode ★★★
         mainApp.classList.remove('sync-mode');
-        
         banner.classList.add('hidden');
         if (genBtn) genBtn.style.display = 'block';
         updateModeIndicator('local');
