@@ -1245,85 +1245,52 @@ let lastRacesHash = '';
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxy_fBTaLlQaf56WlME5e0cbk2RlwPUoV8ZMOuZLYl2YskrgyPFDGZXZxLWXafUBBq0Cg/exec';
 
 // ============================================
-// УЛУЧШЕННАЯ ОБРАБОТКА JSONP ЗАПРОСОВ
+// УЛУЧШЕННАЯ ОБРАБОТКА ЗАПРОСОВ (FETCH + CORS)
+// ============================================
+
+async function makeRequest(url, timeoutMs = 8000) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    
+    try {
+        const response = await fetch(url, {
+            signal: controller.signal,
+            method: 'GET',
+            mode: 'cors',
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+        clearTimeout(timeout);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        clearTimeout(timeout);
+        if (error.name === 'AbortError') {
+            console.log('⏱️ Запрос прерван по таймауту');
+        } else {
+            console.error('❌ Ошибка запроса:', error.message);
+        }
+        return null;
+    }
+}
+
+// ============================================
+// ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ДЛЯ СТАРЫХ JSONP (запасной вариант)
 // ============================================
 
 function makeJsonpRequest(url, callbackName, timeoutMs = 5000) {
-    return new Promise((resolve) => {
-        // Удаляем старый callback если есть
-        if (window[callbackName]) {
-            delete window[callbackName];
-        }
-        
-        let resolved = false;
-        
-        // Устанавливаем таймаут
-        const timeout = setTimeout(() => {
-            if (!resolved) {
-                resolved = true;
-                // Удаляем скрипт если он был добавлен
-                const scripts = document.querySelectorAll(`script[src*="${callbackName}"]`);
-                scripts.forEach(s => s.remove());
-                if (window[callbackName]) delete window[callbackName];
-                resolve(null);
-            }
-        }, timeoutMs);
-        
-        // Определяем callback
-        window[callbackName] = function(data) {
-            if (!resolved) {
-                resolved = true;
-                clearTimeout(timeout);
-                // Удаляем скрипт
-                const scripts = document.querySelectorAll(`script[src*="${callbackName}"]`);
-                scripts.forEach(s => s.remove());
-                delete window[callbackName];
-                resolve(data);
-            }
-        };
-        
-        // Создаем и добавляем скрипт
-        const script = document.createElement('script');
-        script.src = url;
-        script.onload = function() {
-            // Если callback не был вызван (сервер вернул обычный JSON без обертки)
-            setTimeout(() => {
-                if (!resolved) {
-                    // Пробуем получить данные через fetch как запасной вариант
-                    fetch(url.split('&callback=')[0])
-                        .then(response => response.json())
-                        .then(data => {
-                            if (!resolved) {
-                                resolved = true;
-                                clearTimeout(timeout);
-                                delete window[callbackName];
-                                resolve(data);
-                            }
-                        })
-                        .catch(() => {
-                            if (!resolved) {
-                                resolved = true;
-                                clearTimeout(timeout);
-                                delete window[callbackName];
-                                resolve(null);
-                            }
-                        });
-                }
-            }, 100);
-        };
-        script.onerror = function() {
-            if (!resolved) {
-                resolved = true;
-                clearTimeout(timeout);
-                if (window[callbackName]) delete window[callbackName];
-                // Пробуем через fetch
-                fetch(url.split('&callback=')[0])
-                    .then(response => response.json())
-                    .then(data => resolve(data))
-                    .catch(() => resolve(null));
-            }
-        };
-        document.body.appendChild(script);
+    // Пробуем через fetch сначала
+    return new Promise(async (resolve) => {
+        // Убираем callback из URL для fetch
+        const fetchUrl = url.split('&callback=')[0];
+        const data = await makeRequest(fetchUrl, timeoutMs);
+        resolve(data);
     });
 }
 
