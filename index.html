@@ -1727,10 +1727,27 @@ function applySyncedCombo(data) {
         }
     }
     if (!locks.track && data.track_name) {
-        document.getElementById('trackValue').innerHTML = data.track_name;
-        document.getElementById('trackIcon').style.display = 'none';
-        document.getElementById('trackIconFallback').style.display = 'flex';
+    // Обновляем название
+    document.getElementById('trackValue').innerHTML = data.track_name;
+    
+    // ★★★ ЗАГРУЗКА ИКОНКИ ТРАССЫ ★★★
+    const trackName = data.track_name;
+    const trackIcon = document.getElementById('trackIcon');
+    const trackIconFallback = document.getElementById('trackIconFallback');
+    
+    // Используем существующую функцию getTrackIcon()
+    const iconUrl = getTrackIcon(trackName);
+    
+    if (iconUrl && iconUrl !== '') {
+        trackIcon.src = iconUrl;
+        trackIcon.style.display = 'block';
+        trackIconFallback.style.display = 'none';
+    } else {
+        trackIcon.style.display = 'none';
+        trackIconFallback.style.display = 'flex';
+        trackIconFallback.innerHTML = '🏁';
     }
+}
     if (!locks.category && data.category_name) {
         const cat = categories.find(c => c.name === data.category_name);
         if (cat) {
