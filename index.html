@@ -1245,6 +1245,48 @@ let lastRacesHash = '';
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxy_fBTaLlQaf56WlME5e0cbk2RlwPUoV8ZMOuZLYl2YskrgyPFDGZXZxLWXafUBBq0Cg/exec';
 
 // ============================================
+// УЛУЧШЕННАЯ ОБРАБОТКА JSONP ЗАПРОСОВ
+// ============================================
+
+function makeJsonpRequest(url, callbackName, timeoutMs = 5000) {
+    return new Promise((resolve) => {
+        // Удаляем старый callback если есть
+        if (window[callbackName]) {
+            delete window[callbackName];
+        }
+        
+        // Устанавливаем таймаут
+        const timeout = setTimeout(() => {
+            // Удаляем скрипт если он был добавлен
+            const scripts = document.querySelectorAll(`script[src*="${callbackName}"]`);
+            scripts.forEach(s => s.remove());
+            if (window[callbackName]) delete window[callbackName];
+            resolve(null);
+        }, timeoutMs);
+        
+        // Определяем callback
+        window[callbackName] = function(data) {
+            clearTimeout(timeout);
+            // Удаляем скрипт
+            const scripts = document.querySelectorAll(`script[src*="${callbackName}"]`);
+            scripts.forEach(s => s.remove());
+            delete window[callbackName];
+            resolve(data);
+        };
+        
+        // Создаем и добавляем скрипт
+        const script = document.createElement('script');
+        script.src = url;
+        script.onerror = function() {
+            clearTimeout(timeout);
+            if (window[callbackName]) delete window[callbackName];
+            resolve(null);
+        };
+        document.body.appendChild(script);
+    });
+}
+
+// ============================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 // ============================================
 function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
@@ -1685,39 +1727,42 @@ async function loadSyncedCombo(forceRefresh = false, retryCount = 0) {
         return null;
     }
     
-    return new Promise((resolve) => {
-        const callbackName = 'jsonp_combo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=getCurrentCombo&adminId=${encodeURIComponent(currentAdminId)}&callback=${callbackName}&_=${Date.now()}`;
-        const timeout = setTimeout(() => {
-            if (window[callbackName]) delete window[callbackName];
-            if (retryCount < 2) {
-                setTimeout(() => loadSyncedCombo(forceRefresh, retryCount + 1).then(resolve), 500);
-            } else {
-                syncedModeActive = false;
-                resolve(null);
-            }
-        }, 3000);
-        
-        window[callbackName] = function(data) {
-            clearTimeout(timeout);
-            delete window[callbackName];
+    // Пробуем с повторными попытками
+    const maxRetries = 3;
+    let lastError = null;
+    
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+            const callbackName = 'jsonp_combo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+            const url = `${APPS_SCRIPT_URL}?action=getCurrentCombo&adminId=${encodeURIComponent(currentAdminId)}&callback=${callbackName}&_=${Date.now()}`;
+            
+            const data = await makeJsonpRequest(url, callbackName, 5000);
             
             if (data && (data.active === 'TRUE' || data.active === true)) {
                 syncCache.data = data;
                 syncCache.timestamp = Date.now();
                 syncedModeActive = true;
-                resolve(data);
-            } else {
+                return data;
+            } else if (data) {
+                // Данные получены, но не активны
                 syncedModeActive = false;
-                resolve(null);
+                return null;
             }
-        };
-        
-        const script = document.createElement('script');
-        script.src = url;
-        script.onerror = () => { clearTimeout(timeout); if (window[callbackName]) delete window[callbackName]; resolve(null); };
-        document.body.appendChild(script);
-    });
+            
+            // Если data === null, пробуем еще раз
+            if (attempt < maxRetries - 1) {
+                await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1))); // Экспоненциальная задержка
+            }
+        } catch(e) {
+            lastError = e;
+            if (attempt < maxRetries - 1) {
+                await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+            }
+        }
+    }
+    
+    syncedModeActive = false;
+    return null;
 }
 
 function applySyncedCombo(data) {
@@ -1821,20 +1866,21 @@ async function getActiveRaces(adminId) {
         const userId = localStorage.getItem('gt7_user_id') || 'default';
         const callbackName = 'jsonp_races_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         const url = `${APPS_SCRIPT_URL}?action=getUserRaces&userId=${userId}&adminId=${adminId}&callback=${callbackName}&_=${Date.now()}`;
-        const races = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve([]); }, 5000);
-            window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data.races || []); };
-            const script = document.createElement('script'); script.src = url; script.onerror = () => resolve([]);
-            document.body.appendChild(script);
-        });
         
-        const now2 = new Date();
-        const filtered = races.filter(race => race.active === true && new Date(race.datetime) > now2);
-        racesCache.data = filtered;
-        racesCache.timestamp = Date.now();
-        racesCache.adminId = adminId;
-        return filtered;
-    } catch(e) { return []; }
+        const races = await makeJsonpRequest(url, callbackName, 5000);
+        
+        if (races && races.races) {
+            const now2 = new Date();
+            const filtered = races.races.filter(race => race.active === true && new Date(race.datetime) > now2);
+            racesCache.data = filtered;
+            racesCache.timestamp = Date.now();
+            racesCache.adminId = adminId;
+            return filtered;
+        }
+        return [];
+    } catch(e) { 
+        return []; 
+    }
 }
 
 async function displayUserRaces(adminId) {
@@ -1894,26 +1940,16 @@ async function loadUserRegistrations() {
         const deviceId = getUserDeviceId();
         const callbackName = 'jsonp_user_regs_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         const url = `${APPS_SCRIPT_URL}?action=getUserRegistrations&adminId=${currentAdminId}&deviceId=${encodeURIComponent(deviceId)}&callback=${callbackName}&_=${Date.now()}`;
-        const result = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { 
-                if (window[callbackName]) delete window[callbackName]; 
-                resolve({}); 
-            }, 5000);
-            window[callbackName] = function(data) { 
-                clearTimeout(timeout); 
-                delete window[callbackName]; 
-                resolve(data); 
-            };
-            const script = document.createElement('script'); 
-            script.src = url; 
-            script.onerror = () => { clearTimeout(timeout); resolve({}); };
-            document.body.appendChild(script);
-        });
-        if (result.success && result.races) {
+        
+        const result = await makeJsonpRequest(url, callbackName, 5000);
+        
+        if (result && result.success && result.races) {
             userRegistrations = {};
             result.races.forEach(id => { userRegistrations[id] = true; });
         }
-    } catch(e) {}
+    } catch(e) {
+        console.error('Ошибка загрузки регистраций:', e);
+    }
 }
 
 function openRegistration(raceId, trackName, title) {
@@ -1938,14 +1974,17 @@ async function loadParticipants(raceId) {
     try {
         const callbackName = 'jsonp_participants_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         const url = `${APPS_SCRIPT_URL}?action=getParticipants&raceId=${raceId}&callback=${callbackName}&_=${Date.now()}`;
-        const participants = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve([]); }, 5000);
-            window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data.participants || []); };
-            const script = document.createElement('script'); script.src = url; script.onerror = () => resolve([]);
-            document.body.appendChild(script);
-        });
-        displayParticipants(participants);
-    } catch(e) { document.getElementById('participantsList').innerHTML = '<div style="text-align:center;color:#ef4444;padding:10px;">❌ Ошибка</div>'; }
+        
+        const data = await makeJsonpRequest(url, callbackName, 5000);
+        
+        if (data && data.participants) {
+            displayParticipants(data.participants);
+        } else {
+            document.getElementById('participantsList').innerHTML = '<div style="text-align:center;color:#aaa;padding:10px;">👥 Пока нет участников</div>';
+        }
+    } catch(e) { 
+        document.getElementById('participantsList').innerHTML = '<div style="text-align:center;color:#ef4444;padding:10px;">❌ Ошибка</div>'; 
+    }
     finally { isLoadingParticipants = false; }
 }
 
@@ -1982,13 +2021,10 @@ async function registerForRace() {
         const deviceId = getUserDeviceId();
         const callbackName = 'jsonp_register_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         const url = `${APPS_SCRIPT_URL}?action=registerForRace&raceId=${currentRegistrationRaceId}&name=${encodeURIComponent(name)}&deviceId=${encodeURIComponent(deviceId)}&callback=${callbackName}&_=${Date.now()}`;
-        const result = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve({}); }, 5000);
-            window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data); };
-            const script = document.createElement('script'); script.src = url; script.onerror = () => resolve({});
-            document.body.appendChild(script);
-        });
-        if (result.success) {
+        
+        const result = await makeJsonpRequest(url, callbackName, 5000);
+        
+        if (result && result.success) {
             showStatusMessage(`✅ ${name}, вы записаны!`, 'success');
             document.getElementById('racerName').value = '';
             await loadParticipants(currentRegistrationRaceId);
@@ -1996,7 +2032,7 @@ async function registerForRace() {
             const selectedAdmin = localStorage.getItem('gt7_selected_admin_id');
             if (selectedAdmin) await displayUserRaces(selectedAdmin);
         } else {
-            showStatusMessage('❌ ' + (result.error || 'Ошибка'), 'error');
+            showStatusMessage('❌ ' + (result?.error || 'Ошибка'), 'error');
         }
     } catch(e) { showStatusMessage('❌ Ошибка', 'error'); }
     finally { btn.disabled = false; btn.innerHTML = '✅ ЗАПИСАТЬСЯ'; isRegisteringInProgress = false; }
@@ -2008,20 +2044,19 @@ async function cancelRegistration(raceId) {
     try {
         const callbackName = 'jsonp_cancel_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         const url = `${APPS_SCRIPT_URL}?action=cancelRegistration&raceId=${raceId}&deviceId=${encodeURIComponent(deviceId)}&callback=${callbackName}&_=${Date.now()}`;
-        const result = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve({}); }, 5000);
-            window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data); };
-            const script = document.createElement('script'); script.src = url; script.onerror = () => resolve({});
-            document.body.appendChild(script);
-        });
-        if (result.success) {
+        
+        const result = await makeJsonpRequest(url, callbackName, 5000);
+        
+        if (result && result.success) {
             showStatusMessage('✅ Отказались', 'success');
             await loadParticipants(raceId);
             await loadUserRegistrations();
             const selectedAdmin = localStorage.getItem('gt7_selected_admin_id');
             if (selectedAdmin) await displayUserRaces(selectedAdmin);
         }
-    } catch(e) {}
+    } catch(e) {
+        showStatusMessage('❌ Ошибка', 'error');
+    }
 }
 
 async function applyRaceToGame(raceId) {
@@ -2029,13 +2064,11 @@ async function applyRaceToGame(raceId) {
         showStatusMessage('🔄 Загрузка...', 'info');
         const callbackName = 'jsonp_race_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         const url = `${APPS_SCRIPT_URL}?action=getRaceById&raceId=${raceId}&callback=${callbackName}&_=${Date.now()}`;
-        const race = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve(null); }, 5000);
-            window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data.race); };
-            const script = document.createElement('script'); script.src = url; script.onerror = () => resolve(null);
-            document.body.appendChild(script);
-        });
-        if (race) {
+        
+        const data = await makeJsonpRequest(url, callbackName, 5000);
+        
+        if (data && data.race) {
+            const race = data.race;
             manualModeActive = true;
             if (manualModeTimer) clearTimeout(manualModeTimer);
             manualModeTimer = setTimeout(() => {
@@ -2044,6 +2077,8 @@ async function applyRaceToGame(raceId) {
                 showStatusMessage('🕐 Ручной режим завершён', 'info');
             }, 1800000);
             document.getElementById('exitManualModeBtn').style.display = 'block';
+            
+            // Применяем настройки гонки
             if (race.display_mode) setDisplayMode(race.display_mode);
             if (race.car_locked !== undefined) locks.car = race.car_locked === true || race.car_locked === 'TRUE';
             if (race.track_locked !== undefined) locks.track = race.track_locked === true || race.track_locked === 'TRUE';
@@ -2052,11 +2087,19 @@ async function applyRaceToGame(raceId) {
             if (race.tires_locked !== undefined) locks.tires = race.tires_locked === true || race.tires_locked === 'TRUE';
             if (race.fuel_locked !== undefined) locks.fuel = race.fuel_locked === true || race.fuel_locked === 'TRUE';
             if (race.category_locked !== undefined) locks.category = race.category_locked === true || race.category_locked === 'TRUE';
+            
             document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
                 const param = btn.getAttribute('data-param');
-                if (locks[param]) { btn.innerText = '🔒'; btn.setAttribute('data-state', 'locked'); }
-                else { btn.innerText = '🔓'; btn.setAttribute('data-state', 'unlocked'); }
+                if (locks[param]) { 
+                    btn.innerText = '🔒'; 
+                    btn.setAttribute('data-state', 'locked'); 
+                } else { 
+                    btn.innerText = '🔓'; 
+                    btn.setAttribute('data-state', 'unlocked'); 
+                }
             });
+            
+            // Применяем данные
             if (race.display_mode === 'group_only') {
                 if (race.category_name) {
                     const cat = categories.find(c => c.name === race.category_name);
@@ -2081,30 +2124,47 @@ async function applyRaceToGame(raceId) {
                 document.getElementById('categoryContainer').classList.add('hidden-block');
                 document.getElementById('carBlock').classList.remove('hidden-block');
             }
+            
             if (race.track_name) {
                 document.getElementById('trackValue').innerHTML = race.track_name;
-                document.getElementById('trackIcon').style.display = 'none';
-                document.getElementById('trackIconFallback').style.display = 'flex';
+                const iconUrl = getTrackIcon(race.track_name);
+                const trackIcon = document.getElementById('trackIcon');
+                const trackIconFallback = document.getElementById('trackIconFallback');
+                if (iconUrl && iconUrl !== '') {
+                    trackIcon.src = iconUrl;
+                    trackIcon.style.display = 'block';
+                    trackIconFallback.style.display = 'none';
+                } else {
+                    trackIcon.style.display = 'none';
+                    trackIconFallback.style.display = 'flex';
+                    trackIconFallback.innerHTML = '🏁';
+                }
             }
+            
             if (race.weather_name) {
                 const w = findWeatherByName(race.weather_name);
                 if (w) document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`;
                 else document.getElementById('weatherValue').innerHTML = race.weather_name;
             }
+            
             if (race.time_name) {
                 const tm = findTimeByName(race.time_name);
                 const mult = race.time_multiplier || 'X1';
                 if (tm) document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${mult}</span>`;
                 else document.getElementById('timeValue').innerHTML = `${race.time_name} <span class="time-x-badge">${mult}</span>`;
             }
+            
             if (race.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${race.tires_value}</span>`;
             if (race.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${race.fuel_value}</span>`;
+            
             saveLocksToStorage();
             showStatusMessage('✅ Параметры гонки загружены!', 'success');
         } else {
             showStatusMessage('❌ Гонка не найдена', 'error');
         }
-    } catch(e) { showStatusMessage('❌ Ошибка', 'error'); }
+    } catch(e) { 
+        showStatusMessage('❌ Ошибка: ' + e.message, 'error'); 
+    }
 }
 
 // ============================================
@@ -2279,20 +2339,21 @@ async function loadAdminsFromGoogle() {
     try {
         const callbackName = 'jsonp_admins_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         const url = `${APPS_SCRIPT_URL}?action=getAdmins&callback=${callbackName}&_=${Date.now()}`;
-        const admins = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve([]); }, 5000);
-            window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data.admins || []); };
-            const script = document.createElement('script'); script.src = url; script.onerror = () => resolve([]);
-            document.body.appendChild(script);
-        });
-        if (admins.length > 0) {
+        
+        const data = await makeJsonpRequest(url, callbackName, 5000);
+        
+        if (data && data.admins && data.admins.length > 0) {
             select.innerHTML = '<option value="">-- Выберите администратора --</option>';
-            admins.forEach(a => { select.innerHTML += `<option value="${a.id}">${a.name}</option>`; });
+            data.admins.forEach(a => { 
+                select.innerHTML += `<option value="${a.id}">${a.name}</option>`; 
+            });
             adminsLoaded = true;
         } else {
-            select.innerHTML = '<option value="">-- Ошибка --</option>';
+            select.innerHTML = '<option value="">-- Ошибка загрузки --</option>';
         }
-    } catch(e) { select.innerHTML = '<option value="">-- Ошибка --</option>'; }
+    } catch(e) { 
+        select.innerHTML = '<option value="">-- Ошибка --</option>'; 
+    }
 }
 
 // ============================================
