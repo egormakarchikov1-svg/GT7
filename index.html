@@ -863,7 +863,6 @@
         <!-- ★★★ ДОБАВИТЬ ЗАМОК ★★★ -->
         <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 10px;">
             <button class="lock-btn" data-param="category" data-state="unlocked" style="position: static;">🔓</button>
-            <span style="color: #ff4d4d; font-size: 14px; font-weight: bold;">ЗАБЛОКИРОВАТЬ КЛАСС</span>
         </div>
         <div class="category-value" id="categoryValue">—</div>
     </div>
@@ -2883,6 +2882,9 @@ function showWelcomeScreen() {
 }
 
 function showMainApp(autoGenerate = true) {
+    // ★★★ СКРЫВАЕМ КНОПКУ "НАЗАД В МЕНЮ" ★★★
+    document.getElementById('backToMenuBtn').style.display = 'none';
+    
     stopAutoRefresh();
     manualModeActive = false;
     if (manualModeTimer) clearTimeout(manualModeTimer);
