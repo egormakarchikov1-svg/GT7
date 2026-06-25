@@ -736,12 +736,6 @@
 #mainApp.loaded > div:first-child {
     display: flex !important;
 }
-
-        /* Убрать фон у контейнера */
-.container {
-    background: transparent !important;
-    box-shadow: none !important;
-}
     </style>
 </head>
 <body>
@@ -2239,13 +2233,6 @@ function startAutoRefresh() {
                     }
                     
                     if (dataChanged) {
-    // ★★★ ПРОВЕРЯЕМ, ЧТО ДАННЫЕ РЕАЛЬНО ИЗМЕНИЛИСЬ ★★★
-    const currentData = window.lastSyncedData;
-    if (currentData && JSON.stringify(currentData) === JSON.stringify(synced)) {
-        // Данные не изменились, не показываем сообщение
-        return;
-    }
-    
     isApplyingUpdate = true;
     applySyncedCombo(synced);
     showStatusMessage('🔄 Данные обновлены администратором!', 'success');
@@ -2913,7 +2900,13 @@ function showWelcomeScreen() {
 }
 
 function showMainApp(autoGenerate = true) {
-    // ★★★ СКРЫВАЕМ КНОПКУ "НАЗАД В МЕНЮ" ★★★
+    // ★★★ СКРЫВАЕМ КНОПКУ "НАЗАД В МЕНЮ" И КОНТЕЙНЕР ★★★
+    const container = document.querySelector('.container');
+    if (container) {
+        container.style.opacity = '0';
+        container.style.transition = 'opacity 0.5s ease';
+        container.style.pointerEvents = 'none';
+    }
     document.getElementById('backToMenuBtn').style.display = 'none';
     
     stopAutoRefresh();
@@ -2975,13 +2968,26 @@ function showMainApp(autoGenerate = true) {
                 // ★★★ ПОКАЗЫВАЕМ КНОПКУ ПОСЛЕ ЗАГРУЗКИ ★★★
                 document.getElementById('backToMenuBtn').style.display = 'flex';
                 
+                // ★★★ ПОКАЗЫВАЕМ КОНТЕЙНЕР ПОСЛЕ ЗАГРУЗКИ ★★★
+                const container2 = document.querySelector('.container');
+                if (container2) {
+                    container2.style.opacity = '1';
+                    container2.style.pointerEvents = 'auto';
+                }
+                
                 // ★★★ ДОБАВЛЯЕМ КЛАСС ПОСЛЕ ЗАГРУЗКИ ★★★
                 document.getElementById('mainApp').classList.add('loaded');
                 
             } catch (error) {
                 console.error('Ошибка в showMainApp:', error);
                 document.getElementById('backToMenuBtn').style.display = 'flex';
+                
                 // ★★★ И СЮДА ТОЖЕ ★★★
+                const container3 = document.querySelector('.container');
+                if (container3) {
+                    container3.style.opacity = '1';
+                    container3.style.pointerEvents = 'auto';
+                }
                 document.getElementById('mainApp').classList.add('loaded');
             }
         })();
