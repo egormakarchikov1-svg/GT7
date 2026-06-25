@@ -2233,13 +2233,18 @@ function startAutoRefresh() {
                     }
                     
                     if (dataChanged) {
-                        isApplyingUpdate = true;
-                        applySyncedCombo(synced);
-                        if (!isFirstApply) {
-                            showStatusMessage('🔄 Данные обновлены администратором!', 'success');
-                        }
-                        setTimeout(() => { isApplyingUpdate = false; }, 3000);
-                    }
+    // ★★★ ПРОВЕРЯЕМ, ЧТО ДАННЫЕ РЕАЛЬНО ИЗМЕНИЛИСЬ ★★★
+    const currentData = window.lastSyncedData;
+    if (currentData && JSON.stringify(currentData) === JSON.stringify(synced)) {
+        // Данные не изменились, не показываем сообщение
+        return;
+    }
+    
+    isApplyingUpdate = true;
+    applySyncedCombo(synced);
+    showStatusMessage('🔄 Данные обновлены администратором!', 'success');
+    setTimeout(() => { isApplyingUpdate = false; }, 3000);
+}
                 }
             } catch(e) { console.error('Ошибка обновления:', e); }
         }
