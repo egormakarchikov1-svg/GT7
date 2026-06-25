@@ -727,9 +727,14 @@
     display: flex !important;
 }
 
-        /* Скрыть пустой контейнер */
-.container:empty {
+        /* Скрыть контейнер с кнопками во время загрузки */
+#mainApp > div:first-child {
     display: none !important;
+}
+
+/* Показать после загрузки */
+#mainApp.loaded > div:first-child {
+    display: flex !important;
 }
     </style>
 </head>
