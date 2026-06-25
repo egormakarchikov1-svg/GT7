@@ -2641,7 +2641,6 @@ async function applyRaceToGame(raceId) {
            if (race.track_name) {
     document.getElementById('trackValue').innerHTML = race.track_name;
     
-    // ★★★ ЗАГРУЗКА ИКОНКИ ТРАССЫ ★★★
     const trackName = race.track_name;
     const trackIcon = document.getElementById('trackIcon');
     const trackIconFallback = document.getElementById('trackIconFallback');
@@ -2649,7 +2648,8 @@ async function applyRaceToGame(raceId) {
     const iconUrl = getTrackIcon(trackName);
     
     if (iconUrl && iconUrl !== '') {
-        trackIcon.src = iconUrl + '?t=' + Date.now();
+        // ★★★ ИСПОЛЬЗУЕМ setAttribute ДЛЯ ПРИНУДИТЕЛЬНОЙ ЗАМЕНЫ ★★★
+        trackIcon.setAttribute('src', iconUrl + '?t=' + Date.now());
         trackIcon.style.display = 'block';
         trackIconFallback.style.display = 'none';
     } else {
