@@ -2177,9 +2177,6 @@ function stopAutoRefresh() {
     }
 }
 
-// ★★★ ГЛОБАЛЬНАЯ ПЕРЕМЕННАЯ ДЛЯ ХРАНЕНИЯ ХЭША ДАННЫХ ★★★
-let lastSyncedDataHash = '';
-
 function startAutoRefresh() {
     if (autoRefreshInterval) clearInterval(autoRefreshInterval);
     autoRefreshInterval = setInterval(async () => {
