@@ -1769,6 +1769,9 @@ let isRegisteringInProgress = false;
 let isCheckingInProgress = false;
 let isLoadingParticipants = false;
 let lastParticipantsCount = {};
+    // ★★★ ГЛОБАЛЬНАЯ ПЕРЕМЕННАЯ ДЛЯ ХРАНЕНИЯ ХЭША ДАННЫХ ★★★
+let lastSyncedDataHash = '';
+let isFirstApply = true;
 
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxy_fBTaLlQaf56WlME5e0cbk2RlwPUoV8ZMOuZLYl2YskrgyPFDGZXZxLWXafUBBq0Cg/exec';
 
@@ -2174,6 +2177,9 @@ function stopAutoRefresh() {
     }
 }
 
+// ★★★ ГЛОБАЛЬНАЯ ПЕРЕМЕННАЯ ДЛЯ ХРАНЕНИЯ ХЭША ДАННЫХ ★★★
+let lastSyncedDataHash = '';
+
 function startAutoRefresh() {
     if (autoRefreshInterval) clearInterval(autoRefreshInterval);
     autoRefreshInterval = setInterval(async () => {
@@ -2226,37 +2232,14 @@ function startAutoRefresh() {
                     
                     if (dataChanged) {
                         // ★★★ ПРОВЕРЯЕМ, ЧТО ДАННЫЕ РЕАЛЬНО ИЗМЕНИЛИСЬ ★★★
-                        const currentData = window.lastSyncedData;
-                        if (currentData) {
-                            const currentStr = JSON.stringify({
-                                car_name: currentData.car_name,
-                                track_name: currentData.track_name,
-                                weather_name: currentData.weather_name,
-                                time_name: currentData.time_name,
-                                tires_value: currentData.tires_value,
-                                fuel_value: currentData.fuel_value,
-                                category_name: currentData.category_name
-                            });
-                            const newStr = JSON.stringify({
-                                car_name: synced.car_name,
-                                track_name: synced.track_name,
-                                weather_name: synced.weather_name,
-                                time_name: synced.time_name,
-                                tires_value: synced.tires_value,
-                                fuel_value: synced.fuel_value,
-                                category_name: synced.category_name
-                            });
-                            
-                            // Если данные не изменились — не показываем сообщение
-                            if (currentStr === newStr) {
-                                return;
-                            }
+                        const dataHash = JSON.stringify(synced);
+                        if (dataHash !== lastSyncedDataHash) {
+                            lastSyncedDataHash = dataHash;
+                            isApplyingUpdate = true;
+                            applySyncedCombo(synced);
+                            showStatusMessage('🔄 Данные обновлены администратором!', 'success');
+                            setTimeout(() => { isApplyingUpdate = false; }, 3000);
                         }
-                        
-                        isApplyingUpdate = true;
-                        applySyncedCombo(synced);
-                        showStatusMessage('🔄 Данные обновлены администратором!', 'success');
-                        setTimeout(() => { isApplyingUpdate = false; }, 3000);
                     }
                 }
             } catch(e) { console.error('Ошибка обновления:', e); }
