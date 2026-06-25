@@ -2251,8 +2251,11 @@ function applySyncedCombo(data) {
         }
     });
     
-    // ★★★ МАШИНА — меняем, если НЕ ЗАБЛОКИРОВАНА ★★★
-    if (!locks.car && data.car_name) {
+    // Проверяем, есть ли хоть один замок
+    const hasAnyLock = locks.car || locks.track || locks.category || locks.weather || locks.time || locks.tires || locks.fuel;
+    
+    // ★★★ МАШИНА ★★★
+    if ((!hasAnyLock || locks.car) && data.car_name) {
         const car = findCarByName(data.car_name);
         if (car) {
             document.getElementById('carValue').innerText = car.name;
@@ -2266,8 +2269,8 @@ function applySyncedCombo(data) {
         }
     }
     
-    // ★★★ ТРАССА — меняем, если НЕ ЗАБЛОКИРОВАНА ★★★
-    if (!locks.track && data.track_name) {
+    // ★★★ ТРАССА ★★★
+    if ((!hasAnyLock || locks.track) && data.track_name) {
         document.getElementById('trackValue').innerHTML = data.track_name;
         const trackName = data.track_name;
         const trackIcon = document.getElementById('trackIcon');
@@ -2285,7 +2288,7 @@ function applySyncedCombo(data) {
     }
     
     // ★★★ КАТЕГОРИЯ ★★★
-    if (!locks.category && data.category_name) {
+    if ((!hasAnyLock || locks.category) && data.category_name) {
         const cat = categories.find(c => c.name === data.category_name);
         if (cat) {
             document.getElementById('categoryValue').innerHTML = `${cat.icon} ${cat.name} (${cat.description})`;
@@ -2295,14 +2298,14 @@ function applySyncedCombo(data) {
     }
     
     // ★★★ ПОГОДА ★★★
-    if (!locks.weather && data.weather_name) {
+    if ((!hasAnyLock || locks.weather) && data.weather_name) {
         const w = findWeatherByName(data.weather_name);
         if (w) document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`;
         else document.getElementById('weatherValue').innerHTML = data.weather_name;
     }
     
     // ★★★ ВРЕМЯ ★★★
-    if (!locks.time && data.time_name) {
+    if ((!hasAnyLock || locks.time) && data.time_name) {
         const tm = findTimeByName(data.time_name);
         const mult = data.time_multiplier || 'X1';
         if (tm) document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${mult}</span>`;
@@ -2310,12 +2313,12 @@ function applySyncedCombo(data) {
     }
     
     // ★★★ ШИНЫ ★★★
-    if (!locks.tires && data.tires_value) {
+    if ((!hasAnyLock || locks.tires) && data.tires_value) {
         document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${data.tires_value}</span>`;
     }
     
     // ★★★ ТОПЛИВО ★★★
-    if (!locks.fuel && data.fuel_value) {
+    if ((!hasAnyLock || locks.fuel) && data.fuel_value) {
         document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${data.fuel_value}</span>`;
     }
     
