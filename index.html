@@ -2900,13 +2900,12 @@ function showWelcomeScreen() {
 }
 
 function showMainApp(autoGenerate = true) {
-    // ★★★ СКРЫВАЕМ КНОПКУ "НАЗАД В МЕНЮ" И КОНТЕЙНЕР ★★★
+    // ★★★ СКРЫВАЕМ КОНТЕЙНЕР СРАЗУ (НЕ ЧЕРЕЗ OPACITY) ★★★
     const container = document.querySelector('.container');
     if (container) {
-        container.style.opacity = '0';
-        container.style.transition = 'opacity 0.5s ease';
-        container.style.pointerEvents = 'none';
+        container.style.display = 'none';
     }
+    
     document.getElementById('backToMenuBtn').style.display = 'none';
     
     stopAutoRefresh();
@@ -2926,7 +2925,6 @@ function showMainApp(autoGenerate = true) {
     if (userSyncEnabled && currentAdminId) {
         mainApp.classList.add('sync-mode');
         
-        // ★★★ ТОЛЬКО ДОБАВЛЯЕМ КЛАСС, НЕ ТРОГАЕМ STYLE ★★★
         const categoryContainer = document.getElementById('categoryContainer');
         if (categoryContainer) {
             categoryContainer.classList.add('hidden-block');
@@ -2971,20 +2969,20 @@ function showMainApp(autoGenerate = true) {
                 // ★★★ ПОКАЗЫВАЕМ КОНТЕЙНЕР ПОСЛЕ ЗАГРУЗКИ ★★★
                 const container2 = document.querySelector('.container');
                 if (container2) {
+                    container2.style.display = 'block';
                     container2.style.opacity = '1';
                     container2.style.pointerEvents = 'auto';
                 }
                 
-                // ★★★ ДОБАВЛЯЕМ КЛАСС ПОСЛЕ ЗАГРУЗКИ ★★★
                 document.getElementById('mainApp').classList.add('loaded');
                 
             } catch (error) {
                 console.error('Ошибка в showMainApp:', error);
                 document.getElementById('backToMenuBtn').style.display = 'flex';
                 
-                // ★★★ И СЮДА ТОЖЕ ★★★
                 const container3 = document.querySelector('.container');
                 if (container3) {
+                    container3.style.display = 'block';
                     container3.style.opacity = '1';
                     container3.style.pointerEvents = 'auto';
                 }
@@ -3193,6 +3191,14 @@ if (hasSeenWelcome) {
 if (typeof init === 'function') {
     init();
 }
+
+    // ★★★ СКРЫТЬ КОНТЕЙНЕР СРАЗУ ПОСЛЕ ЗАГРУЗКИ СТРАНИЦЫ ★★★
+(function() {
+    const container = document.querySelector('.container');
+    if (container) {
+        container.style.display = 'none';
+    }
+})();
 </script>
 </body>
 </html>
