@@ -1797,55 +1797,47 @@ function calculatePlayableValues(trackLength, category) {
     
     // Короткие трассы (до 3 км) - высокий износ
     if (trackLength < 3) {
-        baseTires = 8 + Math.floor(Math.random() * 5);  // 8-12
-        baseFuel = 6 + Math.floor(Math.random() * 5);   // 6-10
+        baseTires = 10 + Math.floor(Math.random() * 6);  // 10-15
+        baseFuel = 8 + Math.floor(Math.random() * 6);    // 8-13
     }
     // Средние трассы (3-6 км) - средний износ
     else if (trackLength < 6) {
-        baseTires = 5 + Math.floor(Math.random() * 6);  // 5-10
-        baseFuel = 4 + Math.floor(Math.random() * 6);   // 4-9
+        baseTires = 7 + Math.floor(Math.random() * 6);   // 7-12
+        baseFuel = 6 + Math.floor(Math.random() * 6);    // 6-11
     }
     // Длинные трассы (6-10 км) - низкий износ
     else if (trackLength < 10) {
-        baseTires = 3 + Math.floor(Math.random() * 5);  // 3-7
-        baseFuel = 2 + Math.floor(Math.random() * 5);   // 2-6
+        baseTires = 3 + Math.floor(Math.random() * 5);   // 3-7
+        baseFuel = 2 + Math.floor(Math.random() * 5);    // 2-6
     }
     // Очень длинные трассы (>10 км) - минимальный износ
     else {
-        baseTires = 1 + Math.floor(Math.random() * 4);  // 1-4
-        baseFuel = 1 + Math.floor(Math.random() * 3);   // 1-3
+        baseTires = 1 + Math.floor(Math.random() * 4);   // 1-4
+        baseFuel = 1 + Math.floor(Math.random() * 3);    // 1-3
     }
     
     // ★★★ КОРРЕКТИРОВКА В ЗАВИСИМОСТИ ОТ КАТЕГОРИИ ★★★
-    // Чем быстрее класс — тем выше расход топлива и износ шин
     if (category === 'Super Formula') {
-        // Самый быстрый класс — максимальный расход и износ
         baseFuel = Math.min(20, baseFuel + 2);
         baseTires = Math.min(20, baseTires + 2);
     } else if (category === 'Gr.1') {
-        // Очень быстрый — высокий расход и износ
         baseFuel = Math.min(20, baseFuel + 1);
         baseTires = Math.min(20, baseTires + 1);
     } else if (category === 'Gr.2') {
-        // Быстрый — средний расход и износ
-        baseFuel = Math.min(20, baseFuel + 0);
-        baseTires = Math.min(20, baseTires + 0);
+        // без изменений
     } else if (category === 'Gr.3') {
-        // Средний — чуть ниже расход и износ
         baseFuel = Math.max(1, baseFuel - 1);
         baseTires = Math.max(1, baseTires - 1);
     } else if (category === 'Gr.4') {
-        // Медленный — низкий расход и износ
         baseFuel = Math.max(1, baseFuel - 2);
         baseTires = Math.max(1, baseTires - 2);
     } else if (category === 'Gr.B') {
-        // Ралли — низкий расход, но высокий износ (грунт)
         baseFuel = Math.max(1, baseFuel - 1);
         baseTires = Math.min(20, baseTires + 1);
     }
     
-    // Дополнительная случайность ±1 для разнообразия
-    const randomOffset = Math.floor(Math.random() * 3) - 1; // -1, 0, или 1
+    // Дополнительная случайность ±1
+    const randomOffset = Math.floor(Math.random() * 3) - 1;
     baseTires = Math.max(1, Math.min(20, baseTires + randomOffset));
     baseFuel = Math.max(1, Math.min(20, baseFuel + randomOffset));
     
