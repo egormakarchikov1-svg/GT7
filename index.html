@@ -2167,20 +2167,56 @@ function startAutoRefresh() {
                 if (typeof displayUserRaces === 'function') displayUserRaces(currentAdminId);
                 const synced = await loadSyncedCombo(true);
                 if (syncedModeActive && synced) {
-                    // ★★★ ПРОСТО ПРИМЕНЯЕМ ДАННЫЕ, ЕСЛИ ОНИ ИЗМЕНИЛИСЬ ★★★
                     const currentCar = document.getElementById('carValue')?.innerText || '';
                     const currentTrackEl = document.getElementById('trackValue');
                     let currentTrackName = '';
                     if (currentTrackEl) currentTrackName = currentTrackEl.innerText.replace(/\d+\s*кругов/, '').trim();
+                    const currentWeather = document.getElementById('weatherValue')?.innerHTML || '';
+                    const currentTime = document.getElementById('timeValue')?.innerHTML || '';
+                    const currentTires = document.getElementById('tiresValue')?.innerHTML || '';
+                    const currentFuel = document.getElementById('fuelValue')?.innerHTML || '';
+                    const currentCategory = document.getElementById('categoryValue')?.innerHTML || '';
                     
-                    // Проверяем, изменились ли данные
-                    const dataChanged = (synced.car_name && currentCar !== synced.car_name) ||
-                                       (synced.track_name && currentTrackName !== synced.track_name);
+                    // ★★★ ПРОВЕРЯЕМ ВСЕ ПАРАМЕТРЫ ★★★
+                    const hasAnyLock = locks.car || locks.track || locks.category || locks.weather || locks.time || locks.tires || locks.fuel;
+                    
+                    let dataChanged = false;
+                    
+                    // Машина
+                    if ((!hasAnyLock || locks.car) && synced.car_name && currentCar !== synced.car_name) {
+                        dataChanged = true;
+                    }
+                    // Трасса
+                    if ((!hasAnyLock || locks.track) && synced.track_name && currentTrackName !== synced.track_name) {
+                        dataChanged = true;
+                    }
+                    // Погода
+                    if ((!hasAnyLock || locks.weather) && synced.weather_name && currentWeather !== synced.weather_name) {
+                        dataChanged = true;
+                    }
+                    // Время
+                    if ((!hasAnyLock || locks.time) && synced.time_name && currentTime !== synced.time_name) {
+                        dataChanged = true;
+                    }
+                    // Шины
+                    if ((!hasAnyLock || locks.tires) && synced.tires_value && currentTires !== synced.tires_value) {
+                        dataChanged = true;
+                    }
+                    // Топливо
+                    if ((!hasAnyLock || locks.fuel) && synced.fuel_value && currentFuel !== synced.fuel_value) {
+                        dataChanged = true;
+                    }
+                    // Категория
+                    if ((!hasAnyLock || locks.category) && synced.category_name && currentCategory !== synced.category_name) {
+                        dataChanged = true;
+                    }
                     
                     if (dataChanged) {
                         isApplyingUpdate = true;
                         applySyncedCombo(synced);
-                        showStatusMessage('🔄 Данные обновлены администратором!', 'success');
+                        if (!isFirstApply) {
+                            showStatusMessage('🔄 Данные обновлены администратором!', 'success');
+                        }
                         setTimeout(() => { isApplyingUpdate = false; }, 3000);
                     }
                 }
