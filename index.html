@@ -2285,9 +2285,6 @@ async function loadSyncedCombo(forceRefresh = false, retryCount = 0) {
     });
 }
 
-// ★★★ ГЛОБАЛЬНЫЙ ФЛАГ ПЕРВОГО ПРИМЕНЕНИЯ ★★★
-let isFirstApply = true;
-
 function applySyncedCombo(data) {
     if (!data) return;
     if (data.track_locked !== undefined) locks.track = data.track_locked;
