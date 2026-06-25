@@ -2638,11 +2638,26 @@ async function applyRaceToGame(raceId) {
                 document.getElementById('categoryContainer').classList.add('hidden-block');
                 document.getElementById('carBlock').classList.remove('hidden-block');
             }
-            if (race.track_name) {
-                document.getElementById('trackValue').innerHTML = race.track_name;
-                document.getElementById('trackIcon').style.display = 'none';
-                document.getElementById('trackIconFallback').style.display = 'flex';
-            }
+           if (race.track_name) {
+    document.getElementById('trackValue').innerHTML = race.track_name;
+    
+    // ★★★ ЗАГРУЗКА ИКОНКИ ТРАССЫ ★★★
+    const trackName = race.track_name;
+    const trackIcon = document.getElementById('trackIcon');
+    const trackIconFallback = document.getElementById('trackIconFallback');
+    
+    const iconUrl = getTrackIcon(trackName);
+    
+    if (iconUrl && iconUrl !== '') {
+        trackIcon.src = iconUrl + '?t=' + Date.now();
+        trackIcon.style.display = 'block';
+        trackIconFallback.style.display = 'none';
+    } else {
+        trackIcon.style.display = 'none';
+        trackIconFallback.style.display = 'flex';
+        trackIconFallback.innerHTML = '🏁';
+    }
+}
             if (race.weather_name) {
                 const w = findWeatherByName(race.weather_name);
                 if (w) document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`;
