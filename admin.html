@@ -1786,64 +1786,68 @@ function getTrackIcon(trackName) {
 }
 
    // === РАСЧЁТ ИГРАБЕЛЬНЫХ ЗНАЧЕНИЙ ДЛЯ ШИН И ТОПЛИВА ===
+// === РАСЧЁТ ИГРАБЕЛЬНЫХ ЗНАЧЕНИЙ ДЛЯ ШИН И ТОПЛИВА ===
 function calculatePlayableValues(trackLength, category) {
     // Если длина трассы не указана — используем среднее значение
     if (!trackLength || trackLength <= 0) {
         trackLength = 5;
     }
+
+    // ★★★ БАЗОВЫЙ МАКСИМУМ В ЗАВИСИМОСТИ ОТ ДЛИНЫ ТРАССЫ ★★★
+    let maxBase;
     
-    // Базовые значения в зависимости от длины трассы
-    let baseTires, baseFuel;
-    
-    // Короткие трассы (до 3 км) - высокий износ
     if (trackLength < 3) {
-        baseTires = 10 + Math.floor(Math.random() * 6);  // 10-15
-        baseFuel = 8 + Math.floor(Math.random() * 6);    // 8-13
+        maxBase = 14;   // Короткие трассы (до 3 км)
+    } else if (trackLength < 6) {
+        maxBase = 11;   // Средние трассы (3-6 км)
+    } else if (trackLength < 10) {
+        maxBase = 8;    // Длинные трассы (6-10 км)
+    } else {
+        maxBase = 5;    // Очень длинные трассы (>10 км)
     }
-    // Средние трассы (3-6 км) - средний износ
-    else if (trackLength < 6) {
-        baseTires = 7 + Math.floor(Math.random() * 6);   // 7-12
-        baseFuel = 6 + Math.floor(Math.random() * 6);    // 6-11
-    }
-    // Длинные трассы (6-10 км) - низкий износ
-    else if (trackLength < 10) {
-        baseTires = 3 + Math.floor(Math.random() * 5);   // 3-7
-        baseFuel = 2 + Math.floor(Math.random() * 5);    // 2-6
-    }
-    // Очень длинные трассы (>10 км) - минимальный износ
-    else {
-        baseTires = 1 + Math.floor(Math.random() * 4);   // 1-4
-        baseFuel = 1 + Math.floor(Math.random() * 3);    // 1-3
-    }
+
+    // ★★★ КОЭФФИЦИЕНТ КЛАССА ★★★
+    // Чем быстрее класс — тем выше максимум
+    let classMultiplier = 1.0;
     
-    // ★★★ КОРРЕКТИРОВКА В ЗАВИСИМОСТИ ОТ КАТЕГОРИИ ★★★
     if (category === 'Super Formula') {
-        baseFuel = Math.min(20, baseFuel + 2);
-        baseTires = Math.min(20, baseTires + 2);
+        classMultiplier = 1.6;   // Самый быстрый
     } else if (category === 'Gr.1') {
-        baseFuel = Math.min(20, baseFuel + 1);
-        baseTires = Math.min(20, baseTires + 1);
+        classMultiplier = 1.4;
     } else if (category === 'Gr.2') {
-        // без изменений
+        classMultiplier = 1.2;
     } else if (category === 'Gr.3') {
-        baseFuel = Math.max(1, baseFuel - 1);
-        baseTires = Math.max(1, baseTires - 1);
+        classMultiplier = 1.0;
     } else if (category === 'Gr.4') {
-        baseFuel = Math.max(1, baseFuel - 2);
-        baseTires = Math.max(1, baseTires - 2);
+        classMultiplier = 0.8;   // Самый медленный
     } else if (category === 'Gr.B') {
-        baseFuel = Math.max(1, baseFuel - 1);
-        baseTires = Math.min(20, baseTires + 1);
+        classMultiplier = 0.9;   // Ралли
+    } else {
+        classMultiplier = 0.7;   // Уличные машины
     }
+
+    // ★★★ РАСЧЁТ МАКСИМАЛЬНОГО ЗНАЧЕНИЯ ★★★
+    let maxValue = Math.round(maxBase * classMultiplier);
+
+    // ★★★ ОГРАНИЧЕНИЯ ДЛЯ ИГРАБЕЛЬНОСТИ ★★★
+    // Минимум 3, максимум 16 (чтобы не было слишком легко или слишком сложно)
+    maxValue = Math.max(3, Math.min(16, maxValue));
+
+    // ★★★ ДОПОЛНИТЕЛЬНАЯ КОРРЕКТИРОВКА ДЛЯ Gr.B (износ шин выше) ★★★
+    let maxTires = maxValue;
+    let maxFuel = maxValue;
     
-    // Дополнительная случайность ±1
-    const randomOffset = Math.floor(Math.random() * 3) - 1;
-    baseTires = Math.max(1, Math.min(20, baseTires + randomOffset));
-    baseFuel = Math.max(1, Math.min(20, baseFuel + randomOffset));
-    
+    if (category === 'Gr.B') {
+        maxTires = Math.min(16, maxTires + 2);  // +2 к износу для ралли
+    }
+
+    // ★★★ ВЫБОР СЛУЧАЙНОГО ЗНАЧЕНИЯ В ДИАПАЗОНЕ 1..max ★★★
+    const tires = 1 + Math.floor(Math.random() * maxTires);
+    const fuel = 1 + Math.floor(Math.random() * maxFuel);
+
     return {
-        tires: `X${baseTires}`,
-        fuel: `X${baseFuel}`
+        tires: `X${tires}`,
+        fuel: `X${fuel}`
     };
 }
 
