@@ -2923,22 +2923,24 @@ function showMainApp(autoGenerate = true) {
     }
     if (typeof init === 'function' && !window._gt7_initialized) { init(); }
     setTimeout(async () => {
-        if (userSyncEnabled && currentAdminId) {
-            if (typeof displayUserRaces === 'function') await displayUserRaces(currentAdminId);
-            const synced = await loadSyncedCombo(true);
-            if (syncedModeActive && synced && typeof applySyncedCombo === 'function') {
-                applySyncedCombo(synced);
-                showStatusMessage(`✅ Данные ${currentAdminName} загружены!`, 'success');
-            }
-        } else if (autoGenerate) {
-            if (typeof generateLocalRace === 'function') {
-                generateLocalRace();
-                showStatusMessage('🎲 Случайная гонка готова!', 'info');
-            }
+    if (userSyncEnabled && currentAdminId) {
+        if (typeof displayUserRaces === 'function') await displayUserRaces(currentAdminId);
+        const synced = await loadSyncedCombo(true);
+        if (syncedModeActive && synced && typeof applySyncedCombo === 'function') {
+            applySyncedCombo(synced);
+            showStatusMessage(`✅ Данные ${currentAdminName} загружены!`, 'success');
         }
-        if (typeof updateModeSelectorVisibility === 'function') updateModeSelectorVisibility();
-    }, 100);
-}
+    } else if (autoGenerate) {
+        if (typeof generateLocalRace === 'function') {
+            generateLocalRace();
+            showStatusMessage('🎲 Случайная гонка готова!', 'info');
+        }
+    }
+    if (typeof updateModeSelectorVisibility === 'function') updateModeSelectorVisibility();
+    
+    // ★★★ ПОКАЗЫВАЕМ КНОПКУ ПОСЛЕ ЗАГРУЗКИ ★★★
+    document.getElementById('backToMenuBtn').style.display = 'flex';
+}, 100);
 
 // ============================================
 // ИНИЦИАЛИЗАЦИЯ
