@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Добавление администратора GT7</title>
+</head>
+<body>
+    <h1>Добавление администратора GT7</h1>
+    <div style="max-width: 400px; margin: 0 auto; padding: 20px;">
+        <div style="margin-bottom: 15px;">
+            <label>ID администратора (латиницей):</label>
+            <input type="text" id="adminId" placeholder="Например: Aleksey" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label>Имя администратора:</label>
+            <input type="text" id="adminName" placeholder="Например: Алексей" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label>Пароль:</label>
+            <input type="password" id="adminPassword" placeholder="Пароль" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+        </div>
+        <button onclick="addAdmin()" style="background: #22c55e; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px;">➕ ДОБАВИТЬ АДМИНИСТРАТОРА</button>
+        <div id="result" style="margin-top: 15px; padding: 10px; border-radius: 5px;"></div>
+    </div>
+
+    <script>
+        const API_URL = 'gt7_api.php';
+        
+        async function addAdmin() {
+            const id = document.getElementById('adminId').value.trim();
+            const name = document.getElementById('adminName').value.trim();
+            const password = document.getElementById('adminPassword').value.trim();
+            
+            if (!id || !name || !password) {
+                document.getElementById('result').innerHTML = '❌ Заполните все поля!';
+                document.getElementById('result').style.color = 'red';
+                return;
+            }
+            
+            try {
+                const formData = new URLSearchParams();
+                formData.append('action', 'addAdmin');
+                formData.append('id', id);
+                formData.append('name', name);
+                formData.append('password', password);
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData.toString()
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('result').innerHTML = `✅ Администратор "${name}" добавлен! ID: ${id}`;
+                    document.getElementById('result').style.color = 'green';
+                    document.getElementById('adminId').value = '';
+                    document.getElementById('adminName').value = '';
+                    document.getElementById('adminPassword').value = '';
+                } else {
+                    document.getElementById('result').innerHTML = `❌ Ошибка: ${result.error}`;
+                    document.getElementById('result').style.color = 'red';
+                }
+            } catch(e) {
+                document.getElementById('result').innerHTML = `❌ Ошибка: ${e.message}`;
+                document.getElementById('result').style.color = 'red';
+            }
+        }
+    </script>
+</body>
+</html>
