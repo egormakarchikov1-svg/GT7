@@ -3268,6 +3268,38 @@ document.getElementById('welcomeAdminBtn').addEventListener('click', function() 
 document.getElementById('document.getElementById('continueToAdminBtn').addEventListener('click', function() {
     const select = document.getElementById('adminSelect');
     const value = select.value;
+    if (!value) {document.getElementById('welcomeLocalRaceBtn').addEventListener('click', function() {
+    userSyncEnabled = false;
+    currentAdminId = null;
+    currentAdminName = null;
+    updateModeIndicator('local');
+    document.getElementById('welcomeScreen').classList.add('hidden');
+    document.getElementById('mainApp').classList.remove('hidden');
+    document.getElementById('mainApp').classList.remove('sync-mode');
+    document.getElementById('adminSyncBanner').classList.add('hidden');
+    stopAutoRefresh();
+    resetSyncCache();
+    if (typeof init === 'function') init();
+    setTimeout(() => {
+        if (typeof generateLocalRace === 'function') {
+            generateLocalRace();
+            showStatusMessage('🎲 Случайная гонка готова!', 'info');
+        }
+    }, 100);
+    localStorage.setItem('gt7_welcome_seen', 'true');
+});
+
+document.getElementById('welcomeAdminBtn').addEventListener('click', function() {
+    document.getElementById('welcomeScreen').classList.add('hidden');
+    document.getElementById('setupScreen').classList.remove('hidden');
+    loadAdminsFromGoogle();
+    localStorage.setItem('gt7_welcome_seen', 'true');
+});
+
+// ★★★ ИСПРАВЛЕННАЯ СТРОКА ★★★
+document.getElementById('continueToAdminBtn').addEventListener('click', function() {
+    const select = document.getElementById('adminSelect');
+    const value = select.value;
     if (!value) {
         alert('⚠️ Выберите администратора!');
         return;
