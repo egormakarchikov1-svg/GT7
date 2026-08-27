@@ -135,7 +135,14 @@ $races = [
         'laps' => 8,
         'active' => true,
         'synced' => true,
-        'created_at' => '2026-06-09T11:26:15.217Z'
+        'created_at' => '2026-06-09T11:26:15.217Z',
+        'car_locked' => false,
+        'track_locked' => false,
+        'weather_locked' => false,
+        'time_locked' => false,
+        'tires_locked' => false,
+        'fuel_locked' => false,
+        'category_locked' => false
     ]
 ];
 
@@ -146,8 +153,14 @@ $data = [
 ];
 
 // Сохраняем в файл
-file_put_contents($dataFile, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-echo "✅ Данные успешно импортированы!\n";
-echo "Администраторов: " . count($admins) . "\n";
-echo "Гонок: " . count($races) . "\n";
+if (file_put_contents($dataFile, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))) {
+    echo "✅ Данные успешно импортированы!\n";
+    echo "Администраторов: " . count($admins) . "\n";
+    echo "Гонок: " . count($races) . "\n";
+    echo "\n📋 Администраторы:\n";
+    foreach ($admins as $admin) {
+        echo "  - " . $admin['id'] . " (" . $admin['name'] . ")\n";
+    }
+} else {
+    echo "❌ Ошибка сохранения данных. Проверьте права на запись.\n";
+}
