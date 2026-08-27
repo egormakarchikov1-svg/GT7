@@ -1,0 +1,11 @@
+# Защита от прямого доступа к данным
+<Files "*.json">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Разрешаем только наш API
+<Files "gt7_api.php">
+    Order Allow,Deny
+    Allow from all
+</Files>
