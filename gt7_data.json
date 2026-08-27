@@ -1,0 +1,13 @@
+{
+  "admins": [
+    {
+      "id": "Aleksey",
+      "name": "Алексей"
+    },
+    {
+      "id": "Egor",
+      "name": "Егор"
+    }
+  ],
+  "races": []
+}
