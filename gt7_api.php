@@ -1,7 +1,7 @@
 <?php
 // ============================================
 // GT7 Random Race API
-// Версия: 1.0
+// Версия: 2.0 - Полная интеграция с данными
 // ============================================
 
 header('Content-Type: application/json');
@@ -9,13 +9,11 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, X-Requested-With');
 
-// Обработка preflight запросов
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-// Файл для хранения данных
 $dataFile = __DIR__ . '/gt7_data.json';
 $participantsFile = __DIR__ . '/gt7_participants.json';
 
@@ -25,13 +23,13 @@ $participantsFile = __DIR__ . '/gt7_participants.json';
 
 function loadData($file) {
     if (!file_exists($file)) {
-        // Создаём пустой файл с базовой структурой
         $default = ['admins' => [], 'races' => []];
         file_put_contents($file, json_encode($default, JSON_PRETTY_PRINT));
         return $default;
     }
     $content = file_get_contents($file);
-    return json_decode($content, true) ?: ['admins' => [], 'races' => []];
+    $data = json_decode($content, true);
+    return $data ?: ['admins' => [], 'races' => []];
 }
 
 function saveData($file, $data) {
@@ -40,7 +38,11 @@ function saveData($file, $data) {
 
 function loadParticipants($raceId = null) {
     global $participantsFile;
-    $data = loadData($participantsFile);
+    if (!file_exists($participantsFile)) {
+        file_put_contents($participantsFile, json_encode([], JSON_PRETTY_PRINT));
+        return [];
+    }
+    $data = json_decode(file_get_contents($participantsFile), true) ?: [];
     if ($raceId) {
         return $data[$raceId] ?? [];
     }
@@ -56,6 +58,36 @@ function generateId() {
     return uniqid() . '_' . bin2hex(random_bytes(8));
 }
 
+function getAdminData($adminId) {
+    $data = loadData($dataFile);
+    // Находим данные администратора в листе
+    $adminSheet = null;
+    foreach ($data['admins'] as $admin) {
+        if ($admin['id'] === $adminId) {
+            $adminSheet = $admin;
+            break;
+        }
+    }
+    return $adminSheet;
+}
+
+function updateAdminData($adminId, $newData) {
+    $data = loadData($dataFile);
+    foreach ($data['admins'] as &$admin) {
+        if ($admin['id'] === $adminId) {
+            foreach ($newData as $key => $value) {
+                if ($key !== 'id' && $key !== 'name') {
+                    $admin[$key] = $value;
+                }
+            }
+            $admin['updated_at'] = date('c');
+            break;
+        }
+    }
+    saveData($dataFile, $data);
+    return true;
+}
+
 // ============================================
 // ОБРАБОТКА ЗАПРОСОВ
 // ============================================
@@ -63,46 +95,116 @@ function generateId() {
 $action = $_GET['action'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'];
 
-// Получаем данные из тела запроса для POST/PUT
 $inputData = [];
 if ($method === 'POST' || $method === 'PUT') {
     $inputData = json_decode(file_get_contents('php://input'), true) ?: [];
 }
 
-// Объединяем с GET параметрами
 $params = array_merge($_GET, $inputData);
-
-// ============================================
-// ДЕЙСТВИЯ
-// ============================================
 
 switch ($action) {
     
-    // ===== АДМИНИСТРАТОРЫ =====
+    // ===== ПОЛУЧЕНИЕ ДАННЫХ АДМИНИСТРАТОРА =====
+    case 'getAdminData':
+        $adminId = $params['adminId'] ?? '';
+        if (empty($adminId)) {
+            echo json_encode(['success' => false, 'error' => 'adminId обязателен']);
+            break;
+        }
+        
+        $adminData = getAdminData($adminId);
+        if ($adminData) {
+            echo json_encode(['success' => true, 'data' => $adminData]);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Администратор не найден']);
+        }
+        break;
+    
+    // ===== ОБНОВЛЕНИЕ ДАННЫХ АДМИНИСТРАТОРА =====
+    case 'updateAdminData':
+        $adminId = $params['adminId'] ?? '';
+        $data = $params['data'] ?? [];
+        
+        if (empty($adminId) || empty($data)) {
+            echo json_encode(['success' => false, 'error' => 'adminId и data обязательны']);
+            break;
+        }
+        
+        if (updateAdminData($adminId, $data)) {
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Ошибка обновления']);
+        }
+        break;
+    
+    // ===== ПОЛУЧЕНИЕ ВСЕХ АДМИНИСТРАТОРОВ =====
     case 'getAdmins':
         $data = loadData($dataFile);
+        $admins = array_map(function($admin) {
+            return [
+                'id' => $admin['id'],
+                'name' => $admin['name']
+            ];
+        }, $data['admins'] ?? []);
+        
         echo json_encode([
             'success' => true,
-            'admins' => $data['admins'] ?? []
+            'admins' => $admins
         ]);
         break;
     
+    // ===== ДОБАВЛЕНИЕ АДМИНИСТРАТОРА =====
     case 'addAdmin':
+        $id = $params['id'] ?? '';
         $name = $params['name'] ?? '';
         $password = $params['password'] ?? '';
         
-        if (empty($name) || empty($password)) {
-            echo json_encode(['success' => false, 'error' => 'Имя и пароль обязательны']);
+        if (empty($id) || empty($name) || empty($password)) {
+            echo json_encode(['success' => false, 'error' => 'Все поля обязательны']);
             break;
         }
         
         $data = loadData($dataFile);
+        
+        // Проверяем, не существует ли уже
+        foreach ($data['admins'] as $admin) {
+            if ($admin['id'] === $id) {
+                echo json_encode(['success' => false, 'error' => 'Администратор уже существует']);
+                break 2;
+            }
+        }
+        
         $newAdmin = [
-            'id' => generateId(),
+            'id' => $id,
             'name' => $name,
             'password' => password_hash($password, PASSWORD_DEFAULT),
-            'created_at' => date('c')
+            'active' => true,
+            'display_mode' => 'all',
+            'car_name' => '',
+            'track_name' => '',
+            'laps' => 5,
+            'weather_name' => 'S01 (Ясно, безоблачно)',
+            'time_name' => 'День',
+            'time_multiplier' => 'X1',
+            'tires_value' => 'X1',
+            'fuel_value' => 'X1',
+            'category_name' => 'Gr.3',
+            'car_locked' => false,
+            'track_locked' => false,
+            'weather_locked' => false,
+            'time_locked' => false,
+            'tires_locked' => false,
+            'fuel_locked' => false,
+            'category_locked' => false,
+            'similar_car_1' => '',
+            'similar_car_2' => '',
+            'similar_car_3' => '',
+            'similar_car_4' => '',
+            'similar_car_5' => '',
+            'created_at' => date('c'),
+            'updated_at' => date('c')
         ];
+        
         $data['admins'][] = $newAdmin;
         saveData($dataFile, $data);
         
@@ -112,6 +214,7 @@ switch ($action) {
         ]);
         break;
     
+    // ===== ПРОВЕРКА АДМИНИСТРАТОРА =====
     case 'checkAdmin':
         $adminId = $params['adminId'] ?? '';
         $password = $params['password'] ?? '';
@@ -120,7 +223,7 @@ switch ($action) {
         $found = null;
         
         foreach ($data['admins'] as $admin) {
-            if ($admin['id'] === $adminId || $admin['name'] === $adminId) {
+            if ($admin['id'] === $adminId) {
                 if (password_verify($password, $admin['password'])) {
                     $found = $admin;
                     break;
@@ -142,7 +245,7 @@ switch ($action) {
         }
         break;
     
-    // ===== ГОНКИ =====
+    // ===== ПОЛУЧЕНИЕ ГОНОК ПОЛЬЗОВАТЕЛЯ =====
     case 'getUserRaces':
         $adminId = $params['adminId'] ?? '';
         $userId = $params['userId'] ?? 'default';
@@ -165,7 +268,6 @@ switch ($action) {
             }
         }
         
-        // Сортируем по дате
         usort($races, function($a, $b) {
             return strtotime($a['datetime']) - strtotime($b['datetime']);
         });
@@ -176,6 +278,7 @@ switch ($action) {
         ]);
         break;
     
+    // ===== ПОЛУЧЕНИЕ ТЕКУЩЕЙ КОМБИНАЦИИ =====
     case 'getCurrentCombo':
         $adminId = $params['adminId'] ?? '';
         
@@ -184,29 +287,16 @@ switch ($action) {
             break;
         }
         
-        $data = loadData($dataFile);
-        $now = time();
-        $currentRace = null;
-        $minDiff = PHP_INT_MAX;
-        
-        foreach ($data['races'] as $race) {
-            if ($race['adminId'] === $adminId && $race['active'] === true) {
-                $raceTime = strtotime($race['datetime']);
-                $diff = $raceTime - $now;
-                if ($diff > 0 && $diff < $minDiff) {
-                    $minDiff = $diff;
-                    $currentRace = $race;
-                }
-            }
-        }
-        
-        if ($currentRace) {
-            echo json_encode($currentRace);
+        $adminData = getAdminData($adminId);
+        if ($adminData && $adminData['active'] === true) {
+            // Возвращаем данные администратора
+            echo json_encode($adminData);
         } else {
-            echo json_encode(['success' => false, 'error' => 'Нет активных гонок']);
+            echo json_encode(['success' => false, 'error' => 'Нет активных данных']);
         }
         break;
     
+    // ===== ПОЛУЧЕНИЕ ГОНКИ ПО ID =====
     case 'getRaceById':
         $raceId = $params['raceId'] ?? '';
         
@@ -232,12 +322,11 @@ switch ($action) {
         }
         break;
     
+    // ===== НАЗНАЧЕНИЕ ГОНКИ =====
     case 'scheduleRace':
         $adminId = $params['adminId'] ?? '';
         $datetime = $params['datetime'] ?? '';
         $title = $params['title'] ?? '🏁 Гоночный заезд';
-        
-        // Получаем комбо данные
         $combo = isset($params['combo']) ? json_decode($params['combo'], true) : [];
         
         if (empty($adminId) || empty($datetime)) {
@@ -274,7 +363,6 @@ switch ($action) {
             'category_locked' => $combo['category_locked'] ?? false
         ];
         
-        // Добавляем похожие авто
         for ($i = 1; $i <= 5; $i++) {
             $key = "similar_car_{$i}";
             if (isset($combo[$key])) {
@@ -291,49 +379,7 @@ switch ($action) {
         ]);
         break;
     
-    case 'updateRace':
-        $raceId = $params['raceId'] ?? '';
-        $adminId = $params['adminId'] ?? '';
-        
-        if (empty($raceId) || empty($adminId)) {
-            echo json_encode(['success' => false, 'error' => 'raceId и adminId обязательны']);
-            break;
-        }
-        
-        $data = loadData($dataFile);
-        $found = false;
-        
-        foreach ($data['races'] as &$race) {
-            if ($race['id'] === $raceId && $race['adminId'] === $adminId) {
-                // Обновляем поля
-                if (isset($params['datetime'])) $race['datetime'] = $params['datetime'];
-                if (isset($params['title'])) $race['title'] = $params['title'];
-                if (isset($params['active'])) $race['active'] = $params['active'] === 'true';
-                if (isset($params['car_name'])) $race['car_name'] = $params['car_name'];
-                if (isset($params['track_name'])) $race['track_name'] = $params['track_name'];
-                if (isset($params['weather_name'])) $race['weather_name'] = $params['weather_name'];
-                if (isset($params['time_name'])) $race['time_name'] = $params['time_name'];
-                if (isset($params['time_multiplier'])) $race['time_multiplier'] = $params['time_multiplier'];
-                if (isset($params['tires_value'])) $race['tires_value'] = $params['tires_value'];
-                if (isset($params['fuel_value'])) $race['fuel_value'] = $params['fuel_value'];
-                if (isset($params['display_mode'])) $race['display_mode'] = $params['display_mode'];
-                if (isset($params['category_name'])) $race['category_name'] = $params['category_name'];
-                if (isset($params['laps'])) $race['laps'] = intval($params['laps']);
-                
-                $race['updated_at'] = date('c');
-                $found = true;
-                break;
-            }
-        }
-        
-        if ($found) {
-            saveData($dataFile, $data);
-            echo json_encode(['success' => true]);
-        } else {
-            echo json_encode(['success' => false, 'error' => 'Гонка не найдена']);
-        }
-        break;
-    
+    // ===== УДАЛЕНИЕ ГОНКИ =====
     case 'deleteRace':
         $raceId = $params['raceId'] ?? '';
         $adminId = $params['adminId'] ?? '';
@@ -344,160 +390,20 @@ switch ($action) {
         }
         
         $data = loadData($dataFile);
-        $initialCount = count($data['races']);
         $data['races'] = array_filter($data['races'], function($race) use ($raceId, $adminId) {
             return !($race['id'] === $raceId && $race['adminId'] === $adminId);
         });
-        
-        if (count($data['races']) < $initialCount) {
-            saveData($dataFile, $data);
-            echo json_encode(['success' => true]);
-        } else {
-            echo json_encode(['success' => false, 'error' => 'Гонка не найдена']);
-        }
-        break;
-    
-    case 'toggleRaceStatus':
-        $raceId = $params['raceId'] ?? '';
-        $adminId = $params['adminId'] ?? '';
-        $active = isset($params['active']) ? $params['active'] === 'true' : false;
-        
-        if (empty($raceId) || empty($adminId)) {
-            echo json_encode(['success' => false, 'error' => 'raceId и adminId обязательны']);
-            break;
-        }
-        
-        $data = loadData($dataFile);
-        $found = false;
-        
-        foreach ($data['races'] as &$race) {
-            if ($race['id'] === $raceId && $race['adminId'] === $adminId) {
-                $race['active'] = $active;
-                $found = true;
-                break;
-            }
-        }
-        
-        if ($found) {
-            saveData($dataFile, $data);
-            echo json_encode(['success' => true]);
-        } else {
-            echo json_encode(['success' => false, 'error' => 'Гонка не найдена']);
-        }
-        break;
-    
-    case 'syncRaceToUsers':
-        $raceId = $params['raceId'] ?? '';
-        $adminId = $params['adminId'] ?? '';
-        
-        if (empty($raceId) || empty($adminId)) {
-            echo json_encode(['success' => false, 'error' => 'raceId и adminId обязательны']);
-            break;
-        }
-        
-        $data = loadData($dataFile);
-        $found = false;
-        $newSynced = false;
-        
-        foreach ($data['races'] as &$race) {
-            if ($race['id'] === $raceId && $race['adminId'] === $adminId) {
-                $race['synced'] = !$race['synced'];
-                $newSynced = $race['synced'];
-                $found = true;
-                break;
-            }
-        }
-        
-        if ($found) {
-            saveData($dataFile, $data);
-            echo json_encode(['success' => true, 'synced' => $newSynced]);
-        } else {
-            echo json_encode(['success' => false, 'error' => 'Гонка не найдена']);
-        }
-        break;
-    
-    case 'deleteOldRaces':
-        $adminId = $params['adminId'] ?? '';
-        
-        if (empty($adminId)) {
-            echo json_encode(['success' => false, 'error' => 'adminId обязателен']);
-            break;
-        }
-        
-        $data = loadData($dataFile);
-        $now = time();
-        $initialCount = count($data['races']);
-        
-        $data['races'] = array_filter($data['races'], function($race) use ($adminId, $now) {
-            if ($race['adminId'] !== $adminId) return true;
-            $raceTime = strtotime($race['datetime']);
-            return $raceTime > $now;
-        });
-        
-        $deleted = $initialCount - count($data['races']);
+        $data['races'] = array_values($data['races']);
         saveData($dataFile, $data);
         
-        echo json_encode(['success' => true, 'deleted' => $deleted]);
-        break;
-    
-    case 'batchActivateRaces':
-        $adminId = $params['adminId'] ?? '';
-        
-        if (empty($adminId)) {
-            echo json_encode(['success' => false, 'error' => 'adminId обязателен']);
-            break;
-        }
-        
-        $data = loadData($dataFile);
-        $updated = 0;
-        
-        foreach ($data['races'] as &$race) {
-            if ($race['adminId'] === $adminId && !$race['active']) {
-                $race['active'] = true;
-                $updated++;
-            }
-        }
-        
-        saveData($dataFile, $data);
-        echo json_encode(['success' => true, 'updated' => $updated]);
-        break;
-    
-    case 'batchDeactivateRaces':
-        $adminId = $params['adminId'] ?? '';
-        
-        if (empty($adminId)) {
-            echo json_encode(['success' => false, 'error' => 'adminId обязателен']);
-            break;
-        }
-        
-        $data = loadData($dataFile);
-        $updated = 0;
-        
-        foreach ($data['races'] as &$race) {
-            if ($race['adminId'] === $adminId && $race['active']) {
-                $race['active'] = false;
-                $updated++;
-            }
-        }
-        
-        saveData($dataFile, $data);
-        echo json_encode(['success' => true, 'updated' => $updated]);
+        echo json_encode(['success' => true]);
         break;
     
     // ===== УЧАСТНИКИ =====
     case 'getParticipants':
         $raceId = $params['raceId'] ?? '';
-        
-        if (empty($raceId)) {
-            echo json_encode(['success' => false, 'error' => 'raceId обязателен']);
-            break;
-        }
-        
         $participants = loadParticipants($raceId);
-        echo json_encode([
-            'success' => true,
-            'participants' => $participants
-        ]);
+        echo json_encode(['success' => true, 'participants' => $participants]);
         break;
     
     case 'registerForRace':
@@ -512,7 +418,6 @@ switch ($action) {
         
         $participants = loadParticipants();
         
-        // Проверяем, не зарегистрирован ли уже
         if (isset($participants[$raceId])) {
             foreach ($participants[$raceId] as $p) {
                 if ($p['device_id'] === $deviceId) {
@@ -574,7 +479,6 @@ switch ($action) {
         $participants = loadParticipants();
         $registeredRaces = [];
         
-        // Собираем все гонки администратора
         $adminRaces = [];
         foreach ($data['races'] as $race) {
             if ($race['adminId'] === $adminId) {
@@ -582,7 +486,6 @@ switch ($action) {
             }
         }
         
-        // Проверяем регистрации
         foreach ($participants as $raceId => $list) {
             if (isset($adminRaces[$raceId])) {
                 foreach ($list as $p) {
@@ -594,10 +497,7 @@ switch ($action) {
             }
         }
         
-        echo json_encode([
-            'success' => true,
-            'races' => $registeredRaces
-        ]);
+        echo json_encode(['success' => true, 'races' => $registeredRaces]);
         break;
     
     default:
