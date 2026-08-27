@@ -2855,33 +2855,156 @@ function backToMenu() {
     showStatusMessage('🔙 Вернулись в меню', 'info');
 }
 
-// ============================================
-// ЗАГРУЗКА АДМИНОВ
-// ============================================
 let adminsLoaded = false;
 
-async function loadAdminsFromGoogle() {
-    if (adminsLoaded) return;
+function saveAdminsToCache(admins) {
+    try {
+        localStorage.setItem('gt7_admins_cache', JSON.stringify({
+            admins: admins,
+            timestamp: Date.now()
+        }));
+    } catch(e) {}
+}
+
+function loadAdminsFromCache() {
+    try {
+        const cached = localStorage.getItem('gt7_admins_cache');
+        if (cached) {
+            const data = JSON.parse(cached);
+            if (Date.now() - data.timestamp < 3600000) {
+                return data.admins;
+            }
+        }
+    } catch(e) {}
+    return null;
+}
+
+async function loadAdminsFromGoogle(retryCount = 0) {
     const select = document.getElementById('adminSelect');
     if (!select) return;
-    select.innerHTML = '<option value="">Загрузка...</option>';
+    
+    const oldRefreshBtn = document.querySelector('.admin-refresh-btn');
+    if (oldRefreshBtn) oldRefreshBtn.remove();
+    
+    const cachedAdmins = loadAdminsFromCache();
+    if (cachedAdmins && cachedAdmins.length > 0) {
+        select.innerHTML = '<option value="">-- Выберите администратора --</option>';
+        cachedAdmins.forEach(a => {
+            const option = document.createElement('option');
+            option.value = a.id;
+            option.textContent = a.name || a.id;
+            select.appendChild(option);
+        });
+        adminsLoaded = true;
+        setTimeout(loadAdminsFromGoogleBackground, 2000);
+        return;
+    }
+    
+    if (retryCount === 0) {
+        select.innerHTML = '<option value="">⏳ Загрузка...</option>';
+    } else if (retryCount > 0) {
+        select.innerHTML = `<option value="">🔄 Попытка ${retryCount + 1}/3...</option>`;
+    }
+    
     try {
         const callbackName = 'jsonp_admins_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
         const url = `${APPS_SCRIPT_URL}?action=getAdmins&callback=${callbackName}&_=${Date.now()}`;
+        
         const admins = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve([]); }, 10000);
-            window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data.admins || []); };
-            const script = document.createElement('script'); script.src = url; script.onerror = () => resolve([]);
+            const timeout = setTimeout(() => {
+                if (window[callbackName]) delete window[callbackName];
+                resolve(null);
+            }, 15000);
+            
+            window[callbackName] = function(data) {
+                clearTimeout(timeout);
+                delete window[callbackName];
+                if (script && script.parentNode) document.body.removeChild(script);
+                resolve(data.admins || []);
+            };
+            
+            const script = document.createElement('script');
+            script.src = url;
+            script.onerror = function() {
+                clearTimeout(timeout);
+                delete window[callbackName];
+                if (script && script.parentNode) document.body.removeChild(script);
+                resolve(null);
+            };
             document.body.appendChild(script);
         });
-        if (admins.length > 0) {
+        
+        if (admins && Array.isArray(admins) && admins.length > 0) {
             select.innerHTML = '<option value="">-- Выберите администратора --</option>';
-            admins.forEach(a => { select.innerHTML += `<option value="${a.id}">${a.name}</option>`; });
+            admins.forEach(a => {
+                const option = document.createElement('option');
+                option.value = a.id;
+                option.textContent = a.name || a.id;
+                select.appendChild(option);
+            });
             adminsLoaded = true;
-        } else {
-            select.innerHTML = '<option value="">-- Ошибка --</option>';
+            saveAdminsToCache(admins);
+            return;
         }
-    } catch(e) { select.innerHTML = '<option value="">-- Ошибка --</option>'; }
+        
+        if (retryCount < 3) {
+            setTimeout(() => loadAdminsFromGoogle(retryCount + 1), 2000);
+            return;
+        }
+        
+        select.innerHTML = '<option value="">❌ Ошибка загрузки</option>';
+        const refreshBtn = document.createElement('button');
+        refreshBtn.className = 'admin-refresh-btn';
+        refreshBtn.textContent = '🔄 Обновить список';
+        refreshBtn.style.cssText = 'display: block; margin: 10px auto; padding: 8px 20px; background: #3b82f6; border: none; border-radius: 30px; color: white; cursor: pointer; font-size: 14px;';
+        refreshBtn.onclick = function() {
+            this.remove();
+            adminsLoaded = false;
+            loadAdminsFromGoogle(0);
+        };
+        select.parentNode.appendChild(refreshBtn);
+        
+    } catch(e) {
+        console.error('Ошибка загрузки:', e);
+        if (retryCount < 3) {
+            setTimeout(() => loadAdminsFromGoogle(retryCount + 1), 2000);
+        } else {
+            select.innerHTML = '<option value="">❌ Ошибка</option>';
+        }
+    }
+}
+
+async function loadAdminsFromGoogleBackground() {
+    try {
+        const callbackName = 'jsonp_admins_bg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+        const url = `${APPS_SCRIPT_URL}?action=getAdmins&callback=${callbackName}&_=${Date.now()}`;
+        
+        const admins = await new Promise((resolve) => {
+            const timeout = setTimeout(() => {
+                if (window[callbackName]) delete window[callbackName];
+                resolve(null);
+            }, 10000);
+            
+            window[callbackName] = function(data) {
+                clearTimeout(timeout);
+                delete window[callbackName];
+                resolve(data.admins || []);
+            };
+            
+            const script = document.createElement('script');
+            script.src = url;
+            script.onerror = function() {
+                clearTimeout(timeout);
+                delete window[callbackName];
+                resolve(null);
+            };
+            document.body.appendChild(script);
+        });
+        
+        if (admins && admins.length > 0) {
+            saveAdminsToCache(admins);
+        }
+    } catch(e) {}
 }
 
 // ============================================
@@ -3142,15 +3265,25 @@ document.getElementById('welcomeAdminBtn').addEventListener('click', function() 
     localStorage.setItem('gt7_welcome_seen', 'true');
 });
 
-document.getElementById('continueToAdminBtn').addEventListener('click', function() {
+document.getElementById('document.getElementById('continueToAdminBtn').addEventListener('click', function() {
     const select = document.getElementById('adminSelect');
     const value = select.value;
-    if (!value) { alert('⚠️ Выберите администратора!'); return; }
+    if (!value) {
+        alert('⚠️ Выберите администратора!');
+        return;
+    }
+    
+    const option = select.options[select.selectedIndex];
+    if (!option) {
+        alert('⚠️ Ошибка: администратор не найден. Попробуйте обновить список.');
+        return;
+    }
+    
     stopAutoRefresh();
     resetSyncCache();
     userSyncEnabled = true;
     currentAdminId = value;
-    currentAdminName = select.options[select.selectedIndex]?.text || value;
+    currentAdminName = option.text || value;
     localStorage.setItem('gt7_selected_admin_id', currentAdminId);
     showMainApp(false);
     setTimeout(() => {
