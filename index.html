@@ -736,6 +736,55 @@
 #mainApp.loaded > div:first-child {
     display: flex !important;
 }
+        .race-item {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-left: 4px solid #ff4d4d;
+}
+.race-item.upcoming {
+    border-left-color: #22c55e;
+}
+.race-item.passed {
+    border-left-color: #6b7280;
+    opacity: 0.6;
+}
+.race-item.inactive {
+    border-left-color: #6b7280;
+    opacity: 0.5;
+}
+.race-date {
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+.race-date.upcoming-date { color: #22c55e; }
+.race-date.passed-date { color: #6b7280; }
+.active-badge {
+    background: rgba(34, 197, 94, 0.5);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 15px;
+    font-size: 10px;
+    font-weight: bold;
+}
+.inactive-badge {
+    background: rgba(107, 114, 128, 0.5);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 15px;
+    font-size: 10px;
+    font-weight: bold;
+}
+#scheduledRacesList {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+}
     </style>
 </head>
 <body>
@@ -956,7 +1005,22 @@
             </div>
         </div>
     </div>
-
+    <!-- ★★★ ВСТАВИТЬ КАЛЕНДАРЬ СЮДА ★★★ -->
+    <div class="calendar-container" style="background: rgba(0,0,0,0.4); border-radius: 16px; margin: 12px 0; border: 1px solid #ff4d4d; overflow: hidden;">
+        <div style="padding: 15px;">
+            <h4 style="color: #22c55e; margin-bottom: 10px; text-align: center;">📅 ДОБАВИТЬ ГОНКУ</h4>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+                <input type="date" id="raceDate" style="padding: 10px; border-radius: 30px; border: none; background: #1e293b; color: white; width: 100%;">
+                <input type="time" id="raceTime" style="padding: 10px; border-radius: 30px; border: none; background: #1e293b; color: white; width: 100%;">
+                <input type="text" id="raceTitle" placeholder="Название гонки (опционально)" style="padding: 10px; border-radius: 30px; border: none; background: #1e293b; color: white; width: 100%;">
+                <button id="scheduleRaceBtn" class="btn-main" style="background: #22c55e; min-width: auto; margin: 10px auto 0 auto; display: block; width: fit-content;">📅 НАЗНАЧИТЬ</button>
+            </div>
+            <div id="scheduledRacesList" style="max-height: 400px; overflow-y: auto; padding: 10px;">
+                <div style="text-align: center; color: #aaa; padding: 20px;">Загрузка расписания...</div>
+            </div>
+        </div>
+    </div>
+    
     <div class="similar-cars-container" id="similarContainer">
         <div class="similar-header-clickable" id="similarHeader">
             <div style="width: 30px;"></div>
@@ -1777,7 +1841,7 @@ let lastParticipantsCount = {};
 let lastSyncedDataHash = '';
 let isFirstApply = true;
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxy_fBTaLlQaf56WlME5e0cbk2RlwPUoV8ZMOuZLYl2YskrgyPFDGZXZxLWXafUBBq0Cg/exec';
+const APPS_SCRIPT_URL = '/gt7_api.php'; // или полный URL: 'https://ваш-сайт.ru/gt7_api.php';
 
 // ============================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
@@ -2253,40 +2317,30 @@ async function loadSyncedCombo(forceRefresh = false, retryCount = 0) {
         syncedModeActive = false;
         return null;
     }
-    return new Promise((resolve) => {
-        const callbackName = 'jsonp_combo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=getCurrentCombo&adminId=${encodeURIComponent(currentAdminId)}&callback=${callbackName}&_=${Date.now()}&force=${forceRefresh ? '1' : '0'}`;
-        const timeout = setTimeout(() => {
-            if (window[callbackName]) delete window[callbackName];
-            if (retryCount < 3) {
-                setTimeout(() => loadSyncedCombo(forceRefresh, retryCount + 1).then(resolve), 2000);
-            } else {
-                syncedModeActive = false;
-                resolve(null);
-            }
-        }, 10000);
+    
+    try {
+        const url = `${APPS_SCRIPT_URL}?action=getCurrentCombo&adminId=${encodeURIComponent(currentAdminId)}&_=${Date.now()}&force=${forceRefresh ? '1' : '0'}`;
+        const response = await fetch(url);
+        const data = await response.json();
         
-        window[callbackName] = function(data) {
-            clearTimeout(timeout);
-            delete window[callbackName];
-            
-            // ★★★ СОХРАНЯЕМ ДАННЫЕ В ГЛОБАЛЬНУЮ ПЕРЕМЕННУЮ ★★★
-            if (data && (data.active === 'TRUE' || data.active === true)) {
-                syncedModeActive = true;
-                window.lastSyncedData = data;  // ← ЭТОЙ СТРОКИ НЕ ХВАТАЕТ
-                resolve(data);
-            } else {
-                syncedModeActive = false;
-                window.lastSyncedData = null;  // ← И ЭТОЙ
-                resolve(null);
-            }
-        };
-        
-        const script = document.createElement('script');
-        script.src = url;
-        script.onerror = () => { clearTimeout(timeout); if (window[callbackName]) delete window[callbackName]; resolve(null); };
-        document.body.appendChild(script);
-    });
+        if (data && data.id) {
+            syncedModeActive = true;
+            window.lastSyncedData = data;
+            return data;
+        } else {
+            syncedModeActive = false;
+            window.lastSyncedData = null;
+            return null;
+        }
+    } catch(e) {
+        console.warn('Ошибка загрузки комбо:', e);
+        if (retryCount < 3) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            return loadSyncedCombo(forceRefresh, retryCount + 1);
+        }
+        syncedModeActive = false;
+        return null;
+    }
 }
 
 function applySyncedCombo(data) {
@@ -2418,17 +2472,21 @@ async function getActiveRaces(adminId) {
     if (!adminId) return [];
     try {
         const userId = localStorage.getItem('gt7_user_id') || 'default';
-        const callbackName = 'jsonp_races_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=getUserRaces&userId=${userId}&adminId=${adminId}&callback=${callbackName}&_=${Date.now()}`;
-        const races = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve([]); }, 10000);
-            window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data.races || []); };
-            const script = document.createElement('script'); script.src = url; script.onerror = () => resolve([]);
-            document.body.appendChild(script);
-        });
+        const url = `${APPS_SCRIPT_URL}?action=getUserRaces&userId=${encodeURIComponent(userId)}&adminId=${encodeURIComponent(adminId)}&_=${Date.now()}`;
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (!data.races || !Array.isArray(data.races)) {
+            return [];
+        }
+        
         const now = new Date();
-        return races.filter(race => race.active === true && new Date(race.datetime) > now);
-    } catch(e) { return []; }
+        return data.races.filter(race => race.active === true && new Date(race.datetime) > now);
+    } catch(e) { 
+        console.warn('Ошибка получения гонок:', e);
+        return []; 
+    }
 }
 
 async function displayUserRaces(adminId) {
@@ -2454,9 +2512,9 @@ async function displayUserRaces(adminId) {
                 <div class="race-title">${race.title || '🏁 Гоночный заезд'}</div>
                 <div class="race-details">
                     ${race.display_mode === 'group_only' ? 
-                        `<div>🏆 ${escapeHtml(race.category_name) || '—'}</div>` :
-                        `<div>🚗 ${escapeHtml(race.car_name) || '—'}</div>`
-                    }
+    `<div>🏆 ${escapeHtml(race.category_name) || '—'}</div>` :
+    `<div>🚗 ${escapeHtml(race.car_name) || '—'}</div>`
+}
                     <div>${escapeHtml(race.track_name) || '—'}</div>
                     <div>🌤️ ${escapeHtml(race.weather_name) || '—'}</div>
                     <div>⏰ ${escapeHtml(race.time_name) || '—'} ${race.time_multiplier || ''}</div>
@@ -2478,19 +2536,18 @@ async function loadUserRegistrations() {
     if (!currentAdminId) return;
     try {
         const deviceId = getUserDeviceId();
-        const callbackName = 'jsonp_user_regs_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=getUserRegistrations&adminId=${currentAdminId}&deviceId=${encodeURIComponent(deviceId)}&callback=${callbackName}&_=${Date.now()}`;
-        const result = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve({}); }, 10000);
-            window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data); };
-            const script = document.createElement('script'); script.src = url; script.onerror = () => resolve({});
-            document.body.appendChild(script);
-        });
+        const url = `${APPS_SCRIPT_URL}?action=getUserRegistrations&adminId=${encodeURIComponent(currentAdminId)}&deviceId=${encodeURIComponent(deviceId)}&_=${Date.now()}`;
+        
+        const response = await fetch(url);
+        const result = await response.json();
+        
         if (result.success && result.races) {
             userRegistrations = {};
             result.races.forEach(id => { userRegistrations[id] = true; });
         }
-    } catch(e) {}
+    } catch(e) {
+        console.warn('Ошибка загрузки регистраций:', e);
+    }
 }
 
 function openRegistration(raceId, trackName, title) {
@@ -2507,23 +2564,6 @@ function openRegistration(raceId, trackName, title) {
 function closeRegistration() {
     document.getElementById('registrationBlock').style.display = 'none';
     currentRegistrationRaceId = null;
-}
-
-async function loadParticipants(raceId) {
-    if (isLoadingParticipants) return;
-    isLoadingParticipants = true;
-    try {
-        const callbackName = 'jsonp_participants_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=getParticipants&raceId=${raceId}&callback=${callbackName}&_=${Date.now()}`;
-        const participants = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve([]); }, 10000);
-            window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data.participants || []); };
-            const script = document.createElement('script'); script.src = url; script.onerror = () => resolve([]);
-            document.body.appendChild(script);
-        });
-        displayParticipants(participants);
-    } catch(e) { document.getElementById('participantsList').innerHTML = '<div style="text-align:center;color:#ef4444;padding:10px;">❌ Ошибка</div>'; }
-    finally { isLoadingParticipants = false; }
 }
 
 function displayParticipants(participants) {
@@ -2552,19 +2592,27 @@ async function registerForRace() {
     const name = document.getElementById('racerName').value.trim();
     if (!name) { showStatusMessage('❌ Введите имя!', 'error'); return; }
     if (!currentRegistrationRaceId) { showStatusMessage('❌ Ошибка', 'error'); return; }
+    
     isRegisteringInProgress = true;
     btn.disabled = true;
     btn.innerHTML = '⏳ ОТПРАВКА...';
+    
     try {
         const deviceId = getUserDeviceId();
-        const callbackName = 'jsonp_register_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=registerForRace&raceId=${currentRegistrationRaceId}&name=${encodeURIComponent(name)}&deviceId=${encodeURIComponent(deviceId)}&callback=${callbackName}&_=${Date.now()}`;
-        const result = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve({}); }, 10000);
-            window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data); };
-            const script = document.createElement('script'); script.src = url; script.onerror = () => resolve({});
-            document.body.appendChild(script);
+        const formData = new URLSearchParams();
+        formData.append('action', 'registerForRace');
+        formData.append('raceId', currentRegistrationRaceId);
+        formData.append('name', name);
+        formData.append('deviceId', deviceId);
+        formData.append('_', Date.now());
+        
+        const response = await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData.toString()
         });
+        const result = await response.json();
+        
         if (result.success) {
             showStatusMessage(`✅ ${name}, вы записаны!`, 'success');
             document.getElementById('racerName').value = '';
@@ -2575,22 +2623,32 @@ async function registerForRace() {
         } else {
             showStatusMessage('❌ ' + (result.error || 'Ошибка'), 'error');
         }
-    } catch(e) { showStatusMessage('❌ Ошибка', 'error'); }
-    finally { btn.disabled = false; btn.innerHTML = '✅ ЗАПИСАТЬСЯ'; isRegisteringInProgress = false; }
+    } catch(e) { 
+        showStatusMessage('❌ Ошибка', 'error'); 
+    } finally { 
+        btn.disabled = false; 
+        btn.innerHTML = '✅ ЗАПИСАТЬСЯ'; 
+        isRegisteringInProgress = false; 
+    }
 }
 
 async function cancelRegistration(raceId) {
     if (!confirm('Отказаться от участия?')) return;
     const deviceId = getUserDeviceId();
     try {
-        const callbackName = 'jsonp_cancel_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=cancelRegistration&raceId=${raceId}&deviceId=${encodeURIComponent(deviceId)}&callback=${callbackName}&_=${Date.now()}`;
-        const result = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve({}); }, 10000);
-            window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data); };
-            const script = document.createElement('script'); script.src = url; script.onerror = () => resolve({});
-            document.body.appendChild(script);
+        const formData = new URLSearchParams();
+        formData.append('action', 'cancelRegistration');
+        formData.append('raceId', raceId);
+        formData.append('deviceId', deviceId);
+        formData.append('_', Date.now());
+        
+        const response = await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData.toString()
         });
+        const result = await response.json();
+        
         if (result.success) {
             showStatusMessage('✅ Отказались', 'success');
             await loadParticipants(raceId);
@@ -2604,14 +2662,12 @@ async function cancelRegistration(raceId) {
 async function applyRaceToGame(raceId) {
     try {
         showStatusMessage('🔄 Загрузка...', 'info');
-        const callbackName = 'jsonp_race_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=getRaceById&raceId=${raceId}&callback=${callbackName}&_=${Date.now()}`;
-        const race = await new Promise((resolve) => {
-            const timeout = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; resolve(null); }, 10000);
-            window[callbackName] = function(data) { clearTimeout(timeout); delete window[callbackName]; resolve(data.race); };
-            const script = document.createElement('script'); script.src = url; script.onerror = () => resolve(null);
-            document.body.appendChild(script);
-        });
+        const url = `${APPS_SCRIPT_URL}?action=getRaceById&raceId=${encodeURIComponent(raceId)}&_=${Date.now()}`;
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        const race = data.race;
+        
         if (race) {
             manualModeActive = true;
             if (manualModeTimer) clearTimeout(manualModeTimer);
@@ -2621,6 +2677,7 @@ async function applyRaceToGame(raceId) {
                 showStatusMessage('🕐 Ручной режим завершён', 'info');
             }, 1800000);
             document.getElementById('exitManualModeBtn').style.display = 'block';
+            
             if (race.display_mode) setDisplayMode(race.display_mode);
             if (race.car_locked !== undefined) locks.car = race.car_locked === true || race.car_locked === 'TRUE';
             if (race.track_locked !== undefined) locks.track = race.track_locked === true || race.track_locked === 'TRUE';
@@ -2629,11 +2686,13 @@ async function applyRaceToGame(raceId) {
             if (race.tires_locked !== undefined) locks.tires = race.tires_locked === true || race.tires_locked === 'TRUE';
             if (race.fuel_locked !== undefined) locks.fuel = race.fuel_locked === true || race.fuel_locked === 'TRUE';
             if (race.category_locked !== undefined) locks.category = race.category_locked === true || race.category_locked === 'TRUE';
+            
             document.querySelectorAll('.lock-btn, .settings-lock-btn').forEach(btn => {
                 const param = btn.getAttribute('data-param');
                 if (locks[param]) { btn.innerText = '🔒'; btn.setAttribute('data-state', 'locked'); }
                 else { btn.innerText = '🔓'; btn.setAttribute('data-state', 'unlocked'); }
             });
+            
             if (race.display_mode === 'group_only') {
                 if (race.category_name) {
                     const cat = categories.find(c => c.name === race.category_name);
@@ -2658,45 +2717,49 @@ async function applyRaceToGame(raceId) {
                 document.getElementById('categoryContainer').classList.add('hidden-block');
                 document.getElementById('carBlock').classList.remove('hidden-block');
             }
-           if (race.track_name) {
-    document.getElementById('trackValue').innerHTML = race.track_name;
-    
-    const trackName = race.track_name;
-    const trackIcon = document.getElementById('trackIcon');
-    const trackIconFallback = document.getElementById('trackIconFallback');
-    
-    const iconUrl = getTrackIcon(trackName);
-    
-    if (iconUrl && iconUrl !== '') {
-        // ★★★ ИСПОЛЬЗУЕМ setAttribute ДЛЯ ПРИНУДИТЕЛЬНОЙ ЗАМЕНЫ ★★★
-        trackIcon.setAttribute('src', iconUrl + '?t=' + Date.now());
-        trackIcon.style.display = 'block';
-        trackIconFallback.style.display = 'none';
-    } else {
-        trackIcon.style.display = 'none';
-        trackIconFallback.style.display = 'flex';
-        trackIconFallback.innerHTML = '🏁';
-    }
-}
+            
+            if (race.track_name) {
+                document.getElementById('trackValue').innerHTML = race.track_name;
+                const trackName = race.track_name;
+                const trackIcon = document.getElementById('trackIcon');
+                const trackIconFallback = document.getElementById('trackIconFallback');
+                const iconUrl = getTrackIcon(trackName);
+                if (iconUrl && iconUrl !== '') {
+                    trackIcon.setAttribute('src', iconUrl + '?t=' + Date.now());
+                    trackIcon.style.display = 'block';
+                    trackIconFallback.style.display = 'none';
+                } else {
+                    trackIcon.style.display = 'none';
+                    trackIconFallback.style.display = 'flex';
+                    trackIconFallback.innerHTML = '🏁';
+                }
+            }
+            
             if (race.weather_name) {
                 const w = findWeatherByName(race.weather_name);
                 if (w) document.getElementById('weatherValue').innerHTML = `${w.icon} ${w.name}`;
                 else document.getElementById('weatherValue').innerHTML = race.weather_name;
             }
+            
             if (race.time_name) {
                 const tm = findTimeByName(race.time_name);
                 const mult = race.time_multiplier || 'X1';
                 if (tm) document.getElementById('timeValue').innerHTML = `${tm.icon} ${tm.name} <span class="time-x-badge">${mult}</span>`;
                 else document.getElementById('timeValue').innerHTML = `${race.time_name} <span class="time-x-badge">${mult}</span>`;
             }
+            
             if (race.tires_value) document.getElementById('tiresValue').innerHTML = `<span class="time-x-badge">${race.tires_value}</span>`;
             if (race.fuel_value) document.getElementById('fuelValue').innerHTML = `<span class="time-x-badge">${race.fuel_value}</span>`;
+            
             saveLocksToStorage();
             showStatusMessage('✅ Параметры гонки загружены!', 'success');
         } else {
             showStatusMessage('❌ Гонка не найдена', 'error');
         }
-    } catch(e) { showStatusMessage('❌ Ошибка', 'error'); }
+    } catch(e) { 
+        console.error('Ошибка применения гонки:', e);
+        showStatusMessage('❌ Ошибка загрузки гонки', 'error'); 
+    }
 }
 
 // ============================================
@@ -2907,32 +2970,10 @@ async function loadAdminsFromGoogle(retryCount = 0) {
     }
     
     try {
-        const callbackName = 'jsonp_admins_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=getAdmins&callback=${callbackName}&_=${Date.now()}`;
-        
-        const admins = await new Promise((resolve) => {
-            const timeout = setTimeout(() => {
-                if (window[callbackName]) delete window[callbackName];
-                resolve(null);
-            }, 15000);
-            
-            window[callbackName] = function(data) {
-                clearTimeout(timeout);
-                delete window[callbackName];
-                if (script && script.parentNode) document.body.removeChild(script);
-                resolve(data.admins || []);
-            };
-            
-            const script = document.createElement('script');
-            script.src = url;
-            script.onerror = function() {
-                clearTimeout(timeout);
-                delete window[callbackName];
-                if (script && script.parentNode) document.body.removeChild(script);
-                resolve(null);
-            };
-            document.body.appendChild(script);
-        });
+        const url = `${APPS_SCRIPT_URL}?action=getAdmins&_=${Date.now()}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        const admins = data.admins || [];
         
         if (admins && Array.isArray(admins) && admins.length > 0) {
             select.innerHTML = '<option value="">-- Выберите администратора --</option>';
@@ -2974,38 +3015,6 @@ async function loadAdminsFromGoogle(retryCount = 0) {
     }
 }
 
-async function loadAdminsFromGoogleBackground() {
-    try {
-        const callbackName = 'jsonp_admins_bg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-        const url = `${APPS_SCRIPT_URL}?action=getAdmins&callback=${callbackName}&_=${Date.now()}`;
-        
-        const admins = await new Promise((resolve) => {
-            const timeout = setTimeout(() => {
-                if (window[callbackName]) delete window[callbackName];
-                resolve(null);
-            }, 10000);
-            
-            window[callbackName] = function(data) {
-                clearTimeout(timeout);
-                delete window[callbackName];
-                resolve(data.admins || []);
-            };
-            
-            const script = document.createElement('script');
-            script.src = url;
-            script.onerror = function() {
-                clearTimeout(timeout);
-                delete window[callbackName];
-                resolve(null);
-            };
-            document.body.appendChild(script);
-        });
-        
-        if (admins && admins.length > 0) {
-            saveAdminsToCache(admins);
-        }
-    } catch(e) {}
-}
 
 // ============================================
 // НАВИГАЦИЯ
@@ -3234,6 +3243,78 @@ function init() {
     if (container) container.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa;">👑 Выберите администратора</div>';
 }
 
+    // ============================================
+// ФУНКЦИИ ДЛЯ КАЛЕНДАРЯ
+// ============================================
+
+function getCurrentLaps() {
+    const trackValue = document.getElementById('trackValue');
+    if (trackValue) {
+        const lapsSpan = trackValue.querySelector('.time-x-badge');
+        if (lapsSpan) {
+            const lapsText = lapsSpan.innerText;
+            const match = lapsText.match(/(\d+)/);
+            if (match) {
+                return parseInt(match[1], 10);
+            }
+        }
+    }
+    return 5;
+}
+
+async function loadScheduledRaces() {
+    if (!currentAdminId) return;
+    try {
+        const url = `${APPS_SCRIPT_URL}?action=getUserRaces&adminId=${encodeURIComponent(currentAdminId)}&_=${Date.now()}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        const races = data.races || [];
+        displayScheduledRaces(races);
+    } catch(e) {
+        console.error('Ошибка загрузки расписания:', e);
+        const container = document.getElementById('scheduledRacesList');
+        if (container) {
+            container.innerHTML = '<div style="text-align:center;color:#ef4444;padding:20px;">❌ Ошибка загрузки расписания</div>';
+        }
+    }
+}
+
+function displayScheduledRaces(races) {
+    const container = document.getElementById('scheduledRacesList');
+    if (!container) return;
+    
+    if (!races || races.length === 0) {
+        container.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px;">📭 Нет запланированных гонок</div>';
+        return;
+    }
+    
+    const sorted = [...races].sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
+    
+    container.innerHTML = sorted.map(race => {
+        const raceDate = new Date(race.datetime);
+        const isUpcoming = raceDate > new Date();
+        const isActive = race.active !== false;
+        
+        return `
+            <div class="race-item ${isUpcoming ? 'upcoming' : 'passed'} ${!isActive ? 'inactive' : ''}">
+                <div class="race-date ${isUpcoming ? 'upcoming-date' : 'passed-date'}">
+                    📅 ${raceDate.toLocaleString('ru-RU')}
+                    ${isActive ? '<span class="active-badge">✅ АКТИВНА</span>' : '<span class="inactive-badge">⛔ НЕАКТИВНА</span>'}
+                </div>
+                <div class="race-title">${race.title || '🏁 Гоночный заезд'}</div>
+                <div class="race-details">
+                    ${race.display_mode === 'group_only' ? 
+                        `<span>🏆 ${race.category_name || '—'}</span>` :
+                        `<span>🚗 ${race.car_name || '—'}</span>`
+                    }
+                    <span>🛣️ ${race.track_name || '—'}</span>
+                    <span>🌤️ ${race.weather_name || '—'}</span>
+                    <span>⏰ ${race.time_name || '—'} ${race.time_multiplier || ''}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
 // ============================================
 // ОБРАБОТЧИКИ КНОПОК
 // ============================================
